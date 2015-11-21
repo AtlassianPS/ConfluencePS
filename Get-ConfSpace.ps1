@@ -12,7 +12,7 @@
     Filter results by name. Supports wildcard matching on partial names.
 
     .PARAMETER Key
-    Filter results by key.
+    Filter results by key. Supports wildcard matching on partial names.
 
     .PARAMETER ID
     Filter results by ID.
@@ -40,7 +40,7 @@
 
     BEGIN {
         If (!($Header) -or !($BaseURI)) {
-            Write-Verbose 'URI or authentication not found. Calling Get-ConfInfo'
+            Write-Debug 'URI or authentication not found. Calling Get-ConfInfo'
             Get-ConfInfo
         }
     }
@@ -54,9 +54,9 @@
         If ($ID) {
             $Rest | Where {$_.ID -eq $ID}
         } ElseIf ($Key) {
-            $Rest | Where {$_.Key -eq $Key}
+            $Rest | Where {$_.Key -like "*$Key*"} | Sort Key
         } ElseIf ($Name) {
-            $Rest | Where {$_.Name -like "*$Name*"}
+            $Rest | Where {$_.Name -like "*$Name*"} | Sort Key
         } Else {
             $Rest
         }
