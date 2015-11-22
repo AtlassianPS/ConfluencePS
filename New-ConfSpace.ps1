@@ -26,6 +26,7 @@
     .LINK
     https://github.com/brianbunke/ConfluencePS
     #>
+    [CmdletBinding(SupportsShouldProcess=$true,ConfirmImpact='Medium')]
     param (
 		[Parameter(Mandatory = $true)]
 		[Alias('SpaceKey')]
@@ -56,7 +57,9 @@
                  } | ConvertTo-Json
 
         Write-Verbose "Posting to $URI"
-        $Rest = Invoke-RestMethod -Headers $Header -Uri $URI -Body $Body -Method Post -ContentType 'application/json'
+        If ($PSCmdlet.ShouldProcess("$Key $Name")) {
+            $Rest = Invoke-RestMethod -Headers $Header -Uri $URI -Body $Body -Method Post -ContentType 'application/json'
+        }
         
         # Hashing everything because I don't like the lower case property names from the REST call
         $Rest | Select @{n='ID';e={$_.id}},
