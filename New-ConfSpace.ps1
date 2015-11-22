@@ -27,11 +27,11 @@
     https://github.com/brianbunke/ConfluencePS
     #>
     param (
-		[Parameter(Mandatory=$true)]
+		[Parameter(Mandatory = $true)]
 		[Alias('SpaceKey')]
 		[string]$Key,
 
-		[Parameter(Mandatory=$true)]
+		[Parameter(Mandatory = $true)]
 		[string]$Name,
 
 		[string]$Description
@@ -47,12 +47,12 @@
     PROCESS {
         $URI = $BaseURI + '/space'
 
-        $Body = @{key="$Key";
-                  name="$Name";
-                  description=@{plain=@{value="$Description";
-                                        representation='plain'
-                                       }
-                               }
+        $Body = @{key         = "$Key"
+                  name        = "$Name"
+                  description = @{plain = @{value          = "$Description"
+                                            representation = 'plain'
+                                           }
+                                 }
                  } | ConvertTo-Json
 
         Write-Verbose "Posting to $URI"
