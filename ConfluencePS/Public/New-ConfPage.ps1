@@ -113,12 +113,12 @@ function New-ConfPage {
         Write-Verbose "Posting to $URI"
         If ($PSCmdlet.ShouldProcess("Space $SpaceKey, Parent $ParentID")) {
             $Rest = Invoke-RestMethod -Headers $Header -Uri $URI -Body $Content -Method Post -ContentType 'application/json'
-        }
 
-        # Hashing everything because I don't like the lower case property names from the REST call
-        $Rest | Select @{n='ID';      e={$_.id}},
-                       @{n='Key';     e={$_.space.key}},
-                       @{n='Title';   e={$_.title}},
-                       @{n='ParentID';e={$_.ancestors.id}}
+            # Hashing everything because I don't like the lower case property names from the REST call
+            $Rest | Select @{n='ID';      e={$_.id}},
+                           @{n='Key';     e={$_.space.key}},
+                           @{n='Title';   e={$_.title}},
+                           @{n='ParentID';e={$_.ancestors.id}}
+        }
     }
 }
