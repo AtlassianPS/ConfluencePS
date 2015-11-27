@@ -5,17 +5,20 @@
 
     .DESCRIPTION
     Fetch all Confluence spaces, optionally filtering by Name/Key/ID.
-
+    Input for all parameters is not case sensitive.
     Piped output into other cmdlets is generally tested and supported.
 
     .PARAMETER Name
-    Filter results by name. Supports wildcard matching on partial names.
+    Filter results by name. Supports wildcard matching on partial input.
 
     .PARAMETER Key
-    Filter results by key. Supports wildcard matching on partial names.
+    Filter results by key. Supports wildcard matching on partial input.
 
     .PARAMETER ID
     Filter results by ID.
+
+    .PARAMETER Limit
+    Defaults to 25 max results; can be modified here.
 
     .EXAMPLE
     Get-ConfSpace -ID 123456
@@ -35,7 +38,9 @@
         [Alias('SpaceKey')]
         [string]$Key,
 
-        [string]$ID
+        [string]$ID,
+
+        [int]$Limit
     )
 
     BEGIN {
@@ -47,6 +52,10 @@
 
     PROCESS {
         $URI = $BaseURI + '/space'
+
+        If ($Limit) {
+            $URI = $URI + "?limit=$Limit"
+        }
 
         Write-Verbose "Fetching info from $URI"
         $Rest = Invoke-RestMethod -Headers $Header -Uri $URI -Method Get | Select -ExpandProperty Results | Select Key,Name,ID,Type

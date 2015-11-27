@@ -15,7 +15,10 @@
     Filter results by page ID.
 
     .PARAMETER SpaceKey
-    Filter results by key.
+    Filter results by key. Currently, this parameter is case sensitive.
+
+    .PARAMETER Limit
+    Defaults to 25 max results; can be modified here.
 
     .EXAMPLE
     Get-ConfSpace
@@ -41,7 +44,9 @@
 
 		[Parameter(ValueFromPipelineByPropertyName = $true)]
         [Alias('Space','Key')]
-        [string]$SpaceKey
+        [string]$SpaceKey,
+
+        [int]$Limit
     )
 
     BEGIN {
@@ -54,20 +59,27 @@
     PROCESS {
         $URI = $BaseURI + '/content'
 
-        # Fetch our content
+        # URI prep based on specified parameters
         If ($PageID) {
             $URI = $URI + "/$PageID"
-            Write-Verbose "Fetching info from $URI"
-            $Rest = Invoke-RestMethod -Headers $Header -Uri $URI -Method Get
         } ElseIf ($SpaceKey) {
-            $URI = $URI + "?spaceKey=$SpaceKey"
-            Write-Verbose "Fetching info from $URI"
-            $Rest = Invoke-RestMethod -Headers $Header -Uri $URI -Method Get
+            $URI = $URI + "?type=page&spaceKey=$SpaceKey"
         } Else {
             $URI = $URI + '?type=page'
-            Write-Verbose "Fetching info from $URI"
-            $Rest = Invoke-RestMethod -Headers $Header -Uri $URI -Method Get
         }
+
+        # Append the limit parameter to the URI
+        If ($Limit) {
+            If ($PageID) {
+                # Not supported/needed on this resource
+            } Else {
+                # Will always have ?type=page, so it will always be & instead of ?
+                $URI = $URI + "&limit=$Limit"
+            }
+        }
+
+        Write-Verbose "Fetching info from $URI"
+        $Rest = Invoke-RestMethod -Headers $Header -Uri $URI -Method Get
 
         # Display results depending on the call we made
         # Hashing everything because I don't like the lower case property names from the REST call
