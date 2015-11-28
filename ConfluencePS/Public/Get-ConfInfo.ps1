@@ -30,8 +30,7 @@
     #>
 	[CmdletBinding()]
 	param (
-	    [Parameter( Mandatory   = $true,
-                    HelpMessage = 'Example = https://brianbunke.atlassian.net/wiki (/wiki for On-Demand instances)')]
+	    [Parameter(HelpMessage = 'Example = https://brianbunke.atlassian.net/wiki (/wiki for On-Demand instances)')]
 	    [ValidateNotNullorEmpty()]
         [Uri]$BaseURI = 'https://brianbunke.atlassian.net/wiki',
 
