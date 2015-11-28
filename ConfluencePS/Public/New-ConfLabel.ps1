@@ -32,7 +32,7 @@
                    ValueFromPipeline = $true,
                    ValueFromPipelineByPropertyName = $true)]
 		[Alias('ID')]
-        [string]$PageID
+        [int]$PageID
     )
 
     BEGIN {

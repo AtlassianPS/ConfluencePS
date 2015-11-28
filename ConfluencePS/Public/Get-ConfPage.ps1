@@ -40,7 +40,7 @@
         [Alias('Name')]
         [string]$Title,
 
-        [string]$PageID,
+        [int]$PageID,
 
 		[Parameter(ValueFromPipelineByPropertyName = $true)]
         [Alias('Space','Key')]

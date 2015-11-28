@@ -38,7 +38,7 @@
         [Alias('SpaceKey')]
         [string]$Key,
 
-        [string]$ID,
+        [int]$ID,
 
         [int]$Limit
     )

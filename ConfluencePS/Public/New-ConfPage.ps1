@@ -58,7 +58,7 @@ function New-ConfPage {
 		[Parameter(ValueFromPipeline = $true,
                    ValueFromPipelineByPropertyName = $true)]
 		[Alias('ID')]
-        [string]$ParentID,
+        [int]$ParentID,
 
 		[Parameter(ValueFromPipelineByPropertyName = $true)]
 		[Alias('Space','Key')]
