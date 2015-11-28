@@ -24,7 +24,8 @@
 
     .EXAMPLE
     Get-ConfSpace -Name Nintendo | Get-ConfLabelApplied -Label Mario
-    Display all spaces containing 'test' in the name.
+    For each space matching the name *Nintendo*, find content labeled "Mario."
+    This method pipes the key of the matching space(s) into the -SpaceKey parameter.
 
     .LINK
     https://github.com/brianbunke/ConfluencePS
