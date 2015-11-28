@@ -24,7 +24,7 @@
 
     .EXAMPLE
     Get-ConfSpace -Name Nintendo | Get-ConfLabelApplied -Label Mario
-    For each space matching the name *Nintendo*, find content labeled "Mario."
+    For each space matching the name *Nintendo*, find child content labeled "Mario."
     This method pipes the key of the matching space(s) into the -SpaceKey parameter.
 
     .LINK

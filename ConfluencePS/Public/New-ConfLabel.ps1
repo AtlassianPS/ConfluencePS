@@ -4,7 +4,7 @@
     Add a new global label to an existing Confluence page.
 
     .DESCRIPTION
-    Add one or more labels to one or more Confluence pages.
+    Add one or more labels to one or more Confluence pages. Label can be brand new.
 
     .PARAMETER Label
     One or more labels to be added. Currently supports labels of prefix "global."
@@ -17,7 +17,7 @@
     Apply the labels alpha, bravo, and charlie to the page with ID 123456. Verbose output.
 
     .EXAMPLE
-    Get-ConfPage -Key SRV | New-ConfLabel -Label servers -WhatIf
+    Get-ConfPage -SpaceKey SRV | New-ConfLabel -Label servers -WhatIf
     Would apply the label "servers" to all pages in the space with key SRV. -WhatIf flag supported.
 
     .LINK

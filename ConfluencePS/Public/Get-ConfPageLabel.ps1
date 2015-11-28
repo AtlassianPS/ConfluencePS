@@ -16,7 +16,7 @@
     .EXAMPLE
     Get-ConfPageLabel -PageID 123456 -Limit 500
     Lists the labels applied to page 123456.
-    Do you love to label? This also increases the result limit from 200 to 500.
+    This also increases the result limit from 200 to 500, in case you love to label.
 
     .EXAMPLE
     Get-ConfPage -SpaceKey NASA | Get-ConfPageLabel -Verbose

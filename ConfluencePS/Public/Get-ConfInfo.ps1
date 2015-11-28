@@ -6,8 +6,7 @@
     .DESCRIPTION
     Anonymous access to the Confluence REST API is disabled by default.
     Unless manually enabled, you will need to pass authorization in all interactions.
-
-    If you have a better suggestion for how to handle this, please reach out on GitHub!
+    (If you have a better suggestion for how to handle this, please reach out on GitHub!)
 
     .PARAMETER BaseURI
     Address of your base Confluence install. For Atlassian On-Demand instances, include /wiki.

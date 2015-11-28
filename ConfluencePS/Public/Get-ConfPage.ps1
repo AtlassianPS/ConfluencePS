@@ -5,10 +5,9 @@
 
     .DESCRIPTION
     Fetch Confluence pages, optionally filtering by Name/Space/ID.
-
     Piped output into other cmdlets is generally tested and supported.
 
-    .PARAMETER Name
+    .PARAMETER Title
     Filter results by name. Supports wildcard matching on partial names.
 
     .PARAMETER PageID
@@ -21,16 +20,17 @@
     Defaults to 25 max results; can be modified here.
 
     .EXAMPLE
-    Get-ConfSpace
+    Get-ConfPage -Limit 100
     List all pages in your Confluence instance. Runs Get-ConfInfo first if instance info unknown.
+    Increases default result limit from 25 to the first 100 pages found.
 
     .EXAMPLE
-    Get-ConfSpace -Title Confluence
-    Get all pages with the word Confluence in the title.
+    Get-ConfPage -Title Confluence
+    Get all pages with the word Confluence in the title. Title is not case sensitive.
 
     .EXAMPLE
     Get-ConfSpace -Name Demo | Get-ConfPage
-    Get all spaces with a name like *demo*, and then list all pages from those spaces.
+    Get all spaces with a name like *demo*, and then list all pages from each returned space.
 
     .LINK
     https://github.com/brianbunke/ConfluencePS
@@ -73,7 +73,7 @@
             If ($PageID) {
                 # Not supported/needed on this resource
             } Else {
-                # Will always have ?type=page, so it will always be & instead of ?
+                # Will always have ?type=page, so this will always be & instead of ?
                 $URI = $URI + "&limit=$Limit"
             }
         }
