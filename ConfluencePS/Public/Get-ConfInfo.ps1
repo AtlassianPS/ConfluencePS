@@ -11,21 +11,22 @@
     .PARAMETER BaseURI
     Address of your base Confluence install. For Atlassian On-Demand instances, include /wiki.
 
-    .PARAMETER Username
-    The username you use to log in to Confluence.
-
-    .PARAMETER Password
-    The password you use to log in to Confluence.
+    .PARAMETER Credential
+    The username/password combo you use to log in to Confluence.
 
     .EXAMPLE
-    Get-ConfInfo -BaseURI 'https://brianbunke.atlassian.net/wiki' -Username admin -Password uncrackable
-    Declare Confluence home address and credentials. Stored in script-scope variables $BaseURI and $Header
+    Get-ConfInfo -BaseURI 'https://brianbunke.atlassian.net/wiki'
+    Declare your base install; be prompted for username and password.
+    Stored in script-scope variables $BaseURI and $Header.
     
     .LINK
     https://github.com/brianbunke/ConfluencePS
 
     .LINK
     http://stackoverflow.com/questions/27951561/use-invoke-webrequest-with-a-username-and-password-for-basic-authentication-on-t
+
+    .LINK
+    http://www.dexterposh.com/2015/01/powershell-rest-api-basic-cms-cmsurl.html
     #>
 	[CmdletBinding()]
 	param (
@@ -33,31 +34,20 @@
 	    [ValidateNotNullorEmpty()]
         [Uri]$BaseURI = 'https://brianbunke.atlassian.net/wiki',
 
-	    [Parameter(Mandatory = $true)]
 	    [ValidateNotNullorEmpty()]
-        [string]$Username,
-
-        [Parameter(Mandatory = $true)]
-	    [ValidateNotNullorEmpty()]
-        [string]$Password
+        $Credential = (Get-Credential)
     )
 
     PROCESS {
-        # Append the /rest/api to our URI
+        # Append the common /rest/api to the URI
         # Save as script-level variable for further use in the current session
         $script:BaseURI = $BaseURI.AbsoluteUri.TrimEnd('/') + '/rest/api'
 
-        $Pair = "${Username}:${Password}"
-
-        # Encode the string to the RFC2045-MIME variant of Base64, except not limited to 76 char/line.
-        $Bytes = [System.Text.Encoding]::ASCII.GetBytes($Pair)
-        $Base64 = [System.Convert]::ToBase64String($Bytes)
-
-        # Create the Auth value as the method, a space, and then the encoded pair Method Base64String
-        $BasicAuthValue = "Basic $Base64"
+        # Format as user:pass, call the .NET GetBytes method, convert it to Base64
+        $SecureCreds = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($('{0}:{1}' -f $Credential.UserName, $Credential.GetNetworkCredential().Password)))
 
         # Create the header hashtable to pass your basic auth
         # Save as script-level variable for further use in the current session
-        $script:Header = @{ Authorization = $BasicAuthValue }
+        $script:Header = @{ Authorization = "Basic $($SecureCreds)" }
     }
 }
