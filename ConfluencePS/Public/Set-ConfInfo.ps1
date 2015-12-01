@@ -1,4 +1,4 @@
-﻿function Get-ConfInfo {
+﻿function Set-ConfInfo {
     <#
     .SYNOPSIS
     Gather URI/auth info for use in this session's REST API requests.
@@ -9,13 +9,13 @@
     (If you have a better suggestion for how to handle this, please reach out on GitHub!)
 
     .PARAMETER BaseURI
-    Address of your base Confluence install. For Atlassian On-Demand instances, include /wiki.
+    Address of your base Confluence install. For Atlassian "On-Demand" (cloud-hosted) instances, include /wiki.
 
     .PARAMETER Credential
     The username/password combo you use to log in to Confluence.
 
     .EXAMPLE
-    Get-ConfInfo -BaseURI 'https://brianbunke.atlassian.net/wiki'
+    Set-ConfInfo -BaseURI 'https://brianbunke.atlassian.net/wiki'
     Declare your base install; be prompted for username and password.
     Stored in script-scope variables $BaseURI and $Header.
     

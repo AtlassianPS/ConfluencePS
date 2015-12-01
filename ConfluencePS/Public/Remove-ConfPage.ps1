@@ -34,8 +34,8 @@
 
     BEGIN {
         If (!($Header) -or !($BaseURI)) {
-            Write-Debug 'URI or authentication not found. Calling Get-ConfInfo'
-            Get-ConfInfo
+            Write-Debug 'URI or authentication not found. Calling Set-ConfInfo'
+            Set-ConfInfo
         }
     }
 

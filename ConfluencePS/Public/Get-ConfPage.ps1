@@ -21,7 +21,7 @@
 
     .EXAMPLE
     Get-ConfPage -Limit 100
-    List all pages in your Confluence instance. Runs Get-ConfInfo first if instance info unknown.
+    List all pages in your Confluence instance. Runs Set-ConfInfo first if instance info unknown.
     Increases default result limit from 25 to the first 100 pages found.
 
     .EXAMPLE
@@ -51,8 +51,8 @@
 
     BEGIN {
         If (!($Header) -or !($BaseURI)) {
-            Write-Debug 'URI or authentication not found. Calling Get-ConfInfo'
-            Get-ConfInfo
+            Write-Debug 'URI or authentication not found. Calling Set-ConfInfo'
+            Set-ConfInfo
         }
     }
 
