@@ -3,7 +3,7 @@ A PowerShell module that interacts with Atlassian's [Confluence] wiki product.
 
 ConfluencePS communicates with Atlassian's actively supported [REST API] via basic authentication. This is the only way to interact with their cloud-hosted instances via API, and will eventually be the only way to interact with an on-premises installation.
 
-## Install
+## Instructions
 * "Download ZIP" near the top-right of this page
 * If necessary, unblock the zip
 * Extract the ConfluencePS folder to a module path
@@ -25,9 +25,10 @@ ConfluencePS communicates with Atlassian's actively supported [REST API] via bas
 # Get help
     Get-Help Set-ConfInfo -Full
 	
-# Set your instance's info (currently needs to be done each time the module is loaded)
-# Local installs may be 'wiki.mydomain.com', for example, but Atlassian cloud installs need the /wiki
+# Set your instance's info, so PowerShell knows where to send requests
+# Local installs may be 'http://wiki.mydomain.com', for example, but Atlassian cloud installs need the /wiki
 	Set-ConfInfo -BaseURI 'https://brianbunke.atlassian.net/wiki'
+# You will then be prompted for your Confluence credentials
 ```
 
 ## Examples
@@ -46,5 +47,5 @@ I ~~stole~~ repurposed much of RamblingCookieMonster's example module, [PSStackE
   [PoshConfluence]: <https://github.com/thomykay/PoshConfluence>
   [PSStackExchange]: <https://github.com/RamblingCookieMonster/PSStackExchange>
 
-[//]: # Sweet online markdown editor at http://dillinger.io
-[//]: # "GitHub Flavored Markdown" https://help.github.com/articles/github-flavored-markdown/
+[//]: # (Sweet online markdown editor at http://dillinger.io)
+[//]: # ("GitHub Flavored Markdown" https://help.github.com/articles/github-flavored-markdown/)
