@@ -38,7 +38,7 @@ Get-Help New-ConfLabel -Examples
 ```
 
 ## Acknowledgments
-Many thanks to thomykay for his [PoshConfluence] module, which gave me enough of a starting point to feel comfortable undertaking this project.
+Many thanks to thomykay for his [PoshConfluence] SOAP API module, which gave me enough of a starting point to feel comfortable undertaking this project.
 
 I ~~stole~~ repurposed much of RamblingCookieMonster's example module, [PSStackExchange], which was a huge help in standing up everything correctly.
 
