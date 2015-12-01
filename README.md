@@ -14,8 +14,9 @@ ConfluencePS communicates via Atlassian's currently supported [REST API], which 
 ```posh
 # Import the module
     Import-Module ConfluencePS
-# Alternatively,
+	# Alternatively,
     Import-Module C:\ConfluencePS
+	# or
     Import-Module \\server\share\ConfluencePS
 
 # Get commands in the module
@@ -23,7 +24,6 @@ ConfluencePS communicates via Atlassian's currently supported [REST API], which 
 
 # Get help
     Get-Help Get-ConfPage -Full
-    Get-Help about_ConfluencePS
 ```
 
 ## Examples
@@ -41,3 +41,6 @@ I ~~stole~~ repurposed much of RamblingCookieMonster's example module, [PSStackE
   [REST API]: <https://docs.atlassian.com/atlassian-confluence/REST/latest/>
   [PoshConfluence]: <https://github.com/thomykay/PoshConfluence>
   [PSStackExchange]: <https://github.com/RamblingCookieMonster/PSStackExchange>
+
+[//]: # Sweet online markdown editor at http://dillinger.io
+[//]: # "GitHub Flavored Markdown" https://help.github.com/articles/github-flavored-markdown/
