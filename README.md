@@ -1,7 +1,7 @@
 # ConfluencePS
 A PowerShell module that interacts with Atlassian's [Confluence] wiki product.
 
-ConfluencePS communicates via Atlassian's currently supported [REST API], which is the only way to interact with their cloud-hosted instances, and will eventually be the only way to interact with an on-premises installation.
+ConfluencePS communicates with Atlassian's actively supported [REST API] via basic authentication. This is the only way to interact with their cloud-hosted instances via API, and will eventually be the only way to interact with an on-premises installation.
 
 ## Install
 * "Download ZIP" near the top-right of this page
@@ -23,13 +23,17 @@ ConfluencePS communicates via Atlassian's currently supported [REST API], which 
     Get-Command -Module ConfluencePS
 
 # Get help
-    Get-Help Get-ConfPage -Full
+    Get-Help Set-ConfInfo -Full
+	
+# Set your instance's info (currently needs to be done each time the module is loaded)
+# Local installs may be 'wiki.mydomain.com', for example, but Atlassian cloud installs need the /wiki
+	Set-ConfInfo -BaseURI 'https://brianbunke.atlassian.net/wiki'
 ```
 
 ## Examples
 Not yet included here while the module is still in constant development. In the interim, you can always:
 ```posh
-Get-Help New-ConfPage -Examples
+Get-Help New-ConfLabel -Examples
 ```
 
 ## Acknowledgments
