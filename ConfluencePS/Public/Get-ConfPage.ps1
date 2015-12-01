@@ -61,14 +61,14 @@
 
         # URI prep based on specified parameters
         If ($PageID) {
-            $URI = $URI + "/$PageID"
+            $URI = $URI + "/$PageID/?expand=body.view"
         } ElseIf ($SpaceKey) {
-            $URI = $URI + "?type=page&spaceKey=$SpaceKey"
+            $URI = $URI + "?type=page&spaceKey=$SpaceKey&expand=body.view"
         } Else {
-            $URI = $URI + '?type=page'
+            $URI = $URI + '?type=page&expand=body.view'
         }
 
-        # Append the limit parameter to the URI
+        # Append the Limit parameter to the URI
         If ($Limit) {
             If ($PageID) {
                 # Not supported/needed on this resource
@@ -85,21 +85,24 @@
         # Hashing everything because I don't like the lower case property names from the REST call
         If ($PageID) {
             Write-Verbose "Showing -PageID $PageID results"
-            $Rest | Select @{n='ID';e={$_.id}},
-                           @{n='Title';e={$_.title}},
-                           @{n='Space';e={$_.space.key}}
+            $Rest | Select @{n='ID';    e={$_.id}},
+                           @{n='Title'; e={$_.title}},
+                           @{n='Space'; e={$_._expandable.space -replace '/rest/api/space/',''}},
+                           @{n='Body';  e={$_.body.view.value}}
         } ElseIf ($Title) {
             Write-Verbose "Showing -Title $Title results"
             $Rest | Select -ExpandProperty Results | Where {$_.Title -like "*$Title*"} | Sort Title |
-                Select @{n='ID';e={$_.id}},
-                       @{n='Title';e={$_.title}},
-                       @{n='Space';e={$_._expandable.space -replace '/rest/api/space/',''}}
+                Select @{n='ID';    e={$_.id}},
+                       @{n='Title'; e={$_.title}},
+                       @{n='Space'; e={$_._expandable.space -replace '/rest/api/space/',''}},
+                       @{n='Body';  e={$_.body.view.value}}
         } Else {
             Write-Verbose "Showing results"
             $Rest | Select -ExpandProperty Results | Sort Title |
-                Select @{n='ID';e={$_.id}},
-                       @{n='Title';e={$_.title}},
-                       @{n='Space';e={$_._expandable.space -replace '/rest/api/space/',''}}
+                Select @{n='ID';    e={$_.id}},
+                       @{n='Title'; e={$_.title}},
+                       @{n='Space'; e={$_._expandable.space -replace '/rest/api/space/',''}},
+                       @{n='Body';  e={$_.body.view.value}}
         }
     }
 }
