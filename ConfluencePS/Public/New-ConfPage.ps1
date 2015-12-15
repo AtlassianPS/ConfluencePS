@@ -83,7 +83,7 @@ function New-ConfPage {
             $SpaceKey = Get-ConfPage -PageID $ParentID | Select -ExpandProperty Space
         }
 
-        # If -Convert is flagged, call Convert-ConfStorageFormat against the -Body
+        # If -Convert is flagged, call ConvertTo-ConfStorageFormat against the -Body
         If ($Convert) {
             Write-Verbose '-Convert flag active; converting content to Confluence storage format'
             $Body = ConvertTo-ConfStorageFormat -Content $Body
