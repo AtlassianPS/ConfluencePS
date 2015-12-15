@@ -86,7 +86,7 @@ function New-ConfPage {
         # If -Convert is flagged, call Convert-ConfStorageFormat against the -Body
         If ($Convert) {
             Write-Verbose '-Convert flag active; converting content to Confluence storage format'
-            # $Body = Convert-ConfStorageFormat $Body
+            $Body = ConvertTo-ConfStorageFormat -Content $Body
         }
         
         $URI = $BaseURI + '/content'
