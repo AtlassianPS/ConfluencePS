@@ -61,11 +61,11 @@
 
         # URI prep based on specified parameters
         If ($PageID) {
-            $URI = $URI + "/$PageID/?expand=body.view"
+            $URI = $URI + "/$PageID/?expand=body.view,version"
         } ElseIf ($SpaceKey) {
-            $URI = $URI + "?type=page&spaceKey=$SpaceKey&expand=body.view"
+            $URI = $URI + "?type=page&spaceKey=$SpaceKey&expand=body.view,version"
         } Else {
-            $URI = $URI + '?type=page&expand=body.view'
+            $URI = $URI + '?type=page&expand=body.view,version'
         }
 
         # Append the Limit parameter to the URI
@@ -88,6 +88,7 @@
             $Rest | Select @{n='ID';    e={$_.id}},
                            @{n='Title'; e={$_.title}},
                            @{n='Space'; e={$_._expandable.space -replace '/rest/api/space/',''}},
+                           @{n='Ver';   e={$_.version.number}},
                            @{n='Body';  e={$_.body.view.value}}
         } ElseIf ($Title) {
             Write-Verbose "Showing -Title $Title results"
@@ -95,6 +96,7 @@
                 Select @{n='ID';    e={$_.id}},
                        @{n='Title'; e={$_.title}},
                        @{n='Space'; e={$_._expandable.space -replace '/rest/api/space/',''}},
+                       @{n='Ver';   e={$_.version.number}},
                        @{n='Body';  e={$_.body.view.value}}
         } Else {
             Write-Verbose "Showing results"
@@ -102,6 +104,7 @@
                 Select @{n='ID';    e={$_.id}},
                        @{n='Title'; e={$_.title}},
                        @{n='Space'; e={$_._expandable.space -replace '/rest/api/space/',''}},
+                       @{n='Ver';   e={$_.version.number}},
                        @{n='Body';  e={$_.body.view.value}}
         }
     }
