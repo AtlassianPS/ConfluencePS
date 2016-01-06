@@ -37,13 +37,13 @@
         # If one or both are not found, use Get-ConfPage to capture them
         If ((!$CurrentVersion) -or (!$Title)) {
             Write-Verbose "Title and/or version unspecified. Calling Get-ConfPage w/ ID $PageID"
-            $CurrentPage = Get-ConfPage -PageID $PageID
-            [int]$CurrentVersion = $CurrentPage.Ver
+            $CurrentPage = Get-ConfPage -PageID $PageID -Expand
+            [int]$Version = $CurrentPage.Ver
             $Title = $CurrentPage.Title
         }
 
         # The PUT wants new version, not current, so increment by one
-        $Version = $CurrentVersion++
+        $Version++
         
         # If -Convert is flagged, call ConvertTo-ConfStorageFormat against the -Body
         If ($Convert) {
@@ -60,7 +60,6 @@
                                                representation = 'storage'
                                               }
                                   }
-                     # Using [ordered] (requires Posh v3) to ensure -replace below works as desired
                      ancestors = @{id = $ParentID}
                     # Using -Compress to make the -replace below easier
                     } | ConvertTo-Json -Compress
@@ -71,7 +70,7 @@
                 
         Write-Verbose "PUT (edit) to $URI"
         # -WhatIf wrapper
-        If ($PSCmdlet.ShouldProcess("PageID $PageID, Body `n$($Body.Substring(0,100))")) {
+        If ($PSCmdlet.ShouldProcess("PageID $PageID, Body $Body")) {
             $Rest = Invoke-RestMethod -Headers $Header -Uri $URI -Body $Content -Method Put -ContentType 'application/json'
 
             # Hashing everything because I don't like the lower case property names from the REST call
