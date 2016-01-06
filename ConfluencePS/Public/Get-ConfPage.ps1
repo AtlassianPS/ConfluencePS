@@ -122,13 +122,13 @@
             If ($Expand) {
                 $Rest | Select @{n='ID';    e={$_.id}},
                                @{n='Title'; e={$_.title}},
-                               @{n='Space'; e={$_._expandable.space -replace '/rest/api/space/',''}},
+                               @{n='Space'; e={$_.space.key}},
                                @{n='Ver';   e={$_.version.number}},
                                @{n='Body';  e={$_.body.view.value}}
             } Else {
                 $Rest | Select @{n='ID';    e={$_.id}},
                                @{n='Title'; e={$_.title}},
-                               @{n='Space'; e={$_._expandable.space -replace '/rest/api/space/',''}}
+                               @{n='Space'; e={$_.space.key}}
             }
         } ElseIf ($Title) {
             Write-Verbose "Showing -Title $Title results"
