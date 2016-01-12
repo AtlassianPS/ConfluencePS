@@ -131,11 +131,41 @@ InModuleScope ConfluencePS {
     }
 
     Describe 'Get-ConfPageLabel' {
+        It 'Returns expected labels' {
+            $PageID = Get-ConfPage -Title 'pester new page piped' | Select -ExpandProperty ID
 
+            $GetPageLabel1 = Get-ConfPageLabel -PageID $PageID
+            ($GetPageLabel1).Count | Should Be 4
+            ($GetPageLabel1 | Get-Member -MemberType NoteProperty).Count | Should Be 4
+            $GetPageLabel1.Label | Should Match 'pest'
+            $GetPageLabel1.LabelID | Should Not BeNullOrEmpty
+            $GetPageLabel1[0].PageID | Should Be $PageID
+
+            $GetPageLabel2 = Get-ConfPage -SpaceKey PESTER | Sort ID | Get-ConfPageLabel
+            ($GetPageLabel2).Count | Should Be 6
+            ($GetPageLabel2 | Where Label -eq 'pester').Count | Should Be 3
+            ($GetPageLabel2 | Get-Member -MemberType NoteProperty).Count | Should Be 4
+            $GetPageLabel2.Label | Should Match 'pest'
+            $GetPageLabel2.LabelID | Should Not BeNullOrEmpty
+            $GetPageLabel2[1].PageID | Should Be $PageID
+        }
     }
 
     Describe 'Get-ConfLabelApplied' {
+        It 'Returns applications of a label' {
+            $GetApplied1 = Get-ConfLabelApplied -Label pesterc
+            ($GetApplied1 | Get-Member -MemberType NoteProperty).Count | Should Be 3
+            $GetApplied1.ID | Should Not BeNullOrEmpty
+            $GetApplied1.Title | Should BeExactly 'Pester New Page Piped'
+            $GetApplied1.Type | Should BeExactly 'page'
 
+            $GetApplied2 = Get-ConfSpace -Key PESTER | Get-ConfLabelApplied -Label pester | Sort ID
+            ($GetApplied2).Count | Should Be 3
+            ($GetApplied2 | Get-Member -MemberType NoteProperty).Count | Should Be 3
+            $GetApplied2.ID | Should Not BeNullOrEmpty
+            $GetApplied2[2].Title | Should BeExactly 'Pester New Page Orphan'
+            $GetApplied2.Type | Should BeExactly 'page'
+        }
     }
 
     Describe 'Set-ConfPage' {
@@ -143,7 +173,21 @@ InModuleScope ConfluencePS {
     }
 
     Describe 'Remove-ConfLabel' {
+        It 'Removes labels from content' {
+            $PageID = Get-ConfPage -Title 'pester new page piped' | Select -ExpandProperty ID
 
+            Remove-ConfLabel -Label pesterc -PageID $PageID
+
+            $RemoveLabel1 = Get-ConfPage -Title 'pester new page piped' -Limit 200 | Get-ConfPageLabel
+            ($RemoveLabel1).Count | Should Be 3
+
+            Get-ConfLabelApplied -Label pester | Remove-ConfLabel -Label pester
+
+            $RemoveLabel2 = Get-ConfPage -SpaceKey PESTER | Get-ConfPageLabel | Sort ID
+            ($RemoveLabel2).Count | Should Be 2
+            $RemoveLabel2[0].Label | Should Be 'pestera'
+            $RemoveLabel2.PageID | Should Be $PageID
+        }
     }
 
     Describe 'Remove-ConfPage' {
