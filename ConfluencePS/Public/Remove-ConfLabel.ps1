@@ -15,8 +15,8 @@
     The page ID to remove the label from. Accepts multiple IDs via pipeline input.
 
     .EXAMPLE
-    Remove-ConfLabel -Label 7890 -PageID 123456 -Verbose -Confirm
-    Would remove label "7890" from the page with ID 123456.
+    Remove-ConfLabel -Label seven -PageID 123456 -Verbose -Confirm
+    Would remove label "seven" from the page with ID 123456.
     Verbose and Confirm flags both active.
 
     .EXAMPLE
