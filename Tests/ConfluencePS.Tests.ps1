@@ -1,4 +1,4 @@
-﻿# Integration/Acceptance tests to use during module development. Dave Wyatt's five-part series:
+﻿# Pester integration/acceptance tests to use during module development. Dave Wyatt's five-part series:
 # http://blogs.technet.com/b/heyscriptingguy/archive/2015/12/14/what-is-pester-and-why-should-i-care.aspx
 
 Get-Module ConfluencePS | Remove-Module -Force
@@ -209,6 +209,10 @@ InModuleScope ConfluencePS {
     }
 
     Describe 'Remove-ConfSpace' {
+        It 'Removes the test space' {
+            Remove-ConfSpace -Key PESTER
 
+            Get-ConfSpace -Key PESTER | Should BeNullOrEmpty
+        }
     }
 }
