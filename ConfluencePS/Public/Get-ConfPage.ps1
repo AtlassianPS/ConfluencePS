@@ -45,7 +45,7 @@
     Store the page's ID, Title, Space Key, Version, and Body for use later in your script.
 
     .EXAMPLE
-    $WhereIsShe = Get-ConfPage -Title 'Rachel' -Limit 1000 | Select-Object ID | Get-ConfPage -Expand
+    $WhereIsShe = Get-ConfPage -Title 'Rachel' -Limit 1000 | Get-ConfPage -Expand
     Search Batman's 1000 pages for Rachel in order to find the correct page ID(s).
     Search again, this time piping in the page ID(s), to also capture version and body from the expanded results.
     Store them in a variable for later use (e.g. Set-ConfPage).
