@@ -19,19 +19,19 @@ InModuleScope ConfluencePS {
         It 'Returns expected space properties' {
             $GetSpace1 = Get-ConfSpace -Key 'pester'
             ($GetSpace1 | Get-Member -MemberType NoteProperty).Count | Should Be 4
-            $GetSpace1.ID | Should Not BeNullOrEmpty
+            $GetSpace1.SpaceID | Should Not BeNullOrEmpty
             $GetSpace1.Key | Should BeExactly 'PESTER'
             $GetSpace1.Name | Should BeExactly 'Pester Test Space'
 
             $GetSpace2 = Get-ConfSpace -Name 'ter test sp'
             ($GetSpace2 | Get-Member -MemberType NoteProperty).Count | Should Be 4
-            $GetSpace2.ID | Should Not BeNullOrEmpty
+            $GetSpace2.SpaceID | Should Not BeNullOrEmpty
             $GetSpace2.Key | Should BeExactly 'PESTER'
             $GetSpace2.Name | Should BeExactly 'Pester Test Space'
 
-            $GetSpace3 = Get-ConfSpace -ID $GetSpace1.ID
+            $GetSpace3 = Get-ConfSpace -ID $GetSpace1.SpaceID
             ($GetSpace3 | Get-Member -MemberType NoteProperty).Count | Should Be 4
-            $GetSpace3.ID | Should Be $GetSpace2.ID
+            $GetSpace3.SpaceID | Should Be $GetSpace2.SpaceID
             $GetSpace3.Key | Should BeExactly 'PESTER'
             $GetSpace3.Name | Should BeExactly 'Pester Test Space'
         }
