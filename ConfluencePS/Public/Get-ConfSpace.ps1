@@ -61,13 +61,28 @@
         $Rest = Invoke-RestMethod -Headers $Header -Uri $URI -Method Get | Select -ExpandProperty Results | Select Key,Name,ID,Type
 
         If ($ID) {
-            $Rest | Where {$_.ID -eq $ID}
+            $Rest | Where {$_.ID -eq $ID} |
+                Select @{n='Key';     e={$_.key}},
+                       @{n='Name';    e={$_.name}},
+                       @{n='SpaceID'; e={$_.id}},
+                       @{n='Type';    e={$_.type}}
         } ElseIf ($Key) {
-            $Rest | Where {$_.Key -like "*$Key*"} | Sort Key
+            $Rest | Where {$_.Key -like "*$Key*"} | Sort Key |
+                Select @{n='Key';     e={$_.key}},
+                       @{n='Name';    e={$_.name}},
+                       @{n='SpaceID'; e={$_.id}},
+                       @{n='Type';    e={$_.type}}
         } ElseIf ($Name) {
-            $Rest | Where {$_.Name -like "*$Name*"} | Sort Key
+            $Rest | Where {$_.Name -like "*$Name*"} | Sort Key |
+                Select @{n='Key';     e={$_.key}},
+                       @{n='Name';    e={$_.name}},
+                       @{n='SpaceID'; e={$_.id}},
+                       @{n='Type';    e={$_.type}}
         } Else {
-            $Rest
+            $Rest | Select @{n='Key';     e={$_.key}},
+                           @{n='Name';    e={$_.name}},
+                           @{n='SpaceID'; e={$_.id}},
+                           @{n='Type';    e={$_.type}}
         }
     }
 }
