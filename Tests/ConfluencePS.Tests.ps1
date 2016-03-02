@@ -107,6 +107,9 @@ InModuleScope ConfluencePS {
             $GetKey2[0].Space | Should BeExactly 'PESTER'
             $GetKey2[0].Ver | Should Be 1
             $GetKey2[2].Body | Should BeExactly '<p>Hi Pester!</p>'
+
+            $GetSpacePage = Get-ConfSpace -Key PESTER | Get-ConfPage
+            ($GetSpacePage.Count) | Should Be 3
         }
     }
 
