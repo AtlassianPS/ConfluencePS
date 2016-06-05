@@ -23,18 +23,18 @@ ConfluencePS communicates with Atlassian's actively supported [REST API] via bas
     Get-Command -Module ConfluencePS
 
 # Get help
-    Get-Help Set-ConfInfo -Full
+    Get-Help Set-WikiInfo -Full
 	
 # Set your instance's info, so PowerShell knows where to send requests
-# Local installs may be 'http://wiki.mydomain.com', for example, but Atlassian cloud installs need the /wiki
-	Set-ConfInfo -BaseURI 'https://brianbunke.atlassian.net/wiki'
+# Local installs may be 'http://wiki.mydomain.com', for example, but Atlassian cloud installs need the /wiki subdirectory
+	Set-WikiInfo -BaseURI 'https://brianbunke.atlassian.net/wiki'
 # You will then be prompted for your Confluence credentials
 ```
 
 ## Examples
 Not yet included here while the module is still in constant development. In the interim, you can always:
 ```posh
-Get-Help New-ConfLabel -Examples
+Get-Help New-WikiLabel -Examples
 ```
 
 ## Acknowledgments
