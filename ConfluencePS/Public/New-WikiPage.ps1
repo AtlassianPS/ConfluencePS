@@ -1,4 +1,4 @@
-function New-ConfPage {
+function New-WikiPage {
     <#
     .SYNOPSIS
     Create a new page in your Confluence instance.
@@ -21,30 +21,30 @@ function New-ConfPage {
     The contents of your new page. Accepts pipeline input by property name.
 
     .PARAMETER Convert
-    Optional flag to call ConvertTo-ConfStorageFormat against your Body.
+    Optional flag to call ConvertTo-WikiStorageFormat against your Body.
 
     .EXAMPLE
-    New-ConfPage -Title 'Test New Page' -ParentID 123456 -Body '<p>Hello world</p>' -WhatIf
+    New-WikiPage -Title 'Test New Page' -ParentID 123456 -Body '<p>Hello world</p>' -WhatIf
     Creates a new test page (as a child member of existing page 123456) with one line of page text.
-    Automatically finds 123456 in space 'ABC' via Get-ConfPage and applies the key to the REST post.
+    Automatically finds 123456 in space 'ABC' via Get-WikiPage and applies the key to the REST post.
     -WhatIf support, so the page will not actually be created.
 
     .EXAMPLE
-    Get-ConfPage -Title 'Darth Vader' | New-ConfPage -Title 'Luke Skywalker' -Body $Body -Confirm
+    Get-WikiPage -Title 'Darth Vader' | New-WikiPage -Title 'Luke Skywalker' -Body $Body -Confirm
     Searches for pages named *Darth Vader*, pipes page ID and space key. New page is a child of existing page.
     Note that this can grab multiple pages via wildcard matching, potentially attempting multiple posts.
     You will be asked to confirm each creation. Choose wisely.
 
     .EXAMPLE
-    New-ConfPage -Title 'Loner Page' -SpaceKey TEST -Body $Body -Convert -Verbose
+    New-WikiPage -Title 'Loner Page' -SpaceKey TEST -Body $Body -Convert -Verbose
     Creates a new page at the root of the specified space (no parent page). Verbose flag enabled.
     $Body is not yet in Confluence storage format ("XHTML-based"), and needs to be converted.
 
     .LINK
-    Get-ConfPage
+    Get-WikiPage
 
     .LINK
-    ConvertTo-ConfStorageFormat
+    ConvertTo-WikiStorageFormat
 
     .LINK
     https://github.com/brianbunke/ConfluencePS
@@ -72,21 +72,21 @@ function New-ConfPage {
 
     BEGIN {
         If (!($Header) -or !($BaseURI)) {
-            Write-Debug 'URI or authentication not found. Calling Set-ConfInfo'
-            Set-ConfInfo
+            Write-Debug 'URI or authentication not found. Calling Set-WikiInfo'
+            Set-WikiInfo
         }
     }
 
     PROCESS {
         If (($ParentID) -and !($SpaceKey)) {
-            Write-Verbose "SpaceKey not specified. Retrieving from Get-ConfPage -PageID $ParentID"
-            $SpaceKey = Get-ConfPage -PageID $ParentID | Select -ExpandProperty Space
+            Write-Verbose "SpaceKey not specified. Retrieving from Get-WikiPage -PageID $ParentID"
+            $SpaceKey = Get-WikiPage -PageID $ParentID | Select -ExpandProperty Space
         }
 
-        # If -Convert is flagged, call ConvertTo-ConfStorageFormat against the -Body
+        # If -Convert is flagged, call ConvertTo-WikiStorageFormat against the -Body
         If ($Convert) {
             Write-Verbose '-Convert flag active; converting content to Confluence storage format'
-            $Body = ConvertTo-ConfStorageFormat -Content $Body
+            $Body = ConvertTo-WikiStorageFormat -Content $Body
         }
         
         $URI = $BaseURI + '/content'

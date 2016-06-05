@@ -1,4 +1,4 @@
-﻿function Remove-ConfPage {
+﻿function Remove-WikiPage {
     <#
     .SYNOPSIS
     Trash an existing Confluence page.
@@ -12,11 +12,11 @@
     The page ID to delete. Accepts multiple IDs via pipeline input.
 
     .EXAMPLE
-    Get-ConfSpace -Key SESAME | Get-ConfPage -Title Oscar | Remove-ConfPage -Confirm
+    Get-WikiSpace -Key SESAME | Get-WikiPage -Title Oscar | Remove-WikiPage -Confirm
     Send Oscar to the trash. Each matching page will ask you to confirm the deletion.
 
     .EXAMPLE
-    Get-ConfLabelApplied -Label outdated -Limit 100 | Remove-ConfPage -Verbose -WhatIf
+    Get-WikiLabelApplied -Label outdated -Limit 100 | Remove-WikiPage -Verbose -WhatIf
     Find the first 100 content results that are labeled "outdated."
     Would remove each page one by one with verbose output; -WhatIf flag active.
 
@@ -34,8 +34,8 @@
 
     BEGIN {
         If (!($Header) -or !($BaseURI)) {
-            Write-Debug 'URI or authentication not found. Calling Set-ConfInfo'
-            Set-ConfInfo
+            Write-Debug 'URI or authentication not found. Calling Set-WikiInfo'
+            Set-WikiInfo
         }
     }
 

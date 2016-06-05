@@ -1,4 +1,4 @@
-﻿function Get-ConfPageLabel {
+﻿function Get-WikiPageLabel {
     <#
     .SYNOPSIS
     Returns the list of labels on a page.
@@ -14,12 +14,12 @@
     Defaults to 200 max results; can be modified here.
 
     .EXAMPLE
-    Get-ConfPageLabel -PageID 123456 -Limit 500
+    Get-WikiPageLabel -PageID 123456 -Limit 500
     Lists the labels applied to page 123456.
     This also increases the result limit from 200 to 500, in case you love to label.
 
     .EXAMPLE
-    Get-ConfPage -SpaceKey NASA | Get-ConfPageLabel -Verbose
+    Get-WikiPage -SpaceKey NASA | Get-WikiPageLabel -Verbose
     Get all pages that exist in NASA space (literally?).
     Search all of those pages (piped to -PageID) for all of their active labels.
     Verbose flag would be good here to keep track of the request.
@@ -40,8 +40,8 @@
 
     BEGIN {
         If (!($Header) -or !($BaseURI)) {
-            Write-Debug 'URI or authentication not found. Calling Set-ConfInfo'
-            Set-ConfInfo
+            Write-Debug 'URI or authentication not found. Calling Set-WikiInfo'
+            Set-WikiInfo
         }
     }
 

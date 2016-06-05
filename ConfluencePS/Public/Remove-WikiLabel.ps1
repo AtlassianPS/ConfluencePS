@@ -1,11 +1,11 @@
-﻿function Remove-ConfLabel {
+﻿function Remove-WikiLabel {
     <#
     .SYNOPSIS
     Remove a label from existing Confluence content.
 
     .DESCRIPTION
     Remove a single label from Confluence content.
-    Does accept multiple pages piped via Get-ConfPage.
+    Does accept multiple pages piped via Get-WikiPage.
     Specifically tested against pages, but should work against all content IDs.
 
     .PARAMETER Label
@@ -15,14 +15,14 @@
     The page ID to remove the label from. Accepts multiple IDs via pipeline input.
 
     .EXAMPLE
-    Remove-ConfLabel -Label seven -PageID 123456 -Verbose -Confirm
+    Remove-WikiLabel -Label seven -PageID 123456 -Verbose -Confirm
     Would remove label "seven" from the page with ID 123456.
     Verbose and Confirm flags both active.
 
     .EXAMPLE
-    Get-ConfLabelApplied -Label asdf -Limit 100 | Remove-ConfLabel -Label asdf -WhatIf
+    Get-WikiLabelApplied -Label asdf -Limit 100 | Remove-WikiLabel -Label asdf -WhatIf
     Would remove the label "asdf" from all of your Confluence pages. -WhatIf flag supported.
-    This may not remove everything if the max result limit for Get-ConfLabelApplied is reached.
+    This may not remove everything if the max result limit for Get-WikiLabelApplied is reached.
 
     .LINK
     https://github.com/brianbunke/ConfluencePS
@@ -41,8 +41,8 @@
 
     BEGIN {
         If (!($Header) -or !($BaseURI)) {
-            Write-Debug 'URI or authentication not found. Calling Set-ConfInfo'
-            Set-ConfInfo
+            Write-Debug 'URI or authentication not found. Calling Set-WikiInfo'
+            Set-WikiInfo
         }
     }
 

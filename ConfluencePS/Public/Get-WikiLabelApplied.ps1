@@ -1,4 +1,4 @@
-﻿function Get-ConfLabelApplied {
+﻿function Get-WikiLabelApplied {
     <#
     .SYNOPSIS
     Search for a label and get results of where it has been applied.
@@ -18,12 +18,12 @@
     Defaults to 25 max results; can be modified here.
 
     .EXAMPLE
-    Get-ConfLabelApplied -Label blue -Limit 50 -Verbose
+    Get-WikiLabelApplied -Label blue -Limit 50 -Verbose
     Search all content for anything with the "blue" label.
     Results returned will be 50 instead of 25. Verbose flag active.
 
     .EXAMPLE
-    Get-ConfSpace -Name Nintendo | Get-ConfLabelApplied -Label Mario
+    Get-WikiSpace -Name Nintendo | Get-WikiLabelApplied -Label Mario
     For each space matching the name *Nintendo*, find child content labeled "Mario."
     This method pipes the key of the matching space(s) into the -SpaceKey parameter.
 
@@ -45,8 +45,8 @@
 
     BEGIN {
         If (!($Header) -or !($BaseURI)) {
-            Write-Debug 'URI or authentication not found. Calling Set-ConfInfo'
-            Set-ConfInfo
+            Write-Debug 'URI or authentication not found. Calling Set-WikiInfo'
+            Set-WikiInfo
         }
     }
 

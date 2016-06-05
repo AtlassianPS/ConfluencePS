@@ -1,4 +1,4 @@
-﻿function Get-ConfPage {
+﻿function Get-WikiPage {
     <#
     .SYNOPSIS
     Retrieve a listing of pages in your Confluence instance.
@@ -27,28 +27,28 @@
     May negatively affect -Limit, client/server performance, and network bandwidth.
 
     .EXAMPLE
-    Get-ConfPage -Title Confluence -Limit 100
+    Get-WikiPage -Title Confluence -Limit 100
     Get all pages with the word Confluence in the title. Title is not case sensitive.
     Among only the first 100 pages found, returns all results matching *confluence*.
 
     .EXAMPLE
-    Get-ConfPage -Limit 500 | Select-Object ID, Title | Sort-Object Title
+    Get-WikiPage -Limit 500 | Select-Object ID, Title | Sort-Object Title
     List the first 500 pages found in your Confluence instance.
     Returns only each page's ID and Title, sorting results alphabetically by Title.
 
     .EXAMPLE
-    Get-ConfSpace -Name Demo | Get-ConfPage
+    Get-WikiSpace -Name Demo | Get-WikiPage
     Get all spaces with a name like *demo*, and then list pages from each returned space.
 
     .EXAMPLE
-    $FinalCountdown = Get-ConfPage -PageID 54321 -Expand
+    $FinalCountdown = Get-WikiPage -PageID 54321 -Expand
     Store the page's ID, Title, Space Key, Version, and Body for use later in your script.
 
     .EXAMPLE
-    $WhereIsShe = Get-ConfPage -Title 'Rachel' -Limit 1000 | Get-ConfPage -Expand
+    $WhereIsShe = Get-WikiPage -Title 'Rachel' -Limit 1000 | Get-WikiPage -Expand
     Search Batman's 1000 pages for Rachel in order to find the correct page ID(s).
     Search again, this time piping in the page ID(s), to also capture version and body from the expanded results.
-    Store them in a variable for later use (e.g. Set-ConfPage).
+    Store them in a variable for later use (e.g. Set-WikiPage).
 
     .LINK
     https://github.com/brianbunke/ConfluencePS
@@ -73,8 +73,8 @@
 
     BEGIN {
         If (!($Header) -or !($BaseURI)) {
-            Write-Debug 'URI or authentication not found. Calling Set-ConfInfo'
-            Set-ConfInfo
+            Write-Debug 'URI or authentication not found. Calling Set-WikiInfo'
+            Set-WikiInfo
         }
     }
 

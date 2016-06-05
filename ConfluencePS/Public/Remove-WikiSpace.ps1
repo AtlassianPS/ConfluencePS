@@ -1,4 +1,4 @@
-﻿function Remove-ConfSpace {
+﻿function Remove-WikiSpace {
     <#
     .SYNOPSIS
     Remove an existing Confluence space.
@@ -11,11 +11,11 @@
     The key (short code) of the space to delete. Accepts multiple keys via pipeline input.
 
     .EXAMPLE
-    Remove-ConfSpace -Key XYZ -Confirm
+    Remove-WikiSpace -Key XYZ -Confirm
     Delete a space with key XYZ (note that key != name). Confirm will prompt before deletion.
 
     .EXAMPLE
-    Get-ConfSpace -Name ald | Remove-ConfSpace -Verbose -WhatIf
+    Get-WikiSpace -Name ald | Remove-WikiSpace -Verbose -WhatIf
     Get spaces matching '*ald*' (like Reginald and Alderaan), piping them to be deleted.
     Would remove each space one by one with verbose output; -WhatIf flag active.
 
@@ -35,8 +35,8 @@
 
     BEGIN {
         If (!($Header) -or !($BaseURI)) {
-            Write-Debug 'URI or authentication not found. Calling Set-ConfInfo'
-            Set-ConfInfo
+            Write-Debug 'URI or authentication not found. Calling Set-WikiInfo'
+            Set-WikiInfo
         }
     }
 

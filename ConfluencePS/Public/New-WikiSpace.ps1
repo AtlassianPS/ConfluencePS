@@ -1,4 +1,4 @@
-﻿function New-ConfSpace {
+﻿function New-WikiSpace {
     <#
     .SYNOPSIS
     Create a new blank space in your Confluence instance.
@@ -16,11 +16,11 @@
     A short description of the new space.
 
     .EXAMPLE
-    New-ConfSpace -Key 'TEST' -Name 'Test Space'
-    Create the new blank space. Runs Set-ConfInfo first if instance info unknown.
+    New-WikiSpace -Key 'TEST' -Name 'Test Space'
+    Create the new blank space. Runs Set-WikiInfo first if instance info unknown.
 
     .EXAMPLE
-    New-ConfSpace -Key 'TEST' -Name 'Test Space' -Description 'New blank space via REST API' -Verbose
+    New-WikiSpace -Key 'TEST' -Name 'Test Space' -Description 'New blank space via REST API' -Verbose
     Create the new blank space with the optional description and verbose output.
 
     .LINK
@@ -40,8 +40,8 @@
 
     BEGIN {
         If (!($Header) -or !($BaseURI)) {
-            Write-Debug 'URI or authentication not found. Calling Set-ConfInfo'
-            Set-ConfInfo
+            Write-Debug 'URI or authentication not found. Calling Set-WikiInfo'
+            Set-WikiInfo
         }
     }
 

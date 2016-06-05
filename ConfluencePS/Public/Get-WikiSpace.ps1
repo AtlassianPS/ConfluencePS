@@ -1,4 +1,4 @@
-﻿function Get-ConfSpace {
+﻿function Get-WikiSpace {
     <#
     .SYNOPSIS
     Retrieve a listing of spaces in your Confluence instance.
@@ -21,11 +21,11 @@
     Defaults to 25 max results; can be modified here.
 
     .EXAMPLE
-    Get-ConfSpace -ID 123456
+    Get-WikiSpace -ID 123456
     Display the info of the space with ID 123456.
 
     .EXAMPLE
-    Get-ConfSpace -Name test
+    Get-WikiSpace -Name test
     Display all spaces containing 'test' in the name.
 
     .LINK
@@ -45,8 +45,8 @@
 
     BEGIN {
         If (!($Header) -or !($BaseURI)) {
-            Write-Debug 'URI or authentication not found. Calling Set-ConfInfo'
-            Set-ConfInfo
+            Write-Debug 'URI or authentication not found. Calling Set-WikiInfo'
+            Set-WikiInfo
         }
     }
 

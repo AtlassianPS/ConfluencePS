@@ -1,4 +1,4 @@
-﻿function New-ConfLabel {
+﻿function New-WikiLabel {
     <#
     .SYNOPSIS
     Add a new global label to an existing Confluence page.
@@ -13,11 +13,11 @@
     The page ID to apply the label to. Accepts multiple IDs via pipeline input.
 
     .EXAMPLE
-    New-ConfLabel -Label alpha,bravo,charlie -PageID 123456 -Verbose
+    New-WikiLabel -Label alpha,bravo,charlie -PageID 123456 -Verbose
     Apply the labels alpha, bravo, and charlie to the page with ID 123456. Verbose output.
 
     .EXAMPLE
-    Get-ConfPage -SpaceKey SRV | New-ConfLabel -Label servers -WhatIf
+    Get-WikiPage -SpaceKey SRV | New-WikiLabel -Label servers -WhatIf
     Would apply the label "servers" to all pages in the space with key SRV. -WhatIf flag supported.
 
     .LINK
@@ -37,8 +37,8 @@
 
     BEGIN {
         If (!($Header) -or !($BaseURI)) {
-            Write-Debug 'URI or authentication not found. Calling Set-ConfInfo'
-            Set-ConfInfo
+            Write-Debug 'URI or authentication not found. Calling Set-WikiInfo'
+            Set-WikiInfo
         }
     }
 

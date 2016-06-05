@@ -1,4 +1,4 @@
-﻿function Set-ConfInfo {
+﻿function Set-WikiInfo {
     <#
     .SYNOPSIS
     Gather URI/auth info for use in this session's REST API requests.
@@ -15,7 +15,7 @@
     The username/password combo you use to log in to Confluence.
 
     .EXAMPLE
-    Set-ConfInfo -BaseURI 'https://brianbunke.atlassian.net/wiki'
+    Set-WikiInfo -BaseURI 'https://brianbunke.atlassian.net/wiki'
     Declare your base install; be prompted for username and password.
     Stored in script-scope variables $BaseURI and $Header.
     

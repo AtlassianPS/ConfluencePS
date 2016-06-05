@@ -1,11 +1,11 @@
-﻿function ConvertTo-ConfTable {
+﻿function ConvertTo-WikiTable {
     <#
     .SYNOPSIS
     Convert your content to Confluence's wiki markup table format.
 
     .DESCRIPTION
     Formats input as a table with a horizontal header row.
-    This wiki formatting is an intermediate step, and would still need ConvertTo-ConfStorageFormat called against it.
+    This wiki formatting is an intermediate step, and would still need ConvertTo-WikiStorageFormat called against it.
     This work is performed locally, and does not perform a REST call.
 
     .NOTES
@@ -18,11 +18,11 @@
     Ignore the property names, and just have a table of values with no header row highlighting.
 
     .EXAMPLE
-    $Services = Get-Service | Select Name,DisplayName,Status -First 10 | ConvertTo-ConfTable
+    $Services = Get-Service | Select Name,DisplayName,Status -First 10 | ConvertTo-WikiTable
     List the first ten services on your computer, convert to a Confluence table, and store in $Services for future use.
 
     .EXAMPLE
-    Get-Alias | Where {$_.Name.Length -eq 1} | Select CommandType,DisplayName | ConvertTo-ConfTable -NoHeader
+    Get-Alias | Where {$_.Name.Length -eq 1} | Select CommandType,DisplayName | ConvertTo-WikiTable -NoHeader
     Make a table of all the one-character PowerShell aliases, and don't include the header row.
 
     .LINK
