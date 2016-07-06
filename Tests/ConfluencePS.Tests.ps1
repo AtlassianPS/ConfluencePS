@@ -5,6 +5,15 @@ Get-Module ConfluencePS | Remove-Module -Force
 Import-Module .\ConfluencePS -Force
 
 InModuleScope ConfluencePS {
+    Describe 'Set-WikiInfo' {
+        It 'Connects successfully by using environment variables' {
+            # Could be a long one-liner, but breaking down for readability
+            $Pass = ConvertTo-SecureString -AsPlainText -Force -String $env:WikiPass
+            $Cred = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList ($env:WikiUser, $Pass)
+            Set-WikiInfo -BaseURI $env:WikiURI -Credential $Cred
+        }
+    }
+
     Describe 'New-WikiSpace' {
         It 'Creates a new space' {
             $NewSpace = New-WikiSpace -Key 'PESTER' -Name 'Pester Test Space'
