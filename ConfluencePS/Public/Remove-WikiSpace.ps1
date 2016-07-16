@@ -7,9 +7,6 @@
     Delete an existing Confluence space, including child content.
     "The space is deleted in a long running task, so the space cannot be considered deleted when this resource returns."
 
-    .PARAMETER Key
-    The key (short code) of the space to delete. Accepts multiple keys via pipeline input.
-
     .EXAMPLE
     Remove-WikiSpace -Key XYZ -Confirm
     Delete a space with key XYZ (note that key != name). Confirm will prompt before deletion.
@@ -24,10 +21,11 @@
     #>
     [CmdletBinding(SupportsShouldProcess=$true,ConfirmImpact='Medium')]
     param (
-		[Parameter(Mandatory = $true,
-                   ValueFromPipeline = $true,
-                   ValueFromPipelineByPropertyName = $true)]
-		[Alias('SpaceKey')]
+        # The key (short code) of the space to delete. Accepts multiple keys via pipeline input.
+        [Parameter(Mandatory = $true,
+                    ValueFromPipeline = $true,
+                    ValueFromPipelineByPropertyName = $true)]
+        [Alias('SpaceKey')]
         [string]$Key
 
         # Probably an extra param later to loop checking the status & wait for completion?

@@ -11,12 +11,6 @@
     .NOTES
     Basically stolen verbatim from thomykay's PoshConfluence SOAP API module. See link below.
 
-    .PARAMETER Content
-    Object array you would like to see displayed as a table on a wiki page.
-
-    .PARAMETER NoHeader
-    Ignore the property names, and just have a table of values with no header row highlighting.
-
     .EXAMPLE
     $Services = Get-Service | Select Name,DisplayName,Status -First 10 | ConvertTo-WikiTable
     List the first ten services on your computer, convert to a Confluence table, and store in $Services for future use.
@@ -33,9 +27,11 @@
     #>
     [CmdletBinding()]
     param (
-		[Parameter(Mandatory=$true, ValueFromPipeline = $true)]
-		$Content,
+        # Object array you would like to see displayed as a table on a wiki page.
+        [Parameter(Mandatory=$true, ValueFromPipeline = $true)]
+        $Content,
 
+        # Ignore the property names, and just have a table of values with no header row highlighting.
         [switch]$NoHeader
     )
 

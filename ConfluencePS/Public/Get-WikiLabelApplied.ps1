@@ -7,16 +7,6 @@
     View pages, blogposts, etc. with the specified label. Optionally filter by space.
     Leverages the Confluence Query Language against the /search resource.
 
-    .PARAMETER Label
-    Name the label to filter by.
-    Currently accepts only one label; input is not case sensitive.
-
-    .PARAMETER SpaceKey
-    Optionally filter results by space key. Accepts pipeline input.
-
-    .PARAMETER Limit
-    Defaults to 25 max results; can be modified here.
-
     .EXAMPLE
     Get-WikiLabelApplied -Label blue -Limit 50 -Verbose
     Search all content for anything with the "blue" label.
@@ -32,14 +22,18 @@
     #>
 	[CmdletBinding()]
 	param (
-		[Parameter(Mandatory = $true)]
+        # Name the label to filter by.
+        # Currently accepts only one label; input is not case sensitive.
+        [Parameter(Mandatory = $true)]
         [string]$Label,
 
-		[Parameter(ValueFromPipeline = $true,
-                   ValueFromPipelineByPropertyName = $true)]
+        # Optionally filter results by space key. Accepts pipeline input.
+        [Parameter(ValueFromPipeline = $true,
+                    ValueFromPipelineByPropertyName = $true)]
         [Alias('Key')]
         [string]$SpaceKey,
 
+        # Defaults to 25 max results; can be modified here.
         [int]$Limit
     )
 

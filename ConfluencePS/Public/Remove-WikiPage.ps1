@@ -8,9 +8,6 @@
     This trashes most content, but will permanently delete "un-trashable" content.
     Untested against non-page content, but probably works anyway.
 
-    .PARAMETER PageID
-    The page ID to delete. Accepts multiple IDs via pipeline input.
-
     .EXAMPLE
     Get-WikiSpace -Key SESAME | Get-WikiPage -Title Oscar | Remove-WikiPage -Confirm
     Send Oscar to the trash. Each matching page will ask you to confirm the deletion.
@@ -25,10 +22,11 @@
     #>
     [CmdletBinding(SupportsShouldProcess=$true,ConfirmImpact='Medium')]
     param (
-		[Parameter(Mandatory = $true,
-                   ValueFromPipeline = $true,
-                   ValueFromPipelineByPropertyName = $true)]
-		[Alias('ID')]
+        # The page ID to delete. Accepts multiple IDs via pipeline input.
+        [Parameter(Mandatory = $true,
+                    ValueFromPipeline = $true,
+                    ValueFromPipelineByPropertyName = $true)]
+        [Alias('ID')]
         [int]$PageID
     )
 

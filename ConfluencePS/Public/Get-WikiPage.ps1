@@ -7,25 +7,6 @@
     Fetch Confluence pages, optionally filtering by Name/Space/ID.
     Piped output into other cmdlets is generally tested and supported.
 
-    .PARAMETER Title
-    Filter results by name. Supports wildcard matching on partial names.
-    Filtering happens via Where-Object (after the REST call) for case insensitivity.
-
-    .PARAMETER PageID
-    Filter results by page ID.
-    Best option if you already know the ID, as it bypasses result limit problems.
-
-    .PARAMETER SpaceKey
-    Filter results by key. Currently, this parameter is case sensitive.
-
-    .PARAMETER Limit
-    Defaults to 25 max results; can be modified here.
-    Numbers above 100 may not be honored if -Expand is used.
-
-    .PARAMETER Expand
-    Additionally returns expanded results for each page (body, version, etc.).
-    May negatively affect -Limit, client/server performance, and network bandwidth.
-
     .EXAMPLE
     Get-WikiPage -Title Confluence -Limit 100
     Get all pages with the word Confluence in the title. Title is not case sensitive.
@@ -55,19 +36,28 @@
     #>
 	[CmdletBinding()]
 	param (
+        # Filter results by name. Supports wildcard matching on partial names.
+        # Filtering happens via Where-Object (after the REST call) for case insensitivity.
         [Alias('Name')]
         [string]$Title,
 
-		[Parameter(ValueFromPipelineByPropertyName = $true)]
+        # Filter results by page ID.
+        # Best option if you already know the ID, as it bypasses result limit problems.
+        [Parameter(ValueFromPipelineByPropertyName = $true)]
         [Alias('ID')]
         [int]$PageID,
 
-		[Parameter(ValueFromPipelineByPropertyName = $true)]
+        # Filter results by key. Currently, this parameter is case sensitive.
+        [Parameter(ValueFromPipelineByPropertyName = $true)]
         [Alias('Space','Key')]
         [string]$SpaceKey,
 
+        # Defaults to 25 max results; can be modified here.
+        # Numbers above 100 may not be honored if -Expand is used.
         [int]$Limit,
 
+        # Additionally returns expanded results for each page (body, version, etc.).
+        # May negatively affect -Limit, client/server performance, and network bandwidth.
         [switch]$Expand
     )
 

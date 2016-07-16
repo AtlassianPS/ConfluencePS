@@ -7,22 +7,6 @@ function New-WikiPage {
     Create a new page in Confluence. Optionally include content in -Body.
     Content needs to be in "Confluence storage format;" see also -Convert.
 
-    .PARAMETER Title
-    Name of your new page.
-
-    .PARAMETER ParentID
-    The ID of the parent page. Accepts pipeline input by value/name.
-    NOTE: This feature is not in the 5.8 REST API documentation, and should be considered experimental.
-
-    .PARAMETER SpaceKey
-    Key of the space where the new page should exist. Only needed if you don't utilize ParentID.
-
-    .PARAMETER Body
-    The contents of your new page. Accepts pipeline input by property name.
-
-    .PARAMETER Convert
-    Optional flag to call ConvertTo-WikiStorageFormat against your Body.
-
     .EXAMPLE
     New-WikiPage -Title 'Test New Page' -ParentID 123456 -Body '<p>Hello world</p>' -WhatIf
     Creates a new test page (as a child member of existing page 123456) with one line of page text.
@@ -51,22 +35,28 @@ function New-WikiPage {
     #>
     [CmdletBinding(SupportsShouldProcess=$true,ConfirmImpact='Medium')]
     param (
-		[Parameter(Mandatory = $true)]
-		[Alias('Name')]
-		[string]$Title,
+        # Name of your new page.
+        [Parameter(Mandatory = $true)]
+        [Alias('Name')]
+        [string]$Title,
 
-		[Parameter(ValueFromPipeline = $true,
-                   ValueFromPipelineByPropertyName = $true)]
-		[Alias('ID')]
+        # The ID of the parent page. Accepts pipeline input by value/name.
+        # NOTE: This feature is not in the 5.8 REST API documentation, and should be considered experimental.
+        [Parameter(ValueFromPipeline = $true,
+                    ValueFromPipelineByPropertyName = $true)]
+        [Alias('ID')]
         [int]$ParentID,
 
-		[Parameter(ValueFromPipelineByPropertyName = $true)]
-		[Alias('Space','Key')]
-		[string]$SpaceKey,
+        # Key of the space where the new page should exist. Only needed if you don't utilize ParentID.
+        [Parameter(ValueFromPipelineByPropertyName = $true)]
+        [Alias('Space','Key')]
+        [string]$SpaceKey,
 
-		[Parameter(ValueFromPipelineByPropertyName = $true)]
-		[string]$Body,
+        # The contents of your new page. Accepts pipeline input by property name.
+        [Parameter(ValueFromPipelineByPropertyName = $true)]
+        [string]$Body,
 
+        # Optional flag to call ConvertTo-WikiStorageFormat against your Body.
         [switch]$Convert
     )
 

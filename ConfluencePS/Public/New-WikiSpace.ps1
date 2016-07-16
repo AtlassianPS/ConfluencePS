@@ -6,15 +6,6 @@
     .DESCRIPTION
     Create a new blank space. Key and Name mandatory, Description recommended.
 
-    .PARAMETER Key
-    Specify the short key to be used in the space URI.
-
-    .PARAMETER Name
-    Specify the space's name.
-
-    .PARAMETER Description
-    A short description of the new space.
-
     .EXAMPLE
     New-WikiSpace -Key 'TEST' -Name 'Test Space'
     Create the new blank space. Runs Set-WikiInfo first if instance info unknown.
@@ -28,14 +19,17 @@
     #>
     [CmdletBinding(SupportsShouldProcess=$true,ConfirmImpact='Medium')]
     param (
-		[Parameter(Mandatory = $true)]
-		[Alias('SpaceKey')]
-		[string]$Key,
+        # Specify the short key to be used in the space URI.
+        [Parameter(Mandatory = $true)]
+        [Alias('SpaceKey')]
+        [string]$Key,
 
-		[Parameter(Mandatory = $true)]
-		[string]$Name,
+        # Specify the space's name.
+        [Parameter(Mandatory = $true)]
+        [string]$Name,
 
-		[string]$Description
+        # A short description of the new space.
+        [string]$Description
     )
 
     BEGIN {

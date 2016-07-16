@@ -7,12 +7,6 @@
     View all labels applied to a page (specified by PageID).
     Currently accepts multiple pages only via piped input.
 
-    .PARAMETER PageID
-    List the PageID number to check for labels. Accepts piped input.
-
-    .PARAMETER Limit
-    Defaults to 200 max results; can be modified here.
-
     .EXAMPLE
     Get-WikiPageLabel -PageID 123456 -Limit 500
     Lists the labels applied to page 123456.
@@ -29,12 +23,14 @@
     #>
 	[CmdletBinding()]
 	param (
-		[Parameter(Mandatory = $true,
-                   ValueFromPipeline = $true,
-                   ValueFromPipelineByPropertyName = $true)]
+        # List the PageID number to check for labels. Accepts piped input.
+        [Parameter(Mandatory = $true,
+                    ValueFromPipeline = $true,
+                    ValueFromPipelineByPropertyName = $true)]
         [Alias('ID')]
         [int]$PageID,
 
+        # Defaults to 200 max results; can be modified here.
         [int]$Limit
     )
 

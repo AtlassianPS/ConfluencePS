@@ -8,9 +8,6 @@
     Invokes a POST call to convert from a "wiki" representation, receiving a "storage" response.
     https://confluence.atlassian.com/doc/confluence-storage-format-790796544.html
 
-    .PARAMETER Content
-    A string (in plain text and/or wiki markup) to be converted to storage format.
-
     .EXAMPLE
     $Body = ConvertTo-WikiStorageFormat -Content 'Hello world!'
     Stores the returned value '<p>Hello world!</p>' in $Body for use in New-WikiPage/Set-WikiPage/etc.
@@ -32,8 +29,9 @@
     #>
     [CmdletBinding()]
     param (
-		[Parameter(Mandatory=$true, ValueFromPipeline = $true)]
-		[string]$Content
+        # A string (in plain text and/or wiki markup) to be converted to storage format.
+        [Parameter(Mandatory=$true, ValueFromPipeline = $true)]
+        [string]$Content
     )
 
     BEGIN {

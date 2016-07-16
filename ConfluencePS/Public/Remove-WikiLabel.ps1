@@ -8,12 +8,6 @@
     Does accept multiple pages piped via Get-WikiPage.
     Specifically tested against pages, but should work against all content IDs.
 
-    .PARAMETER Label
-    A single content label to remove from one or more pages.
-
-    .PARAMETER PageID
-    The page ID to remove the label from. Accepts multiple IDs via pipeline input.
-
     .EXAMPLE
     Remove-WikiLabel -Label seven -PageID 123456 -Verbose -Confirm
     Would remove label "seven" from the page with ID 123456.
@@ -29,13 +23,15 @@
     #>
     [CmdletBinding(SupportsShouldProcess=$true,ConfirmImpact='Medium')]
     param (
-		[Parameter(Mandatory = $true)]
+        # A single content label to remove from one or more pages.
+        [Parameter(Mandatory = $true)]
         [string]$Label,
 
-		[Parameter(Mandatory = $true,
-                   ValueFromPipeline = $true,
-                   ValueFromPipelineByPropertyName = $true)]
-		[Alias('ID')]
+        # The page ID to remove the label from. Accepts multiple IDs via pipeline input.
+        [Parameter(Mandatory = $true,
+                    ValueFromPipeline = $true,
+                    ValueFromPipelineByPropertyName = $true)]
+        [Alias('ID')]
         [int]$PageID
     )
 

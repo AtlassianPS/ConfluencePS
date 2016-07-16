@@ -6,12 +6,6 @@
     .DESCRIPTION
     Add one or more labels to one or more Confluence pages. Label can be brand new.
 
-    .PARAMETER Label
-    One or more labels to be added. Currently supports labels of prefix "global."
-
-    .PARAMETER PageID
-    The page ID to apply the label to. Accepts multiple IDs via pipeline input.
-
     .EXAMPLE
     New-WikiLabel -Label alpha,bravo,charlie -PageID 123456 -Verbose
     Apply the labels alpha, bravo, and charlie to the page with ID 123456. Verbose output.
@@ -25,13 +19,15 @@
     #>
     [CmdletBinding(SupportsShouldProcess=$true,ConfirmImpact='Medium')]
     param (
-		[Parameter(Mandatory = $true)]
+        # One or more labels to be added. Currently supports labels of prefix "global."
+        [Parameter(Mandatory = $true)]
         [string[]]$Label,
 
-		[Parameter(Mandatory = $true,
-                   ValueFromPipeline = $true,
-                   ValueFromPipelineByPropertyName = $true)]
-		[Alias('ID')]
+        # The page ID to apply the label to. Accepts multiple IDs via pipeline input.
+        [Parameter(Mandatory = $true,
+                    ValueFromPipeline = $true,
+                    ValueFromPipelineByPropertyName = $true)]
+        [Alias('ID')]
         [int]$PageID
     )
 

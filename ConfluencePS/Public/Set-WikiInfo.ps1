@@ -4,15 +4,9 @@
     Gather URI/auth info for use in this session's REST API requests.
 
     .DESCRIPTION
-    Anonymous access to the Confluence REST API is disabled by default.
-    Unless manually enabled, you will need to pass authorization in all interactions.
+    Unless allowing anonymous access to your instance, credentials are needed.
+    Confluence REST API supports passing basic authentication in headers.
     (If you have a better suggestion for how to handle this, please reach out on GitHub!)
-
-    .PARAMETER BaseURI
-    Address of your base Confluence install. For Atlassian "On-Demand" (cloud-hosted) instances, include /wiki.
-
-    .PARAMETER Credential
-    The username/password combo you use to log in to Confluence.
 
     .EXAMPLE
     Set-WikiInfo -BaseURI 'https://brianbunke.atlassian.net/wiki'
@@ -30,11 +24,13 @@
     #>
 	[CmdletBinding()]
 	param (
-	    [Parameter(Mandatory = $true,
-                   HelpMessage = 'Example = https://brianbunke.atlassian.net/wiki (/wiki for On-Demand instances)')]
+        # Address of your base Confluence install. For Atlassian "On-Demand" (cloud-hosted) instances, include /wiki.
+        [Parameter(Mandatory = $true,
+                    HelpMessage = 'Example = https://brianbunke.atlassian.net/wiki (/wiki for On-Demand instances)')]
         [Uri]$BaseURI,
 
-	    [ValidateNotNullorEmpty()]
+        # The username/password combo you use to log in to Confluence.
+        [ValidateNotNullorEmpty()]
         $Credential = (Get-Credential)
     )
 

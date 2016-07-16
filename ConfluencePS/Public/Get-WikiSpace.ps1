@@ -8,18 +8,6 @@
     Input for all parameters is not case sensitive.
     Piped output into other cmdlets is generally tested and supported.
 
-    .PARAMETER Name
-    Filter results by name. Supports wildcard matching on partial input.
-
-    .PARAMETER Key
-    Filter results by key. Supports wildcard matching on partial input.
-
-    .PARAMETER ID
-    Filter results by ID.
-
-    .PARAMETER Limit
-    Defaults to 25 max results; can be modified here.
-
     .EXAMPLE
     Get-WikiSpace -ID 123456
     Display the info of the space with ID 123456.
@@ -33,13 +21,17 @@
     #>
 	[CmdletBinding()]
 	param (
+        # Filter results by name. Supports wildcard matching on partial input.
         [string]$Name,
 
+        # Filter results by key. Supports wildcard matching on partial input.
         [Alias('SpaceKey')]
         [string]$Key,
 
+        # Filter results by ID.
         [int]$ID,
 
+        # Defaults to 25 max results; can be modified here.
         [int]$Limit
     )
 

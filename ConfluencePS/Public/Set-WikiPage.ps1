@@ -7,32 +7,6 @@
     For existing page(s): Edit page content, page title, and/or change parent page.
     Content needs to be in "Confluence storage format." Use -Convert if not preconditioned.
 
-    .PARAMETER PageID
-    The ID of the page to edit. Accepts pipeline input by value/name. Mandatory.
-
-    .PARAMETER Title
-    Name of the page; existing or new value can be used.
-    Existing will be automatically supplied via Get-WikiPage if not manually included.
-    Accepts pipeline input by property name.
-
-    .PARAMETER CurrentVersion
-    The current version of the page; will be incremented upon successful edit.
-    Will be automatically supplied via Get-WikiPage if not manually included.
-    Accepts pipeline input by property name.
-
-    .PARAMETER Body
-    The full contents of the updated body (existing contents will be overwritten).
-    If not yet in "storage format"--or you don't know what that is--also use -Convert.
-    Mandatory. Current content may be piped in for no cosmetic change, if changing title or parent.
-    Accepts pipeline input by property name.
-    
-    .PARAMETER Convert
-    Optional switch flag for calling ConvertTo-WikiStorageFormat against your Body.
-
-    .PARAMETER ParentID
-    Optionally define a new parent page. If unspecified, no change.
-    Accepts pipeline input by property name.
-
     .EXAMPLE
     Get-WikiPage -Title 'My First Page' -Expand | Set-WikiPage -Body 'Hello World!' -Convert
     Probably the easiest edit method, overwriting contents with a short sentence.
@@ -68,25 +42,39 @@
     #>
     [CmdletBinding(SupportsShouldProcess=$true,ConfirmImpact='Medium')]
     param (
-		[Parameter(Mandatory = $true,
-                   ValueFromPipeline = $true,
-                   ValueFromPipelineByPropertyName = $true)]
-		[Alias('ID')]
+        # The ID of the page to edit. Accepts pipeline input by value/name. Mandatory.
+        [Parameter(Mandatory = $true,
+                    ValueFromPipeline = $true,
+                    ValueFromPipelineByPropertyName = $true)]
+        [Alias('ID')]
         [int]$PageID,
 
-		[Parameter(ValueFromPipelineByPropertyName = $true)]
-		[string]$Title,
+        # Name of the page; existing or new value can be used.
+        # Existing will be automatically supplied via Get-WikiPage if not manually included.
+        # Accepts pipeline input by property name.
+        [Parameter(ValueFromPipelineByPropertyName = $true)]
+        [string]$Title,
 
-		[Parameter(ValueFromPipelineByPropertyName = $true)]
-		[int]$CurrentVersion,
+        # The current version of the page; will be incremented upon successful edit.
+        # Will be automatically supplied via Get-WikiPage if not manually included.
+        # Accepts pipeline input by property name.
+        [Parameter(ValueFromPipelineByPropertyName = $true)]
+        [int]$CurrentVersion,
 
-		[Parameter(Mandatory = $true,
-                   ValueFromPipelineByPropertyName = $true)]
-		[string]$Body,
+        # The full contents of the updated body (existing contents will be overwritten).
+        # If not yet in "storage format"--or you don't know what that is--also use -Convert.
+        # Mandatory. Current content may be piped in for no cosmetic change, if changing title or parent.
+        # Accepts pipeline input by property name.
+        [Parameter(Mandatory = $true,
+                    ValueFromPipelineByPropertyName = $true)]
+        [string]$Body,
 
+        # Optional switch flag for calling ConvertTo-WikiStorageFormat against your Body.
         [switch]$Convert,
 
-		[Parameter(ValueFromPipelineByPropertyName = $true)]
+        # Optionally define a new parent page. If unspecified, no change.
+        # Accepts pipeline input by property name.
+        [Parameter(ValueFromPipelineByPropertyName = $true)]
         [int]$ParentID
     )
 
