@@ -12,12 +12,20 @@
     Basically stolen verbatim from thomykay's PoshConfluence SOAP API module. See link below.
 
     .EXAMPLE
-    $Services = Get-Service | Select Name,DisplayName,Status -First 10 | ConvertTo-WikiTable
-    List the first ten services on your computer, convert to a Confluence table, and store in $Services for future use.
+    Get-Service | Select Name,DisplayName,Status -First 10 | ConvertTo-WikiTable
+    List the first ten services on your computer, and convert to a table in Confluence markup format.
+
+    .EXAMPLE
+    $SvcTable = Get-Service | Select Name,Status -First 10 | ConvertTo-WikiTable | ConvertTo-WikiStorageFormat
+    Following Example 1, convert the table from wiki markup format into storage format.
+    Store the results in variable $SvcTable for a later New-WikiPage/Set-WikiPage command.
 
     .EXAMPLE
     Get-Alias | Where {$_.Name.Length -eq 1} | Select CommandType,DisplayName | ConvertTo-WikiTable -NoHeader
     Make a table of all the one-character PowerShell aliases, and don't include the header row.
+
+    .OUTPUTS
+    System.String
 
     .LINK
     https://github.com/brianbunke/ConfluencePS
@@ -36,6 +44,7 @@
     )
 
     BEGIN {
+        $RowArray = New-Object System.Collections.ArrayList
     }
 
     PROCESS {
@@ -47,12 +56,22 @@
         $Content | ForEach-Object {
             # First row enclosed by ||, all other rows by |
             If (!$HeaderGenerated) {
-		        $_.PSObject.Properties | ForEach-Object -Begin {$Header = ""} -Process {$Header += "||$($_.Name)"} -End {$Header += "||"}
-                $Header
+		        $_.PSObject.Properties |
+                    ForEach-Object -Begin   {$Header = ""} `
+                                   -Process {$Header += "||$($_.Name)"} `
+                                   -End     {$Header += "||"}
+                $RowArray.Add($Header) | Out-Null
                 $HeaderGenerated = $true
             }
-		    $_.PSObject.Properties | ForEach-Object -Begin {$Row = ""} -Process {$Row += "|$($_.Value)"} -End {$Row += "|"}
-            $Row
+		    $_.PSObject.Properties |
+                ForEach-Object -Begin   {$Row = ""} `
+                               -Process {$Row += "|$($_.Value)"} `
+                               -End     {$Row += "|"}
+            $RowArray.Add($Row) | Out-Null
         }
+    }
+
+    END {
+        $RowArray | Out-String
     }
 }
