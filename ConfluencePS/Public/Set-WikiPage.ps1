@@ -47,6 +47,7 @@
                     ValueFromPipeline = $true,
                     ValueFromPipelineByPropertyName = $true)]
         [Alias('ID')]
+        [ValidateRange(1,[int]::MaxValue)]
         [int]$PageID,
 
         # Name of the page; existing or new value can be used.
@@ -59,6 +60,7 @@
         # Will be automatically supplied via Get-WikiPage if not manually included.
         # Accepts pipeline input by property name.
         [Parameter(ValueFromPipelineByPropertyName = $true)]
+        [ValidateRange(1,[int]::MaxValue)]
         [int]$CurrentVersion,
 
         # The full contents of the updated body (existing contents will be overwritten).
@@ -75,6 +77,7 @@
         # Optionally define a new parent page. If unspecified, no change.
         # Accepts pipeline input by property name.
         [Parameter(ValueFromPipelineByPropertyName = $true)]
+        [ValidateRange(1,[int]::MaxValue)]
         [int]$ParentID
     )
 

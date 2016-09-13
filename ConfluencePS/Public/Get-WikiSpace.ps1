@@ -29,9 +29,11 @@
         [string]$Key,
 
         # Filter results by ID.
+        [ValidateRange(1,[int]::MaxValue)]
         [int]$ID,
 
         # Defaults to 25 max results; can be modified here.
+        [ValidateRange(1,[int]::MaxValue)]
         [int]$Limit
     )
 

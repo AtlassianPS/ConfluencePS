@@ -45,6 +45,7 @@
         # Best option if you already know the ID, as it bypasses result limit problems.
         [Parameter(ValueFromPipelineByPropertyName = $true)]
         [Alias('ID')]
+        [ValidateRange(1,[int]::MaxValue)]
         [int]$PageID,
 
         # Filter results by key. Currently, this parameter is case sensitive.
@@ -54,6 +55,7 @@
 
         # Defaults to 25 max results; can be modified here.
         # Numbers above 100 may not be honored if -Expand is used.
+        [ValidateRange(1,[int]::MaxValue)]
         [int]$Limit,
 
         # Additionally returns expanded results for each page (body, version, etc.).

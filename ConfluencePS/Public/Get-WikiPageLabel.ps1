@@ -28,9 +28,11 @@
                     ValueFromPipeline = $true,
                     ValueFromPipelineByPropertyName = $true)]
         [Alias('ID')]
+        [ValidateRange(1,[int]::MaxValue)]
         [int]$PageID,
 
         # Defaults to 200 max results; can be modified here.
+        [ValidateRange(1,[int]::MaxValue)]
         [int]$Limit
     )
 

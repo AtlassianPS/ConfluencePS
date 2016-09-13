@@ -45,6 +45,7 @@ function New-WikiPage {
         [Parameter(ValueFromPipeline = $true,
                     ValueFromPipelineByPropertyName = $true)]
         [Alias('ID')]
+        [ValidateRange(1,[int]::MaxValue)]
         [int]$ParentID,
 
         # Key of the space where the new page should exist. Only needed if you don't utilize ParentID.
