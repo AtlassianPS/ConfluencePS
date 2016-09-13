@@ -23,7 +23,7 @@ ConfluencePS communicates with Atlassian's actively supported [REST API] via bas
     Get-Command -Module ConfluencePS
 
 # Get help
-    Get-Help Set-WikiInfo -Full
+    Get-Help about_ConfluencePS
 	
 # Set your instance's info, so PowerShell knows where to send requests
 # Local installs may be 'http://wiki.mydomain.com', for example, but Atlassian cloud installs need the /wiki subdirectory
@@ -42,10 +42,13 @@ Many thanks to thomykay for his [PoshConfluence] SOAP API module, which gave me 
 
 I ~~stole~~ repurposed much of RamblingCookieMonster's example module, [PSStackExchange], which was a huge help in standing up everything correctly.
 
+June Blender has a wealth of information on the right way to supply module help. [Check this out] for starters.
+
   [Confluence]: <https://www.atlassian.com/software/confluence>
   [REST API]: <https://docs.atlassian.com/atlassian-confluence/REST/latest/>
   [PoshConfluence]: <https://github.com/thomykay/PoshConfluence>
   [PSStackExchange]: <https://github.com/RamblingCookieMonster/PSStackExchange>
+  [Check this out]: <https://github.com/juneb/PowerShellHelpDeepDive>
 
 [//]: # (Sweet online markdown editor at http://dillinger.io)
 [//]: # ("GitHub Flavored Markdown" https://help.github.com/articles/github-flavored-markdown/)
