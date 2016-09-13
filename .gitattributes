@@ -1,2 +1,2 @@
 # Show psd1 changes
-*.psd1 diff
+*.psd1 text=auto
