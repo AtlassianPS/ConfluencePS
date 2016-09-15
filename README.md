@@ -1,3 +1,5 @@
+[![Build status](https://ci.appveyor.com/api/projects/status/jcyw4oxnpqp3djtn?svg=true)](https://ci.appveyor.com/project/brianbunke/confluenceps)
+
 # ConfluencePS
 A PowerShell module that interacts with Atlassian's [Confluence] wiki product.
 
@@ -38,16 +40,19 @@ Get-Help New-WikiLabel -Examples
 ```
 
 ## Acknowledgments
-Many thanks to thomykay for his [PoshConfluence] SOAP API module, which gave me enough of a starting point to feel comfortable undertaking this project.
+Many thanks to [thomykay] for his [PoshConfluence] SOAP API module, which gave me enough of a starting point to feel comfortable undertaking this project.
 
-I ~~stole~~ repurposed much of RamblingCookieMonster's example module, [PSStackExchange], which was a huge help in standing up everything correctly.
+I ~~stole~~ repurposed much of [RamblingCookieMonster]'s example module, [PSStackExchange], which was a huge help in standing up everything correctly.
 
-June Blender has a wealth of information on the right way to supply module help. [Check this out] for starters.
+[juneb] has a wealth of information on the right way to supply module help. [Check this out] for starters.
 
   [Confluence]: <https://www.atlassian.com/software/confluence>
   [REST API]: <https://docs.atlassian.com/atlassian-confluence/REST/latest/>
+  [thomykay]: <https://github.com/thomykay>
   [PoshConfluence]: <https://github.com/thomykay/PoshConfluence>
+  [RamblingCookieMonster]: <https://github.com/RamblingCookieMonster>
   [PSStackExchange]: <https://github.com/RamblingCookieMonster/PSStackExchange>
+  [juneb]: <https://github.com/juneb>
   [Check this out]: <https://github.com/juneb/PowerShellHelpDeepDive>
 
 [//]: # (Sweet online markdown editor at http://dillinger.io)
