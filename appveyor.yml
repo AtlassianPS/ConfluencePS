@@ -1,9 +1,31 @@
-﻿install:
-  - ps: cinst pester -y
+﻿# https://www.appveyor.com/docs/appveyor-yml/
 
+# Before adding this, the following error showed up:
+# "Specify a project or solution file. The directory does not contain a project or solution file."
 build: off
 
+# Ignore testing a commit if only the readme changed
+skip_commits:
+  files:
+    - README.md
+
+# Use Chocolatey to install Pester
+# Saw no difference with --limitoutput (-r)
+install:
+  - choco install Pester --confirm
+
+# Call Pester. Can specify -Script if you want to target it at a directory/file subset of your repo
+# https://github.com/pester/Pester/wiki/Showing-Test-Results-in-CI-(TeamCity,-AppVeyor)
+# https://www.appveyor.com/docs/running-tests/#build-worker-api
 test_script:
-  - ps: $res = Invoke-Pester -Path ".\Tests" -OutputFormat NUnitXml -OutputFile TestsResults.xml -PassThru
-  - ps: (New-Object 'System.Net.WebClient').UploadFile("https://ci.appveyor.com/api/testresults/nunit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path .\TestsResults.xml))
-  - ps: if ($res.FailedCount -gt 0) { throw "$($res.FailedCount) tests failed."}
+  - ps: $res = Invoke-Pester -OutputFormat NUnitXml -OutputFile ".\TestsResults.xml" -PassThru
+  - ps: (New-Object 'System.Net.WebClient').UploadFile("https://ci.appveyor.com/api/testresults/nunit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path ".\TestsResults.xml"))
+  - ps: If ($res.FailedCount -gt 0) {throw "$($res.FailedCount) test(s) failed."}
+
+# Post in my Slack #builds channel
+# The "secure:" value is the Appveyor encryption of my Slack API "test" token
+notifications:
+  - provider: Slack
+    auth_token:
+      secure: +Y/c3bM0RNleCHnyAo+QHxn7PqTfaQdfHoh6Ki6ZMTsF8Aut5/ND1GIIb8cVwuahNj77QKyLCFvHNx0Yx9F12g==
+    channel: '#builds'
