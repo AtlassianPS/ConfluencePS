@@ -1,4 +1,5 @@
 ﻿# https://www.appveyor.com/docs/appveyor-yml/
+# https://www.yamllint.com
 
 # Before adding this, the following error showed up:
 # "Specify a project or solution file. The directory does not contain a project or solution file."
@@ -9,18 +10,38 @@ skip_commits:
   files:
     - README.md
 
-# Use Chocolatey to install Pester
-# Saw no difference with --limitoutput (-r)
+# Install NuGet to grab modules from the PowerShell Gallery
 install:
-  - choco install Pester --confirm
-
-# Call Pester. Can specify -Script if you want to target it at a directory/file subset of your repo
+- ps: |
+    Install-PackageProvider -Name NuGet -Force
+    Install-Module -Name PSScriptAnalyzer -Force
+    Install-Module -Name Pester -Force
+  
+# Run PSScriptAnalyzer, format the output via JUnit for review in the Appveyor console
+# Shoutout to jtarquino & vors
+# https://blogs.msdn.microsoft.com/jtarquino/2016/10/15/powershell-module-with-continuous-integration-static-analysis-and-automatic-publish-to-gallery/
+###
+# Then, call Pester. Can specify -Script if you want to target it at a directory/file subset of your repo
 # https://github.com/pester/Pester/wiki/Showing-Test-Results-in-CI-(TeamCity,-AppVeyor)
 # https://www.appveyor.com/docs/running-tests/#build-worker-api
 test_script:
-  - ps: $res = Invoke-Pester -OutputFormat NUnitXml -OutputFile ".\TestsResults.xml" -PassThru
-  - ps: (New-Object 'System.Net.WebClient').UploadFile("https://ci.appveyor.com/api/testresults/nunit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path ".\TestsResults.xml"))
-  - ps: If ($res.FailedCount -gt 0) {throw "$($res.FailedCount) test(s) failed."}
+- ps: |
+    # Execute the script analyzer
+    $results = Invoke-ScriptAnalyzer -Path .\ConfluencePS\Public -Recurse | Where Severity -eq "Error"
+    # Format the results
+    $header = "<testsuite tests=`"$($results.Count)`">" 
+    $body = $results | ForEach-Object {"<testcase classname=`"analyzer`" name=`"$($_.RuleName)`"><failure type=`"$($_.ScriptName)`">$($_.Message)</failure></testcase>"}
+    $footer = "</testsuite>"
+    $header + $body + $footer | Out-File .\TestsResults.xml
+    # Upload results
+    $wc = New-Object 'System.Net.WebClient'
+    $wc.UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path .\TestsResults.xml))
+    # Fail if there are issues
+    If ($results.Count -gt 0) {throw "PSScriptAnalyzer found $($results.Count) issues."}
+    ###
+    $res = Invoke-Pester -OutputFormat NUnitXml -OutputFile ".\TestsResults.xml" -PassThru
+    (New-Object 'System.Net.WebClient').UploadFile("https://ci.appveyor.com/api/testresults/nunit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path ".\TestsResults.xml"))
+    If ($res.FailedCount -gt 0) {throw "$($res.FailedCount) Pester test(s) failed."}
 
 # Post in my Slack #builds channel
 # The "secure:" value is the Appveyor encryption of my Slack API "test" token
