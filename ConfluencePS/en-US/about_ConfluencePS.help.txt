@@ -89,12 +89,12 @@ LONG DESCRIPTION
             $Table = $CSV | Where Name -eq $VM | ConvertTo-WikiTable | Out-String
             $Body = $Table | ConvertTo-WikiStorageFormat
 
-            If ($ID = (Get-ConfPage -Title "$($VM.Name)" -Limit 500).ID) {
+            If ($ID = (Get-WikiPage -Title "$($VM.Name)" -Limit 500).ID) {
                 # Current page found. With the ID, get the expanded result
-                $PageExists = Get-ConfPage -PageID $ID -Expand
-                $PageExists | Set-ConfPage -ParentID 123456 -Body $Body
+                $PageExists = Get-WikiPage -PageID $ID -Expand
+                $PageExists | Set-WikiPage -ParentID 123456 -Body $Body
             } Else {
-                New-ConfPage -Title "$($VM.Name)" -Body $Body -ParentID 123456
+                New-WikiPage -Title "$($VM.Name)" -Body $Body -ParentID 123456
             }
         }
 
