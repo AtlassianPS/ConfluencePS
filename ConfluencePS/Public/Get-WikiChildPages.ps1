@@ -5,7 +5,6 @@ function Get-WikiChildPages {
 
     .DESCRIPTION
     Fetch Confluence child pages by parent page id.
-    Piped output into other cmdlets is generally tested and supported.
 
     .EXAMPLE
     Get-WikiChildPages -ParentID 1234
