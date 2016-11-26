@@ -268,5 +268,3 @@ InModuleScope ConfluencePS {
         }
     }
 }
-
-throw 'Fail the test on purpose'
