@@ -19,12 +19,13 @@
     .LINK
     https://github.com/brianbunke/ConfluencePS
     #>
-    [CmdletBinding(SupportsShouldProcess=$true,ConfirmImpact='Medium')]
+    [CmdletBinding(SupportsShouldProcess = $true,
+                   ConfirmImpact = 'Medium')]
     param (
         # The key (short code) of the space to delete. Accepts multiple keys via pipeline input.
         [Parameter(Mandatory = $true,
-                    ValueFromPipeline = $true,
-                    ValueFromPipelineByPropertyName = $true)]
+                   ValueFromPipeline = $true,
+                   ValueFromPipelineByPropertyName = $true)]
         [Alias('SpaceKey')]
         [string]$Key
 
@@ -33,7 +34,7 @@
 
     BEGIN {
         If (!($Header) -or !($BaseURI)) {
-            Write-Debug 'URI or authentication not found. Calling Set-WikiInfo'
+            Write-Warning 'Confluence instance info not yet defined in this session. Calling Set-WikiInfo'
             Set-WikiInfo
         }
     }

@@ -21,7 +21,8 @@
     .LINK
     https://github.com/brianbunke/ConfluencePS
     #>
-    [CmdletBinding(SupportsShouldProcess=$true,ConfirmImpact='Medium')]
+    [CmdletBinding(SupportsShouldProcess = $true,
+                   ConfirmImpact = 'Medium')]
     param (
         # A single content label to remove from one or more pages.
         [Parameter(Mandatory = $true)]
@@ -31,14 +32,14 @@
         [Parameter(Mandatory = $true,
                     ValueFromPipeline = $true,
                     ValueFromPipelineByPropertyName = $true)]
-        [Alias('ID')]
         [ValidateRange(1,[int]::MaxValue)]
+        [Alias('ID')]
         [int]$PageID
     )
 
     BEGIN {
         If (!($Header) -or !($BaseURI)) {
-            Write-Debug 'URI or authentication not found. Calling Set-WikiInfo'
+            Write-Warning 'Confluence instance info not yet defined in this session. Calling Set-WikiInfo'
             Set-WikiInfo
         }
     }

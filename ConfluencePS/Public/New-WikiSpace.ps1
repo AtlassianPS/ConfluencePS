@@ -17,7 +17,8 @@
     .LINK
     https://github.com/brianbunke/ConfluencePS
     #>
-    [CmdletBinding(SupportsShouldProcess=$true,ConfirmImpact='Medium')]
+    [CmdletBinding(SupportsShouldProcess=$true,
+                   ConfirmImpact='Medium')]
     param (
         # Specify the short key to be used in the space URI.
         [Parameter(Mandatory = $true)]
@@ -34,7 +35,7 @@
 
     BEGIN {
         If (!($Header) -or !($BaseURI)) {
-            Write-Debug 'URI or authentication not found. Calling Set-WikiInfo'
+            Write-Warning 'Confluence instance info not yet defined in this session. Calling Set-WikiInfo'
             Set-WikiInfo
         }
     }

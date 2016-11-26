@@ -20,20 +20,21 @@
     .LINK
     https://github.com/brianbunke/ConfluencePS
     #>
-    [CmdletBinding(SupportsShouldProcess=$true,ConfirmImpact='Medium')]
+    [CmdletBinding(SupportsShouldProcess = $true,
+                   ConfirmImpact = 'Medium')]
     param (
         # The page ID to delete. Accepts multiple IDs via pipeline input.
         [Parameter(Mandatory = $true,
-                    ValueFromPipeline = $true,
-                    ValueFromPipelineByPropertyName = $true)]
-        [Alias('ID')]
+                   ValueFromPipeline = $true,
+                   ValueFromPipelineByPropertyName = $true)]
         [ValidateRange(1,[int]::MaxValue)]
+        [Alias('ID')]
         [int]$PageID
     )
 
     BEGIN {
         If (!($Header) -or !($BaseURI)) {
-            Write-Debug 'URI or authentication not found. Calling Set-WikiInfo'
+            Write-Warning 'Confluence instance info not yet defined in this session. Calling Set-WikiInfo'
             Set-WikiInfo
         }
     }

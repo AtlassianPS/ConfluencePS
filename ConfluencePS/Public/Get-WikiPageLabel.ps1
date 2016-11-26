@@ -25,10 +25,10 @@
 	param (
         # List the PageID number to check for labels. Accepts piped input.
         [Parameter(Mandatory = $true,
-                    ValueFromPipeline = $true,
-                    ValueFromPipelineByPropertyName = $true)]
-        [Alias('ID')]
+                   ValueFromPipeline = $true,
+                   ValueFromPipelineByPropertyName = $true)]
         [ValidateRange(1,[int]::MaxValue)]
+        [Alias('ID')]
         [int]$PageID,
 
         # Defaults to 200 max results; can be modified here.
@@ -38,7 +38,7 @@
 
     BEGIN {
         If (!($Header) -or !($BaseURI)) {
-            Write-Debug 'URI or authentication not found. Calling Set-WikiInfo'
+            Write-Warning 'Confluence instance info not yet defined in this session. Calling Set-WikiInfo'
             Set-WikiInfo
         }
     }

@@ -24,9 +24,9 @@
     #>
 	[CmdletBinding()]
 	param (
-        # Address of your base Confluence install. For Atlassian "On-Demand" (cloud-hosted) instances, include /wiki.
+        # Address of your base Confluence install. For Atlassian Cloud instances, include /wiki.
         [Parameter(Mandatory = $true,
-                    HelpMessage = 'Example = https://brianbunke.atlassian.net/wiki (/wiki for On-Demand instances)')]
+                   HelpMessage = 'Example = https://brianbunke.atlassian.net/wiki (/wiki for Cloud instances)')]
         [Uri]$BaseURI,
 
         # The username/password combo you use to log in to Confluence.

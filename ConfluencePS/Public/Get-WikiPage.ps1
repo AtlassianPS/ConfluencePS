@@ -44,8 +44,8 @@
         # Filter results by page ID.
         # Best option if you already know the ID, as it bypasses result limit problems.
         [Parameter(ValueFromPipelineByPropertyName = $true)]
-        [Alias('ID')]
         [ValidateRange(1,[int]::MaxValue)]
+        [Alias('ID')]
         [int]$PageID,
 
         # Filter results by key. Currently, this parameter is case sensitive.
@@ -65,7 +65,7 @@
 
     BEGIN {
         If (!($Header) -or !($BaseURI)) {
-            Write-Debug 'URI or authentication not found. Calling Set-WikiInfo'
+            Write-Warning 'Confluence instance info not yet defined in this session. Calling Set-WikiInfo'
             Set-WikiInfo
         }
     }

@@ -43,9 +43,9 @@ function New-WikiPage {
         # The ID of the parent page. Accepts pipeline input by value/name.
         # NOTE: This feature is not in the 5.8 REST API documentation, and should be considered experimental.
         [Parameter(ValueFromPipeline = $true,
-                    ValueFromPipelineByPropertyName = $true)]
-        [Alias('ID')]
+                   ValueFromPipelineByPropertyName = $true)]
         [ValidateRange(1,[int]::MaxValue)]
+        [Alias('ID')]
         [int]$ParentID,
 
         # Key of the space where the new page should exist. Only needed if you don't utilize ParentID.
@@ -63,7 +63,7 @@ function New-WikiPage {
 
     BEGIN {
         If (!($Header) -or !($BaseURI)) {
-            Write-Debug 'URI or authentication not found. Calling Set-WikiInfo'
+            Write-Warning 'Confluence instance info not yet defined in this session. Calling Set-WikiInfo'
             Set-WikiInfo
         }
     }

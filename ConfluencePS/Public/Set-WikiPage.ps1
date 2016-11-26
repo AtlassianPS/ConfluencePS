@@ -44,10 +44,10 @@
     param (
         # The ID of the page to edit. Accepts pipeline input by value/name. Mandatory.
         [Parameter(Mandatory = $true,
-                    ValueFromPipeline = $true,
-                    ValueFromPipelineByPropertyName = $true)]
-        [Alias('ID')]
+                   ValueFromPipeline = $true,
+                   ValueFromPipelineByPropertyName = $true)]
         [ValidateRange(1,[int]::MaxValue)]
+        [Alias('ID')]
         [int]$PageID,
 
         # Name of the page; existing or new value can be used.
@@ -68,7 +68,7 @@
         # Mandatory. Current content may be piped in for no cosmetic change, if changing title or parent.
         # Accepts pipeline input by property name.
         [Parameter(Mandatory = $true,
-                    ValueFromPipelineByPropertyName = $true)]
+                   ValueFromPipelineByPropertyName = $true)]
         [string]$Body,
 
         # Optional switch flag for calling ConvertTo-WikiStorageFormat against your Body.
@@ -83,7 +83,7 @@
 
     BEGIN {
         If (!($Header) -or !($BaseURI)) {
-            Write-Debug 'URI or authentication not found. Calling Set-WikiInfo'
+            Write-Warning 'Confluence instance info not yet defined in this session. Calling Set-WikiInfo'
             Set-WikiInfo
         }
         
