@@ -1,15 +1,22 @@
 ﻿# https://www.appveyor.com/docs/appveyor-yml/
-# https://www.yamllint.com
+# http://www.yamllint.com/
+# https://www.appveyor.com/docs/environment-variables/
 
-# Before adding this, the following error showed up:
+# Without this, the following error shows up:
 # "Specify a project or solution file. The directory does not contain a project or solution file."
 build: off
 
 # Ignore testing a commit if only the readme changed
+# Or if I include "skip-tests" in the commit message
 skip_commits:
   files:
     - README.md
   message: /skip\-tests/
+
+# PRs, by definition, don't change anything and therefore should not increment the version
+# To be fair, this is not important, and is really just AppVeyor enabling my pedantry
+pull_requests:
+  do_not_increment_build_number: true
 
 # Need my PS Gallery API key if publishing a module update
 # The "secure:" value is the Appveyor encryption of the key
@@ -17,15 +24,15 @@ environment:
   PSGalleryAPIKey:
     secure: 1wcOLpXblYir1QP8rYSusYG9D216kqXfs/FqDft4/9ISWaYD/ne/YP0mN5qeA0G+
 
-# Install NuGet to grab modules from the PowerShell Gallery
+# Install NuGet to interact with the PowerShell Gallery
 install:
 - ps: |
-    Install-PackageProvider -Name NuGet -Force
+    Install-PackageProvider -Name NuGet -Force | Out-Null
     Install-Module -Name Pester -Force
   
 # Offload all PowerShell test/build work to a separate file
 test_script:
-  - ps: . .\build.ps1
+  - ps: . .\Tests\build.ps1
 
 # Post in my Slack #builds channel
 # The "secure:" value is the Appveyor encryption of my Slack API "test" token
