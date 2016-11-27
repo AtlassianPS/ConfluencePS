@@ -30,9 +30,15 @@ If ($env:APPVEYOR_REPO_BRANCH -ne 'master') {
         # Update the .psd1 with the current major/minor/build SemVer
         Update-ModuleManifest -Path .\ConfluencePS\ConfluencePS.psd1 -ModuleVersion $Version -ErrorAction Stop
     } Catch {
-        throw 'Version update failed. Skipping publish'
+        throw 'Version update failed. Skipping publish to gallery'
     }
 
-    # Now, publish the update to the PowerShell Gallery
-    Publish-Module -Path .\ConfluencePS -NuGetApiKey $env:PSGalleryAPIKey -ErrorAction Stop
+    Try {
+        # Now, publish the update to the PowerShell Gallery
+        Publish-Module -Path .\ConfluencePS -NuGetApiKey $env:PSGalleryAPIKey -ErrorAction Stop
+    } Catch {
+        throw "Publishing update $Version to the PowerShell Gallery failed."
+    }
+
+    Write-Host "ConfluencePS version $Version published to the PowerShell Gallery." -ForegroundColor Cyan
 }
