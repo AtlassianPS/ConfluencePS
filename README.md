@@ -8,12 +8,14 @@ Need to add 100 new pages based on some dumb CSV file? Are you trying to figure 
 ConfluencePS communicates with Atlassian's actively supported [REST API] via basic authentication. The REST implementation is the only way to interact with their cloud-hosted instances via API, and will eventually be the only way to interact with an on-premises installation.
 
 ## Instructions
-Install ConfluencePS from the [PowerShell Gallery]!
-`Install-Module` requires PowerShellGet (included in PS v5, or download for v3/v4 via the gallery link above)
+Install ConfluencePS from the [PowerShell Gallery]! `Install-Module` requires PowerShellGet (included in PS v5, or download for v3/v4 via the gallery link)
 
 ```posh
 # One time only install:
 Install-Module ConfluencePS
+
+# Check for updates occasionally:
+Update-Module ConfluencePS
 
 # To use each session:
 Import-Module ConfluencePS
