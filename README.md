@@ -3,57 +3,64 @@
 # ConfluencePS
 A PowerShell module that interacts with Atlassian's [Confluence] wiki product.
 
-ConfluencePS communicates with Atlassian's actively supported [REST API] via basic authentication. This is the only way to interact with their cloud-hosted instances via API, and will eventually be the only way to interact with an on-premises installation.
+Need to add 100 new pages based on some dumb CSV file? Are you trying to figure out how to delete all pages labeled 'deleteme'? Are you sick of manually editing the same page every single day? PowerShell and ConfluencePS have you covered!
+
+ConfluencePS communicates with Atlassian's actively supported [REST API] via basic authentication. The REST implementation is the only way to interact with their cloud-hosted instances via API, and will eventually be the only way to interact with an on-premises installation.
 
 ## Instructions
-* "Download ZIP" near the top-right of this page
-* If necessary, unblock the zip
-* Extract the ConfluencePS folder to a module path
-  * For example, $env:USERPROFILE\Documents\WindowsPowerShell\Modules\
-
-**NOTE:** The top-level ConfluencePS folder (that contains readme.md) is just for GitHub presentation. You'll want to keep the ConfluencePS child folder, discarding the top level.
+Install ConfluencePS from the [PowerShell Gallery]!
+`Install-Module` requires PowerShellGet (included in PS v5, or download for v3/v4 via the gallery link above)
 
 ```posh
-# Import the module
-    Import-Module ConfluencePS
-	# Alternatively,
-    Import-Module C:\ConfluencePS
-	# or
-    Import-Module \\server\share\ConfluencePS
+# One time only install:
+Install-Module ConfluencePS
 
-# Get commands in the module
-    Get-Command -Module ConfluencePS
+# To use each session:
+Import-Module ConfluencePS
+Set-WikiInfo -BaseURI 'https://YourCloudWiki.atlassian.net/wiki'
 
-# Get help
-    Get-Help about_ConfluencePS
-	
-# Set your instance's info, so PowerShell knows where to send requests
-# Local installs may be 'http://wiki.mydomain.com', for example, but Atlassian cloud installs need the /wiki subdirectory
-	Set-WikiInfo -BaseURI 'https://brianbunke.atlassian.net/wiki'
-# You will then be prompted for your Confluence credentials
+# Review the help at any time!
+Get-Help about_ConfluencePS
+Get-Command -Module ConfluencePS
+Get-Help Get-WikiPage -Full   # or any other command
 ```
 
-## Examples
-Not yet included here while the module is still in constant development. In the interim, you can always:
-```posh
-Get-Help New-WikiLabel -Examples
-```
+## Potential Future Work
+I can provide no timeframe for future improvements, but I'm trying to keep track of my roadmap publicly in case other interested parties have feedback.
+
+1. Implement unit tests for existing commands
+    1. Better quality control & more rapid feedback
+    2. Hopefully encourage additional contributions from others
+2. Investigate other authentication options
+    1. Currently, Confluence's documentation is pretty bad here
+3. Introduce new commands
+
+Honestly, the module meets my needs at this point, and my motivation is low to introduce additional functionality I won't use. HOWEVER! Time permitting, I am more than happy to investigate new work if an issue is filed demonstrating a need.
+
+Feel free to speak up if the module could be more helpful to you!
 
 ## Acknowledgments
 Many thanks to [thomykay] for his [PoshConfluence] SOAP API module, which gave me enough of a starting point to feel comfortable undertaking this project.
 
-I ~~stole~~ repurposed much of [RamblingCookieMonster]'s example module, [PSStackExchange], which was a huge help in standing up everything correctly.
+I ~~stole~~ repurposed much of [RamblingCookieMonster]'s example module, [PSStackExchange], which was a huge help in standing up my first full module correctly. My efforts to implement a continuous deployment pipeline to the PowerShell Gallery were also sped up due to his prior work.
 
 [juneb] has a wealth of information on the right way to supply module help. [Check this out] for starters.
 
+## Disclaimer
+Hopefully this is obvious, but:
+
+This is an open source project (under the [MIT license]). I am a volunteer, as are any other contributors. All commands are executed at your own risk. Please have good backups before you start, because you can delete a lot of stuff if you're not careful.
+
   [Confluence]: <https://www.atlassian.com/software/confluence>
   [REST API]: <https://docs.atlassian.com/atlassian-confluence/REST/latest/>
+  [PowerShell Gallery]: <https://www.powershellgallery.com/>
   [thomykay]: <https://github.com/thomykay>
   [PoshConfluence]: <https://github.com/thomykay/PoshConfluence>
   [RamblingCookieMonster]: <https://github.com/RamblingCookieMonster>
   [PSStackExchange]: <https://github.com/RamblingCookieMonster/PSStackExchange>
   [juneb]: <https://github.com/juneb>
   [Check this out]: <https://github.com/juneb/PowerShellHelpDeepDive>
+  [MIT license]: <https://github.com/brianbunke/ConfluencePS/blob/master/LICENSE>
 
 [//]: # (Sweet online markdown editor at http://dillinger.io)
 [//]: # ("GitHub Flavored Markdown" https://help.github.com/articles/github-flavored-markdown/)
