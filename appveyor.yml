@@ -9,6 +9,13 @@ build: off
 skip_commits:
   files:
     - README.md
+  message: /skip\-tests/
+
+# Need my PS Gallery API key if publishing a module update
+# The "secure:" value is the Appveyor encryption of the key
+environment:
+  PSGalleryAPIKey:
+    secure: 1wcOLpXblYir1QP8rYSusYG9D216kqXfs/FqDft4/9ISWaYD/ne/YP0mN5qeA0G+
 
 # Install NuGet to grab modules from the PowerShell Gallery
 install:
