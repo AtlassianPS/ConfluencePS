@@ -22,13 +22,17 @@ If ($env:APPVEYOR_REPO_BRANCH -ne 'master') {
     # Hopefully everything's good, because this is headed out to the world
     # First, update the module's version
 
-    # Use the major/minor module version defined in source control
-    $BaseVersion = (Test-ModuleManifest .\ConfluencePS\ConfluencePS.psd1).Version
-    # Append the current build number
-    [Version]$Version = "$BaseVersion.$env:APPVEYOR_BUILD_NUMBER"
-    # Update the .psd1 with the current major/minor/build SemVer
-    Update-ModuleManifest -Path .\ConfluencePS\ConfluencePS.asdf.psd1 -ModuleVersion $Version
+    Try {
+        # Use the major/minor module version defined in source control
+        $BaseVersion = (Test-ModuleManifest .\ConfluencePS\ConfluencePS.psd1).Version
+        # Append the current build number
+        [Version]$Version = "$BaseVersion.$env:APPVEYOR_BUILD_NUMBER"
+        # Update the .psd1 with the current major/minor/build SemVer
+        Update-ModuleManifest -Path .\ConfluencePS\ConfluencePS.psd1 -ModuleVersion $Version -ErrorAction Stop
+    } Catch {
+        throw 'Version update failed. Skipping publish'
+    }
 
     # Now, publish the update to the PowerShell Gallery
-    Publish-Module -Path .\ConfluencePS -NuGetApiKey $env:PSGalleryAPIKey
+    Publish-Module -Path .\ConfluencePS -NuGetApiKey $env:PSGalleryAPIKey -ErrorAction Stop
 }
