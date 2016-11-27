@@ -35,7 +35,10 @@ I can provide no timeframe for future improvements, but I'm trying to keep track
     2. Hopefully encourage additional contributions from others
 2. Investigate other authentication options
     1. Currently, Confluence's documentation is pretty bad here
-3. Introduce new commands
+3. Custom typing of page/space/etc. objects
+	1. Allows for some custom formatting to show just the important properties of returned objects
+	2. Which would allow for keeping a lot more properties from an -Expand operation
+4. Introduce new commands
 
 Honestly, the module meets my needs at this point, and my motivation is low to introduce additional functionality I won't use. HOWEVER! Time permitting, I am more than happy to investigate new work if an issue is filed demonstrating a need.
 
