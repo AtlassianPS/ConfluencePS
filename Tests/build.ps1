@@ -28,7 +28,21 @@ If ($env:APPVEYOR_REPO_BRANCH -ne 'master') {
         # Append the current build number
         [Version]$Version = "$($Manifest.Version).$env:APPVEYOR_BUILD_NUMBER"
         # Update the .psd1 with the current major/minor/build SemVer
-        Update-ModuleManifest -Path .\ConfluencePS\ConfluencePS.psd1 -ModuleVersion $Version -FunctionsToExport "@($($Manifest.ExportedCommands.Values.Name -join ','))" -ErrorAction Stop
+        # And placeholder text for Functions, because Update-ModuleManifest is the worst
+        $UMM = @{
+            Path              = '.\ConfluencePS\ConfluencePS.psd1'
+            ModuleVersion     = $Version
+            FunctionsToExport = 'I hate you, stupid Update-ModuleManifest'
+            ErrorAction       = 'Stop'
+        }
+        Update-ModuleManifest @UMM
+
+        # Fix the mangling of FunctionsToExport
+        $Functions = $Manifest.ExportedCommands.Keys
+        # Join the functions and apply new lines "`n" and tabs "`t" to match original formatting
+        $FunctionString = "@(`n`t$($Functions -join ",`n`t")`n)"
+        # Replace the placeholder text
+        (Get-Content .\ConfluencePS\ConfluencePS.psd1) `            -replace 'I hate you, stupid Update-ModuleManifest', $FunctionString |            Set-Content .\ConfluencePS\ConfluencePS.psd1 -ErrorAction Stop        # Now, have to get rid of the '' quotes wrapping the function array        # Two replaces because the quotes are on separate lines        (Get-Content .\ConfluencePS\ConfluencePS.psd1) `            -replace "(FunctionsToExport = )(')",'$1' -replace "\)'",')' |            Set-Content .\ConfluencePS\ConfluencePS.psd1 -ErrorAction Stop
     } Catch {
         throw 'Version update failed. Skipping publish to gallery'
     }
