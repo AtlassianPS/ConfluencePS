@@ -13,6 +13,9 @@ If ($TestResults.FailedCount -gt 0) {
     throw "$($TestResults.FailedCount) Pester test(s) failed."
 }
 
+# Line break for readability in AppVeyor console
+Write-Host ''
+
 # Stop here if this isn't the master branch, or if this is a pull request
 If ($env:APPVEYOR_REPO_BRANCH -ne 'master') {
     Write-Warning "Skipping version increment and gallery publish for branch $env:APPVEYOR_REPO_BRANCH"
@@ -40,7 +43,7 @@ If ($env:APPVEYOR_REPO_BRANCH -ne 'master') {
         # Fix the mangling of FunctionsToExport
         $Functions = $Manifest.ExportedCommands.Keys
         # Join the functions and apply new lines "`n" and tabs "`t" to match original formatting
-        $FunctionString = "@(`n`t$($Functions -join ",`n`t")`n)"
+        $FunctionString = "@(`n`t'$($Functions -join "',`n`t'")'`n)"
         # Replace the placeholder text
         (Get-Content .\ConfluencePS\ConfluencePS.psd1) `            -replace 'I hate you, stupid Update-ModuleManifest', $FunctionString |            Set-Content .\ConfluencePS\ConfluencePS.psd1 -ErrorAction Stop        # Now, have to get rid of the '' quotes wrapping the function array        # Two replaces because the quotes are on separate lines        (Get-Content .\ConfluencePS\ConfluencePS.psd1) `            -replace "(FunctionsToExport = )(')",'$1' -replace "\)'",')' |            Set-Content .\ConfluencePS\ConfluencePS.psd1 -ErrorAction Stop
     } Catch {
