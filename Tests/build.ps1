@@ -24,11 +24,11 @@ If ($env:APPVEYOR_REPO_BRANCH -ne 'master') {
 
     Try {
         # Use the major/minor module version defined in source control
-        $BaseVersion = (Test-ModuleManifest .\ConfluencePS\ConfluencePS.psd1).Version
+        $Manifest = Test-ModuleManifest .\ConfluencePS\ConfluencePS.psd1
         # Append the current build number
-        [Version]$Version = "$BaseVersion.$env:APPVEYOR_BUILD_NUMBER"
+        [Version]$Version = "$($Manifest.Version).$env:APPVEYOR_BUILD_NUMBER"
         # Update the .psd1 with the current major/minor/build SemVer
-        Update-ModuleManifest -Path .\ConfluencePS\ConfluencePS.psd1 -ModuleVersion $Version -ErrorAction Stop
+        Update-ModuleManifest -Path .\ConfluencePS\ConfluencePS.psd1 -ModuleVersion $Version -FunctionsToExport "@($($Manifest.ExportedCommands.Values.Name -join ','))" -ErrorAction Stop
     } Catch {
         throw 'Version update failed. Skipping publish to gallery'
     }
