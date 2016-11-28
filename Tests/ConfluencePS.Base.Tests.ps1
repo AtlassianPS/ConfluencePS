@@ -25,7 +25,7 @@ Describe 'Check module files for breaking changes' {
         It 'Static .psd1 values have not changed' {
             $manifest.RootModule | Should BeExactly 'ConfluencePS.psm1'
             $manifest.Name | Should BeExactly 'ConfluencePS'
-            $manifest.Version -as [Version] | Should BeGreaterThan '1.0'
+            $manifest.Version -as [Version] | Should BeGreaterThan '0.9.9'
             $manifest.Guid | Should BeExactly '20d32089-48ef-464d-ba73-6ada240e26b3'
             $manifest.Author | Should BeExactly 'Brian Bunke'
             $manifest.CompanyName | Should BeExactly 'Community'
