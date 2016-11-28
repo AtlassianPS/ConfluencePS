@@ -33,6 +33,13 @@ If ($env:APPVEYOR_REPO_BRANCH -ne 'master') {
         throw 'Version update failed. Skipping publish to gallery'
     }
 
+    Import-Module .\ConfluencePS\ConfluencePS.psd1
+    $ActualCommands = (Get-Command -Module ConfluencePS).Count
+    $ExpectedCommands = (Test-ModuleManifest .\ConfluencePS\ConfluencePS.psd1).ExportedCommands.Count
+    If ($ActualCommands -ne $ExpectedCommands) {
+        throw "Expected $ExpectedCommands commands to be exported, but found $ActualCommands instead"
+    }
+
     Try {
         # Now, publish the update to the PowerShell Gallery
         Publish-Module -Path .\ConfluencePS -NuGetApiKey $env:PSGalleryAPIKey -ErrorAction Stop
