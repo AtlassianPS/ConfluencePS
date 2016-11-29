@@ -51,18 +51,27 @@ If ($env:APPVEYOR_REPO_BRANCH -ne 'master') {
     }
 
     Import-Module .\ConfluencePS\ConfluencePS.psd1
-    $ActualCommands = (Get-Command -Module ConfluencePS).Count
-    $ExpectedCommands = (Test-ModuleManifest .\ConfluencePS\ConfluencePS.psd1).ExportedCommands.Count
-    If ($ActualCommands -ne $ExpectedCommands) {
-        throw "Expected $ExpectedCommands commands to be exported, but found $ActualCommands instead"
+    $Count1 = (Get-Command -Module ConfluencePS).Count
+    $Count2 = (Test-ModuleManifest .\ConfluencePS\ConfluencePS.psd1).ExportedCommands.Count
+    $Count3 = (Get-ChildItem .\ConfluencePS\Public).Count
+    If ($Count1 -ne $Count2) {
+        throw "Expected $Count2 commands to be exported, but found $Count1 instead"
+    } ElseIf ($Count1 -ne $Count3) {
+        throw "Expected $Count3 commands to be exported, but found $Count1 instead"
     }
 
     Try {
         # Now, publish the update to the PowerShell Gallery
-        Publish-Module -Path .\ConfluencePS -NuGetApiKey $env:PSGalleryAPIKey -ErrorAction Stop
+        $PM = @{
+            Path         = '.\ConfluencePS'
+            NuGetApiKey  = $env:PSGalleryAPIKey
+            ReleaseNotes = $env:APPVEYOR_REPO_COMMIT_MESSAGE
+            ErrorAction  = 'Stop'
+        }
+        Publish-Module @PM
+
+        Write-Host "ConfluencePS version $Version published to the PowerShell Gallery." -ForegroundColor Cyan
     } Catch {
         throw "Publishing update $Version to the PowerShell Gallery failed."
     }
-
-    Write-Host "ConfluencePS version $Version published to the PowerShell Gallery." -ForegroundColor Cyan
 }
