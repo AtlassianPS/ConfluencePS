@@ -65,7 +65,6 @@ If ($env:APPVEYOR_REPO_BRANCH -ne 'master') {
         $PM = @{
             Path         = '.\ConfluencePS'
             NuGetApiKey  = $env:PSGalleryAPIKey
-            ReleaseNotes = $env:APPVEYOR_REPO_COMMIT_MESSAGE
             ErrorAction  = 'Stop'
         }
         Publish-Module @PM
