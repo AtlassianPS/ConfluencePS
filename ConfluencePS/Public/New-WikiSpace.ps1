@@ -34,31 +34,29 @@
     )
 
     BEGIN {
-        If (!($Header) -or !($BaseURI)) {
+        If (!($Credential) -or !($BaseURI)) {
             Write-Warning 'Confluence instance info not yet defined in this session. Calling Set-WikiInfo'
             Set-WikiInfo
         }
     }
 
     PROCESS {
-        $URI = $BaseURI + '/space'
+        $URI = "$BaseURI/space"
 
-        $Body = @{key         = "$Key"
-                  name        = "$Name"
-                  description = @{plain = @{value          = "$Description"
-                                            representation = 'plain'
-                                           }
-                                 }
-                 } | ConvertTo-Json
+        $Body = @{
+            key         = "$Key"
+            name        = "$Name"
+            description = @{
+                plain = @{
+                    value          = "$Description"
+                    representation = 'plain'
+                }
+            }
+        } | ConvertTo-Json
 
         Write-Verbose "Posting to $URI"
         If ($PSCmdlet.ShouldProcess("$Key $Name")) {
-            $Rest = Invoke-RestMethod -Headers $Header -Uri $URI -Body $Body -Method Post -ContentType 'application/json'
+            Invoke-WikiMethod -Uri $URI -Body $Body -Method Post
         }
-        
-        # Hashing everything because I don't like the lower case property names from the REST call
-        $Rest | Select @{n='ID';e={$_.id}},
-                       @{n='Key';e={$_.key}},
-                       @{n='Name';e={$_.name}}
     }
 }
