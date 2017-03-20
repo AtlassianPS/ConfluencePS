@@ -1,0 +1,7 @@
+# Ignore configuration files
+*.ini
+*.conf
+*.config
+
+# Ignore Environment files
+.env*
