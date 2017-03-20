@@ -7,7 +7,7 @@ function Invoke-WikiMethod {
         [Uri]$URi,
 
         # Method of the invokation
-        [ValidateSet("GET", "POST", "DELETE")]
+        [ValidateSet("GET", "POST", "PUT", "DELETE")]
         [string]$Method = "GET",
 
         # Body of the request
@@ -23,12 +23,14 @@ function Invoke-WikiMethod {
 
     Process {
         # Validation
-        if (($Method -in ("POST")) -and (!($Body))) {
+        if (($Method -in ("POST", "PUT")) -and (!($Body))) {
             Throw "Missing request body"
         }
         if (!($Credential) -and ($script:Credential)) {
-            $Credential = $script:Credential
+            # This allows for the Credential parameter to be used
+            # and if missing, the Set-WikiInfo Credentials will be used
             Write-Verbose "Using HTTP Basic authentication with username $($Credential.UserName)"
+            $Credential = $script:Credential
         }
 
         $SecureCreds = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($('{0}:{1}' -f $Credential.UserName, $Credential.GetNetworkCredential().Password)))
@@ -56,17 +58,22 @@ function Invoke-WikiMethod {
 
         # Invoke the API
         try {
-            Write-Debug "[Invoke-WikiMethod] Invoking method $Method to URI $URI"
+            Write-Verbose "[Invoke-WikiMethod] Invoking method $Method to URI $URI"
+            Write-Debug "[Invoke-WikiMethod] invoke-WebRequest with: $($splatParameters | Out-String)"
             $webResponse = Invoke-WebRequest @splatParameters
         }
         catch {
             # Invoke-WebRequest is hard-coded to throw an exception if the Web request returns a 4xx or 5xx error.
             # This is the best workaround I can find to retrieve the actual results of the request.
+            # This shall be fixed with PoSh v6: https://github.com/PowerShell/PowerShell/issues/2193
+            Write-Verbose "[Invoke-WikiMethod] Failed to get an anser from the server"
             $webResponse = $_.Exception.Response
         }
 
+        Write-Debug "[Invoke-WikiMethod] Executed WebRequest. Access `$webResponse to see details"
+
         if ($webResponse) {
-            Write-Debug "[Invoke-WikiMethod] Status code: $($webResponse.StatusCode)"
+            Write-Verbose "[Invoke-WikiMethod] Status code: $($webResponse.StatusCode)"
 
             if ($webResponse.StatusCode.value__ -gt 399) {
                 Write-Warning "Conflunce returned HTTP error $($webResponse.StatusCode.value__) - $($webResponse.StatusCode)"
@@ -76,30 +83,33 @@ function Invoke-WikiMethod {
                 $readStream = New-Object -TypeName System.IO.StreamReader -ArgumentList ($webResponse.GetResponseStream())
                 $responseBody = $readStream.ReadToEnd()
                 $readStream.Close()
-                Write-Debug "[Invoke-WikiMethod] Retrieved body of HTTP response for more information about the error (`$responseBody)"
-                $result = ConvertFrom-Json -InputObject $responseBody
+
+                Write-Verbose "[Invoke-WikiMethod] Retrieved body of HTTP response for more information about the error (`$responseBody)"
+                Write-Error $responseBody
             }
             else {
                 if ($webResponse.Content) {
-                    Write-Debug "[Invoke-WikiMethod] Converting body of response from JSON"
+                    Write-Verbose "[Invoke-WikiMethod] Converting body of response from JSON"
                     $result = ConvertFrom-Json -InputObject $webResponse.Content
                 }
                 else {
-                    Write-Debug "[Invoke-WikiMethod] No content was returned from."
+                    Write-Verbose "[Invoke-WikiMethod] No content was returned from."
                 }
             }
 
             if ($result.errors -ne $null) {
-                Write-Debug "[Invoke-WikiMethod] An error response was received from; resolving"
-                ResolveError $result -WriteError
+                Write-Verbose "[Invoke-WikiMethod] An error response was received from; resolving"
+                # ResolveError $result -WriteError
+                Write-Error $($result.errors | Out-String)
             }
             else {
-                Write-Debug "[Invoke-WikiMethod] Outputting results from"
+                Write-Verbose "[Invoke-WikiMethod] Outputting results from"
                 Write-Output $result
             }
         }
         else {
-            Write-Debug "[Invoke-WikiMethod] No Web result object was returned from. This is unusual!"
+            Write-Verbose "[Invoke-WikiMethod] No Web result object was returned from. This is unusual!"
+            Write-Warning "[Invoke-WikiMethod] No Web result object was returned from. This is unusual!"
         }
     }
 }
