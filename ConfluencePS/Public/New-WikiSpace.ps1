@@ -22,8 +22,8 @@
     param (
         # Specify the short key to be used in the space URI.
         [Parameter(Mandatory = $true)]
-        [Alias('SpaceKey')]
-        [string]$Key,
+        [Alias('Key')]
+        [string]$SpaceKey,
 
         # Specify the space's name.
         [Parameter(Mandatory = $true)]
@@ -44,19 +44,24 @@
         $URI = "$BaseURI/space"
 
         $Body = @{
-            key         = "$Key"
-            name        = "$Name"
+            key         = $SpaceKey
+            name        = $Name
             description = @{
                 plain = @{
-                    value          = "$Description"
+                    value          = $Description
                     representation = 'plain'
                 }
             }
         } | ConvertTo-Json
 
         Write-Verbose "Posting to $URI"
-        If ($PSCmdlet.ShouldProcess("$Key $Name")) {
-            Invoke-WikiMethod -Uri $URI -Body $Body -Method Post
+        If ($PSCmdlet.ShouldProcess("$SpaceKey $Name")) {
+            $response = Invoke-WikiMethod -Uri $URI -Body $Body -Method Post
         }
+
+        # Hashing everything because I don't like the lower case property names from the REST call
+        $response | Select @{n='ID';e={$_.id}},
+                           @{n='Key';e={$_.key}},
+                           @{n='Name';e={$_.name}}
     }
 }

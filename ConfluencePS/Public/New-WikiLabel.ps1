@@ -33,41 +33,42 @@
     )
 
     BEGIN {
-        If (!($Header) -or !($BaseURI)) {
+        If (!($Credential) -or !($BaseURI)) {
             Write-Warning 'Confluence instance info not yet defined in this session. Calling Set-WikiInfo'
             Set-WikiInfo
         }
     }
 
     PROCESS {
-        
+
         # Set both of these for use inside the ForEach
         $Int = 0
         $Body = @()
-        
+
         ForEach ($SingleLabel in $Label) {
             # If not the first loop, add a comma to separate previous
             If ($Int -gt 0) {
                 $Body += ','
             }
 
-            $Body += @{prefix = 'global'
-                       name   = "$SingleLabel"
-                      } | ConvertTo-Json -Compress
+            $Body += @{
+                prefix = 'global'
+                name   = "$SingleLabel"
+            } | ConvertTo-Json -Compress
 
             $Int++
         }
 
         $Body = '[' + $Body + ']'
 
-        $URI = $BaseURI + "/content/$PageID/label"
+        $URI = "$BaseURI/content/$PageID/label"
 
         Write-Verbose "Posting to $URI"
         If ($PSCmdlet.ShouldProcess("Label $Label, PageID $PageID")) {
-            $Rest = Invoke-RestMethod -Headers $Header -Uri $URI -Body $Body -Method Post -ContentType 'application/json'
+            $response = Invoke-WikiMethod -Uri $URI -Body $Body -Method Post
 
             # Hashing everything because I don't like the lower case property names from the REST call
-            ForEach ($Result in $Rest.results) {
+            ForEach ($Result in $response.results) {
                 $Result | Select @{n='Label';   e={$_.name}},
                                  @{n='LabelID'; e={$_.id}},
                                  @{n='Prefix';  e={$_.prefix}},

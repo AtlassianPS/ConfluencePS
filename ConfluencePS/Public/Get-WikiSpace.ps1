@@ -21,16 +21,9 @@
     #>
 	[CmdletBinding()]
 	param (
-        # Filter results by name. Supports wildcard matching on partial input.
-        [string]$Name,
-
         # Filter results by key. Supports wildcard matching on partial input.
-        [Alias('SpaceKey')]
-        [string]$Key,
-
-        # Filter results by ID.
-        [ValidateRange(1,[int]::MaxValue)]
-        [int]$ID,
+        [Alias('Key')]
+        [string]$SpaceKey,
 
         # Defaults to 25 max results; can be modified here.
         [ValidateRange(1,[int]::MaxValue)]
@@ -38,45 +31,38 @@
     )
 
     BEGIN {
-        If (!($Header) -or !($BaseURI)) {
+        If (!($Credential) -or !($BaseURI)) {
             Write-Warning 'Confluence instance info not yet defined in this session. Calling Set-WikiInfo'
             Set-WikiInfo
         }
     }
 
     PROCESS {
-        $URI = $BaseURI + '/space'
+        $URI = "$BaseURI/space"
+
+        if ($SpaceKey) {
+            $URI += "/$SpaceKey"
+        }
 
         If ($Limit) {
-            $URI = $URI + "?limit=$Limit"
+            $URI += "?limit=$Limit"
         }
 
         Write-Verbose "Fetching info from $URI"
-        $Rest = Invoke-RestMethod -Headers $Header -Uri $URI -Method Get | Select -ExpandProperty Results | Select Key,Name,ID,Type
+        $response = Invoke-WikiMethod -Uri $URI -Method Get
 
-        If ($ID) {
-            $Rest | Where {$_.ID -eq $ID} |
-                Select @{n='Key';     e={$_.key}},
-                       @{n='Name';    e={$_.name}},
-                       @{n='SpaceID'; e={$_.id}},
-                       @{n='Type';    e={$_.type}}
-        } ElseIf ($Key) {
-            $Rest | Where {$_.Key -like "*$Key*"} | Sort Key |
-                Select @{n='Key';     e={$_.key}},
-                       @{n='Name';    e={$_.name}},
-                       @{n='SpaceID'; e={$_.id}},
-                       @{n='Type';    e={$_.type}}
-        } ElseIf ($Name) {
-            $Rest | Where {$_.Name -like "*$Name*"} | Sort Key |
-                Select @{n='Key';     e={$_.key}},
-                       @{n='Name';    e={$_.name}},
-                       @{n='SpaceID'; e={$_.id}},
-                       @{n='Type';    e={$_.type}}
-        } Else {
-            $Rest | Select @{n='Key';     e={$_.key}},
-                           @{n='Name';    e={$_.name}},
-                           @{n='SpaceID'; e={$_.id}},
-                           @{n='Type';    e={$_.type}}
+        if ($response.Results) {
+            $response.Results | Select @{n='Key';     e={$_.key}},
+                                      @{n='Name';    e={$_.name}},
+                                      @{n='SpaceID'; e={$_.id}},
+                                      @{n='Type';    e={$_.type}}
         }
+        else {
+            $response | Select @{n='Key';     e={$_.key}},
+                               @{n='Name';    e={$_.name}},
+                               @{n='SpaceID'; e={$_.id}},
+                               @{n='Type';    e={$_.type}}
+        }
+
     }
 }

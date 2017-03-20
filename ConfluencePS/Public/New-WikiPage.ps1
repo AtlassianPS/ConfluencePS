@@ -62,7 +62,7 @@ function New-WikiPage {
     )
 
     BEGIN {
-        If (!($Header) -or !($BaseURI)) {
+        If (!($Credential) -or !($BaseURI)) {
             Write-Warning 'Confluence instance info not yet defined in this session. Calling Set-WikiInfo'
             Set-WikiInfo
         }
@@ -79,34 +79,38 @@ function New-WikiPage {
             Write-Verbose '-Convert flag active; converting content to Confluence storage format'
             $Body = ConvertTo-WikiStorageFormat -Content $Body
         }
-        
-        $URI = $BaseURI + '/content'
 
-        $Content = @{type      = 'page'
-                     title     = "$Title"
-                     space     = @{key = "$SpaceKey"}
-                     body      = @{storage = @{value          = "$Body"
-                                               representation = 'storage'
-                                              }
-                                  }
-                     # Ancestors is undocumented! May break in the future
-                     # http://stackoverflow.com/questions/23523705/how-to-create-new-page-in-confluence-using-their-rest-api
-                     # Using [ordered] (requires Posh v3) to ensure -replace below works as desired
-                     ancestors = [ordered]@{id   = "$ParentID"
-                                            type = 'page'
-                                           }
-                    # Using -Compress to make the -replace below easier
-                    } | ConvertTo-Json -Compress
-        
+        $URI = "$BaseURI/content"
+
+        $Content = @{
+            type = "page"
+            title = $Title
+            space = @{key = $SpaceKey}
+            body = @{
+                storage = @{
+                    value = $Body
+                    representation = 'storage'
+                }
+            }
+            # Ancestors is undocumented! May break in the future
+            # http://stackoverflow.com/questions/23523705/how-to-create-new-page-in-confluence-using-their-rest-api
+            # Using [ordered] (requires Posh v3) to ensure -replace below works as desired
+            ancestors = [ordered]@{
+                id = $ParentID
+                type = "page"
+            }
+        } | ConvertTo-Json -Compress # Using -Compress to make the -replace below easier
+
         # Ancestors requires [] brackets around its JSON values to work correctly
         $Content = $Content -replace '"ancestors":','"ancestors":[' -replace '"page"},','"page"}],'
 
         Write-Verbose "Posting to $URI"
+        Write-Verbose "Content: $($Content | Out-String)"
         If ($PSCmdlet.ShouldProcess("Space $SpaceKey, Parent $ParentID")) {
-            $Rest = Invoke-RestMethod -Headers $Header -Uri $URI -Body $Content -Method Post -ContentType 'application/json'
+            $response = Invoke-WikiMethod -Uri $URI -Body $Content -Method Post
 
             # Hashing everything because I don't like the lower case property names from the REST call
-            $Rest | Select @{n='ID';      e={$_.id}},
+            $response | Select @{n='ID';      e={$_.id}},
                            @{n='Key';     e={$_.space.key}},
                            @{n='Title';   e={$_.title}},
                            @{n='ParentID';e={$_.ancestors.id}}

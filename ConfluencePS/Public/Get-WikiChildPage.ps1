@@ -5,7 +5,7 @@
 
     .DESCRIPTION
     Pipeline input of ParentID is accepted.
-    
+
     This API method only returns the immediate children (results are not recursive).
 
     .EXAMPLE
@@ -36,7 +36,7 @@
         [Alias('ID')]
         [int]$ParentID,
 
-        # Defaults to 25 max results; can be modified here.        
+        # Defaults to 25 max results; can be modified here.
         # Numbers above 100 may not be honored if -Expand is used.
         [ValidateRange(1,[int]::MaxValue)]
         [int]$Limit,
@@ -47,14 +47,14 @@
     )
 
     BEGIN {
-        If (!($Header) -or !($BaseURI)) {
+        If (!($Credential) -or !($BaseURI)) {
             Write-Warning 'Confluence instance info not yet defined in this session. Calling Set-WikiInfo'
             Set-WikiInfo
         }
     }
 
     PROCESS {
-        $URI = $BaseURI + "/content/$ParentID/child/page"
+        $URI = "$BaseURI/content/$ParentID/child/page"
 
         # URI prep based on specified parameters
         If ($Expand -and $Limit) {
@@ -64,21 +64,21 @@
         } ElseIf ($Limit) {
             $URI = $URI + "?limit=$Limit"
         }
-        
+
         Write-Verbose "GET call from $URI"
-        $Rest = Invoke-RestMethod -Headers $Header -Uri $URI -Method Get
+        $response = Invoke-WikiMethod -Uri $URI -Method Get
 
         # Display results
         # Hashing everything because I don't like the lower case property names from the REST call
         If ($Expand) {
-            $Rest | Select -ExpandProperty Results |
+            $response | Select -ExpandProperty Results |
                 Select @{n='ID';    e={$_.id}},
                        @{n='Title'; e={$_.title}},
                        @{n='Space'; e={$_._expandable.space -replace '/rest/api/space/',''}},
                        @{n='Ver';   e={$_.version.number}},
                        @{n='Body';  e={$_.body.view.value}}
         } Else {
-            $Rest | Select -ExpandProperty Results |
+            $response | Select -ExpandProperty Results |
                 Select @{n='ID';    e={$_.id}},
                        @{n='Title'; e={$_.title}},
                        @{n='Space'; e={$_._expandable.space -replace '/rest/api/space/',''}}

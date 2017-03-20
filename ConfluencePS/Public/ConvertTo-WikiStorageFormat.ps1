@@ -35,21 +35,21 @@
     )
 
     BEGIN {
-        If (!($Header) -or !($BaseURI)) {
+        If (!($Credential) -or !($BaseURI)) {
             Write-Warning 'Confluence instance info not yet defined in this session. Calling Set-WikiInfo'
             Set-WikiInfo
         }
     }
 
     PROCESS {
-        $URI = $BaseURI + '/contentbody/convert/storage'
+        $URI = "$BaseURI/contentbody/convert/storage"
 
-        $Body = @{value          = "$Content"
-                  representation = 'wiki'
-                 } | ConvertTo-Json
+        $Body = @{
+            value = "$Content"
+            representation = 'wiki'
+        } | ConvertTo-Json
 
-        $Rest = Invoke-RestMethod -Headers $Header -Uri $URI -Body $Body -Method Post -ContentType 'application/json'
-
-        $Rest.value
+        $response = Invoke-WikiMethod -Uri $URI -Body $Body -Method Post
+        $response.value
     }
 }

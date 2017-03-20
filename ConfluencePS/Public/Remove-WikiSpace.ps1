@@ -26,25 +26,25 @@
         [Parameter(Mandatory = $true,
                    ValueFromPipeline = $true,
                    ValueFromPipelineByPropertyName = $true)]
-        [Alias('SpaceKey')]
-        [string]$Key
+        [Alias('Key')]
+        [string]$SpaceKey
 
         # Probably an extra param later to loop checking the status & wait for completion?
     )
 
     BEGIN {
-        If (!($Header) -or !($BaseURI)) {
+        If (!($Credential) -or !($BaseURI)) {
             Write-Warning 'Confluence instance info not yet defined in this session. Calling Set-WikiInfo'
             Set-WikiInfo
         }
     }
 
     PROCESS {
-        $URI = $BaseURI + "/space/$Key"
+        $URI = "$BaseURI/space/$SpaceKey"
 
         Write-Verbose "Sending delete request to $URI"
-        If ($PSCmdlet.ShouldProcess("Space key $Key")) {
-            $Rest = Invoke-RestMethod -Headers $Header -Uri $URI -Method Delete
+        If ($PSCmdlet.ShouldProcess("Space key $SpaceKey")) {
+            $response = Invoke-WikiMethod -Uri $URI -Method Delete
 
             # Successful response provides a "longtask" status link
                 # (add additional code here later to check and/or wait for the status)
