@@ -7,7 +7,7 @@ function Invoke-WikiMethod {
         [Uri]$URi,
 
         # Method of the invokation
-        [ValidateSet("GET", "POST", "PUT", "DELETE", "PATCH")]
+        [ValidateSet("GET", "POST", "DELETE")]
         [string]$Method = "GET",
 
         # Body of the request
@@ -17,15 +17,13 @@ function Invoke-WikiMethod {
         # Additional headers
         [hashtable]$Headers,
 
-        [string]$ContentType = 'application/json',
-
         # Authentication credentials
         [PSCredential]$Credential
     )
 
     Process {
         # Validation
-        if (($Method -in ("POST", "PATCH", "PUT")) -and (!($Body))) {
+        if (($Method -in ("POST")) -and (!($Body))) {
             Throw "Missing request body"
         }
         if (!($Credential) -and ($script:Credential)) {
@@ -33,7 +31,9 @@ function Invoke-WikiMethod {
             Write-Verbose "Using HTTP Basic authentication with username $($Credential.UserName)"
         }
 
+        $SecureCreds = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($('{0}:{1}' -f $Credential.UserName, $Credential.GetNetworkCredential().Password)))
         $Headers += @{
+            "Authorization" = "Basic $($SecureCreds)"
             'Content-Type' = 'application/json; charset=utf-8'
         }
 
@@ -46,15 +46,18 @@ function Invoke-WikiMethod {
             ErrorAction = 'SilentlyContinue'
         }
 
-        #set optional parameters
-        if ($ContentType) {$splatParameters["ContentType"] = $ContentType}
-        if ($Credential) {$splatParameters["Credential"] = $Credential}
+        # set optional parameters
         if ($Body) {$splatParameters["Body"] = [System.Text.Encoding]::UTF8.GetBytes($Body)} # http://stackoverflow.com/questions/15290185/invoke-webrequest-issue-with-special-characters-in-json
+
+        # load DefaultParameters for Invoke-WebRequest
+        # as the global PSDefaultParameterValues is not used
+        # TODO: find out why PSJira doesn't need this
+        $script:PSDefaultParameterValues = $global:PSDefaultParameterValues
 
         # Invoke the API
         try {
             Write-Debug "[Invoke-WikiMethod] Invoking method $Method to URI $URI"
-            $webResponse = Invoke-RestMethod @splatParameters
+            $webResponse = Invoke-WebRequest @splatParameters
         }
         catch {
             # Invoke-WebRequest is hard-coded to throw an exception if the Web request returns a 4xx or 5xx error.
