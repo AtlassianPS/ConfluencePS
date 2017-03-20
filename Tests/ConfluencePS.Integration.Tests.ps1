@@ -17,23 +17,22 @@ InModuleScope ConfluencePS {
 
     Describe 'New-WikiSpace' {
 
-        # We don't want warnings on the screen
-        Mock Write-Warning {}
-
-        # GIVEN
+        # Arrange
+        Mock Write-Warning {} # We don't want warnings on the screen
         Context 'the test Space does not exist' {
             It 'is unable to find the test Space' {
                 { Get-WikiSpace -Key "PESTER" -ErrorAction Stop } | Should Throw
             }
         }
 
+        # Act
+        $NewSpace = New-WikiSpace -Key "PESTER" -Name "Pester Test Space" -ErrorAction SilentlyContinue
+
+        # Assert
         Context 'creates a new Space' {
-            # Act
-            It 'Creates a new space' {
-                { $NewSpace = New-WikiSpace -Key "PESTER" -Name "Pester Test Space" -ErrorAction Stop } | Should Not Throw
+            It 'space was created' {
                 $NewSpace | Should BeOfType PSObject
             }
-            # Assert
             It 'has 3 properties' {
                 ($NewSpace | Get-Member -MemberType NoteProperty).Count | Should Be 3
             }
