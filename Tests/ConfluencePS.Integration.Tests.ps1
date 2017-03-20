@@ -31,6 +31,7 @@ InModuleScope ConfluencePS {
             # Act
             It 'Creates a new space' {
                 { $NewSpace = New-WikiSpace -Key "PESTER" -Name "Pester Test Space" -ErrorAction Stop } | Should Not Throw
+                $NewSpace | Should BeOfType PSObject
             }
             # Assert
             It 'has 3 properties' {
@@ -236,10 +237,10 @@ Describe 'Get-WikiLabelApplied' {
             $SetPage3[0].ID | Should Not Be $SetPage3[1].ID
             ($SetPage3 | Get-Member -MemberType NoteProperty).Count | Should Be 4
             $SetPage3.ID | Should Not BeNullOrEmpty
-            $SetPage3.Key | Should BeExactly "PESTER"
+            $SetPage3.Key | Should BeExactly @("PESTER", "PESTER")
             # (BeLike / BeLikeExactly hasn't been published to the PS Gallery yet)
             # $SetPage3.Title | Should BeLikeExactly 'Pester New Page*'
-            $SetPage3.ParentID | Should Be $SetParentID
+            $SetPage3.ParentID | Should Be @($SetParentID, $SetParentID)
             (Get-WikiPage -PageID ($SetPage3[0]).ID -Expand).Body | Should BeExactly '<p>Updated</p>'
         }
     }
