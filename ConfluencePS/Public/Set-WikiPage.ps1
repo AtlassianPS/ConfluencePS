@@ -82,11 +82,11 @@
     )
 
     BEGIN {
-        If (!($Header) -or !($BaseURI)) {
+        If (!($Credential) -or !($BaseURI)) {
             Write-Warning 'Confluence instance info not yet defined in this session. Calling Set-WikiInfo'
             Set-WikiInfo
         }
-        
+
         # If -Convert is flagged, call ConvertTo-WikiStorageFormat against the -Body
         If ($Convert) {
             Write-Verbose '-Convert flag active; converting content to Confluence storage format'
@@ -113,41 +113,46 @@
         # The PUT wants new version, not current, so increment by one
         $CurrentVersion++
 
-        $URI = $BaseURI + "/content/$PageID"
+        $URI = "$BaseURI/content/$PageID"
 
         If ($ParentID) {
-            $Content = @{version   = @{number = $CurrentVersion}
-                         title     = $Title
-                         type      = 'page'
-                         body      = @{storage = @{value          = $Body
-                                                   representation = 'storage'
-                                                  }
-                                      }
-                         ancestors = @{id = $ParentID}
-                        # Using -Compress to make the -replace below easier
-                        } | ConvertTo-Json -Compress
-        
+            $Content = @{
+                version = @{ number = $CurrentVersion }
+                title = $Title
+                type = 'page'
+                body = @{
+                    storage = @{
+                        value = $Body
+                        representation = 'storage'
+                    }
+                }
+                ancestors = @{id = $ParentID}
+            } | ConvertTo-Json -Compress # Using -Compress to make the -replace below easier
+
             # Ancestors requires [] brackets around its JSON values to work correctly
             # This is RegEx magic. If you're not familiar, regex101.com or similar sites
             $Content = $Content -replace '(\{\"id\"\:\d+\})','[$1]'
         } Else {
-            $Content = @{version   = @{number = $CurrentVersion}
-                         title     = $Title
-                         type      = 'page'
-                         body      = @{storage = @{value          = $Body
-                                                   representation = 'storage'
-                                                  }
-                                      }
-                        } | ConvertTo-Json
+            $Content = @{
+                version   = @{number = $CurrentVersion}
+                title     = $Title
+                type      = 'page'
+                body      = @{
+                    storage = @{
+                        value          = $Body
+                        representation = 'storage'
+                    }
+                }
+            } | ConvertTo-Json
         }
-                
+
         Write-Verbose "PUT (edit) to $URI"
         # -WhatIf wrapper
         If ($PSCmdlet.ShouldProcess("PageID $PageID, Body $Body")) {
-            $Rest = Invoke-RestMethod -Headers $Header -Uri $URI -Body $Content -Method Put -ContentType 'application/json'
+            $response = Invoke-WikiMethod -Uri $URI -Body $Content -Method Put
 
             # Hashing everything because I don't like the lower case property names from the REST call
-            $Rest | Select @{n='ID';      e={$_.id}},
+            $response | Select @{n='ID';      e={$_.id}},
                            @{n='Key';     e={$_.space.key}},
                            @{n='Title';   e={$_.title}},
                            @{n='ParentID';e={$_.ancestors.id}}

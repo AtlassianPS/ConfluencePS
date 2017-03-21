@@ -22,8 +22,8 @@
     param (
         # Specify the short key to be used in the space URI.
         [Parameter(Mandatory = $true)]
-        [Alias('SpaceKey')]
-        [string]$Key,
+        [Alias('Key')]
+        [string]$SpaceKey,
 
         # Specify the space's name.
         [Parameter(Mandatory = $true)]
@@ -34,31 +34,34 @@
     )
 
     BEGIN {
-        If (!($Header) -or !($BaseURI)) {
+        If (!($Credential) -or !($BaseURI)) {
             Write-Warning 'Confluence instance info not yet defined in this session. Calling Set-WikiInfo'
             Set-WikiInfo
         }
     }
 
     PROCESS {
-        $URI = $BaseURI + '/space'
+        $URI = "$BaseURI/space"
 
-        $Body = @{key         = "$Key"
-                  name        = "$Name"
-                  description = @{plain = @{value          = "$Description"
-                                            representation = 'plain'
-                                           }
-                                 }
-                 } | ConvertTo-Json
+        $Body = @{
+            key         = $SpaceKey
+            name        = $Name
+            description = @{
+                plain = @{
+                    value          = $Description
+                    representation = 'plain'
+                }
+            }
+        } | ConvertTo-Json
 
         Write-Verbose "Posting to $URI"
-        If ($PSCmdlet.ShouldProcess("$Key $Name")) {
-            $Rest = Invoke-RestMethod -Headers $Header -Uri $URI -Body $Body -Method Post -ContentType 'application/json'
+        If ($PSCmdlet.ShouldProcess("$SpaceKey $Name")) {
+            $response = Invoke-WikiMethod -Uri $URI -Body $Body -Method Post
         }
-        
+
         # Hashing everything because I don't like the lower case property names from the REST call
-        $Rest | Select @{n='ID';e={$_.id}},
-                       @{n='Key';e={$_.key}},
-                       @{n='Name';e={$_.name}}
+        $response | Select @{n='ID';e={$_.id}},
+                           @{n='Key';e={$_.key}},
+                           @{n='Name';e={$_.name}}
     }
 }

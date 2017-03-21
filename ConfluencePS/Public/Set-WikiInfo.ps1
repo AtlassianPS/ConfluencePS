@@ -12,7 +12,7 @@
     Set-WikiInfo -BaseURI 'https://brianbunke.atlassian.net/wiki'
     Declare your base install; be prompted for username and password.
     Stored in script-scope variables $BaseURI and $Header.
-    
+
     .LINK
     https://github.com/brianbunke/ConfluencePS
 
@@ -22,16 +22,16 @@
     .LINK
     http://www.dexterposh.com/2015/01/powershell-rest-api-basic-cms-cmsurl.html
     #>
-	[CmdletBinding()]
-	param (
+    [CmdletBinding()]
+    param (
         # Address of your base Confluence install. For Atlassian Cloud instances, include /wiki.
         [Parameter(Mandatory = $true,
-                   HelpMessage = 'Example = https://brianbunke.atlassian.net/wiki (/wiki for Cloud instances)')]
+            HelpMessage = 'Example = https://brianbunke.atlassian.net/wiki (/wiki for Cloud instances)')]
         [Uri]$BaseURI,
 
         # The username/password combo you use to log in to Confluence.
         [ValidateNotNullorEmpty()]
-        $Credential = (Get-Credential)
+        [PSCredential]$Credential = (Get-Credential)
     )
 
     PROCESS {
@@ -39,11 +39,6 @@
         # Save as script-level variable for further use in the current session
         $script:BaseURI = $BaseURI.AbsoluteUri.TrimEnd('/') + '/rest/api'
 
-        # Format as user:pass, call the .NET GetBytes method, convert it to Base64
-        $SecureCreds = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($('{0}:{1}' -f $Credential.UserName, $Credential.GetNetworkCredential().Password)))
-
-        # Create the header hashtable to pass your basic auth
-        # Save as script-level variable for further use in the current session
-        $script:Header = @{ Authorization = "Basic $($SecureCreds)" }
+        $script:Credential = $Credential
     }
 }

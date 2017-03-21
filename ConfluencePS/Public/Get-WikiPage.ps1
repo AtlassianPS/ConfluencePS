@@ -50,7 +50,7 @@
 
         # Filter results by key. Currently, this parameter is case sensitive.
         [Parameter(ValueFromPipelineByPropertyName = $true)]
-        [Alias('Space','Key')]
+        [Alias('Key')]
         [string]$SpaceKey,
 
         # Defaults to 25 max results; can be modified here.
@@ -64,14 +64,14 @@
     )
 
     BEGIN {
-        If (!($Header) -or !($BaseURI)) {
+        If (!($Credential) -or !($BaseURI)) {
             Write-Warning 'Confluence instance info not yet defined in this session. Calling Set-WikiInfo'
             Set-WikiInfo
         }
     }
 
     PROCESS {
-        $URI = $BaseURI + '/content'
+        $URI = "$BaseURI/content"
 
         # URI prep based on specified parameters
         If ($PageID) {
@@ -105,34 +105,34 @@
         }
 
         Write-Verbose "GET call from $URI"
-        $Rest = Invoke-RestMethod -Headers $Header -Uri $URI -Method Get
+        $response = Invoke-WikiMethod -Uri $URI -Method Get
 
         # Display results depending on the call we made
         # Hashing everything because I don't like the lower case property names from the REST call
         If ($PageID) {
             Write-Verbose "Showing -PageID $PageID results"
             If ($Expand) {
-                $Rest | Select @{n='ID';    e={$_.id}},
+                $response | Select @{n='ID';    e={$_.id}},
                                @{n='Title'; e={$_.title}},
                                @{n='Space'; e={$_._expandable.space -replace '/rest/api/space/',''}},
                                @{n='Ver';   e={$_.version.number}},
                                @{n='Body';  e={$_.body.view.value}}
             } Else {
-                $Rest | Select @{n='ID';    e={$_.id}},
+                $response | Select @{n='ID';    e={$_.id}},
                                @{n='Title'; e={$_.title}},
                                @{n='Space'; e={$_.space.key}}
             }
         } ElseIf ($Title) {
             Write-Verbose "Showing -Title $Title results"
             If ($Expand) {
-                $Rest | Select -ExpandProperty Results | Where {$_.Title -like "*$Title*"} |
+                $response | Select -ExpandProperty Results | Where {$_.Title -like "*$Title*"} |
                     Select @{n='ID';    e={$_.id}},
                            @{n='Title'; e={$_.title}},
                            @{n='Space'; e={$_._expandable.space -replace '/rest/api/space/',''}},
                            @{n='Ver';   e={$_.version.number}},
                            @{n='Body';  e={$_.body.view.value}}
             } Else {
-                $Rest | Select -ExpandProperty Results | Where {$_.Title -like "*$Title*"} |
+                $response | Select -ExpandProperty Results | Where {$_.Title -like "*$Title*"} |
                     Select @{n='ID';    e={$_.id}},
                            @{n='Title'; e={$_.title}},
                            @{n='Space'; e={$_._expandable.space -replace '/rest/api/space/',''}}
@@ -140,14 +140,14 @@
         } Else {
             Write-Verbose "Showing results"
             If ($Expand) {
-                $Rest | Select -ExpandProperty Results |
+                $response | Select -ExpandProperty Results |
                     Select @{n='ID';    e={$_.id}},
                            @{n='Title'; e={$_.title}},
                            @{n='Space'; e={$_._expandable.space -replace '/rest/api/space/',''}},
                            @{n='Ver';   e={$_.version.number}},
                            @{n='Body';  e={$_.body.view.value}}
             } Else {
-                $Rest | Select -ExpandProperty Results |
+                $response | Select -ExpandProperty Results |
                     Select @{n='ID';    e={$_.id}},
                            @{n='Title'; e={$_.title}},
                            @{n='Space'; e={$_._expandable.space -replace '/rest/api/space/',''}}

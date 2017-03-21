@@ -33,21 +33,21 @@
     )
 
     BEGIN {
-        If (!($Header) -or !($BaseURI)) {
+        If (!($Credential) -or !($BaseURI)) {
             Write-Warning 'Confluence instance info not yet defined in this session. Calling Set-WikiInfo'
             Set-WikiInfo
         }
     }
 
     PROCESS {
-        $URI = $BaseURI + "/content/$PageID"
+        $URI = "$BaseURI/content/$PageID"
 
         Write-Verbose "Sending delete request to $URI"
         If ($PSCmdlet.ShouldProcess("PageID $PageID")) {
-            $Rest = Invoke-RestMethod -Headers $Header -Uri $URI -Method Delete
+            $response = Invoke-WikiMethod -Uri $URI -Method Delete
 
             # Successful response is empty. Adding verbose output
-            If ($Rest -eq '') {
+            If ($response -eq '') {
                 Write-Verbose "Delete of PageID $PageID successful."
             }
         }
