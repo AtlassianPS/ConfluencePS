@@ -39,14 +39,14 @@
     )
 
     BEGIN {
-        If (!($Header) -or !($BaseURI)) {
+        If (!($Credential) -or !($BaseURI)) {
             Write-Warning 'Confluence instance info not yet defined in this session. Calling Set-WikiInfo'
             Set-WikiInfo
         }
     }
 
     PROCESS {
-        $URI = $BaseURI + "/content/search"
+        $URI = "$BaseURI/content/search"
 
         Write-Verbose 'Building URI based on parameters selected'
         If (($SpaceKey) -and ($Limit)) {
@@ -60,10 +60,10 @@
         }
 
         Write-Verbose "Fetching info from $URI"
-        $Rest = Invoke-RestMethod -Headers $Header -Uri $URI -Method Get | Select -ExpandProperty Results
+        $response = Invoke-WikiMethod -Uri $URI -Method Get | Select -ExpandProperty Results
 
         # Hashing everything because I don't like the lower case property names from the REST call
-        $Rest | Sort Title | Select @{n='ID';    e={$_.id}},
+        $response | Sort Title | Select @{n='ID';    e={$_.id}},
                                     @{n='Title'; e={$_.title}},
                                     @{n='Type';  e={$_.type}}
     }

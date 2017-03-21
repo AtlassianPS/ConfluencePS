@@ -5,6 +5,7 @@ Get-Module ConfluencePS | Remove-Module -Force
 Import-Module .\ConfluencePS -Force
 
 InModuleScope ConfluencePS {
+
     Describe 'Set-WikiInfo' {
         It 'Connects successfully by using environment variables' {
             # Could be a long one-liner, but breaking down for readability
@@ -15,34 +16,57 @@ InModuleScope ConfluencePS {
     }
 
     Describe 'New-WikiSpace' {
-        It 'Creates a new space' {
-            $NewSpace = New-WikiSpace -Key 'PESTER' -Name 'Pester Test Space'
-            ($NewSpace | Get-Member -MemberType NoteProperty).Count | Should Be 3
-            $NewSpace[0].ID | Should Not BeNullOrEmpty
-            $NewSpace[0].Key | Should BeExactly 'PESTER'
-            $NewSpace[0].Name | Should BeExactly 'Pester Test Space'
+
+        # Arrange
+        Mock Write-Warning {} # We don't want warnings on the screen
+        Context 'the test Space does not exist' {
+            It 'is unable to find the test Space' {
+                { Get-WikiSpace -Key "PESTER" -ErrorAction Stop } | Should Throw
+            }
+        }
+
+        # Act
+        $NewSpace = New-WikiSpace -Key "PESTER" -Name "Pester Test Space" -ErrorAction SilentlyContinue
+
+        # Assert
+        Context 'creates a new Space' {
+            It 'space was created' {
+                $NewSpace | Should BeOfType PSObject
+            }
+            It 'has 3 properties' {
+                ($NewSpace | Get-Member -MemberType NoteProperty).Count | Should Be 3
+            }
+            It 'ID is numeric' {
+                $NewSpace.ID | Should BeOfType [Int]
+            }
+            It 'key is "PESTER"' {
+                $NewSpace.Key | Should BeExactly "PESTER"
+            }
+            It 'name is "Pester Test Space"' {
+                $NewSpace.Name | Should BeExactly "Pester Test Space"
+            }
         }
     }
 
     Describe 'Get-WikiSpace' {
         It 'Returns expected space properties' {
-            $GetSpace1 = Get-WikiSpace -Key 'pester'
+            $GetSpace1 = Get-WikiSpace -Key "PESTER"
             ($GetSpace1 | Get-Member -MemberType NoteProperty).Count | Should Be 4
             $GetSpace1.SpaceID | Should Not BeNullOrEmpty
-            $GetSpace1.Key | Should BeExactly 'PESTER'
-            $GetSpace1.Name | Should BeExactly 'Pester Test Space'
+            $GetSpace1.Key | Should BeExactly "PESTER"
+            $GetSpace1.Name | Should BeExactly "Pester Test Space"
 
-            $GetSpace2 = Get-WikiSpace -Name 'ter test sp'
+            $GetSpace2 = Get-WikiSpace | Where-Object {$_.Name -like '*ter test sp*'}
             ($GetSpace2 | Get-Member -MemberType NoteProperty).Count | Should Be 4
             $GetSpace2.SpaceID | Should Not BeNullOrEmpty
-            $GetSpace2.Key | Should BeExactly 'PESTER'
-            $GetSpace2.Name | Should BeExactly 'Pester Test Space'
+            $GetSpace2.Key | Should BeExactly "PESTER"
+            $GetSpace2.Name | Should BeExactly "Pester Test Space"
 
-            $GetSpace3 = Get-WikiSpace -ID $GetSpace1.SpaceID
+            $GetSpace3 = Get-WikiSpace | Where-Object {$_.SpaceID -eq $GetSpace1.SpaceID}
             ($GetSpace3 | Get-Member -MemberType NoteProperty).Count | Should Be 4
             $GetSpace3.SpaceID | Should Be $GetSpace2.SpaceID
-            $GetSpace3.Key | Should BeExactly 'PESTER'
-            $GetSpace3.Name | Should BeExactly 'Pester Test Space'
+            $GetSpace3.Key | Should BeExactly "PESTER"
+            $GetSpace3.Name | Should BeExactly "Pester Test Space"
         }
     }
 
@@ -58,14 +82,14 @@ InModuleScope ConfluencePS {
                 New-WikiPage -Title 'Pester New Page Piped' -Body 'Hi Pester!' -Convert
             ($NewPage1 | Get-Member -MemberType NoteProperty).Count | Should Be 4
             $NewPage1.ID | Should Not BeNullOrEmpty
-            $NewPage1.Key | Should BeExactly 'PESTER'
+            $NewPage1.Key | Should BeExactly "PESTER"
             $NewPage1.Title | Should BeExactly 'Pester New Page Piped'
             $NewPage1.ParentID | Should Not BeNullOrEmpty
 
             $NewPage2 = New-WikiPage -Title 'Pester New Page Orphan' -SpaceKey PESTER -Body '<p>Hi Pester!</p>'
             ($NewPage2 | Get-Member -MemberType NoteProperty).Count | Should Be 4
             $NewPage2.ID | Should Not BeNullOrEmpty
-            $NewPage2.Key | Should BeExactly 'PESTER'
+            $NewPage2.Key | Should BeExactly "PESTER"
             $NewPage2.Title | Should BeExactly 'Pester New Page Orphan'
             $NewPage2.ParentID | Should BeNullOrEmpty
         }
@@ -77,13 +101,13 @@ InModuleScope ConfluencePS {
             ($GetTitle1 | Get-Member -MemberType NoteProperty).Count | Should Be 3
             $GetTitle1.ID | Should Not BeNullOrEmpty
             $GetTitle1.Title | Should BeExactly 'Pester New Page Piped'
-            $GetTitle1.Space | Should BeExactly 'PESTER'
+            $GetTitle1.Space | Should BeExactly "PESTER"
 
             $GetTitle2 = Get-WikiPage -Title 'new page orph' -Limit 200 -Expand
             ($GetTitle2 | Get-Member -MemberType NoteProperty).Count | Should Be 5
             $GetTitle2.ID | Should Not BeNullOrEmpty
             $GetTitle2.Title | Should BeExactly 'Pester New Page Orphan'
-            $GetTitle2.Space | Should BeExactly 'PESTER'
+            $GetTitle2.Space | Should BeExactly "PESTER"
             $GetTitle2.Ver | Should Be 1
             $GetTitle2.Body | Should BeExactly '<p>Hi Pester!</p>'
 
@@ -91,13 +115,13 @@ InModuleScope ConfluencePS {
             ($GetID1 | Get-Member -MemberType NoteProperty).Count | Should Be 3
             $GetID1[0].ID | Should Be $GetTitle2.ID
             $GetID1[0].Title | Should BeExactly 'Pester New Page Orphan'
-            $GetID1[0].Space | Should BeExactly 'PESTER'
+            $GetID1[0].Space | Should BeExactly "PESTER"
 
             $GetID2 = Get-WikiPage -PageID $GetTitle1.ID -Expand
             ($GetID2 | Get-Member -MemberType NoteProperty).Count | Should Be 5
             $GetID2[0].ID | Should Be $GetTitle1.ID
             $GetID2[0].Title | Should BeExactly 'Pester New Page Piped'
-            $GetID2[0].Space | Should BeExactly 'PESTER'
+            $GetID2[0].Space | Should BeExactly "PESTER"
             $GetID2[0].Ver | Should Be 1
             $GetID2[0].Body | Should BeExactly '<p>Hi Pester!</p>'
 
@@ -106,14 +130,14 @@ InModuleScope ConfluencePS {
             ($GetKey1 | Get-Member -MemberType NoteProperty).Count | Should Be 3
             $GetKey1.ID[1] | Should Be $GetID2.ID
             $GetKey1[0].Title | Should BeExactly 'Pester Test Space Home'
-            $GetKey1[0].Space | Should BeExactly 'PESTER'
+            $GetKey1[0].Space | Should BeExactly "PESTER"
 
             $GetKey2 = Get-WikiPage -SpaceKey PESTER -Expand | Sort ID
             ($GetKey2).Count | Should Be 3
             ($GetKey2 | Get-Member -MemberType NoteProperty).Count | Should Be 5
             $GetKey2[2].ID | Should Be $GetID1.ID
             $GetKey2[2].Title | Should BeExactly $GetID1.Title
-            $GetKey2[0].Space | Should BeExactly 'PESTER'
+            $GetKey2[0].Space | Should BeExactly "PESTER"
             $GetKey2[0].Ver | Should Be 1
             $GetKey2[2].Body | Should BeExactly '<p>Hi Pester!</p>'
 
@@ -126,7 +150,7 @@ InModuleScope ConfluencePS {
         It 'Applies labels to pages' {
             $PageID = Get-WikiPage -Title 'pester new page piped' -Limit 200 | Select -ExpandProperty ID
 
-            $NewLabel1 = New-WikiLabel -Label pestera,pesterb,pesterc -PageID $PageID
+            $NewLabel1 = New-WikiLabel -Label pestera, pesterb, pesterc -PageID $PageID
             ($NewLabel1).Count | Should Be 3
             ($NewLabel1 | Get-Member -MemberType NoteProperty).Count | Should Be 4
             $NewLabel1.Label | Should Match 'pest'
@@ -155,7 +179,7 @@ InModuleScope ConfluencePS {
 
             $GetPageLabel2 = Get-WikiPage -SpaceKey PESTER | Sort ID | Get-WikiPageLabel
             ($GetPageLabel2).Count | Should Be 6
-            ($GetPageLabel2 | Where Label -eq 'pester').Count | Should Be 3
+            ($GetPageLabel2 | Where Label -eq "PESTER").Count | Should Be 3
             ($GetPageLabel2 | Get-Member -MemberType NoteProperty).Count | Should Be 4
             $GetPageLabel2.Label | Should Match 'pest'
             $GetPageLabel2.LabelID | Should Not BeNullOrEmpty
@@ -166,23 +190,23 @@ InModuleScope ConfluencePS {
     # Can't get this working...always works during manual testing
     # Start-Sleep (and wait loop variants) haven't helped during full runs
     <#
-    Describe 'Get-WikiLabelApplied' {
-        It 'Returns applications of a label' {
-            $GetApplied1 = Get-WikiLabelApplied -Label pesterc
-            ($GetApplied1 | Get-Member -MemberType NoteProperty).Count | Should Be 3
-            $GetApplied1.ID | Should Not BeNullOrEmpty
-            $GetApplied1.Title | Should BeExactly 'Pester New Page Piped'
-            $GetApplied1.Type | Should BeExactly 'page'
+Describe 'Get-WikiLabelApplied' {
+    It 'Returns applications of a label' {
+        $GetApplied1 = Get-WikiLabelApplied -Label pesterc
+        ($GetApplied1 | Get-Member -MemberType NoteProperty).Count | Should Be 3
+        $GetApplied1.ID | Should Not BeNullOrEmpty
+        $GetApplied1.Title | Should BeExactly 'Pester New Page Piped'
+        $GetApplied1.Type | Should BeExactly 'page'
 
-            $GetApplied2 = Get-WikiSpace -Key PESTER | Get-WikiLabelApplied -Label pester | Sort ID
-            ($GetApplied2).Count | Should Be 3
-            ($GetApplied2 | Get-Member -MemberType NoteProperty).Count | Should Be 3
-            $GetApplied2.ID | Should Not BeNullOrEmpty
-            $GetApplied2[2].Title | Should BeExactly 'Pester New Page Orphan'
-            $GetApplied2.Type | Should BeExactly 'page'
-        }
+        $GetApplied2 = Get-WikiSpace -Key PESTER | Get-WikiLabelApplied -Label pester | Sort ID
+        ($GetApplied2).Count | Should Be 3
+        ($GetApplied2 | Get-Member -MemberType NoteProperty).Count | Should Be 3
+        $GetApplied2.ID | Should Not BeNullOrEmpty
+        $GetApplied2[2].Title | Should BeExactly 'Pester New Page Orphan'
+        $GetApplied2.Type | Should BeExactly 'page'
     }
-    #>
+}
+#>
 
     Describe 'Set-WikiPage' {
         It 'Edits existing pages' {
@@ -190,7 +214,7 @@ InModuleScope ConfluencePS {
                 Set-WikiPage -Body '<p>asdf</p>'
             ($SetPage1 | Get-Member -MemberType NoteProperty).Count | Should Be 4
             $SetPage1.ID | Should Not BeNullOrEmpty
-            $SetPage1.Key | Should BeExactly 'PESTER'
+            $SetPage1.Key | Should BeExactly "PESTER"
             $SetPage1.Title | Should BeExactly 'Pester New Page Piped'
             $SetPage1.ParentID | Should Not BeNullOrEmpty
             (Get-WikiPage -PageID $SetPage1.ID -Expand).Body | Should BeExactly '<p>asdf</p>'
@@ -198,10 +222,10 @@ InModuleScope ConfluencePS {
             $SetParentID = (Get-WikiPage -Title 'Pester Test Space Home' -Limit 200).ID
             $SetPage2 = Get-WikiPage -Title 'pester new page orphan' -Limit 100 -Expand |
                 Set-WikiPage -Title 'Pester New Page Adopted' -Body "<p>I'm adopted!</p>" `
-                             -ParentID $SetParentID
+                            -ParentID $SetParentID
             ($SetPage2 | Get-Member -MemberType NoteProperty).Count | Should Be 4
             $SetPage2.ID | Should Not BeNullOrEmpty
-            $SetPage2.Key | Should BeExactly 'PESTER'
+            $SetPage2.Key | Should BeExactly "PESTER"
             $SetPage2.Title | Should BeExactly 'Pester New Page Adopted'
             $SetPage2.ParentID | Should Be $SetParentID
             (Get-WikiPage -PageID $SetPage2.ID -Expand).Body | Should BeExactly "<p>I'm adopted!</p>"
@@ -212,10 +236,10 @@ InModuleScope ConfluencePS {
             $SetPage3[0].ID | Should Not Be $SetPage3[1].ID
             ($SetPage3 | Get-Member -MemberType NoteProperty).Count | Should Be 4
             $SetPage3.ID | Should Not BeNullOrEmpty
-            $SetPage3.Key | Should BeExactly 'PESTER'
+            $SetPage3.Key | Should BeExactly @("PESTER", "PESTER")
             # (BeLike / BeLikeExactly hasn't been published to the PS Gallery yet)
             # $SetPage3.Title | Should BeLikeExactly 'Pester New Page*'
-            $SetPage3.ParentID | Should Be $SetParentID
+            $SetPage3.ParentID | Should Be @($SetParentID, $SetParentID)
             (Get-WikiPage -PageID ($SetPage3[0]).ID -Expand).Body | Should BeExactly '<p>Updated</p>'
         }
     }
@@ -232,13 +256,13 @@ InModuleScope ConfluencePS {
             # Related to Get-WikiLabelApplied above, this occasionally fails
             # But always works when run manually
             <#
-            Get-WikiLabelApplied -Label pester | Remove-WikiLabel -Label pester
-            
-            $RemoveLabel2 = Get-WikiPage -SpaceKey PESTER | Get-WikiPageLabel | Sort ID
-            ($RemoveLabel2).Count | Should Be 2
-            $RemoveLabel2[0].Label | Should Be 'pestera'
-            $RemoveLabel2.PageID | Should Be $PageID
-            #>
+        Get-WikiLabelApplied -Label pester | Remove-WikiLabel -Label pester
+
+        $RemoveLabel2 = Get-WikiPage -SpaceKey PESTER | Get-WikiPageLabel | Sort ID
+        ($RemoveLabel2).Count | Should Be 2
+        $RemoveLabel2[0].Label | Should Be 'pestera'
+        $RemoveLabel2.PageID | Should Be $PageID
+        #>
         }
     }
 
@@ -261,10 +285,18 @@ InModuleScope ConfluencePS {
     }
 
     Describe 'Remove-WikiSpace' {
-        It 'Removes the test space' {
-            Remove-WikiSpace -Key PESTER
-            Start-Sleep -Seconds 1
-            Get-WikiSpace -Key PESTER | Should BeNullOrEmpty
+
+        # We don't want warnings on the screen
+        Mock Write-Warning {}
+
+        # Act
+        It 'removes the test space' {
+            { Remove-WikiSpace -Key PESTER -ErrorAction Stop } | Should Not Throw
+        }
+        Start-Sleep -Seconds 1
+        # Assert
+        It 'verifies that the Space is no more' {
+            { Get-WikiSpace -Key PESTER -ErrorAction Stop } | Should Throw
         }
     }
 }
