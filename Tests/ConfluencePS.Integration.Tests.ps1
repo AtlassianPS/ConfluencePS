@@ -7,296 +7,452 @@ Import-Module .\ConfluencePS -Force
 InModuleScope ConfluencePS {
 
     Describe 'Set-WikiInfo' {
-        It 'Connects successfully by using environment variables' {
+        # ARRANGE
             # Could be a long one-liner, but breaking down for readability
             $Pass = ConvertTo-SecureString -AsPlainText -Force -String $env:WikiPass
             $Cred = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList ($env:WikiUser, $Pass)
+
+        # ACT
             Set-WikiInfo -BaseURI $env:WikiURI -Credential $Cred
-        }
+
+        # ASSERT
+            It 'credentials are stored' {
+                $script:Credential | Should BeOfType [PSCredential]
+            }
+            It 'url is stored' {
+                $script:BaseURI | Should Not BeNullOrEmpty
+            }
     }
 
     Describe 'New-WikiSpace' {
+        # ARRANGE
+            # We don't want warnings on the screen
+            $WarningPreference = 'SilentlyContinue'
 
-        # Arrange
-        Mock Write-Warning {} # We don't want warnings on the screen
-        Context 'the test Space does not exist' {
-            It 'is unable to find the test Space' {
-                { Get-WikiSpace -Key "PESTER" -ErrorAction Stop } | Should Throw
-            }
-        }
+            # Set up test values:
+            $Key = "PESTER"
+            $Name = "Pester Test Space"
+            # Ensure the space doesn't already exist
+            Get-WikiSpace -Key $Key -ErrorAction SilentlyContinue
 
-        # Act
-        $NewSpace = New-WikiSpace -Key "PESTER" -Name "Pester Test Space" -ErrorAction SilentlyContinue
+        # ACT
+            $NewSpace = New-WikiSpace -Key $Key -Name $Name -ErrorAction Stop
 
-        # Assert
-        Context 'creates a new Space' {
-            It 'space was created' {
+        # ASSERT
+            It 'returns an object with specific properties' {
                 $NewSpace | Should BeOfType PSObject
-            }
-            It 'has 3 properties' {
                 ($NewSpace | Get-Member -MemberType NoteProperty).Count | Should Be 3
             }
-            It 'ID is numeric' {
+            It 'ID is integer' {
                 $NewSpace.ID | Should BeOfType [Int]
             }
-            It 'key is "PESTER"' {
-                $NewSpace.Key | Should BeExactly "PESTER"
+            It 'key matches the specified value' {
+                $NewSpace.Key | Should BeExactly $Key
             }
-            It 'name is "Pester Test Space"' {
-                $NewSpace.Name | Should BeExactly "Pester Test Space"
+            It 'name matches the specified value' {
+                $NewSpace.Name | Should BeExactly $Name
             }
-        }
     }
 
     Describe 'Get-WikiSpace' {
-        It 'Returns expected space properties' {
-            $GetSpace1 = Get-WikiSpace -Key "PESTER"
-            ($GetSpace1 | Get-Member -MemberType NoteProperty).Count | Should Be 4
-            $GetSpace1.SpaceID | Should Not BeNullOrEmpty
-            $GetSpace1.Key | Should BeExactly "PESTER"
-            $GetSpace1.Name | Should BeExactly "Pester Test Space"
+        # ARRANGE
+            # Set up test values:
+            $Key = "PESTER"
+            $Name = "Pester Test Space"
 
+        # ACT
+            $GetSpace1 = Get-WikiSpace -Key $Key
             $GetSpace2 = Get-WikiSpace | Where-Object {$_.Name -like '*ter test sp*'}
-            ($GetSpace2 | Get-Member -MemberType NoteProperty).Count | Should Be 4
-            $GetSpace2.SpaceID | Should Not BeNullOrEmpty
-            $GetSpace2.Key | Should BeExactly "PESTER"
-            $GetSpace2.Name | Should BeExactly "Pester Test Space"
-
             $GetSpace3 = Get-WikiSpace | Where-Object {$_.SpaceID -eq $GetSpace1.SpaceID}
-            ($GetSpace3 | Get-Member -MemberType NoteProperty).Count | Should Be 4
-            $GetSpace3.SpaceID | Should Be $GetSpace2.SpaceID
-            $GetSpace3.Key | Should BeExactly "PESTER"
-            $GetSpace3.Name | Should BeExactly "Pester Test Space"
-        }
+
+        # ASSERT
+            It 'returns an object with specific properties' {
+                ($GetSpace1 | Get-Member -MemberType NoteProperty).Count | Should Be 4
+                ($GetSpace2 | Get-Member -MemberType NoteProperty).Count | Should Be 4
+                ($GetSpace3 | Get-Member -MemberType NoteProperty).Count | Should Be 4
+            }
+            It 'spaceid is integer' {
+                $GetSpace1.SpaceID | Should BeOfType [Int]
+                $GetSpace2.SpaceID | Should BeOfType [Int]
+                $GetSpace3.SpaceID | Should BeOfType [Int]
+            }
+            It 'key matches the specified value' {
+                $GetSpace1.Key | Should BeExactly $Key
+                $GetSpace2.Key | Should BeExactly $Key
+                $GetSpace3.Key | Should BeExactly $Key
+            }
+            It 'name matches the specified value' {
+                $GetSpace1.Name | Should BeExactly $Name
+                $GetSpace2.Name | Should BeExactly $Name
+                $GetSpace3.Name | Should BeExactly $Name
+            }
     }
 
     Describe 'ConvertTo-WikiStorageFormat' {
-        It 'Prepares a string for wiki use' {
-            'Hi Pester!' | ConvertTo-WikiStorageFormat | Should BeExactly '<p>Hi Pester!</p>'
-        }
+        # ARRANGE
+            $InputString = "Hi Pester!"
+            $OutputString = "<p>Hi Pester!</p>"
+
+        # ACT
+            $result1 = $inputString | ConvertTo-WikiStorageFormat
+            $result2 = ConvertTo-WikiStorageFormat -Content $inputString
+
+        # ASSERT
+            It 'returns a string' {
+                $result1 | Should BeOfType [String]
+                $result2 | Should BeOfType [String]
+            }
+            It 'output matches the expected string' {
+                $result1 | Should BeExactly $outputString
+                $result2 | Should BeExactly $outputString
+            }
     }
 
     Describe 'New-WikiPage' {
-        It 'Creates expected page' {
-            $NewPage1 = Get-WikiPage -Title 'pester test space h' -Limit 200 |
-                New-WikiPage -Title 'Pester New Page Piped' -Body 'Hi Pester!' -Convert
-            ($NewPage1 | Get-Member -MemberType NoteProperty).Count | Should Be 4
-            $NewPage1.ID | Should Not BeNullOrEmpty
-            $NewPage1.Key | Should BeExactly "PESTER"
-            $NewPage1.Title | Should BeExactly 'Pester New Page Piped'
-            $NewPage1.ParentID | Should Not BeNullOrEmpty
+        # ARRANGE
+            $SpaceKey = "PESTER"
+            $Title1 = "Pester New Page Piped"
+            $Title2 = "Pester New Page Orphan"
+            $RawContent = "Hi Pester!"
+            $FormattedContent = "<p>Hi Pester!</p>"
 
-            $NewPage2 = New-WikiPage -Title 'Pester New Page Orphan' -SpaceKey PESTER -Body '<p>Hi Pester!</p>'
-            ($NewPage2 | Get-Member -MemberType NoteProperty).Count | Should Be 4
-            $NewPage2.ID | Should Not BeNullOrEmpty
-            $NewPage2.Key | Should BeExactly "PESTER"
-            $NewPage2.Title | Should BeExactly 'Pester New Page Orphan'
-            $NewPage2.ParentID | Should BeNullOrEmpty
-        }
+        # ACT
+            $NewPage1 = Get-WikiPage -Title 'pester test space h' -Limit 200 |
+                New-WikiPage -Title $Title1 -Body $RawContent -Convert
+            $NewPage2 = New-WikiPage -Title $Title2 -SpaceKey $SpaceKey -Body $FormattedContent
+
+        # ASSERT
+            It 'returns an object with specific properties' {
+                $NewPage1 | Should BeOfType [PSObject]
+                $NewPage2 | Should BeOfType [PSObject]
+                ($NewPage1 | Get-Member -MemberType NoteProperty).Count | Should Be 4
+                ($NewPage2 | Get-Member -MemberType NoteProperty).Count | Should Be 4
+            }
+            It 'spaceid is string' {
+                $NewPage1.ID | Should BeOfType [String]
+                $NewPage2.ID | Should BeOfType [String]
+            }
+            It 'key matches the specified value' {
+                $NewPage1.Key | Should BeExactly $SpaceKey
+                $NewPage2.Key | Should BeExactly $SpaceKey
+            }
+            It 'title matches the specified value' {
+                    $NewPage1.Title | Should BeExactly $Title1
+                    $NewPage2.Title | Should BeExactly $Title2
+            }
+            It 'parentid is string' {
+                $NewPage1.ParentID | Should BeOfType [String]
+            }
+            It 'parentid is empty' {
+                $NewPage2.ParentID | Should BeNullOrEmpty
+            }
     }
 
     Describe 'Get-WikiPage' {
-        It 'Returns expected page properties' {
+        # ARRANGE
+            $SpaceKey = "PESTER"
+            $Title1 = "Pester New Page Piped"
+            $Title2 = "Pester New Page Orphan"
+            $Title3 = "Pester Test Space Home"
+            $Content = "<p>Hi Pester!</p>"
+
+        # ACT
             $GetTitle1 = Get-WikiPage -Title 'new page pipe' -Limit 200
-            ($GetTitle1 | Get-Member -MemberType NoteProperty).Count | Should Be 3
-            $GetTitle1.ID | Should Not BeNullOrEmpty
-            $GetTitle1.Title | Should BeExactly 'Pester New Page Piped'
-            $GetTitle1.Space | Should BeExactly "PESTER"
-
             $GetTitle2 = Get-WikiPage -Title 'new page orph' -Limit 200 -Expand
-            ($GetTitle2 | Get-Member -MemberType NoteProperty).Count | Should Be 5
-            $GetTitle2.ID | Should Not BeNullOrEmpty
-            $GetTitle2.Title | Should BeExactly 'Pester New Page Orphan'
-            $GetTitle2.Space | Should BeExactly "PESTER"
-            $GetTitle2.Ver | Should Be 1
-            $GetTitle2.Body | Should BeExactly '<p>Hi Pester!</p>'
-
             $GetID1 = Get-WikiPage -PageID $GetTitle2.ID
-            ($GetID1 | Get-Member -MemberType NoteProperty).Count | Should Be 3
-            $GetID1[0].ID | Should Be $GetTitle2.ID
-            $GetID1[0].Title | Should BeExactly 'Pester New Page Orphan'
-            $GetID1[0].Space | Should BeExactly "PESTER"
-
             $GetID2 = Get-WikiPage -PageID $GetTitle1.ID -Expand
-            ($GetID2 | Get-Member -MemberType NoteProperty).Count | Should Be 5
-            $GetID2[0].ID | Should Be $GetTitle1.ID
-            $GetID2[0].Title | Should BeExactly 'Pester New Page Piped'
-            $GetID2[0].Space | Should BeExactly "PESTER"
-            $GetID2[0].Ver | Should Be 1
-            $GetID2[0].Body | Should BeExactly '<p>Hi Pester!</p>'
+            $GetKey1 = Get-WikiPage -SpaceKey $SpaceKey | Sort ID
+            $GetKey2 = Get-WikiPage -SpaceKey $SpaceKey -Expand | Sort ID
+            $GetSpacePage = Get-WikiSpace -Key $SpaceKey | Get-WikiPage
 
-            $GetKey1 = Get-WikiPage -SpaceKey PESTER | Sort ID
-            ($GetKey1).Count | Should Be 3
-            ($GetKey1 | Get-Member -MemberType NoteProperty).Count | Should Be 3
-            $GetKey1.ID[1] | Should Be $GetID2.ID
-            $GetKey1[0].Title | Should BeExactly 'Pester Test Space Home'
-            $GetKey1[0].Space | Should BeExactly "PESTER"
-
-            $GetKey2 = Get-WikiPage -SpaceKey PESTER -Expand | Sort ID
-            ($GetKey2).Count | Should Be 3
-            ($GetKey2 | Get-Member -MemberType NoteProperty).Count | Should Be 5
-            $GetKey2[2].ID | Should Be $GetID1.ID
-            $GetKey2[2].Title | Should BeExactly $GetID1.Title
-            $GetKey2[0].Space | Should BeExactly "PESTER"
-            $GetKey2[0].Ver | Should Be 1
-            $GetKey2[2].Body | Should BeExactly '<p>Hi Pester!</p>'
-
-            $GetSpacePage = Get-WikiSpace -Key PESTER | Get-WikiPage
-            ($GetSpacePage.Count) | Should Be 3
-        }
+        # ASSERT
+            It 'returns the correct amount of results' {
+                ($GetKey1).Count | Should Be 3
+                ($GetKey2).Count | Should Be 3
+            }
+            It 'returns an object with specific properties' {
+                $GetTitle1 | Should BeOfType [PSObject]
+                $GetTitle2 | Should BeOfType [PSObject]
+                $GetID1 | Should BeOfType [PSObject]
+                $GetID2 | Should BeOfType [PSObject]
+                $GetKey1 | Should BeOfType [PSObject]
+                $GetKey2 | Should BeOfType [PSObject]
+                ($GetTitle1 | Get-Member -MemberType NoteProperty).Count | Should Be 3
+                ($GetTitle2 | Get-Member -MemberType NoteProperty).Count | Should Be 5
+                ($GetID1 | Get-Member -MemberType NoteProperty).Count | Should Be 3
+                ($GetID2 | Get-Member -MemberType NoteProperty).Count | Should Be 5
+                ($GetKey1 | Get-Member -MemberType NoteProperty).Count | Should Be 3
+                ($GetKey2 | Get-Member -MemberType NoteProperty).Count | Should Be 5
+            }
+            It 'id is string' {
+                $GetTitle1.ID | Should BeOfType [String]
+                $GetTitle2.ID | Should BeOfType [String]
+                $GetID1.ID | Should BeOfType [String]
+                $GetID2.ID | Should BeOfType [String]
+                $GetKey1.ID | Should BeOfType [String]
+                $GetKey2.ID | Should BeOfType [String]
+            }
+            It 'id matches the specified value' {
+                $GetID1.ID | Should Be $GetTitle2.ID
+                $GetID2.ID | Should Be $GetTitle1.ID
+                $GetKey1.ID -contains $GetID2.ID | Should Be $true
+                $GetKey2.ID -contains $GetID1.ID | Should Be $true
+            }
+            It 'title matches the specified value' {
+                $GetTitle1.Title | Should BeExactly $Title1
+                $GetTitle2.Title | Should BeExactly $Title2
+                $GetID1.Title | Should BeExactly $Title2
+                $GetID2.Title | Should BeExactly $Title1
+                $GetKey1.Title -contains $Title3 | Should Be $true
+                $GetKey2.Title -contains $GetID1.Title | Should Be $true
+            }
+            It 'space matches the specified value' {
+                $GetTitle1.Space | Should BeExactly $SpaceKey
+                $GetTitle2.Space | Should BeExactly $SpaceKey
+                $GetID1.Space | Should BeExactly $SpaceKey
+                $GetID2.Space | Should BeExactly $SpaceKey
+                $GetKey1.Space -contains $SpaceKey | Should Be $true
+                $GetKey2.Space -contains $SpaceKey | Should Be $true
+            }
+            It 'version matches the specified value' {
+                $GetTitle2.Ver | Should Be 1
+                $GetID2.Ver | Should Be 1
+                $GetKey2.Ver -contains 1 | Should Be $true
+            }
+            It 'body matches the specified value' {
+                $GetTitle2.Body | Should BeExactly $Content
+                $GetID2.Body | Should BeExactly $Content
+                $GetKey2.Body -contains $Content | Should Be $true
+            }
+            It 'creates the specific amount of pages' {
+                ($GetSpacePage.Count) | Should Be 3
+            }
     }
 
     Describe 'New-WikiLabel' {
-        It 'Applies labels to pages' {
+        # ARRANGE
+            $SpaceKey = "PESTER"
             $PageID = Get-WikiPage -Title 'pester new page piped' -Limit 200 | Select -ExpandProperty ID
+            $Labels1 = @("pestera", "pesterb", "pesterc")
+            $Labels2 = "pester"
+            $PartialLabel = "pest"
 
-            $NewLabel1 = New-WikiLabel -Label pestera, pesterb, pesterc -PageID $PageID
-            ($NewLabel1).Count | Should Be 3
-            ($NewLabel1 | Get-Member -MemberType NoteProperty).Count | Should Be 4
-            $NewLabel1.Label | Should Match 'pest'
-            $NewLabel1.LabelID | Should Not BeNullOrEmpty
-            $NewLabel1[0].PageID | Should Be $PageID
+        # ACT
+            $NewLabel1 = New-WikiLabel -Label $Labels1 -PageID $PageID
+            $NewLabel2 = Get-WikiPage -SpaceKey $SpaceKey | Sort ID | New-WikiLabel -Label $Labels2
 
-            $NewLabel2 = Get-WikiPage -SpaceKey PESTER | Sort ID | New-WikiLabel -Label pester
-            ($NewLabel2).Count | Should Be 6
-            ($NewLabel2 | Get-Member -MemberType NoteProperty).Count | Should Be 4
-            $NewLabel2.Label | Should Match 'pest'
-            $NewLabel2.LabelID | Should Not BeNullOrEmpty
-            $NewLabel2[1].PageID | Should Be $PageID
-        }
+        # ASSERT
+            It 'returns the correct amount of results' {
+                ($NewLabel1).Count | Should Be 3
+                ($NewLabel2).Count | Should Be 6
+            }
+            It 'returns an object with specific properties' {
+                $NewLabel1 | Should BeOfType [PSObject]
+                $NewLabel2 | Should BeOfType [PSObject]
+                ($NewLabel1 | Get-Member -MemberType NoteProperty).Count | Should Be 4
+                ($NewLabel2 | Get-Member -MemberType NoteProperty).Count | Should Be 4
+            }
+            It 'label matches the specified value' {
+                $NewLabel1.Label | Should Match $PartialLabel
+                $NewLabel2.Label | Should Match $PartialLabel
+            }
+            It 'labelid is not null or empty' {
+                $NewLabel1.LabelID | Should Not BeNullOrEmpty
+                $NewLabel2.LabelID | Should Not BeNullOrEmpty
+            }
+            It 'pageid matches the specified value' {
+                $NewLabel1.PageID -contains $PageID | Should Be $true
+                $NewLabel2.PageID -contains $PageID | Should Be $true
+            }
     }
 
     Describe 'Get-WikiPageLabel' {
-        It 'Returns expected labels' {
+        # ARRANGE
+            $SpaceKey = "PESTER"
+            $Label1 = "pester"
+            $PartialLabel = "pest"
             $PageID = Get-WikiPage -Title 'pester new page piped' -Limit 200 | Select -ExpandProperty ID
 
+        # ACT
             $GetPageLabel1 = Get-WikiPageLabel -PageID $PageID
-            ($GetPageLabel1).Count | Should Be 4
-            ($GetPageLabel1 | Get-Member -MemberType NoteProperty).Count | Should Be 4
-            $GetPageLabel1.Label | Should Match 'pest'
-            $GetPageLabel1.LabelID | Should Not BeNullOrEmpty
-            $GetPageLabel1[0].PageID | Should Be $PageID
+            $GetPageLabel2 = Get-WikiPage -SpaceKey $SpaceKey | Sort ID | Get-WikiPageLabel
 
-            $GetPageLabel2 = Get-WikiPage -SpaceKey PESTER | Sort ID | Get-WikiPageLabel
-            ($GetPageLabel2).Count | Should Be 6
-            ($GetPageLabel2 | Where Label -eq "PESTER").Count | Should Be 3
-            ($GetPageLabel2 | Get-Member -MemberType NoteProperty).Count | Should Be 4
-            $GetPageLabel2.Label | Should Match 'pest'
-            $GetPageLabel2.LabelID | Should Not BeNullOrEmpty
-            $GetPageLabel2[1].PageID | Should Be $PageID
-        }
+        # ASSERT
+            It 'returns the correct amount of results' {
+                ($GetPageLabel1).Count | Should Be 4
+                ($GetPageLabel2).Count | Should Be 6
+                ($GetPageLabel2 | Where {$_.Label -eq $Label1}).Count | Should Be 3
+            }
+            It 'returns an object with specific properties' {
+                ($GetPageLabel1 | Get-Member -MemberType NoteProperty).Count | Should Be 4
+                ($GetPageLabel2 | Get-Member -MemberType NoteProperty).Count | Should Be 4
+            }
+            It 'label matches the specified value' {
+                $GetPageLabel1.Label | Should Match $PartialLabel
+                $GetPageLabel2.Label | Should Match $PartialLabel
+            }
+            It 'labelid is not null or empty' {
+                $GetPageLabel1.LabelID | Should Not BeNullOrEmpty
+                $GetPageLabel2.LabelID | Should Not BeNullOrEmpty
+            }
+            It 'pageid matches the specified value' {
+                $GetPageLabel1.PageID -contains $PageID | Should Be $true
+                $GetPageLabel2.PageID -contains $PageID | Should Be $true
+            }
     }
 
     # Can't get this working...always works during manual testing
     # Start-Sleep (and wait loop variants) haven't helped during full runs
-    <#
-Describe 'Get-WikiLabelApplied' {
-    It 'Returns applications of a label' {
-        $GetApplied1 = Get-WikiLabelApplied -Label pesterc
-        ($GetApplied1 | Get-Member -MemberType NoteProperty).Count | Should Be 3
-        $GetApplied1.ID | Should Not BeNullOrEmpty
-        $GetApplied1.Title | Should BeExactly 'Pester New Page Piped'
-        $GetApplied1.Type | Should BeExactly 'page'
+    Describe 'Get-WikiLabelApplied' {
+        # ARRANGE
+            Start-Sleep -sec 30
+            $SpaceKey = "PESTER"
+            $Label1 = "pesterc"
+            $Label2 = "pester"
+            $Title1 = "Pester New Page Piped"
+            $Title2 = "Pester New Page Orphan"
+            $Type = "page"
 
-        $GetApplied2 = Get-WikiSpace -Key PESTER | Get-WikiLabelApplied -Label pester | Sort ID
-        ($GetApplied2).Count | Should Be 3
-        ($GetApplied2 | Get-Member -MemberType NoteProperty).Count | Should Be 3
-        $GetApplied2.ID | Should Not BeNullOrEmpty
-        $GetApplied2[2].Title | Should BeExactly 'Pester New Page Orphan'
-        $GetApplied2.Type | Should BeExactly 'page'
+        # ACT
+            $GetApplied1 = Get-WikiLabelApplied -Label $Label1
+            $GetApplied2 = Get-WikiSpace -Key $SpaceKey | Get-WikiLabelApplied -Label $Label2 | Sort ID
+
+        # ASSERT
+        It 'returns the correct amount of results' {
+            @($GetApplied1).Count | Should Be 1
+            @($GetApplied2).Count | Should Be 3
+        }
+        It 'returns an object with specific properties' {
+            ($GetApplied1 | Get-Member -MemberType NoteProperty).Count | Should Be 3
+            ($GetApplied2 | Get-Member -MemberType NoteProperty).Count | Should Be 3
+        }
+        It 'id is not null or empty' {
+            $GetApplied1.ID | Should Not BeNullOrEmpty
+            $GetApplied2.ID | Should Not BeNullOrEmpty
+        }
+        It 'title has the specified value' {
+            $GetApplied1.Title | Should BeExactly $Title1
+            $GetApplied2[2].Title | Should BeExactly $Title2
+        }
+        It 'type has the specified value' {
+            $GetApplied1.Type | Should BeExactly $Type
+            $GetApplied2.Type -contains $Type | Should Be $true
+        }
     }
-}
-#>
 
     Describe 'Set-WikiPage' {
-        It 'Edits existing pages' {
-            $SetPage1 = Get-WikiPage -Title 'pester new page piped' -Limit 100 -Expand |
-                Set-WikiPage -Body '<p>asdf</p>'
-            ($SetPage1 | Get-Member -MemberType NoteProperty).Count | Should Be 4
-            $SetPage1.ID | Should Not BeNullOrEmpty
-            $SetPage1.Key | Should BeExactly "PESTER"
-            $SetPage1.Title | Should BeExactly 'Pester New Page Piped'
-            $SetPage1.ParentID | Should Not BeNullOrEmpty
-            (Get-WikiPage -PageID $SetPage1.ID -Expand).Body | Should BeExactly '<p>asdf</p>'
-
+        # ARRANGE
+            $SpaceKey = "PESTER"
+            $Title1 = "pester new page piped"
+            $Title2 = "pester new page orphan"
+            $Title3 = "Pester New Page Adopted"
+            $TitlePartial = "pester new page"
+            $Content1 = "<p>asdf</p>"
+            $Content2 = "<p>I'm adopted!</p>"
+            $Content3 = "<p>Updated</p>"
+            $RawContent3 = "Updated"
             $SetParentID = (Get-WikiPage -Title 'Pester Test Space Home' -Limit 200).ID
-            $SetPage2 = Get-WikiPage -Title 'pester new page orphan' -Limit 100 -Expand |
-                Set-WikiPage -Title 'Pester New Page Adopted' -Body "<p>I'm adopted!</p>" `
-                            -ParentID $SetParentID
-            ($SetPage2 | Get-Member -MemberType NoteProperty).Count | Should Be 4
-            $SetPage2.ID | Should Not BeNullOrEmpty
-            $SetPage2.Key | Should BeExactly "PESTER"
-            $SetPage2.Title | Should BeExactly 'Pester New Page Adopted'
-            $SetPage2.ParentID | Should Be $SetParentID
-            (Get-WikiPage -PageID $SetPage2.ID -Expand).Body | Should BeExactly "<p>I'm adopted!</p>"
 
-            $SetPage3 = Get-WikiPage -Title 'pester new page' -Limit 100 -Expand |
-                Set-WikiPage -Body 'Updated' -Convert
-            $SetPage3.Count | Should Be 2
-            $SetPage3[0].ID | Should Not Be $SetPage3[1].ID
-            ($SetPage3 | Get-Member -MemberType NoteProperty).Count | Should Be 4
-            $SetPage3.ID | Should Not BeNullOrEmpty
-            $SetPage3.Key | Should BeExactly @("PESTER", "PESTER")
-            # (BeLike / BeLikeExactly hasn't been published to the PS Gallery yet)
-            # $SetPage3.Title | Should BeLikeExactly 'Pester New Page*'
-            $SetPage3.ParentID | Should Be @($SetParentID, $SetParentID)
-            (Get-WikiPage -PageID ($SetPage3[0]).ID -Expand).Body | Should BeExactly '<p>Updated</p>'
-        }
+        # ACT
+            $SetPage1 = Get-WikiPage -Title $Title1 -Limit 100 -Expand |
+                Set-WikiPage -Body $Content1
+            $SetPage2 = Get-WikiPage -Title $Title2 -Limit 100 -Expand |
+                Set-WikiPage -Title $Title3 -Body $Content2 -ParentID $SetParentID
+            $SetPage3 = Get-WikiPage -Title $TitlePartial -Limit 100 -Expand |
+                Set-WikiPage -Body $RawContent3 -Convert
+
+        # ASSERT
+            It 'returns the correct amount of results' {
+                $SetPage3.Count | Should Be 2
+            }
+            It 'returns an object with specific properties' {
+                ($SetPage1 | Get-Member -MemberType NoteProperty).Count | Should Be 4
+                ($SetPage2 | Get-Member -MemberType NoteProperty).Count | Should Be 4
+                ($SetPage3 | Get-Member -MemberType NoteProperty).Count | Should Be 4
+            }
+            It 'id is not null or empty' {
+                $SetPage1.ID | Should Not BeNullOrEmpty
+                $SetPage2.ID | Should Not BeNullOrEmpty
+                $SetPage3.ID | Should Not BeNullOrEmpty
+            }
+            It 'id should be unique' {
+                $SetPage3[0].ID | Should Not Be $SetPage3[1].ID
+            }
+            It 'key has the specified value' {
+                $SetPage1.Key | Should BeExactly $SpaceKey
+                $SetPage2.Key | Should BeExactly $SpaceKey
+                $SetPage3.Key | Should BeExactly @($SpaceKey, $SpaceKey)
+            }
+            It 'title has the specified value' {
+                $SetPage1.Title | Should BeLike $Title1
+                $SetPage2.Title | Should BeExactly $Title3
+                # (BeLike / BeLikeExactly hasn't been published to the PS Gallery yet)
+                $SetPage3.Title | Should Match $TitlePartial
+            }
+            It 'parentid has the specified value' {
+                $SetPage1.ParentID | Should Not BeNullOrEmpty
+                $SetPage2.ParentID | Should Be $SetParentID
+                $SetPage3.ParentID | Should Be @($SetParentID, $SetParentID)
+            }
+            It 'body has the specified value' {
+                (Get-WikiPage -PageID $SetPage1.ID -Expand).Body | Should BeExactly $Content3
+                (Get-WikiPage -PageID $SetPage2.ID -Expand).Body | Should BeExactly $Content3
+                (Get-WikiPage -PageID ($SetPage3[0]).ID -Expand).Body | Should BeExactly $Content3
+            }
     }
 
     Describe 'Remove-WikiLabel' {
-        It 'Removes labels from content' {
+        # ARRANGE
+            $Label = "pesterc"
             $PageID = Get-WikiPage -Title 'pester new page piped' -Limit 200 | Select -ExpandProperty ID
 
-            Remove-WikiLabel -Label pesterc -PageID $PageID
+        # ACT
+            $Before = Get-WikiPage -PageID $PageID | Get-WikiPageLabel
+            Remove-WikiLabel -Label $Label -PageID $PageID
+            $After = Get-WikiPage -PageID $PageID | Get-WikiPageLabel
 
-            $RemoveLabel1 = Get-WikiPage -PageID $PageID | Get-WikiPageLabel
-            ($RemoveLabel1).Count | Should Be 3
-
-            # Related to Get-WikiLabelApplied above, this occasionally fails
-            # But always works when run manually
-            <#
-        Get-WikiLabelApplied -Label pester | Remove-WikiLabel -Label pester
-
-        $RemoveLabel2 = Get-WikiPage -SpaceKey PESTER | Get-WikiPageLabel | Sort ID
-        ($RemoveLabel2).Count | Should Be 2
-        $RemoveLabel2[0].Label | Should Be 'pestera'
-        $RemoveLabel2.PageID | Should Be $PageID
-        #>
-        }
+        # ASSERT
+            It 'page has one label less' {
+                ($Before).Count - ($After).Count| Should Be 1
+            }
+            It 'page does not have label' {
+                $After -notcontains $Label | Should Be $true
+            }
     }
 
     Describe 'Remove-WikiPage' {
-        It 'Removes the test pages' {
-            $PageID1 = Get-WikiPage -Title 'Pester New Page Adopted' -Limit 200 | Select -ExpandProperty ID
-            $PageID1 | Should Not BeNullOrEmpty
+        # ARRANGE
+            $SpaceKey = "PESTER"
+            $Title = "Pester New Page Adopted"
+            $PageID = Get-WikiPage -Title $Title -Limit 200 -ErrorAction Stop | Select -ExpandProperty ID
+            $Before = Get-WikiPage -SpaceKey $SpaceKey -Limit 200 -ErrorAction Stop
 
-            Remove-WikiPage -PageID $PageID1
+        # ACT
+            Remove-WikiPage -PageID $PageID -ErrorAction Stop
+            Get-WikiPage -SpaceKey $SpaceKey -Limit 200 | Remove-WikiPage
+            $After = Get-WikiPage -SpaceKey $SpaceKey -Limit 200 -ErrorAction SilentlyContinue
 
-            $RemovePage1 = Get-WikiPage -SpaceKey PESTER -Limit 200
-            ($RemovePage1).Count | Should Be 2
-            $RemovePage1[0].ID | Should Not Be $PageID1
-            $RemovePage1[1].ID | Should Not Be $PageID1
-
-            Get-WikiPage -SpaceKey PESTER -Limit 200 | Remove-WikiPage
-
-            Get-WikiPage -SpaceKey PESTER -Limit 200 | Should BeNullOrEmpty
-        }
+        # ASSERT
+            It 'had pages before' {
+                $Before | Should Not BeNullOrEmpty
+            }
+            It 'space has no more pages after' {
+                $After | Should BeNullOrEmpty
+            }
     }
 
     Describe 'Remove-WikiSpace' {
+        # ARRANGE
+            # We don't want warnings on the screen
+            $WarningPreference = 'SilentlyContinue'
 
-        # We don't want warnings on the screen
-        Mock Write-Warning {}
+        # ACT
+            Remove-WikiSpace -Key PESTER -ErrorAction Stop
 
-        # Act
-        It 'removes the test space' {
-            { Remove-WikiSpace -Key PESTER -ErrorAction Stop } | Should Not Throw
-        }
-        Start-Sleep -Seconds 1
-        # Assert
-        It 'verifies that the Space is no more' {
+        # ASSERT
+            Start-Sleep -Seconds 1
+            It 'space is no longer available' {
             { Get-WikiSpace -Key PESTER -ErrorAction Stop } | Should Throw
-        }
+            }
     }
 }
