@@ -1,8 +1,16 @@
 ﻿# Pester integration/acceptance tests to use during module development. Dave Wyatt's five-part series:
 # http://blogs.technet.com/b/heyscriptingguy/archive/2015/12/14/what-is-pester-and-why-should-i-care.aspx
 
-Get-Module ConfluencePS | Remove-Module -Force
-Import-Module .\ConfluencePS -Force
+Describe 'Load Module' {
+    # ARRANGE
+        Remove-Module ConfluencePS -Force -ErrorAction SilentlyContinue
+    # ACT
+        Import-Module "$PSScriptRoot\..\ConfluencePS" -Force -ErrorAction Stop
+    #ASSERT
+    It "imports the module" {
+        Get-Module ConfluencePS | Should BeOfType [PSModuleInfo]
+    }
+}
 
 InModuleScope ConfluencePS {
 
@@ -32,25 +40,40 @@ InModuleScope ConfluencePS {
             # Set up test values:
             $Key = "PESTER"
             $Name = "Pester Test Space"
+            $Description = "<p>A nice description</p>"
+            $Icon = [ConfluencePS.CIcon] @{
+                path = "/images/logo/default-space-logo-256.png"
+                width = 48
+                height = 48
+                isDefault = $False
+            }
+            $Space2 = [ConfluencePS.Space]@{
+                Key = "PESTER1"
+                Name = "Second Pester Space"
+            }
             # Ensure the space doesn't already exist
             Get-WikiSpace -Key $Key -ErrorAction SilentlyContinue
 
         # ACT
-            $NewSpace = New-WikiSpace -Key $Key -Name $Name -ErrorAction Stop
+            $NewSpace1 = New-WikiSpace -Key $Key -Name $Name -Description $Description -ErrorAction Stop
+            $NewSpace2 = $Space2 | New-WikiSpace -ErrorAction Stop
 
         # ASSERT
             It 'returns an object with specific properties' {
-                $NewSpace | Should BeOfType PSObject
-                ($NewSpace | Get-Member -MemberType NoteProperty).Count | Should Be 3
+                $NewSpace1 | Should BeOfType [ConfluencePS.Space]
+                $NewSpace2 | Should BeOfType [ConfluencePS.Space]
+                ($NewSpace1 | Get-Member -MemberType Property).Count | Should Be 6
             }
             It 'ID is integer' {
-                $NewSpace.ID | Should BeOfType [Int]
+                $NewSpace1.ID | Should BeOfType [Int]
             }
             It 'key matches the specified value' {
-                $NewSpace.Key | Should BeExactly $Key
+                $NewSpace1.Key | Should BeOfType [String]
+                $NewSpace1.Key | Should BeExactly $Key
             }
             It 'name matches the specified value' {
-                $NewSpace.Name | Should BeExactly $Name
+                $NewSpace1.Name | Should BeOfType [String]
+                $NewSpace1.Name | Should BeExactly $Name
             }
     }
 
@@ -59,32 +82,66 @@ InModuleScope ConfluencePS {
             # Set up test values:
             $Key = "PESTER"
             $Name = "Pester Test Space"
+            $Description = "<p>A nice description</p>"
 
         # ACT
             $GetSpace1 = Get-WikiSpace -Key $Key
             $GetSpace2 = Get-WikiSpace | Where-Object {$_.Name -like '*ter test sp*'}
-            $GetSpace3 = Get-WikiSpace | Where-Object {$_.SpaceID -eq $GetSpace1.SpaceID}
+            $GetSpace3 = Get-WikiSpace | Where-Object {$_.ID -eq $GetSpace1.ID}
 
         # ASSERT
             It 'returns an object with specific properties' {
-                ($GetSpace1 | Get-Member -MemberType NoteProperty).Count | Should Be 4
-                ($GetSpace2 | Get-Member -MemberType NoteProperty).Count | Should Be 4
-                ($GetSpace3 | Get-Member -MemberType NoteProperty).Count | Should Be 4
+                $GetSpace1 | Should BeOfType [ConfluencePS.Space]
+                $GetSpace2 | Should BeOfType [ConfluencePS.Space]
+                $GetSpace3 | Should BeOfType [ConfluencePS.Space]
+                ($GetSpace1 | Get-Member -MemberType Property).Count | Should Be 6
+                ($GetSpace2 | Get-Member -MemberType Property).Count | Should Be 6
+                ($GetSpace3 | Get-Member -MemberType Property).Count | Should Be 6
             }
-            It 'spaceid is integer' {
-                $GetSpace1.SpaceID | Should BeOfType [Int]
-                $GetSpace2.SpaceID | Should BeOfType [Int]
-                $GetSpace3.SpaceID | Should BeOfType [Int]
+            It 'id is integer' {
+                $GetSpace1.ID | Should BeOfType [Int]
+                $GetSpace2.ID | Should BeOfType [Int]
+                $GetSpace3.ID | Should BeOfType [Int]
+            }
+            It 'key is string' {
+                $GetSpace1.Key | Should BeOfType [String]
+                $GetSpace2.Key | Should BeOfType [String]
+                $GetSpace3.Key | Should BeOfType [String]
             }
             It 'key matches the specified value' {
                 $GetSpace1.Key | Should BeExactly $Key
                 $GetSpace2.Key | Should BeExactly $Key
                 $GetSpace3.Key | Should BeExactly $Key
             }
+            It 'name is string' {
+                $GetSpace1.Name | Should BeOfType [String]
+                $GetSpace2.Name | Should BeOfType [String]
+                $GetSpace3.Name | Should BeOfType [String]
+            }
             It 'name matches the specified value' {
                 $GetSpace1.Name | Should BeExactly $Name
                 $GetSpace2.Name | Should BeExactly $Name
                 $GetSpace3.Name | Should BeExactly $Name
+            }
+            It 'description string' {
+                $GetSpace1.Description | Should BeOfType [String]
+                $GetSpace2.Description | Should BeOfType [String]
+                $GetSpace3.Description | Should BeOfType [String]
+            }
+            It 'description matches the specified value' {
+                $GetSpace1.Description | Should BeExactly $Description
+                $GetSpace2.Description | Should BeExactly $Description
+                $GetSpace3.Description | Should BeExactly $Description
+            }
+            It 'type is string' {
+                $GetSpace1.Type | Should BeOfType [String]
+                $GetSpace2.Type | Should BeOfType [String]
+                $GetSpace3.Type | Should BeOfType [String]
+            }
+            It 'icon is confluenceps.cicon' {
+                $GetSpace1.Icon | Should BeOfType [ConfluencePS.CIcon]
+                $GetSpace2.Icon | Should BeOfType [ConfluencePS.CIcon]
+                $GetSpace3.Icon | Should BeOfType [ConfluencePS.CIcon]
             }
     }
 
@@ -163,12 +220,13 @@ InModuleScope ConfluencePS {
             $GetID2 = Get-WikiPage -PageID $GetTitle1.ID -Expand
             $GetKey1 = Get-WikiPage -SpaceKey $SpaceKey | Sort ID
             $GetKey2 = Get-WikiPage -SpaceKey $SpaceKey -Expand | Sort ID
-            $GetSpacePage = Get-WikiSpace -Key $SpaceKey | Get-WikiPage
+            $GetSpacePage = Get-WikiSpace -SpaceKey $SpaceKey | Get-WikiPage
 
         # ASSERT
             It 'returns the correct amount of results' {
                 ($GetKey1).Count | Should Be 3
                 ($GetKey2).Count | Should Be 3
+                ($GetSpacePage).Count | Should Be 3
             }
             It 'returns an object with specific properties' {
                 $GetTitle1 | Should BeOfType [PSObject]
@@ -223,9 +281,6 @@ InModuleScope ConfluencePS {
                 $GetTitle2.Body | Should BeExactly $Content
                 $GetID2.Body | Should BeExactly $Content
                 $GetKey2.Body -contains $Content | Should Be $true
-            }
-            It 'creates the specific amount of pages' {
-                ($GetSpacePage.Count) | Should Be 3
             }
     }
 
@@ -448,11 +503,13 @@ InModuleScope ConfluencePS {
 
         # ACT
             Remove-WikiSpace -Key PESTER -ErrorAction Stop
+            Remove-WikiSpace -Key PESTER1 -ErrorAction Stop
 
         # ASSERT
             Start-Sleep -Seconds 1
             It 'space is no longer available' {
-            { Get-WikiSpace -Key PESTER -ErrorAction Stop } | Should Throw
+                { Get-WikiSpace -Key PESTER -ErrorAction Stop } | Should Throw
+                { Get-WikiSpace -Key PESTER1 -ErrorAction Stop } | Should Throw
             }
     }
 }
