@@ -29,7 +29,7 @@ namespace ConfluencePS
 				} catch {
 					var dict = value as IDictionary;
 					if(dict != null && dict.Contains("plain")) {
-						_description = dict["plain"].ToString();
+						_description = ((Hashtable)dict["plain"])["value"].ToString();
 					} else {
 						_description = value.ToString();
 					}
