@@ -44,25 +44,25 @@
             $URI += "/$SpaceKey"
         }
 
+        $GETparameters = @()
+        $GETparameters += @{name = "expand"; value = "description.plain,icon,homepage,metadata.labels"}
         If ($Limit) {
-            $URI += "?limit=$Limit"
+            $GETparameters += @{name = "limit"; value = $Limit}
         }
+        $GETparameters | % -Begin {$GETparameter = "?"} -Process {$GETparameter += "$($_.name)=$($_.value)&"} -End {$GETparameter = $GETparameter -replace ".$"}
+        $URI += $GETparameter
 
-        Write-Verbose "Fetching info from $URI"
+        Write-Verbose "Fetching data from $URI"
         $response = Invoke-WikiMethod -Uri $URI -Method Get
+        Write-Debug "`$response: $($response | Out-String)"
 
-        if ($response.Results) {
-            $response.Results | Select @{n='Key';     e={$_.key}},
-                                      @{n='Name';    e={$_.name}},
-                                      @{n='SpaceID'; e={$_.id}},
-                                      @{n='Type';    e={$_.type}}
+        Write-Verbose "Processing results"
+        if ($response.results) {
+            $response = $response | Select-Object -ExpandProperty results
         }
-        else {
-            $response | Select @{n='Key';     e={$_.key}},
-                               @{n='Name';    e={$_.name}},
-                               @{n='SpaceID'; e={$_.id}},
-                               @{n='Type';    e={$_.type}}
+        foreach ($item in $response) {
+            # TODO: Add homepage
+            ($item | Select-Object id, key, name, description, icon, type) -as [ConfluencePS.Space]
         }
-
     }
 }

@@ -17,19 +17,39 @@
     .LINK
     https://github.com/brianbunke/ConfluencePS
     #>
-    [CmdletBinding(SupportsShouldProcess=$true,
-                   ConfirmImpact='Medium')]
+    [CmdletBinding(
+        SupportsShouldProcess = $true,
+        DefaultParameterSetName = "byObject",
+        ConfirmImpact = 'Medium'
+    )]
     param (
+        # Space Object
+        [Parameter(
+            Mandatory = $true,
+            ParameterSetName = "byObject",
+            ValueFromPipeline = $true
+        )]
+        [ConfluencePS.Space]$InputObject,
+
         # Specify the short key to be used in the space URI.
-        [Parameter(Mandatory = $true)]
+        [Parameter(
+            Mandatory = $true,
+            ParameterSetName = "byProperties"
+        )]
         [Alias('Key')]
         [string]$SpaceKey,
 
         # Specify the space's name.
-        [Parameter(Mandatory = $true)]
+        [Parameter(
+            Mandatory = $true,
+            ParameterSetName = "byProperties"
+        )]
         [string]$Name,
 
         # A short description of the new space.
+        [Parameter(
+            ParameterSetName = "byProperties"
+        )]
         [string]$Description
     )
 
@@ -43,12 +63,18 @@
     PROCESS {
         $URI = "$BaseURI/space"
 
+        if ($PsCmdlet.ParameterSetName -eq "byObject") {
+            $SpaceKey = $InputObject.Key
+            $Name = $InputObject.Name
+            $Description = $InputObject.Description
+        }
+
         $Body = @{
-            key         = $SpaceKey
-            name        = $Name
+            key = $SpaceKey
+            name = $Name
             description = @{
                 plain = @{
-                    value          = $Description
+                    value = $Description
                     representation = 'plain'
                 }
             }
@@ -56,12 +82,8 @@
 
         Write-Verbose "Posting to $URI"
         If ($PSCmdlet.ShouldProcess("$SpaceKey $Name")) {
-            $response = Invoke-WikiMethod -Uri $URI -Body $Body -Method Post
+            $result = Invoke-WikiMethod -Uri $URI -Body $Body -Method Post
+            ($result | Select-Object id, key, name) -as [ConfluencePS.Space]
         }
-
-        # Hashing everything because I don't like the lower case property names from the REST call
-        $response | Select @{n='ID';e={$_.id}},
-                           @{n='Key';e={$_.key}},
-                           @{n='Name';e={$_.name}}
     }
 }
