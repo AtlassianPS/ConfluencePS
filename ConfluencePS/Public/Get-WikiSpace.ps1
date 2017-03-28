@@ -40,15 +40,17 @@
     PROCESS {
         $URI = "$BaseURI/space"
 
+        $GETparameters = @()
+
         if ($SpaceKey) {
             $URI += "/$SpaceKey"
         }
-
-        $GETparameters = @()
         $GETparameters += @{name = "expand"; value = "description.plain,icon,homepage,metadata.labels"}
         If ($Limit) {
             $GETparameters += @{name = "limit"; value = $Limit}
         }
+
+        Write-Debug "Using `$GETparameters: $($GETparameters | Out-String)"
         $GETparameters | % -Begin {$GETparameter = "?"} -Process {$GETparameter += "$($_.name)=$($_.value)&"} -End {$GETparameter = $GETparameter -replace ".$"}
         $URI += $GETparameter
 
