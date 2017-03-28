@@ -326,7 +326,7 @@ InModuleScope ConfluencePS {
             $SpaceKey = "PESTER"
             $Label1 = "pester"
             $PartialLabel = "pest"
-            $PageID = Get-WikiPage -Title 'pester new page piped' -Limit 200 | Select -ExpandProperty ID
+            $PageID = Get-WikiPage -Title 'pester new page piped'
 
         # ACT
             $GetPageLabel1 = Get-WikiPageLabel -PageID $PageID
@@ -339,6 +339,8 @@ InModuleScope ConfluencePS {
                 ($GetPageLabel2 | Where {$_.Label -eq $Label1}).Count | Should Be 3
             }
             It 'returns an object with specific properties' {
+                $GetPageLabel1 | Should BeOfType [ConfluencePS.Page]
+                $GetPageLabel2 | Should BeOfType [ConfluencePS.Page]
                 ($GetPageLabel1 | Get-Member -MemberType NoteProperty).Count | Should Be 4
                 ($GetPageLabel2 | Get-Member -MemberType NoteProperty).Count | Should Be 4
             }
