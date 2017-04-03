@@ -7,9 +7,9 @@ Describe 'Load Module' {
     # ACT
         Import-Module "$PSScriptRoot\..\ConfluencePS" -Force -ErrorAction Stop
     #ASSERT
-    It "imports the module" {
-        Get-Module ConfluencePS | Should BeOfType [PSModuleInfo]
-    }
+        It "imports the module" {
+            Get-Module ConfluencePS | Should BeOfType [PSModuleInfo]
+        }
 }
 
 InModuleScope ConfluencePS {
@@ -41,7 +41,7 @@ InModuleScope ConfluencePS {
             $Key = "PESTER"
             $Name = "Pester Test Space"
             $Description = "<p>A nice description</p>"
-            $Icon = [ConfluencePS.CIcon] @{
+            $Icon = [ConfluencePS.Icon] @{
                 path = "/images/logo/default-space-logo-256.png"
                 width = 48
                 height = 48
@@ -85,18 +85,26 @@ InModuleScope ConfluencePS {
             $Description = "<p>A nice description</p>"
 
         # ACT
+            $AllSpaces = Get-WikiSpace
             $GetSpace1 = Get-WikiSpace -Key $Key
             $GetSpace2 = Get-WikiSpace | Where-Object {$_.Name -like '*ter test sp*'}
             $GetSpace3 = Get-WikiSpace | Where-Object {$_.ID -eq $GetSpace1.ID}
 
         # ASSERT
             It 'returns an object with specific properties' {
+                $AllSpaces | Should BeOfType [ConfluencePS.Space]
                 $GetSpace1 | Should BeOfType [ConfluencePS.Space]
                 $GetSpace2 | Should BeOfType [ConfluencePS.Space]
                 $GetSpace3 | Should BeOfType [ConfluencePS.Space]
                 ($GetSpace1 | Get-Member -MemberType Property).Count | Should Be 6
                 ($GetSpace2 | Get-Member -MemberType Property).Count | Should Be 6
                 ($GetSpace3 | Get-Member -MemberType Property).Count | Should Be 6
+            }
+            It 'has the correct number of results' {
+                $AllSpaces.Count | Should BeGreaterThan 2
+                $GetSpace1.Count | Should Be 1
+                $GetSpace2.Count | Should Be 1
+                $GetSpace3.Count | Should Be 1
             }
             It 'id is integer' {
                 $GetSpace1.ID | Should BeOfType [Int]
@@ -138,10 +146,10 @@ InModuleScope ConfluencePS {
                 $GetSpace2.Type | Should BeOfType [String]
                 $GetSpace3.Type | Should BeOfType [String]
             }
-            It 'icon is confluenceps.cicon' {
-                $GetSpace1.Icon | Should BeOfType [ConfluencePS.CIcon]
-                $GetSpace2.Icon | Should BeOfType [ConfluencePS.CIcon]
-                $GetSpace3.Icon | Should BeOfType [ConfluencePS.CIcon]
+            It 'icon is confluenceps.icon' {
+                $GetSpace1.Icon | Should BeOfType [ConfluencePS.Icon]
+                $GetSpace2.Icon | Should BeOfType [ConfluencePS.Icon]
+                $GetSpace3.Icon | Should BeOfType [ConfluencePS.Icon]
             }
     }
 
@@ -180,25 +188,25 @@ InModuleScope ConfluencePS {
 
         # ASSERT
             It 'returns an object with specific properties' {
-                $NewPage1 | Should BeOfType [PSObject]
-                $NewPage2 | Should BeOfType [PSObject]
-                ($NewPage1 | Get-Member -MemberType NoteProperty).Count | Should Be 4
-                ($NewPage2 | Get-Member -MemberType NoteProperty).Count | Should Be 4
+                $NewPage1 | Should BeOfType [ConfluecePS.Page]
+                $NewPage2 | Should BeOfType [ConfluecePS.Page]
+                ($NewPage1 | Get-Member -MemberType Property).Count | Should Be 4
+                ($NewPage2 | Get-Member -MemberType Property).Count | Should Be 4
             }
             It 'spaceid is string' {
-                $NewPage1.ID | Should BeOfType [String]
-                $NewPage2.ID | Should BeOfType [String]
+                $NewPage1.ID | Should BeOfType [Int]
+                $NewPage2.ID | Should BeOfType [Int]
             }
             It 'key matches the specified value' {
                 $NewPage1.Key | Should BeExactly $SpaceKey
                 $NewPage2.Key | Should BeExactly $SpaceKey
             }
             It 'title matches the specified value' {
-                    $NewPage1.Title | Should BeExactly $Title1
-                    $NewPage2.Title | Should BeExactly $Title2
+                $NewPage1.Title | Should BeExactly $Title1
+                $NewPage2.Title | Should BeExactly $Title2
             }
             It 'parentid is string' {
-                $NewPage1.ParentID | Should BeOfType [String]
+                $NewPage1.ParentID | Should BeOfType [Int]
             }
             It 'parentid is empty' {
                 $NewPage2.ParentID | Should BeNullOrEmpty
