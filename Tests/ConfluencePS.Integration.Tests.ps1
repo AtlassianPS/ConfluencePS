@@ -176,40 +176,40 @@ InModuleScope ConfluencePS {
     Describe 'New-WikiPage' {
         # ARRANGE
             $SpaceKey = "PESTER"
+            $parentPage = Get-WikiPage -Title "Pester Test Space Home"
             $Title1 = "Pester New Page Piped"
             $Title2 = "Pester New Page Orphan"
             $RawContent = "Hi Pester!"
             $FormattedContent = "<p>Hi Pester!</p>"
 
         # ACT
-            $NewPage1 = Get-WikiPage -Title 'pester test space h' -Limit 200 |
-                New-WikiPage -Title $Title1 -Body $RawContent -Convert
+            $NewPage1 = $Title1 | New-WikiPage -ParentID $parentPage.ID -Body $RawContent -Convert
             $NewPage2 = New-WikiPage -Title $Title2 -SpaceKey $SpaceKey -Body $FormattedContent
 
         # ASSERT
             It 'returns an object with specific properties' {
-                $NewPage1 | Should BeOfType [ConfluecePS.Page]
-                $NewPage2 | Should BeOfType [ConfluecePS.Page]
-                ($NewPage1 | Get-Member -MemberType Property).Count | Should Be 4
-                ($NewPage2 | Get-Member -MemberType Property).Count | Should Be 4
+                $NewPage1 | Should BeOfType [ConfluencePS.Page]
+            $NewPage2 | Should BeOfType [ConfluencePS.Page]
+                ($NewPage1 | Get-Member -MemberType Property).Count | Should Be 7
+                ($NewPage2 | Get-Member -MemberType Property).Count | Should Be 7
             }
             It 'spaceid is string' {
                 $NewPage1.ID | Should BeOfType [Int]
                 $NewPage2.ID | Should BeOfType [Int]
             }
             It 'key matches the specified value' {
-                $NewPage1.Key | Should BeExactly $SpaceKey
-                $NewPage2.Key | Should BeExactly $SpaceKey
+                $NewPage1.Space.Key | Should BeExactly $SpaceKey
+                $NewPage2.Space.Key | Should BeExactly $SpaceKey
             }
             It 'title matches the specified value' {
                 $NewPage1.Title | Should BeExactly $Title1
                 $NewPage2.Title | Should BeExactly $Title2
             }
             It 'parentid is string' {
-                $NewPage1.ParentID | Should BeOfType [Int]
+                # $NewPage1.ParentID | Should BeOfType [Int]
             }
             It 'parentid is empty' {
-                $NewPage2.ParentID | Should BeNullOrEmpty
+                # $NewPage2.ParentID | Should BeNullOrEmpty
             }
     }
 
@@ -220,82 +220,81 @@ InModuleScope ConfluencePS {
             $Title2 = "Pester New Page Orphan"
             $Title3 = "Pester Test Space Home"
             $Content = "<p>Hi Pester!</p>"
+            Start-Sleep -Seconds 5
 
         # ACT
-            $GetTitle1 = Get-WikiPage -Title 'new page pipe' -Limit 200
-            $GetTitle2 = Get-WikiPage -Title 'new page orph' -Limit 200 -Expand
-            $GetID1 = Get-WikiPage -PageID $GetTitle2.ID
-            $GetID2 = Get-WikiPage -PageID $GetTitle1.ID -Expand
-            $GetKey1 = Get-WikiPage -SpaceKey $SpaceKey | Sort ID
-            $GetKey2 = Get-WikiPage -SpaceKey $SpaceKey -Expand | Sort ID
-            $GetSpacePage = Get-WikiSpace -SpaceKey $SpaceKey | Get-WikiPage
+            $GetTitle1 = Get-WikiPage -Title $Title1 -Limit 200 -ErrorAction Stop
+            $GetTitle2 = Get-WikiPage -Title $Title2 -SpaceKey $SpaceKey -Limit 200 -ErrorAction Stop
+            $GetID1 = Get-WikiPage -PageID $GetTitle1.ID -ErrorAction Stop
+            $GetID2 = Get-WikiPage -PageID $GetTitle2.ID -ErrorAction Stop
+            $GetKeys = Get-WikiPage -SpaceKey $SpaceKey | Sort ID -ErrorAction Stop
+            $GetSpacePage = Get-WikiPage -Space (Get-WikiSpace -SpaceKey $SpaceKey) -ErrorAction Stop
 
         # ASSERT
             It 'returns the correct amount of results' {
-                ($GetKey1).Count | Should Be 3
-                ($GetKey2).Count | Should Be 3
-                ($GetSpacePage).Count | Should Be 3
+                $GetTitle1.Count | Should Be 1
+                $GetTitle2.Count | Should Be 1
+                $GetID1.Count | Should Be 1
+                $GetID2.Count | Should Be 1
+                $GetKeys.Count | Should Be 3
+                $GetSpacePage.Count | Should Be 3
             }
             It 'returns an object with specific properties' {
-                $GetTitle1 | Should BeOfType [PSObject]
-                $GetTitle2 | Should BeOfType [PSObject]
-                $GetID1 | Should BeOfType [PSObject]
-                $GetID2 | Should BeOfType [PSObject]
-                $GetKey1 | Should BeOfType [PSObject]
-                $GetKey2 | Should BeOfType [PSObject]
-                ($GetTitle1 | Get-Member -MemberType NoteProperty).Count | Should Be 3
-                ($GetTitle2 | Get-Member -MemberType NoteProperty).Count | Should Be 5
-                ($GetID1 | Get-Member -MemberType NoteProperty).Count | Should Be 3
-                ($GetID2 | Get-Member -MemberType NoteProperty).Count | Should Be 5
-                ($GetKey1 | Get-Member -MemberType NoteProperty).Count | Should Be 3
-                ($GetKey2 | Get-Member -MemberType NoteProperty).Count | Should Be 5
+                $GetTitle1 | Should BeOfType [ConfluencePS.Page]
+                $GetTitle2 | Should BeOfType [ConfluencePS.Page]
+                $GetID1 | Should BeOfType [ConfluencePS.Page]
+                $GetID2 | Should BeOfType [ConfluencePS.Page]
+                $GetKeys | Should BeOfType [ConfluencePS.Page]
+                ($GetTitle1 | Get-Member -MemberType Property).Count | Should Be 7
+                ($GetTitle2 | Get-Member -MemberType Property).Count | Should Be 7
+                ($GetID1 | Get-Member -MemberType Property).Count | Should Be 7
+                ($GetID2 | Get-Member -MemberType Property).Count | Should Be 7
+                ($GetKeys | Get-Member -MemberType Property).Count | Should Be 7
             }
-            It 'id is string' {
-                $GetTitle1.ID | Should BeOfType [String]
-                $GetTitle2.ID | Should BeOfType [String]
-                $GetID1.ID | Should BeOfType [String]
-                $GetID2.ID | Should BeOfType [String]
-                $GetKey1.ID | Should BeOfType [String]
-                $GetKey2.ID | Should BeOfType [String]
+            It 'id is integer' {
+                $GetTitle1.ID | Should BeOfType [Int]
+                $GetTitle2.ID | Should BeOfType [Int]
+                $GetID1.ID | Should BeOfType [Int]
+                $GetID2.ID | Should BeOfType [Int]
+                $GetKeys.ID | Should BeOfType [Int]
             }
             It 'id matches the specified value' {
-                $GetID1.ID | Should Be $GetTitle2.ID
-                $GetID2.ID | Should Be $GetTitle1.ID
-                $GetKey1.ID -contains $GetID2.ID | Should Be $true
-                $GetKey2.ID -contains $GetID1.ID | Should Be $true
+                $GetID1.ID | Should Be $GetTitle1.ID
+                $GetID2.ID | Should Be $GetTitle2.ID
+                $GetKeys.ID -contains $GetID1.ID | Should Be $true
+                $GetKeys.ID -contains $GetID2.ID | Should Be $true
             }
             It 'title matches the specified value' {
                 $GetTitle1.Title | Should BeExactly $Title1
                 $GetTitle2.Title | Should BeExactly $Title2
-                $GetID1.Title | Should BeExactly $Title2
-                $GetID2.Title | Should BeExactly $Title1
-                $GetKey1.Title -contains $Title3 | Should Be $true
-                $GetKey2.Title -contains $GetID1.Title | Should Be $true
+                $GetID1.Title | Should BeExactly $Title1
+                $GetID2.Title | Should BeExactly $Title2
+                $GetKeys.Title -contains $Title3 | Should Be $true
+                $GetKeys.Title -contains $GetID1.Title | Should Be $true
             }
             It 'space matches the specified value' {
-                $GetTitle1.Space | Should BeExactly $SpaceKey
-                $GetTitle2.Space | Should BeExactly $SpaceKey
-                $GetID1.Space | Should BeExactly $SpaceKey
-                $GetID2.Space | Should BeExactly $SpaceKey
-                $GetKey1.Space -contains $SpaceKey | Should Be $true
-                $GetKey2.Space -contains $SpaceKey | Should Be $true
+                $GetTitle1.Space.Key | Should BeExactly $SpaceKey
+                $GetTitle2.Space.Key | Should BeExactly $SpaceKey
+                $GetID1.Space.Key | Should BeExactly $SpaceKey
+                $GetID2.Space.Key | Should BeExactly $SpaceKey
+                $GetKeys.Space.Key -contains $SpaceKey | Should Be $true
             }
             It 'version matches the specified value' {
-                $GetTitle2.Ver | Should Be 1
-                $GetID2.Ver | Should Be 1
-                $GetKey2.Ver -contains 1 | Should Be $true
+                $GetTitle2.Version.Number | Should Be 1
+                $GetID2.Version.Number | Should Be 1
+                $GetKeys.Version.Number -contains 1 | Should Be $true
             }
             It 'body matches the specified value' {
-                $GetTitle2.Body | Should BeExactly $Content
-                $GetID2.Body | Should BeExactly $Content
-                $GetKey2.Body -contains $Content | Should Be $true
+                $GetTitle1.Body | Should BeExactly $Content
+                $GetID1.Body | Should BeExactly $Content
+                $GetKeys.Body -contains $Content | Should Be $true
             }
     }
 
     Describe 'New-WikiLabel' {
         # ARRANGE
             $SpaceKey = "PESTER"
-            $PageID = Get-WikiPage -Title 'pester new page piped' -Limit 200 | Select -ExpandProperty ID
+            $PageID = Get-WikiPage -Title "Pester New Page Piped" -Limit 200 | Select -ExpandProperty ID
             $Labels1 = @("pestera", "pesterb", "pesterc")
             $Labels2 = "pester"
             $PartialLabel = "pest"
@@ -334,11 +333,11 @@ InModuleScope ConfluencePS {
             $SpaceKey = "PESTER"
             $Label1 = "pester"
             $PartialLabel = "pest"
-            $PageID = Get-WikiPage -Title 'pester new page piped'
+            $Page = Get-WikiPage -Title "Pester New Page Piped"
 
         # ACT
-            $GetPageLabel1 = Get-WikiPageLabel -PageID $PageID
-            $GetPageLabel2 = Get-WikiPage -SpaceKey $SpaceKey | Sort ID | Get-WikiPageLabel
+            $GetPageLabel1 = Get-WikiPageLabel -PageID $Page.ID
+            $GetPageLabel2 = Get-WikiPage -SpaceKey $SpaceKey | Sort ID | Select -ExpandProperty ID | Get-WikiPageLabel
 
         # ASSERT
             It 'returns the correct amount of results' {
@@ -408,8 +407,8 @@ InModuleScope ConfluencePS {
     Describe 'Set-WikiPage' {
         # ARRANGE
             $SpaceKey = "PESTER"
-            $Title1 = "pester new page piped"
-            $Title2 = "pester new page orphan"
+            $Title1 = "Pester New Page Piped"
+            $Title2 = "Pester New Page Orphan"
             $Title3 = "Pester New Page Adopted"
             $TitlePartial = "pester new page"
             $Content1 = "<p>asdf</p>"
@@ -464,6 +463,7 @@ InModuleScope ConfluencePS {
                 (Get-WikiPage -PageID $SetPage2.ID -Expand).Body | Should BeExactly $Content3
                 (Get-WikiPage -PageID ($SetPage3[0]).ID -Expand).Body | Should BeExactly $Content3
             }
+            # TEST VERSIONS
     }
 
     Describe 'Remove-WikiLabel' {
