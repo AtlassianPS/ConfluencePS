@@ -83,7 +83,7 @@
         Write-Verbose "Posting to $URI"
         If ($PSCmdlet.ShouldProcess("$SpaceKey $Name")) {
             $result = Invoke-WikiMethod -Uri $URI -Body $Body -Method Post
-            ($result | Select-Object id, key, name) -as [ConfluencePS.Space]
+            $result | ConvertTo-WikiSpace
         }
     }
 }

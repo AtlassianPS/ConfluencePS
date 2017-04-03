@@ -63,8 +63,7 @@
             $response = $response | Select-Object -ExpandProperty results
         }
         foreach ($item in $response) {
-            # TODO: Add homepage
-            ($item | Select-Object id, key, name, description, icon, type) -as [ConfluencePS.Space]
+            $item | ConvertTo-WikiSpace
         }
     }
 }
