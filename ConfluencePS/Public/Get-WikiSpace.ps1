@@ -40,19 +40,14 @@
     PROCESS {
         $URI = "$BaseURI/space"
 
-        $GETparameters = @()
-
         if ($SpaceKey) {
             $URI += "/$SpaceKey"
         }
-        $GETparameters += @{name = "expand"; value = "description.plain,icon,homepage,metadata.labels"}
-        If ($Limit) {
-            $GETparameters += @{name = "limit"; value = $Limit}
-        }
+        $GETparameters += @{expand = "description.plain,icon,homepage,metadata.labels"}
+        If ($Limit) { $GETparameters["limit"] = $Limit }
 
         Write-Debug "Using `$GETparameters: $($GETparameters | Out-String)"
-        $GETparameters | % -Begin {$GETparameter = "?"} -Process {$GETparameter += "$($_.name)=$($_.value)&"} -End {$GETparameter = $GETparameter -replace ".$"}
-        $URI += $GETparameter
+        $URI += (Add-GetParameter $GETparameters)
 
         Write-Verbose "Fetching data from $URI"
         $response = Invoke-WikiMethod -Uri $URI -Method Get
@@ -60,6 +55,7 @@
 
         Write-Verbose "Processing results"
         if ($response.results) {
+            # extract from array
             $response = $response | Select-Object -ExpandProperty results
         }
         foreach ($item in $response) {
