@@ -34,29 +34,54 @@
     .LINK
     https://github.com/brianbunke/ConfluencePS
     #>
-	[CmdletBinding()]
-	param (
-        # Filter results by name. Supports wildcard matching on partial names.
-        # Filtering happens via Where-Object (after the REST call) for case insensitivity.
+    [CmdletBinding(DefaultParameterSetName = "byId")]
+    [OutputType([ConfluencePS.Page])]
+    param (
+        # Filter results by page ID.
+        # Best option if you already know the ID, as it bypasses result limit problems.
+        [Parameter(
+            Mandatory = $true,
+            ParameterSetName = "byId",
+            ValueFromPipeline = $true
+        )]
+        [ValidateRange(1, [int]::MaxValue)]
+        [Alias('ID')]
+        [int[]]$PageID,
+
+        # Filter results by name.
+        [Parameter(
+            Mandatory = $true,
+            ParameterSetName = "byTitle"
+        )]
         [Alias('Name')]
         [string]$Title,
 
-        # Filter results by page ID.
-        # Best option if you already know the ID, as it bypasses result limit problems.
-        [Parameter(ValueFromPipelineByPropertyName = $true)]
-        [ValidateRange(1,[int]::MaxValue)]
-        [Alias('ID')]
-        [int]$PageID,
-
         # Filter results by key. Currently, this parameter is case sensitive.
-        [Parameter(ValueFromPipelineByPropertyName = $true)]
+        [Parameter(
+            Mandatory = $true,
+            ParameterSetName = "bySpace"
+        )]
+        [Parameter(
+            ParameterSetName = "byTitle"
+        )]
         [Alias('Key')]
         [string]$SpaceKey,
 
+        [Parameter(
+            Mandatory = $true,
+            ValueFromPipeline = $true,
+            ParameterSetName = "bySpaceObject"
+        )]
+        [Parameter(
+            ValueFromPipeline = $true,
+            ParameterSetName = "byTitle"
+        )]
+        [ConfluencePS.Space]$Space,
+
         # Defaults to 25 max results; can be modified here.
         # Numbers above 100 may not be honored if -Expand is used.
-        [ValidateRange(1,[int]::MaxValue)]
-        [int]$Limit,
+        [ValidateRange(1, [int]::MaxValue)]
+        [int]$Limit, # TODO: pagination
 
         # Additionally returns expanded results for each page (body, version, etc.).
         # May negatively affect -Limit, client/server performance, and network bandwidth.
@@ -68,89 +93,72 @@
             Write-Warning 'Confluence instance info not yet defined in this session. Calling Set-WikiInfo'
             Set-WikiInfo
         }
+
+        # collect all results to process in END block
+        $results = @()
+
+        $contentRoot = "$BaseURI/content" # base url for this resouce
     }
 
     PROCESS {
-        $URI = "$BaseURI/content"
+        Write-Debug "ParameterSetName: $($PsCmdlet.ParameterSetName)"
+        Write-Debug "PSBoundParameters: $($PSBoundParameters | Out-String)"
+
+        $URI = $contentRoot
+
+        if ($Space -is [ConfluencePS.Space] -and ($Space.Key)) {
+            $SpaceKey = $Space.Key
+        }
 
         # URI prep based on specified parameters
-        If ($PageID) {
-            If ($Expand) {
-                $URI = $URI + "/$PageID/?expand=body.view,version"
-            } Else {
-                $URI = $URI + "/$PageID"
+        $GETparameters = @{expand = "space,version,body.storage,ancestors"}
+        switch -regex ($PsCmdlet.ParameterSetName) {
+            "byId" {
+                foreach ($_pageID in $PageID) {
+                    $URI = "$contentRoot/$_pageID"
+
+                    Write-Debug "Using `$GETparameters: $($GETparameters | Out-String)"
+                    $URI += (Add-GetParameter $GETparameters)
+
+                    Write-Verbose "Fetching data from $URI"
+                    $response = Invoke-WikiMethod -Uri $URI -Method Get
+                    Write-Debug "`$response: $($response | Out-String)"
+                    $results += $response
+                }
+                break
             }
-        } ElseIf ($SpaceKey) {
-            If ($Expand) {
-                $URI = $URI + "?type=page&spaceKey=$SpaceKey&expand=body.view,version"
-            } Else {
-                $URI = $URI + "?type=page&spaceKey=$SpaceKey"
+            "byTitle" {
+                if ($SpaceKey) { $GETparameters["spaceKey"] = $SpaceKey }
+                $GETparameters["title"] = $Title
             }
-        } Else {
-            If ($Expand) {
-                $URI = $URI + '?type=page&expand=body.view,version'
-            } Else {
-                $URI = $URI + '?type=page'
+            "bySpace" {
+                $GETparameters["spaceKey"] = $SpaceKey
+            }
+            "(bySpace|byTitle)" {
+                $GETparameters["type"] = "page"
+                If ($Limit) { $GETparameters["limit"] = $Limit }
+
+                Write-Debug "Using `$GETparameters: $($GETparameters | Out-String)"
+                $URI += (Add-GetParameter $GETparameters)
+
+                Write-Verbose "Fetching data from $URI"
+                $response = Invoke-WikiMethod -Uri $URI -Method Get
+                Write-Debug "`$response: $($response | Out-String)"
+                # Collect results to process in END block
+                $results += $response
             }
         }
+    }
 
-        # Append the Limit parameter to the URI
-        If ($Limit) {
-            If ($PageID) {
-                # Not supported/needed on this resource
-            } Else {
-                # Will always have ?type=page, so this will always be & instead of ?
-                $URI = $URI + "&limit=$Limit"
+    End {
+        Write-Verbose "Processing results"
+        foreach ($result in $results) {
+            if ($result.results) {
+                # Extract from array
+                $result = $result | Select-Object -ExpandProperty results
             }
-        }
-
-        Write-Verbose "GET call from $URI"
-        $response = Invoke-WikiMethod -Uri $URI -Method Get
-
-        # Display results depending on the call we made
-        # Hashing everything because I don't like the lower case property names from the REST call
-        If ($PageID) {
-            Write-Verbose "Showing -PageID $PageID results"
-            If ($Expand) {
-                $response | Select @{n='ID';    e={$_.id}},
-                               @{n='Title'; e={$_.title}},
-                               @{n='Space'; e={$_._expandable.space -replace '/rest/api/space/',''}},
-                               @{n='Ver';   e={$_.version.number}},
-                               @{n='Body';  e={$_.body.view.value}}
-            } Else {
-                $response | Select @{n='ID';    e={$_.id}},
-                               @{n='Title'; e={$_.title}},
-                               @{n='Space'; e={$_.space.key}}
-            }
-        } ElseIf ($Title) {
-            Write-Verbose "Showing -Title $Title results"
-            If ($Expand) {
-                $response | Select -ExpandProperty Results | Where {$_.Title -like "*$Title*"} |
-                    Select @{n='ID';    e={$_.id}},
-                           @{n='Title'; e={$_.title}},
-                           @{n='Space'; e={$_._expandable.space -replace '/rest/api/space/',''}},
-                           @{n='Ver';   e={$_.version.number}},
-                           @{n='Body';  e={$_.body.view.value}}
-            } Else {
-                $response | Select -ExpandProperty Results | Where {$_.Title -like "*$Title*"} |
-                    Select @{n='ID';    e={$_.id}},
-                           @{n='Title'; e={$_.title}},
-                           @{n='Space'; e={$_._expandable.space -replace '/rest/api/space/',''}}
-            }
-        } Else {
-            Write-Verbose "Showing results"
-            If ($Expand) {
-                $response | Select -ExpandProperty Results |
-                    Select @{n='ID';    e={$_.id}},
-                           @{n='Title'; e={$_.title}},
-                           @{n='Space'; e={$_._expandable.space -replace '/rest/api/space/',''}},
-                           @{n='Ver';   e={$_.version.number}},
-                           @{n='Body';  e={$_.body.view.value}}
-            } Else {
-                $response | Select -ExpandProperty Results |
-                    Select @{n='ID';    e={$_.id}},
-                           @{n='Title'; e={$_.title}},
-                           @{n='Space'; e={$_._expandable.space -replace '/rest/api/space/',''}}
+            foreach ($item in $result) {
+                $item | ConvertTo-WikiPage
             }
         }
     }

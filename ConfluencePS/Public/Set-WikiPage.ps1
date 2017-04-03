@@ -100,11 +100,11 @@
         If ((!$CurrentVersion) -and (!$Title)) {
             Write-Verbose "Title and version unspecified. Calling Get-WikiPage w/ ID $PageID"
             $CurrentPage   = Get-WikiPage -PageID $PageID -Expand
-            [int]$CurrentVersion  = $CurrentPage.Ver
+            [int]$CurrentVersion  = $CurrentPage.Version.Number
             [string]$Title = $CurrentPage.Title
         } ElseIf (!$CurrentVersion) {
             Write-Verbose "Version unspecified. Calling Get-WikiPage w/ ID $PageID"
-            [int]$CurrentVersion  = Get-WikiPage -PageID $PageID -Expand | Select -ExpandProperty Ver
+            [int]$CurrentVersion  = (Get-WikiPage -PageID $PageID -Expand).Version.Number
         } ElseIf (!$Title) {
             Write-Verbose "Title unspecified. Calling Get-WikiPage w/ ID $PageID"
             [string]$Title = Get-WikiPage -PageID $PageID -Expand | Select -ExpandProperty Title
@@ -150,12 +150,7 @@
         # -WhatIf wrapper
         If ($PSCmdlet.ShouldProcess("PageID $PageID, Body $Body")) {
             $response = Invoke-WikiMethod -Uri $URI -Body $Content -Method Put
-
-            # Hashing everything because I don't like the lower case property names from the REST call
-            $response | Select @{n='ID';      e={$_.id}},
-                           @{n='Key';     e={$_.space.key}},
-                           @{n='Title';   e={$_.title}},
-                           @{n='ParentID';e={$_.ancestors.id}}
+            if ($response) { $response | ConvertTo-WikiPage }
         }
 
         # If multiple pages are being piped in, need to check for version each time
