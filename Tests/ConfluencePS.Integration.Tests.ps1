@@ -179,44 +179,71 @@ InModuleScope ConfluencePS {
             $parentPage = Get-WikiPage -Title "Pester Test Space Home"
             $Title1 = "Pester New Page Piped"
             $Title2 = "Pester New Page Orphan"
+            $Title3 = "Pester New Page from Object"
+            $Title4 = "Pester New Page with Parent Object"
             $RawContent = "Hi Pester!"
             $FormattedContent = "<p>Hi Pester!</p>"
+            $pageObject = New-Object -TypeName ConfluencePS.Page -Property @{
+                Title = $Title3
+                Body = $FormattedContent
+                Ancestors = @($parentPage)
+                Space = New-Object -TypeName ConfluencePS.Space -Property @{key = $SpaceKey}
+            }
 
         # ACT
-            $NewPage1 = $Title1 | New-WikiPage -ParentID $parentPage.ID -Body $RawContent -Convert
-            $NewPage2 = New-WikiPage -Title $Title2 -SpaceKey $SpaceKey -Body $FormattedContent
+            $NewPage1 = $Title1 | New-WikiPage -ParentID $parentPage.ID -ErrorAction Stop
+            $NewPage2 = New-WikiPage -Title $Title2 -SpaceKey $SpaceKey -Body $RawContent -Convert -ErrorAction Stop
+            $NewPage3 = $pageObject | New-WikiPage -ErrorAction Stop
+            $NewPage4 = New-WikiPage -Title $Title4 -Parent $parentPage -ErrorAction Stop
 
         # ASSERT
             It 'returns an object with specific properties' {
                 $NewPage1 | Should BeOfType [ConfluencePS.Page]
-            $NewPage2 | Should BeOfType [ConfluencePS.Page]
+                $NewPage2 | Should BeOfType [ConfluencePS.Page]
+                $NewPage3 | Should BeOfType [ConfluencePS.Page]
+                $NewPage4 | Should BeOfType [ConfluencePS.Page]
                 ($NewPage1 | Get-Member -MemberType Property).Count | Should Be 7
                 ($NewPage2 | Get-Member -MemberType Property).Count | Should Be 7
+                ($NewPage3 | Get-Member -MemberType Property).Count | Should Be 7
+                ($NewPage4 | Get-Member -MemberType Property).Count | Should Be 7
             }
-            It 'spaceid is string' {
+            It 'spaceid is integer' {
                 $NewPage1.ID | Should BeOfType [Int]
                 $NewPage2.ID | Should BeOfType [Int]
+                $NewPage3.ID | Should BeOfType [Int]
+                $NewPage4.ID | Should BeOfType [Int]
             }
             It 'key matches the specified value' {
                 $NewPage1.Space.Key | Should BeExactly $SpaceKey
                 $NewPage2.Space.Key | Should BeExactly $SpaceKey
+                $NewPage3.Space.Key | Should BeExactly $SpaceKey
+                $NewPage4.Space.Key | Should BeExactly $SpaceKey
             }
             It 'title matches the specified value' {
                 $NewPage1.Title | Should BeExactly $Title1
                 $NewPage2.Title | Should BeExactly $Title2
+                $NewPage3.Title | Should BeExactly $Title3
+                $NewPage4.Title | Should BeExactly $Title4
             }
-            It 'parentid is string' {
-                # $NewPage1.ParentID | Should BeOfType [Int]
+            It 'parentid is integer' {
+                $NewPage1.Ancestors.ID | Should BeOfType [Int]
+                $NewPage3.Ancestors.ID | Should BeOfType [Int]
+                $NewPage4.Ancestors.ID | Should BeOfType [Int]
+            }
+            It 'parentid matches the specified value' {
+                $NewPage1.Ancestors.ID | Should BeExactly $parentPage.ID
+                $NewPage3.Ancestors.ID | Should BeExactly $parentPage.ID
+                $NewPage4.Ancestors.ID | Should BeExactly $parentPage.ID
             }
             It 'parentid is empty' {
-                # $NewPage2.ParentID | Should BeNullOrEmpty
+                $NewPage2.Ancestors | Should BeNullOrEmpty
             }
     }
 
     Describe 'Get-WikiPage' {
         # ARRANGE
             $SpaceKey = "PESTER"
-            $Title1 = "Pester New Page Piped"
+            $Title1 = "Pester New Page from Object"
             $Title2 = "Pester New Page Orphan"
             $Title3 = "Pester Test Space Home"
             $Content = "<p>Hi Pester!</p>"
@@ -236,8 +263,8 @@ InModuleScope ConfluencePS {
                 $GetTitle2.Count | Should Be 1
                 $GetID1.Count | Should Be 1
                 $GetID2.Count | Should Be 1
-                $GetKeys.Count | Should Be 3
-                $GetSpacePage.Count | Should Be 3
+                $GetKeys.Count | Should Be 5
+                $GetSpacePage.Count | Should Be 5
             }
             It 'returns an object with specific properties' {
                 $GetTitle1 | Should BeOfType [ConfluencePS.Page]
@@ -406,7 +433,32 @@ InModuleScope ConfluencePS {
 
     Describe 'Set-WikiPage' {
         # ARRANGE
+            function dummy-Function {
+                [CmdletBinding()]
+                param (
+                    [Parameter(
+                        Mandatory = $true,
+                        ValueFromPipeline = $true
+                    )]
+                    [ConfluencePS.Page]$InputObject,
+
+                    $Title,
+                    $Body
+                )
+
+                process {
+                    if ($Title) {
+                        $InputObject.Title = $Title
+                    }
+                    if ($Body) {
+                        $InputObject.Body = $Body
+                    }
+                    $InputObject
+                }
+            }
+
             $SpaceKey = "PESTER"
+            $AllPages = Get-WikiPage -SpaceKey $SpaceKey
             $Title1 = "Pester New Page Piped"
             $Title2 = "Pester New Page Orphan"
             $Title3 = "Pester New Page Adopted"
