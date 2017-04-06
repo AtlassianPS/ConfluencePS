@@ -68,6 +68,7 @@
         # Name of the page; existing or new value can be used.
         # Existing will be automatically supplied via Get-WikiPage if not manually included.
         [Parameter(ParameterSetName = 'byParameters')]
+        [ValidateNotNullOrEmpty()]
         [string]$Title,
 
         # The full contents of the updated body (existing contents will be overwritten).
@@ -127,7 +128,7 @@
                 # Ancestors is undocumented! May break in the future
                 # http://stackoverflow.com/questions/23523705/how-to-create-new-page-in-confluence-using-their-rest-api
                 # if ($InputObject.Ancestors) {
-                    # $Content["ancestors"] += @( $InputObject.Ancestors | Foreach-Object { @{ id = $_.ID } } )
+                # $Content["ancestors"] += @( $InputObject.Ancestors | Foreach-Object { @{ id = $_.ID } } )
                 # }
             }
             "byParameters" {
@@ -150,7 +151,8 @@
                 else {
                     $Content["title"] = $originalPage.Title
                 }
-                if ($Body) {
+                if ($PSBoundParameters.Keys -contains "Body") {
+                    # $Body might be empty
                     $Content["body"] = @{ storage = @{ value = $Body; representation = 'storage' }}
                 }
                 else {
@@ -168,7 +170,8 @@
 
         Write-Verbose "Putting to $URI"
         Write-Verbose "Content: $($Content | Out-String)"
-        If ($PSCmdlet.ShouldProcess("Space $SpaceKey, Parent $ParentID")) { # TODO
+        If ($PSCmdlet.ShouldProcess("Space $SpaceKey, Parent $ParentID")) {
+            # TODO
             $response = Invoke-WikiMethod -Uri $URI -Body $Content -Method Put
             if ($response) { $response | ConvertTo-WikiPage }
         }
