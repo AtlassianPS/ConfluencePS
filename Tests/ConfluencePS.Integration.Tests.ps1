@@ -174,6 +174,11 @@ InModuleScope ConfluencePS {
     }
 
     Describe 'New-WikiPage' {
+        <# TODO:
+            * Title may not be empty
+            * Space may not be empty when no parent is provided
+        #>
+
         # ARRANGE
             $SpaceKey = "PESTER"
             $parentPage = Get-WikiPage -Title "Pester Test Space Home"
@@ -432,6 +437,11 @@ InModuleScope ConfluencePS {
     }
 
     Describe 'Set-WikiPage' {
+        <# TODO:
+        * Title may not be empty
+        * fails when version is 1 larger than current version
+        #>
+
         # ARRANGE
             function dummy-Function {
                 [CmdletBinding()]
@@ -458,64 +468,139 @@ InModuleScope ConfluencePS {
             }
 
             $SpaceKey = "PESTER"
+            $Page1 = Get-WikiPage -SpaceKey $SpaceKey -Title "Pester New Page Piped"
+            $Page2 = Get-WikiPage -SpaceKey $SpaceKey -Title "Pester New Page Orphan"
+            $Page3 = Get-WikiPage -SpaceKey $SpaceKey -Title "Pester New Page from Object"
+            $Page4 = Get-WikiPage -SpaceKey $SpaceKey -Title "Pester New Page with Parent Object"
+            # create some more pages
+            $Page5, $Page6, $Page7, $Page8 = ("Page 5", "Page 6", "Page 7", "Page 8" | New-WikiPage -SpaceKey $SpaceKey -Body "<p>Lorem ipsum</p>" -ErrorAction Stop)
             $AllPages = Get-WikiPage -SpaceKey $SpaceKey
-            $Title1 = "Pester New Page Piped"
-            $Title2 = "Pester New Page Orphan"
-            $Title3 = "Pester New Page Adopted"
-            $TitlePartial = "pester new page"
-            $Content1 = "<p>asdf</p>"
-            $Content2 = "<p>I'm adopted!</p>"
-            $Content3 = "<p>Updated</p>"
+            $ParentPage = $AllPages | Where-Object {$_.Title -like "*Home"}
+
+            $NewTitle6 = "Renamed Page 6"
+            $NewTitle7 = "Renamed Page 7"
+            $NewContent1 = "<h1>Bulk Change</h1><p>Changed all bodies in this space at once</p>"
+            $NewContent2 = "<h1>Set Body by property</h1>"
+            $NewContent3 = "<p>Updated</p>"
             $RawContent3 = "Updated"
-            $SetParentID = (Get-WikiPage -Title 'Pester Test Space Home' -Limit 200).ID
 
         # ACT
-            $SetPage1 = Get-WikiPage -Title $Title1 -Limit 100 -Expand |
-                Set-WikiPage -Body $Content1
-            $SetPage2 = Get-WikiPage -Title $Title2 -Limit 100 -Expand |
-                Set-WikiPage -Title $Title3 -Body $Content2 -ParentID $SetParentID
-            $SetPage3 = Get-WikiPage -Title $TitlePartial -Limit 100 -Expand |
-                Set-WikiPage -Body $RawContent3 -Convert
+            # change the body of all pages - all pages should have version 2
+            $AllChangedPages = $AllPages | dummy-Function -Body $NewContent1 | Set-WikiPage -ErrorAction Stop
+            # set the body of a page to the same value as it already had - should remain on verion 2
+            $SetPage1 = $Page1.ID | Set-WikiPage -Body $NewContent1 -ErrorAction Stop
+            # change the body of a page by property - this page should have version 3
+            $SetPage2 = $Page2.ID | Set-WikiPage -Body $NewContent2 -ErrorAction Stop
+            # make a non-relevant change just to bump page version
+            $SetPage3 = $Page3.ID | Set-WikiPage -Body "..."
+            # change the title of a page by property - this page should have version 4
+            $SetPage3 = $Page3.ID | Set-WikiPage -Body $RawContent3 -Convert
+            # change the parent page by object
+            $SetPage4 = Set-WikiPage -PageID $Page4.ID -Parent $Page3
+            # change the parent page by pageid
+            $SetPage5 = Set-WikiPage -PageID $Page5.ID -ParentID $Page4.ID
+            # change the title of a page
+            $SetPage6 = $Page6.ID | Set-WikiPage -Title $NewTitle6
+            $SetPage7 = $AllChangedPages | Where {$_.ID -eq $Page7.ID} | dummy-Function -Title $NewTitle7 | Set-WikiPage
+            # clear the body of a page
+            $SetPage8 = Set-WikiPage -PageID $Page8.ID -Body ""
 
         # ASSERT
             It 'returns the correct amount of results' {
-                $SetPage3.Count | Should Be 2
+                $SetPage1.Count | Should Be 1
+                $SetPage2.Count | Should Be 1
+                $SetPage3.Count | Should Be 1
+                $SetPage4.Count | Should Be 1
+                $SetPage5.Count | Should Be 1
+                $SetPage6.Count | Should Be 1
+                $SetPage7.Count | Should Be 1
+                $SetPage8.Count | Should Be 1
+                $AllChangedPages.Count | Should Be 9
             }
             It 'returns an object with specific properties' {
-                ($SetPage1 | Get-Member -MemberType NoteProperty).Count | Should Be 4
-                ($SetPage2 | Get-Member -MemberType NoteProperty).Count | Should Be 4
-                ($SetPage3 | Get-Member -MemberType NoteProperty).Count | Should Be 4
+                $SetPage1 | Should BeOfType [ConfluencePS.Page]
+                $SetPage2 | Should BeOfType [ConfluencePS.Page]
+                $SetPage3 | Should BeOfType [ConfluencePS.Page]
+                $SetPage4 | Should BeOfType [ConfluencePS.Page]
+                $SetPage5 | Should BeOfType [ConfluencePS.Page]
+                $SetPage6 | Should BeOfType [ConfluencePS.Page]
+                $SetPage7 | Should BeOfType [ConfluencePS.Page]
+                $SetPage8 | Should BeOfType [ConfluencePS.Page]
+                $AllChangedPages | Should BeOfType [ConfluencePS.Page]
+                ($SetPage1 | Get-Member -MemberType Property).Count | Should Be 7
+                ($SetPage2 | Get-Member -MemberType Property).Count | Should Be 7
+                ($SetPage3 | Get-Member -MemberType Property).Count | Should Be 7
+                ($SetPage4 | Get-Member -MemberType Property).Count | Should Be 7
+                ($SetPage5 | Get-Member -MemberType Property).Count | Should Be 7
+                ($SetPage6 | Get-Member -MemberType Property).Count | Should Be 7
+                ($SetPage7 | Get-Member -MemberType Property).Count | Should Be 7
+                ($SetPage8 | Get-Member -MemberType Property).Count | Should Be 7
             }
             It 'id is not null or empty' {
                 $SetPage1.ID | Should Not BeNullOrEmpty
                 $SetPage2.ID | Should Not BeNullOrEmpty
                 $SetPage3.ID | Should Not BeNullOrEmpty
-            }
-            It 'id should be unique' {
-                $SetPage3[0].ID | Should Not Be $SetPage3[1].ID
+                $SetPage4.ID | Should Not BeNullOrEmpty
+                $SetPage5.ID | Should Not BeNullOrEmpty
+                $SetPage6.ID | Should Not BeNullOrEmpty
+                $SetPage7.ID | Should Not BeNullOrEmpty
+                $SetPage8.ID | Should Not BeNullOrEmpty
             }
             It 'key has the specified value' {
-                $SetPage1.Key | Should BeExactly $SpaceKey
-                $SetPage2.Key | Should BeExactly $SpaceKey
-                $SetPage3.Key | Should BeExactly @($SpaceKey, $SpaceKey)
+                $SetPage1.Space.Key | Should BeExactly $SpaceKey
+                $SetPage2.Space.Key | Should BeExactly $SpaceKey
+                $SetPage3.Space.Key | Should BeExactly $SpaceKey
+                $SetPage4.Space.Key | Should BeExactly $SpaceKey
+                $SetPage5.Space.Key | Should BeExactly $SpaceKey
+                $SetPage6.Space.Key | Should BeExactly $SpaceKey
+                $SetPage7.Space.Key | Should BeExactly $SpaceKey
+                $SetPage8.Space.Key | Should BeExactly $SpaceKey
+                $AllChangedPages.Space.Key | Should BeExactly (1..9 | % {$SpaceKey})
             }
             It 'title has the specified value' {
-                $SetPage1.Title | Should BeLike $Title1
-                $SetPage2.Title | Should BeExactly $Title3
-                # (BeLike / BeLikeExactly hasn't been published to the PS Gallery yet)
-                $SetPage3.Title | Should Match $TitlePartial
+                $SetPage1.Title | Should BeExactly $Page1.Title
+                $SetPage2.Title | Should BeExactly $Page2.Title
+                $SetPage3.Title | Should BeExactly $Page3.Title
+                $SetPage4.Title | Should BeExactly $Page4.Title
+                $SetPage5.Title | Should BeExactly $Page5.Title
+                $SetPage6.Title | Should BeExactly $NewTitle6
+                $SetPage7.Title | Should BeExactly $NewTitle7
+                $SetPage8.Title | Should BeExactly $Page8.Title
             }
             It 'parentid has the specified value' {
-                $SetPage1.ParentID | Should Not BeNullOrEmpty
-                $SetPage2.ParentID | Should Be $SetParentID
-                $SetPage3.ParentID | Should Be @($SetParentID, $SetParentID)
+                $SetPage1.Ancestors | Should Not BeNullOrEmpty
+                $SetPage1.Ancestors.ID | Should BeExactly $parentPage.ID
+                $SetPage2.Ancestors | Should BeNullOrEmpty
+                $SetPage3.Ancestors | Should Not BeNullOrEmpty
+                $SetPage3.Ancestors.ID | Should BeExactly $ParentPage.ID
+                $SetPage4.Ancestors | Should Not BeNullOrEmpty
+                $SetPage4.Ancestors.ID | Should BeExactly @($ParentPage.ID, $SetPage3.ID)
+                $SetPage5.Ancestors | Should Not BeNullOrEmpty
+                $SetPage5.Ancestors.ID | Should BeExactly @($ParentPage.ID, $SetPage3.ID, $SetPage4.ID)
+                $SetPage6.Ancestors | Should BeNullOrEmpty
+                $SetPage7.Ancestors | Should BeNullOrEmpty
+                $SetPage8.Ancestors | Should BeNullOrEmpty
             }
             It 'body has the specified value' {
-                (Get-WikiPage -PageID $SetPage1.ID -Expand).Body | Should BeExactly $Content3
-                (Get-WikiPage -PageID $SetPage2.ID -Expand).Body | Should BeExactly $Content3
-                (Get-WikiPage -PageID ($SetPage3[0]).ID -Expand).Body | Should BeExactly $Content3
-            }
-            # TEST VERSIONS
+                $SetPage1.Body | Should BeExactly $NewContent1
+                $SetPage2.Body | Should BeExactly $NewContent2
+                $SetPage3.Body | Should BeExactly $NewContent3
+                $SetPage4.Body | Should BeExactly $NewContent1
+                $SetPage5.Body | Should BeExactly $NewContent1
+                $SetPage6.Body | Should BeExactly $NewContent1
+                $SetPage7.Body | Should BeExactly $NewContent1
+                $SetPage8.Body | Should BeExactly ""
+        }
+        It 'version has the specified value' {
+            $SetPage1.Version.Number | Should BeExactly 2
+            $SetPage2.Version.Number | Should BeExactly 3
+            $SetPage3.Version.Number | Should BeExactly 4
+            $SetPage4.Version.Number | Should BeExactly 3
+            $SetPage5.Version.Number | Should BeExactly 3
+            $SetPage6.Version.Number | Should BeExactly 3
+            $SetPage7.Version.Number | Should BeExactly 3
+            $SetPage8.Version.Number | Should BeExactly 3
+        }
     }
 
     Describe 'Remove-WikiLabel' {
