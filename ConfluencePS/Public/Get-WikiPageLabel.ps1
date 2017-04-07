@@ -65,7 +65,7 @@
         Write-Verbose "Fetching info from $URI"
         $response = Invoke-WikiMethod -Uri $URI -Method Get
 
-        if ($response | Get-Member -Name results) {
+        if (($response) -and ($response | Get-Member -Name results)) {
             # Extract from array
             $response = $response | Select-Object -ExpandProperty results
         }
