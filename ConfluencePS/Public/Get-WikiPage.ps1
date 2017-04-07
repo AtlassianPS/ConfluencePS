@@ -95,9 +95,6 @@
             Set-WikiInfo
         }
 
-        # collect all results to process in END block
-        $results = @()
-
         $contentRoot = "$BaseURI/content" # base url for this resouce
     }
 
@@ -124,7 +121,6 @@
                     Write-Verbose "Fetching data from $URI"
                     $response = Invoke-WikiMethod -Uri $URI -Method Get
                     Write-Debug "`$response: $($response | Out-String)"
-                    $results += $response
                 }
                 break
             }
@@ -146,19 +142,15 @@
                 $response = Invoke-WikiMethod -Uri $URI -Method Get
                 Write-Debug "`$response: $($response | Out-String)"
                 # Collect results to process in END block
-                $results += $response
             }
         }
-    }
 
-    End {
-        Write-Verbose "Processing results"
-        foreach ($result in $results) {
-            if ($result.results) {
-                # Extract from array
-                $result = $result | Select-Object -ExpandProperty results
-            }
-            foreach ($item in $result) {
+        if ($response | Get-Member -Name results) {
+            # Extract from array
+            $response = $response | Select-Object -ExpandProperty results
+        }
+        if (($response | Measure-Object).count -ge 1) {
+            foreach ($item in $response) {
                 $item | ConvertTo-WikiPage
             }
         }
