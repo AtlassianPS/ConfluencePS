@@ -21,20 +21,29 @@
     .LINK
     https://github.com/brianbunke/ConfluencePS
     #>
-    [CmdletBinding(SupportsShouldProcess = $true,
-                   ConfirmImpact = 'Medium')]
+    [CmdletBinding(
+        ConfirmImpact = 'Medium',
+        SupportsShouldProcess = $true
+    )]
+    [OutputType([Bool])]
     param (
+        # The page ID to remove the label from. Accepts multiple IDs via pipeline input.
+        [Parameter(
+            Position = 0,
+            Mandatory = $true,
+            ValueFromPipeline = $true,
+            ValueFromPipelineByPropertyName = $true
+        )]
+        [ValidateRange(1, [int]::MaxValue)]
+        [Alias('ID')]
+        [int[]]$PageID,
+
         # A single content label to remove from one or more pages.
         [Parameter(Mandatory = $true)]
-        [string]$Label,
+        [string[]]$Label,
 
-        # The page ID to remove the label from. Accepts multiple IDs via pipeline input.
-        [Parameter(Mandatory = $true,
-                    ValueFromPipeline = $true,
-                    ValueFromPipelineByPropertyName = $true)]
-        [ValidateRange(1,[int]::MaxValue)]
-        [Alias('ID')]
-        [int]$PageID
+        # Run command without showing warning messages
+        [switch]$Force
     )
 
     BEGIN {
@@ -45,15 +54,24 @@
     }
 
     PROCESS {
-        $URI = "$BaseURI/content/$PageID/label?name=$Label"
+        Write-Debug "ParameterSetName: $($PsCmdlet.ParameterSetName)"
+        Write-Debug "PSBoundParameters: $($PSBoundParameters | Out-String)"
+        if (($_) -and ($_ -isnot [ConfluencePS.Page])) {
+            if (!$Force) {
+                Write-Warning "The Object in the pipe is not a Page"
+            }
+        }
 
-        Write-Verbose "Sending delete request to $URI"
-        If ($PSCmdlet.ShouldProcess("Label $Label, PageID $PageID")) {
-            $response = Invoke-WikiMethod -Uri $URI -Method Delete
+        foreach ($_page in $PageID) {
+            foreach ($_label in $Label) {
+                $URI = "$BaseURI/content/{0}/label?name={1}" -f $_page, $_label
 
-            # Successful response is empty. Adding verbose output
-            If ($response -eq '') {
-                Write-Verbose "Delete of label $Label on PageID $PageID successful."
+                Write-Verbose "Sending delete request to $URI"
+                If ($PSCmdlet.ShouldProcess("Label $_label, PageID $_page")) {
+                    Invoke-WikiMethod -Uri $URI -Method Delete
+
+                    $? # return errorlevel
+                }
             }
         }
     }

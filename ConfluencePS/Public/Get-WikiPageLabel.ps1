@@ -21,18 +21,21 @@
     .LINK
     https://github.com/brianbunke/ConfluencePS
     #>
-	[CmdletBinding()]
-	param (
+    [CmdletBinding()]
+    param (
         # List the PageID number to check for labels. Accepts piped input.
-        [Parameter(Mandatory = $true,
-                   ValueFromPipeline = $true,
-                   ValueFromPipelineByPropertyName = $true)]
-        [ValidateRange(1,[int]::MaxValue)]
+        [Parameter(
+            Position = 0,
+            Mandatory = $true,
+            ValueFromPipeline = $true,
+            ValueFromPipelineByPropertyName = $true
+        )]
+        [ValidateRange(1, [int]::MaxValue)]
         [Alias('ID')]
         [int]$PageID,
 
         # Defaults to 200 max results; can be modified here.
-        [ValidateRange(1,[int]::MaxValue)]
+        [ValidateRange(1, [int]::MaxValue)]
         [int]$Limit
     )
 
@@ -44,6 +47,14 @@
     }
 
     PROCESS {
+        Write-Debug "ParameterSetName: $($PsCmdlet.ParameterSetName)"
+        Write-Debug "PSBoundParameters: $($PSBoundParameters | Out-String)"
+        if (($_) -and ($_ -isnot [ConfluencePS.Page])) {
+            if (!$Force) {
+                Write-Warning "The Object in the pipe is not a Page"
+            }
+        }
+
         Write-Verbose "Processing request for PageID $PageID"
         $URI = "$BaseURI/content/$PageID/label"
 
@@ -52,12 +63,16 @@
         }
 
         Write-Verbose "Fetching info from $URI"
-        $response = Invoke-WikiMethod -Uri $URI -Method Get | Select -ExpandProperty Results
+        $response = Invoke-WikiMethod -Uri $URI -Method Get
 
-        # Hashing everything because I don't like the lower case property names from the REST call
-        $response | Sort Name | Select @{n='LabelID'; e={$_.id}},
-                                   @{n='Label';   e={$_.name}},
-                                   @{n='Prefix';  e={$_.prefix}},
-                                   @{n='PageID';  e={$PageID}}
+        if ($response | Get-Member -Name results) {
+            # Extract from array
+            $response = $response | Select-Object -ExpandProperty results
+        }
+        if (($response | Measure-Object).count -ge 1) {
+            foreach ($item in $response) {
+                $item | ConvertTo-WikiLabel
+            }
+        }
     }
 }

@@ -50,4 +50,10 @@ namespace ConfluencePS
 		public String URL { get; set; }
 		public String ShortURL { get; set; }
 	}
+
+	public class Label {
+		public Int32 ID { get; set; }
+		public String Prefix { get; set; }
+		public String Name { get; set; }
+	}
 }
