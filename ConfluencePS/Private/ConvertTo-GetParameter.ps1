@@ -1,24 +1,25 @@
-function Add-GetParameter {
+function ConvertTo-GetParameter {
+    <#
+    .SYNOPSIS
+    Generate the GET parameter string for an URL from a hashtable
+    #>
     [CmdletBinding()]
     param (
-        [Parameter(
-            Mandatory = $true,
-            ValueFromPipeline = $true
-        )]
+        [Parameter( Position = 0, Mandatory = $true, ValueFromPipeline = $true )]
         [hashtable]$InputObject
     )
 
-    begin {
+    BEGIN {
         [string]$parameters = "?"
     }
 
-    process {
+    PROCESS {
         foreach ($key in $InputObject.Keys) {
             $parameters += "$key=$($InputObject[$key])&"
         }
     }
 
-    end {
+    END {
         $parameters -replace ".$"
     }
 }

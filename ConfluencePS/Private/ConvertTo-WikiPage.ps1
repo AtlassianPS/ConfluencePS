@@ -1,16 +1,14 @@
 function ConvertTo-WikiPage {
-    # Extracted the conversion to private function in order to have a single place to
-    # select the properties to use when casting to custom object type
+    <#
+    .SYNOPSIS
+    Extracted the conversion to private function in order to have a single place to
+    select the properties to use when casting to custom object type
+    #>
     [CmdletBinding()]
-    [OutputType(
-        [ConfluencePS.Page]
-    )]
+    [OutputType( [ConfluencePS.Page] )]
     param (
         # object to convert
-        [Parameter(
-            Mandatory = $true,
-            ValueFromPipeline = $true
-        )]
+        [Parameter( Mandatory = $true, ValueFromPipeline = $true )]
         $inputObject
     )
 
