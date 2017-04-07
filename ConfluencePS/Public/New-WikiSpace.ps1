@@ -82,8 +82,8 @@
 
         Write-Verbose "Posting to $URI"
         If ($PSCmdlet.ShouldProcess("$SpaceKey $Name")) {
-            $result = Invoke-WikiMethod -Uri $URI -Body $Body -Method Post
-            $result | ConvertTo-WikiSpace
+            $response = Invoke-WikiMethod -Uri $URI -Body $Body -Method Post
+            if ($response) { $response | ConvertTo-WikiSpace }
         }
     }
 }

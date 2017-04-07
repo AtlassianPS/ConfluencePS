@@ -116,7 +116,7 @@
                     $URI = "$contentRoot/$_pageID"
 
                     Write-Debug "Using `$GETparameters: $($GETparameters | Out-String)"
-                    $URI += (Add-GetParameter $GETparameters)
+                    $URI += (ConvertTo-GetParameter $GETparameters)
 
                     Write-Verbose "Fetching data from $URI"
                     $response = Invoke-WikiMethod -Uri $URI -Method Get
@@ -136,7 +136,7 @@
                 If ($Limit) { $GETparameters["limit"] = $Limit }
 
                 Write-Debug "Using `$GETparameters: $($GETparameters | Out-String)"
-                $URI += (Add-GetParameter $GETparameters)
+                $URI += (ConvertTo-GetParameter $GETparameters)
 
                 Write-Verbose "Fetching data from $URI"
                 $response = Invoke-WikiMethod -Uri $URI -Method Get
@@ -145,7 +145,7 @@
             }
         }
 
-        if ($response | Get-Member -Name results) {
+        if (($response) -and ($response | Get-Member -Name results)) {
             # Extract from array
             $response = $response | Select-Object -ExpandProperty results
         }

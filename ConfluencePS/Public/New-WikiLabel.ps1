@@ -65,7 +65,7 @@
             If ($PSCmdlet.ShouldProcess("Label $Label, PageID $PageID")) {
                 $response = Invoke-WikiMethod -Uri $URI -Body $Content -Method Post
 
-                if ($response | Get-Member -Name results) {
+                if (($response) -and ($response | Get-Member -Name results)) {
                     # Extract from array
                     $response = $response | Select-Object -ExpandProperty results
                 }

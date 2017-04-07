@@ -47,14 +47,13 @@
         If ($Limit) { $GETparameters["limit"] = $Limit }
 
         Write-Debug "Using `$GETparameters: $($GETparameters | Out-String)"
-        $URI += (Add-GetParameter $GETparameters)
+        $URI += (ConvertTo-GetParameter $GETparameters)
 
         Write-Verbose "Fetching data from $URI"
         $response = Invoke-WikiMethod -Uri $URI -Method Get
         Write-Debug "`$response: $($response | Out-String)"
 
-        Write-Verbose "Processing results"
-        if ($response | Get-Member -Name results) {
+        if (($response) -and ($response | Get-Member -Name results)) {
             # extract from array
             $response = $response | Select-Object -ExpandProperty results
         }
