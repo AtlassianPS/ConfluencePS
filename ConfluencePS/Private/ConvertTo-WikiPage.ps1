@@ -16,14 +16,38 @@ function ConvertTo-WikiPage {
 
     Process {
         foreach ($object in $inputObject) {
-            # TODO: Add URL
-            ($object | Select-Object id,
-                                     status,
-                                     title,
-                                     @{Name = "space"; Expression = {if ($_.space) {$_.space | ConvertTo-WikiSpace} else {$null}}},
-                                     @{Name = "version"; Expression = {if ($_.version) {$_.version | ConvertTo-WikiVersion} else {$null}}},
-                                     @{Name = "body"; Expression = {$_.body.storage.value}},
-                                     @{Name = "ancestors"; Expression = {if ($_.ancestors) {$_.ancestors | ConvertTo-WikiPageAncestor} else {$null}}}
+            ($object | Select-Object `
+                id,
+                status,
+                title,
+                @{Name = "space"; Expression = {
+                    if ($_.space) {
+                        $_.space | ConvertTo-WikiSpace
+                    } else {$null}
+                }},
+                @{Name = "version"; Expression = {
+                    if ($_.version) {
+                        $_.version | ConvertTo-WikiVersion
+                    } else {$null}
+                }},
+                @{Name = "body"; Expression = {$_.body.storage.value}},
+                @{Name = "ancestors"; Expression = {
+                    if ($_.ancestors) {
+                        $_.ancestors | ConvertTo-WikiPageAncestor
+                    }
+                    else {$null}
+                }},
+                @{Name = "URL"; Expression = {
+                    if ($_._links.webui) {
+                        "{0}{1}" -f $_._links.base, $_._links.webui
+                    }
+                    else {$null}
+                }},
+                @{Name = "ShortURL"; Expression = {
+                    if ($_._links.tinyui) {
+                        "{0}{1}" -f $_._links.base, $_._links.tinyui
+                    } else {$null}
+                }}
             ) -as [ConfluencePS.Page]
         }
     }

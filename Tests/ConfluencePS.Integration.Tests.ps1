@@ -175,290 +175,334 @@ InModuleScope ConfluencePS {
                 $GetSpace2.Homepage.Title | Should BeExactly "$($GetSpace2.Name) Home"
                 $GetSpace3.Homepage.Title | Should BeExactly "$($GetSpace3.Name) Home"
             }
-        }
+    }
 
     Describe 'ConvertTo-WikiStorageFormat' {
         # ARRANGE
-        $InputString = "Hi Pester!"
-        $OutputString = "<p>Hi Pester!</p>"
+            $InputString = "Hi Pester!"
+            $OutputString = "<p>Hi Pester!</p>"
 
         # ACT
-        $result1 = $inputString | ConvertTo-WikiStorageFormat
-        $result2 = ConvertTo-WikiStorageFormat -Content $inputString
+            $result1 = $inputString | ConvertTo-WikiStorageFormat
+            $result2 = ConvertTo-WikiStorageFormat -Content $inputString
 
         # ASSERT
-        It 'returns a string' {
-            $result1 | Should BeOfType [String]
-            $result2 | Should BeOfType [String]
-        }
-        It 'output matches the expected string' {
-            $result1 | Should BeExactly $outputString
-            $result2 | Should BeExactly $outputString
-        }
+            It 'returns a string' {
+                $result1 | Should BeOfType [String]
+                $result2 | Should BeOfType [String]
+            }
+            It 'output matches the expected string' {
+                $result1 | Should BeExactly $outputString
+                $result2 | Should BeExactly $outputString
+            }
     }
 
     Describe 'New-WikiPage' {
         <# TODO:
-        * Title may not be empty
-        * Space may not be empty when no parent is provided
-    #>
+            * Title may not be empty
+            * Space may not be empty when no parent is provided
+        #>
 
         # ARRANGE
-        $SpaceKey = "PESTER"
-        $parentPage = Get-WikiPage -Title "Pester Test Space Home"
-        $Title1 = "Pester New Page Piped"
-        $Title2 = "Pester New Page Orphan"
-        $Title3 = "Pester New Page from Object"
-        $Title4 = "Pester New Page with Parent Object"
-        $RawContent = "Hi Pester!"
-        $FormattedContent = "<p>Hi Pester!</p>"
-        $pageObject = New-Object -TypeName ConfluencePS.Page -Property @{
-            Title = $Title3
-            Body = $FormattedContent
-            Ancestors = @($parentPage)
-            Space = New-Object -TypeName ConfluencePS.Space -Property @{key = $SpaceKey}
-        }
+            $SpaceKey = "PESTER"
+            $parentPage = Get-WikiPage -Title "Pester Test Space Home"
+            $Title1 = "Pester New Page Piped"
+            $Title2 = "Pester New Page Orphan"
+            $Title3 = "Pester New Page from Object"
+            $Title4 = "Pester New Page with Parent Object"
+            $RawContent = "Hi Pester!"
+            $FormattedContent = "<p>Hi Pester!</p>"
+            $pageObject = New-Object -TypeName ConfluencePS.Page -Property @{
+                Title = $Title3
+                Body = $FormattedContent
+                Ancestors = @($parentPage)
+                Space = New-Object -TypeName ConfluencePS.Space -Property @{key = $SpaceKey}
+            }
 
         # ACT
-        $NewPage1 = $Title1 | New-WikiPage -ParentID $parentPage.ID -ErrorAction Stop
-        $NewPage2 = New-WikiPage -Title $Title2 -SpaceKey $SpaceKey -Body $RawContent -Convert -ErrorAction Stop
-        $NewPage3 = $pageObject | New-WikiPage -ErrorAction Stop
-        $NewPage4 = New-WikiPage -Title $Title4 -Parent $parentPage -ErrorAction Stop
+            $NewPage1 = $Title1 | New-WikiPage -ParentID $parentPage.ID -ErrorAction Stop
+            $NewPage2 = New-WikiPage -Title $Title2 -SpaceKey $SpaceKey -Body $RawContent -Convert -ErrorAction Stop
+            $NewPage3 = $pageObject | New-WikiPage -ErrorAction Stop
+            $NewPage4 = New-WikiPage -Title $Title4 -Parent $parentPage -ErrorAction Stop
 
         # ASSERT
-        It 'returns an object with specific properties' {
-            $NewPage1 | Should BeOfType [ConfluencePS.Page]
-            $NewPage2 | Should BeOfType [ConfluencePS.Page]
-            $NewPage3 | Should BeOfType [ConfluencePS.Page]
-            $NewPage4 | Should BeOfType [ConfluencePS.Page]
-            ($NewPage1 | Get-Member -MemberType Property).Count | Should Be 7
-            ($NewPage2 | Get-Member -MemberType Property).Count | Should Be 7
-            ($NewPage3 | Get-Member -MemberType Property).Count | Should Be 7
-            ($NewPage4 | Get-Member -MemberType Property).Count | Should Be 7
-        }
-        It 'spaceid is integer' {
-            $NewPage1.ID | Should BeOfType [Int]
-            $NewPage2.ID | Should BeOfType [Int]
-            $NewPage3.ID | Should BeOfType [Int]
-            $NewPage4.ID | Should BeOfType [Int]
-        }
-        It 'key matches the specified value' {
-            $NewPage1.Space.Key | Should BeExactly $SpaceKey
-            $NewPage2.Space.Key | Should BeExactly $SpaceKey
-            $NewPage3.Space.Key | Should BeExactly $SpaceKey
-            $NewPage4.Space.Key | Should BeExactly $SpaceKey
-        }
-        It 'title matches the specified value' {
-            $NewPage1.Title | Should BeExactly $Title1
-            $NewPage2.Title | Should BeExactly $Title2
-            $NewPage3.Title | Should BeExactly $Title3
-            $NewPage4.Title | Should BeExactly $Title4
-        }
-        It 'parentid is integer' {
-            $NewPage1.Ancestors.ID | Should BeOfType [Int]
-            $NewPage3.Ancestors.ID | Should BeOfType [Int]
-            $NewPage4.Ancestors.ID | Should BeOfType [Int]
-        }
-        It 'parentid matches the specified value' {
-            $NewPage1.Ancestors.ID | Should BeExactly $parentPage.ID
-            $NewPage3.Ancestors.ID | Should BeExactly $parentPage.ID
-            $NewPage4.Ancestors.ID | Should BeExactly $parentPage.ID
-        }
-        It 'parentid is empty' {
-            $NewPage2.Ancestors | Should BeNullOrEmpty
-        }
+            It 'returns an object with specific properties' {
+                $NewPage1 | Should BeOfType [ConfluencePS.Page]
+                $NewPage2 | Should BeOfType [ConfluencePS.Page]
+                $NewPage3 | Should BeOfType [ConfluencePS.Page]
+                $NewPage4 | Should BeOfType [ConfluencePS.Page]
+                ($NewPage1 | Get-Member -MemberType Property).Count | Should Be 9
+                ($NewPage2 | Get-Member -MemberType Property).Count | Should Be 9
+                ($NewPage3 | Get-Member -MemberType Property).Count | Should Be 9
+                ($NewPage4 | Get-Member -MemberType Property).Count | Should Be 9
+            }
+            It 'spaceid is integer' {
+                $NewPage1.ID | Should BeOfType [Int]
+                $NewPage2.ID | Should BeOfType [Int]
+                $NewPage3.ID | Should BeOfType [Int]
+                $NewPage4.ID | Should BeOfType [Int]
+            }
+            It 'key matches the specified value' {
+                $NewPage1.Space.Key | Should BeExactly $SpaceKey
+                $NewPage2.Space.Key | Should BeExactly $SpaceKey
+                $NewPage3.Space.Key | Should BeExactly $SpaceKey
+                $NewPage4.Space.Key | Should BeExactly $SpaceKey
+            }
+            It 'title matches the specified value' {
+                $NewPage1.Title | Should BeExactly $Title1
+                $NewPage2.Title | Should BeExactly $Title2
+                $NewPage3.Title | Should BeExactly $Title3
+                $NewPage4.Title | Should BeExactly $Title4
+            }
+            It 'parentid is integer' {
+                $NewPage1.Ancestors.ID | Should BeOfType [Int]
+                $NewPage3.Ancestors.ID | Should BeOfType [Int]
+                $NewPage4.Ancestors.ID | Should BeOfType [Int]
+            }
+            It 'parentid matches the specified value' {
+                $NewPage1.Ancestors.ID | Should BeExactly $parentPage.ID
+                $NewPage3.Ancestors.ID | Should BeExactly $parentPage.ID
+                $NewPage4.Ancestors.ID | Should BeExactly $parentPage.ID
+            }
+            It 'parentid is empty' {
+                $NewPage2.Ancestors | Should BeNullOrEmpty
+            }
+            It 'url is string' {
+                $NewPage1.URL | Should BeOfType [String]
+                $NewPage1.URL | Should Not BeNullOrEmpty
+                $NewPage2.URL | Should BeOfType [String]
+                $NewPage2.URL | Should Not BeNullOrEmpty
+                $NewPage3.URL | Should BeOfType [String]
+                $NewPage3.URL | Should Not BeNullOrEmpty
+                $NewPage4.URL | Should BeOfType [String]
+                $NewPage4.URL | Should Not BeNullOrEmpty
+            }
+            It 'shorturl is string' {
+                $NewPage1.ShortURL | Should BeOfType [String]
+                $NewPage1.ShortURL | Should Not BeNullOrEmpty
+                $NewPage2.ShortURL | Should BeOfType [String]
+                $NewPage2.ShortURL | Should Not BeNullOrEmpty
+                $NewPage3.ShortURL | Should BeOfType [String]
+                $NewPage3.ShortURL | Should Not BeNullOrEmpty
+                $NewPage4.ShortURL | Should BeOfType [String]
+                $NewPage4.ShortURL | Should Not BeNullOrEmpty
+            }
     }
 
     Describe 'Get-WikiPage' {
         # ARRANGE
-        $SpaceKey = "PESTER"
-        $Title1 = "Pester New Page from Object"
-        $Title2 = "Pester New Page Orphan"
-        $Title3 = "Pester Test Space Home"
-        $Content = "<p>Hi Pester!</p>"
-        Start-Sleep -Seconds 5
+            Start-Sleep -Seconds 5 # Delay to allow DB index to update
+            $SpaceKey = "PESTER"
+            $Title1 = "Pester New Page from Object"
+            $Title2 = "Pester New Page Orphan"
+            $Title3 = "Pester Test Space Home"
+            $Content = "<p>Hi Pester!</p>"
 
         # ACT
-        $GetTitle1 = Get-WikiPage -Title $Title1 -Limit 200 -ErrorAction Stop
-        $GetTitle2 = Get-WikiPage -Title $Title2 -SpaceKey $SpaceKey -Limit 200 -ErrorAction Stop
-        $GetID1 = Get-WikiPage -PageID $GetTitle1.ID -ErrorAction Stop
-        $GetID2 = Get-WikiPage -PageID $GetTitle2.ID -ErrorAction Stop
-        $GetKeys = Get-WikiPage -SpaceKey $SpaceKey | Sort ID -ErrorAction Stop
-        $GetSpacePage = Get-WikiPage -Space (Get-WikiSpace -SpaceKey $SpaceKey) -ErrorAction Stop
+            $GetTitle1 = Get-WikiPage -Title $Title1 -Limit 200 -ErrorAction Stop
+            $GetTitle2 = Get-WikiPage -Title $Title2 -SpaceKey $SpaceKey -Limit 200 -ErrorAction Stop
+            $GetID1 = Get-WikiPage -PageID $GetTitle1.ID -ErrorAction Stop
+            $GetID2 = Get-WikiPage -PageID $GetTitle2.ID -ErrorAction Stop
+            $GetKeys = Get-WikiPage -SpaceKey $SpaceKey | Sort ID -ErrorAction Stop
+            $GetSpacePage = Get-WikiPage -Space (Get-WikiSpace -SpaceKey $SpaceKey) -ErrorAction Stop
 
         # ASSERT
-        It 'returns the correct amount of results' {
-            $GetTitle1.Count | Should Be 1
-            $GetTitle2.Count | Should Be 1
-            $GetID1.Count | Should Be 1
-            $GetID2.Count | Should Be 1
-            $GetKeys.Count | Should Be 5
-            $GetSpacePage.Count | Should Be 5
-        }
-        It 'returns an object with specific properties' {
-            $GetTitle1 | Should BeOfType [ConfluencePS.Page]
-            $GetTitle2 | Should BeOfType [ConfluencePS.Page]
-            $GetID1 | Should BeOfType [ConfluencePS.Page]
-            $GetID2 | Should BeOfType [ConfluencePS.Page]
-            $GetKeys | Should BeOfType [ConfluencePS.Page]
-            ($GetTitle1 | Get-Member -MemberType Property).Count | Should Be 7
-            ($GetTitle2 | Get-Member -MemberType Property).Count | Should Be 7
-            ($GetID1 | Get-Member -MemberType Property).Count | Should Be 7
-            ($GetID2 | Get-Member -MemberType Property).Count | Should Be 7
-            ($GetKeys | Get-Member -MemberType Property).Count | Should Be 7
-        }
-        It 'id is integer' {
-            $GetTitle1.ID | Should BeOfType [Int]
-            $GetTitle2.ID | Should BeOfType [Int]
-            $GetID1.ID | Should BeOfType [Int]
-            $GetID2.ID | Should BeOfType [Int]
-            $GetKeys.ID | Should BeOfType [Int]
-        }
-        It 'id matches the specified value' {
-            $GetID1.ID | Should Be $GetTitle1.ID
-            $GetID2.ID | Should Be $GetTitle2.ID
-            $GetKeys.ID -contains $GetID1.ID | Should Be $true
-            $GetKeys.ID -contains $GetID2.ID | Should Be $true
-        }
-        It 'title matches the specified value' {
-            $GetTitle1.Title | Should BeExactly $Title1
-            $GetTitle2.Title | Should BeExactly $Title2
-            $GetID1.Title | Should BeExactly $Title1
-            $GetID2.Title | Should BeExactly $Title2
-            $GetKeys.Title -contains $Title3 | Should Be $true
-            $GetKeys.Title -contains $GetID1.Title | Should Be $true
-        }
-        It 'space matches the specified value' {
-            $GetTitle1.Space.Key | Should BeExactly $SpaceKey
-            $GetTitle2.Space.Key | Should BeExactly $SpaceKey
-            $GetID1.Space.Key | Should BeExactly $SpaceKey
-            $GetID2.Space.Key | Should BeExactly $SpaceKey
-            $GetKeys.Space.Key -contains $SpaceKey | Should Be $true
-        }
-        It 'version matches the specified value' {
-            $GetTitle2.Version.Number | Should Be 1
-            $GetID2.Version.Number | Should Be 1
-            $GetKeys.Version.Number -contains 1 | Should Be $true
-        }
-        It 'body matches the specified value' {
-            $GetTitle1.Body | Should BeExactly $Content
-            $GetID1.Body | Should BeExactly $Content
-            $GetKeys.Body -contains $Content | Should Be $true
-        }
+            It 'returns the correct amount of results' {
+                $GetTitle1.Count | Should Be 1
+                $GetTitle2.Count | Should Be 1
+                $GetID1.Count | Should Be 1
+                $GetID2.Count | Should Be 1
+                $GetKeys.Count | Should Be 5
+                $GetSpacePage.Count | Should Be 5
+            }
+            It 'returns an object with specific properties' {
+                $GetTitle1 | Should BeOfType [ConfluencePS.Page]
+                $GetTitle2 | Should BeOfType [ConfluencePS.Page]
+                $GetID1 | Should BeOfType [ConfluencePS.Page]
+                $GetID2 | Should BeOfType [ConfluencePS.Page]
+                $GetKeys | Should BeOfType [ConfluencePS.Page]
+                ($GetTitle1 | Get-Member -MemberType Property).Count | Should Be 9
+                ($GetTitle2 | Get-Member -MemberType Property).Count | Should Be 9
+                ($GetID1 | Get-Member -MemberType Property).Count | Should Be 9
+                ($GetID2 | Get-Member -MemberType Property).Count | Should Be 9
+                ($GetKeys | Get-Member -MemberType Property).Count | Should Be 9
+            }
+            It 'id is integer' {
+                $GetTitle1.ID | Should BeOfType [Int]
+                $GetTitle2.ID | Should BeOfType [Int]
+                $GetID1.ID | Should BeOfType [Int]
+                $GetID2.ID | Should BeOfType [Int]
+                $GetKeys.ID | Should BeOfType [Int]
+            }
+            It 'id matches the specified value' {
+                $GetID1.ID | Should Be $GetTitle1.ID
+                $GetID2.ID | Should Be $GetTitle2.ID
+                $GetKeys.ID -contains $GetID1.ID | Should Be $true
+                $GetKeys.ID -contains $GetID2.ID | Should Be $true
+            }
+            It 'title matches the specified value' {
+                $GetTitle1.Title | Should BeExactly $Title1
+                $GetTitle2.Title | Should BeExactly $Title2
+                $GetID1.Title | Should BeExactly $Title1
+                $GetID2.Title | Should BeExactly $Title2
+                $GetKeys.Title -contains $Title3 | Should Be $true
+                $GetKeys.Title -contains $GetID1.Title | Should Be $true
+            }
+            It 'space matches the specified value' {
+                $GetTitle1.Space.Key | Should BeExactly $SpaceKey
+                $GetTitle2.Space.Key | Should BeExactly $SpaceKey
+                $GetID1.Space.Key | Should BeExactly $SpaceKey
+                $GetID2.Space.Key | Should BeExactly $SpaceKey
+                $GetKeys.Space.Key -contains $SpaceKey | Should Be $true
+            }
+            It 'version matches the specified value' {
+                $GetTitle2.Version.Number | Should Be 1
+                $GetID2.Version.Number | Should Be 1
+                $GetKeys.Version.Number -contains 1 | Should Be $true
+            }
+            It 'body matches the specified value' {
+                $GetTitle1.Body | Should BeExactly $Content
+                $GetID1.Body | Should BeExactly $Content
+                $GetKeys.Body -contains $Content | Should Be $true
+            }
+            It 'url is string' {
+                $GetTitle1.URL | Should BeOfType [String]
+                $GetTitle1.URL | Should Not BeNullOrEmpty
+                $GetTitle2.URL | Should BeOfType [String]
+                $GetTitle2.URL | Should Not BeNullOrEmpty
+                $GetID1.URL | Should BeOfType [String]
+                $GetID1.URL | Should Not BeNullOrEmpty
+                $GetID2.URL | Should BeOfType [String]
+                $GetID2.URL | Should Not BeNullOrEmpty
+                $GetKeys.URL | Should BeOfType [String]
+                $GetKeys.URL | Should Not BeNullOrEmpty
+            }
+            It 'shorturl is string' {
+                $GetTitle1.ShortURL | Should BeOfType [String]
+                $GetTitle1.ShortURL | Should Not BeNullOrEmpty
+                $GetTitle2.ShortURL | Should BeOfType [String]
+                $GetTitle2.ShortURL | Should Not BeNullOrEmpty
+                $GetID1.ShortURL | Should BeOfType [String]
+                $GetID1.ShortURL | Should Not BeNullOrEmpty
+                $GetID2.ShortURL | Should BeOfType [String]
+                $GetID2.ShortURL | Should Not BeNullOrEmpty
+                $GetKeys.ShortURL | Should BeOfType [String]
+                $GetKeys.ShortURL | Should Not BeNullOrEmpty
+            }
     }
 
     Describe 'New-WikiLabel' {
         # ARRANGE
-        $SpaceKey = "PESTER"
-        $PageID = Get-WikiPage -Title "Pester New Page Piped" -Limit 200 | Select -ExpandProperty ID
-        $Labels1 = @("pestera", "pesterb", "pesterc")
-        $Labels2 = "pester"
-        $PartialLabel = "pest"
+            $SpaceKey = "PESTER"
+            $PageID = Get-WikiPage -Title "Pester New Page Piped" -Limit 200 | Select -ExpandProperty ID
+            $Labels1 = @("pestera", "pesterb", "pesterc")
+            $Labels2 = "pester"
+            $PartialLabel = "pest"
 
         # ACT
-        $NewLabel1 = New-WikiLabel -Label $Labels1 -PageID $PageID
-        $NewLabel2 = Get-WikiPage -SpaceKey $SpaceKey | Sort ID | New-WikiLabel -Label $Labels2
+            $NewLabel1 = New-WikiLabel -Label $Labels1 -PageID $PageID
+            $NewLabel2 = Get-WikiPage -SpaceKey $SpaceKey | Sort ID | New-WikiLabel -Label $Labels2
 
         # ASSERT
-        It 'returns the correct amount of results' {
-            ($NewLabel1).Count | Should Be 3
-            ($NewLabel2).Count | Should Be 6
-        }
-        It 'returns an object with specific properties' {
-            $NewLabel1 | Should BeOfType [PSObject]
-            $NewLabel2 | Should BeOfType [PSObject]
-            ($NewLabel1 | Get-Member -MemberType NoteProperty).Count | Should Be 4
-            ($NewLabel2 | Get-Member -MemberType NoteProperty).Count | Should Be 4
-        }
-        It 'label matches the specified value' {
-            $NewLabel1.Label | Should Match $PartialLabel
-            $NewLabel2.Label | Should Match $PartialLabel
-        }
-        It 'labelid is not null or empty' {
-            $NewLabel1.LabelID | Should Not BeNullOrEmpty
-            $NewLabel2.LabelID | Should Not BeNullOrEmpty
-        }
-        It 'pageid matches the specified value' {
-            $NewLabel1.PageID -contains $PageID | Should Be $true
-            $NewLabel2.PageID -contains $PageID | Should Be $true
-        }
+            It 'returns the correct amount of results' {
+                ($NewLabel1).Count | Should Be 3
+                ($NewLabel2).Count | Should Be 6
+            }
+            It 'returns an object with specific properties' {
+                $NewLabel1 | Should BeOfType [PSObject]
+                $NewLabel2 | Should BeOfType [PSObject]
+                ($NewLabel1 | Get-Member -MemberType NoteProperty).Count | Should Be 4
+                ($NewLabel2 | Get-Member -MemberType NoteProperty).Count | Should Be 4
+            }
+            It 'label matches the specified value' {
+                $NewLabel1.Label | Should Match $PartialLabel
+                $NewLabel2.Label | Should Match $PartialLabel
+            }
+            It 'labelid is not null or empty' {
+                $NewLabel1.LabelID | Should Not BeNullOrEmpty
+                $NewLabel2.LabelID | Should Not BeNullOrEmpty
+            }
+            It 'pageid matches the specified value' {
+                $NewLabel1.PageID -contains $PageID | Should Be $true
+                $NewLabel2.PageID -contains $PageID | Should Be $true
+            }
     }
 
-    Describe 'Get-WikiPageLabel' {
-        # ARRANGE
-        $SpaceKey = "PESTER"
-        $Label1 = "pester"
-        $PartialLabel = "pest"
-        $Page = Get-WikiPage -Title "Pester New Page Piped"
+    # Describe 'Get-WikiPageLabel' {
+    #     # ARRANGE
+    #     $SpaceKey = "PESTER"
+    #     $Label1 = "pester"
+    #     $PartialLabel = "pest"
+    #     $Page = Get-WikiPage -Title "Pester New Page Piped"
 
-        # ACT
-        $GetPageLabel1 = Get-WikiPageLabel -PageID $Page.ID
-        $GetPageLabel2 = Get-WikiPage -SpaceKey $SpaceKey | Sort ID | Select -ExpandProperty ID | Get-WikiPageLabel
+    #     # ACT
+    #     $GetPageLabel1 = Get-WikiPageLabel -PageID $Page.ID
+    #     $GetPageLabel2 = Get-WikiPage -SpaceKey $SpaceKey | Sort ID | Select -ExpandProperty ID | Get-WikiPageLabel
 
-        # ASSERT
-        It 'returns the correct amount of results' {
-            ($GetPageLabel1).Count | Should Be 4
-            ($GetPageLabel2).Count | Should Be 6
-            ($GetPageLabel2 | Where {$_.Label -eq $Label1}).Count | Should Be 3
-        }
-        It 'returns an object with specific properties' {
-            $GetPageLabel1 | Should BeOfType [ConfluencePS.Page]
-            $GetPageLabel2 | Should BeOfType [ConfluencePS.Page]
-            ($GetPageLabel1 | Get-Member -MemberType NoteProperty).Count | Should Be 4
-            ($GetPageLabel2 | Get-Member -MemberType NoteProperty).Count | Should Be 4
-        }
-        It 'label matches the specified value' {
-            $GetPageLabel1.Label | Should Match $PartialLabel
-            $GetPageLabel2.Label | Should Match $PartialLabel
-        }
-        It 'labelid is not null or empty' {
-            $GetPageLabel1.LabelID | Should Not BeNullOrEmpty
-            $GetPageLabel2.LabelID | Should Not BeNullOrEmpty
-        }
-        It 'pageid matches the specified value' {
-            $GetPageLabel1.PageID -contains $PageID | Should Be $true
-            $GetPageLabel2.PageID -contains $PageID | Should Be $true
-        }
-    }
+    #     # ASSERT
+    #     It 'returns the correct amount of results' {
+    #         ($GetPageLabel1).Count | Should Be 4
+    #         ($GetPageLabel2).Count | Should Be 6
+    #         ($GetPageLabel2 | Where {$_.Label -eq $Label1}).Count | Should Be 3
+    #     }
+    #     It 'returns an object with specific properties' {
+    #         $GetPageLabel1 | Should BeOfType [ConfluencePS.Page]
+    #         $GetPageLabel2 | Should BeOfType [ConfluencePS.Page]
+    #         ($GetPageLabel1 | Get-Member -MemberType NoteProperty).Count | Should Be 4
+    #         ($GetPageLabel2 | Get-Member -MemberType NoteProperty).Count | Should Be 4
+    #     }
+    #     It 'label matches the specified value' {
+    #         $GetPageLabel1.Label | Should Match $PartialLabel
+    #         $GetPageLabel2.Label | Should Match $PartialLabel
+    #     }
+    #     It 'labelid is not null or empty' {
+    #         $GetPageLabel1.LabelID | Should Not BeNullOrEmpty
+    #         $GetPageLabel2.LabelID | Should Not BeNullOrEmpty
+    #     }
+    #     It 'pageid matches the specified value' {
+    #         $GetPageLabel1.PageID -contains $PageID | Should Be $true
+    #         $GetPageLabel2.PageID -contains $PageID | Should Be $true
+    #     }
+    # }
 
     # Can't get this working...always works during manual testing
     # Start-Sleep (and wait loop variants) haven't helped during full runs
-    Describe 'Get-WikiLabelApplied' {
-        # ARRANGE
-        Start-Sleep -sec 30
-        $SpaceKey = "PESTER"
-        $Label1 = "pesterc"
-        $Label2 = "pester"
-        $Title1 = "Pester New Page Piped"
-        $Title2 = "Pester New Page Orphan"
-        $Type = "page"
+    # Describe 'Get-WikiLabelApplied' {
+    #     # ARRANGE
+    #     Start-Sleep -sec 30
+    #     $SpaceKey = "PESTER"
+    #     $Label1 = "pesterc"
+    #     $Label2 = "pester"
+    #     $Title1 = "Pester New Page Piped"
+    #     $Title2 = "Pester New Page Orphan"
+    #     $Type = "page"
 
-        # ACT
-        $GetApplied1 = Get-WikiLabelApplied -Label $Label1
-        $GetApplied2 = Get-WikiSpace -Key $SpaceKey | Get-WikiLabelApplied -Label $Label2 | Sort ID
+    #     # ACT
+    #     $GetApplied1 = Get-WikiLabelApplied -Label $Label1
+    #     $GetApplied2 = Get-WikiSpace -Key $SpaceKey | Get-WikiLabelApplied -Label $Label2 | Sort ID
 
-        # ASSERT
-        It 'returns the correct amount of results' {
-            @($GetApplied1).Count | Should Be 1
-            @($GetApplied2).Count | Should Be 3
-        }
-        It 'returns an object with specific properties' {
-            ($GetApplied1 | Get-Member -MemberType NoteProperty).Count | Should Be 3
-            ($GetApplied2 | Get-Member -MemberType NoteProperty).Count | Should Be 3
-        }
-        It 'id is not null or empty' {
-            $GetApplied1.ID | Should Not BeNullOrEmpty
-            $GetApplied2.ID | Should Not BeNullOrEmpty
-        }
-        It 'title has the specified value' {
-            $GetApplied1.Title | Should BeExactly $Title1
-            $GetApplied2[2].Title | Should BeExactly $Title2
-        }
-        It 'type has the specified value' {
-            $GetApplied1.Type | Should BeExactly $Type
-            $GetApplied2.Type -contains $Type | Should Be $true
-        }
-    }
+    #     # ASSERT
+    #     It 'returns the correct amount of results' {
+    #         @($GetApplied1).Count | Should Be 1
+    #         @($GetApplied2).Count | Should Be 3
+    #     }
+    #     It 'returns an object with specific properties' {
+    #         ($GetApplied1 | Get-Member -MemberType NoteProperty).Count | Should Be 3
+    #         ($GetApplied2 | Get-Member -MemberType NoteProperty).Count | Should Be 3
+    #     }
+    #     It 'id is not null or empty' {
+    #         $GetApplied1.ID | Should Not BeNullOrEmpty
+    #         $GetApplied2.ID | Should Not BeNullOrEmpty
+    #     }
+    #     It 'title has the specified value' {
+    #         $GetApplied1.Title | Should BeExactly $Title1
+    #         $GetApplied2[2].Title | Should BeExactly $Title2
+    #     }
+    #     It 'type has the specified value' {
+    #         $GetApplied1.Type | Should BeExactly $Type
+    #         $GetApplied2.Type -contains $Type | Should Be $true
+    #     }
+    # }
 
     Describe 'Set-WikiPage' {
         <# TODO:
@@ -551,14 +595,14 @@ InModuleScope ConfluencePS {
             $SetPage7 | Should BeOfType [ConfluencePS.Page]
             $SetPage8 | Should BeOfType [ConfluencePS.Page]
             $AllChangedPages | Should BeOfType [ConfluencePS.Page]
-            ($SetPage1 | Get-Member -MemberType Property).Count | Should Be 7
-            ($SetPage2 | Get-Member -MemberType Property).Count | Should Be 7
-            ($SetPage3 | Get-Member -MemberType Property).Count | Should Be 7
-            ($SetPage4 | Get-Member -MemberType Property).Count | Should Be 7
-            ($SetPage5 | Get-Member -MemberType Property).Count | Should Be 7
-            ($SetPage6 | Get-Member -MemberType Property).Count | Should Be 7
-            ($SetPage7 | Get-Member -MemberType Property).Count | Should Be 7
-            ($SetPage8 | Get-Member -MemberType Property).Count | Should Be 7
+            ($SetPage1 | Get-Member -MemberType Property).Count | Should Be 9
+            ($SetPage2 | Get-Member -MemberType Property).Count | Should Be 9
+            ($SetPage3 | Get-Member -MemberType Property).Count | Should Be 9
+            ($SetPage4 | Get-Member -MemberType Property).Count | Should Be 9
+            ($SetPage5 | Get-Member -MemberType Property).Count | Should Be 9
+            ($SetPage6 | Get-Member -MemberType Property).Count | Should Be 9
+            ($SetPage7 | Get-Member -MemberType Property).Count | Should Be 9
+            ($SetPage8 | Get-Member -MemberType Property).Count | Should Be 9
         }
         It 'id is not null or empty' {
             $SetPage1.ID | Should Not BeNullOrEmpty

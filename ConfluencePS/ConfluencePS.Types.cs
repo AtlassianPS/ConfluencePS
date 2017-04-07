@@ -47,6 +47,7 @@ namespace ConfluencePS
 		public Version Version { get; set; }
 		public String Body { get; set; }
 		public Page[] Ancestors { get; set; }
-		// TODO: URL?
+		public String URL { get; set; }
+		public String ShortURL { get; set; }
 	}
 }
