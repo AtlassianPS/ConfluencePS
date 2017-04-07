@@ -22,7 +22,7 @@ function ConvertTo-WikiSpace {
                                      @{Name = "description"; Expression = {$_.description.plain.value}},
                                      icon,
                                      type,
-                                     @{Name = "Homepage"; Expression = {$_.homepage | ConvertTo-WikiPage}}
+                                     @{Name = "Homepage"; Expression = {if ($_.homepage -is [PSCustomObject]) {$_.homepage | ConvertTo-WikiPage} else {$null}}}
             ) -as [ConfluencePS.Space]
         }
     }
