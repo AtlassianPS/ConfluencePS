@@ -36,7 +36,7 @@ namespace ConfluencePS
 		public Icon Icon { get; set; }
 		public String Type { get; set; }
 		public String Description { get; set; }
-		// TODO: homepage ?
+		public Page Homepage { get; set; }
 	}
 
 	public class Page {

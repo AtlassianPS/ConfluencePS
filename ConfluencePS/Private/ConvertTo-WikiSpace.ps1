@@ -16,13 +16,13 @@ function ConvertTo-WikiSpace {
 
     Process {
         foreach ($object in $inputObject) {
-            # TODO: Add homepage
             ($object | Select-Object id,
                                      key,
                                      name,
                                      @{Name = "description"; Expression = {$_.description.plain.value}},
                                      icon,
-                                     type
+                                     type,
+                                     @{Name = "Homepage"; Expression = {$_.homepage | ConvertTo-WikiPage}}
             ) -as [ConfluencePS.Space]
         }
     }

@@ -20,8 +20,8 @@ function ConvertTo-WikiPage {
             ($object | Select-Object id,
                                      status,
                                      title,
-                                     @{Name = "space"; Expression = {$_.space | ConvertTo-WikiSpace}},
-                                     @{Name = "version"; Expression = {$_.version | ConvertTo-WikiVersion}},
+                                     @{Name = "space"; Expression = {if ($_.space) {$_.space | ConvertTo-WikiSpace} else {$null}}},
+                                     @{Name = "version"; Expression = {if ($_.version) {$_.version | ConvertTo-WikiVersion} else {$null}}},
                                      @{Name = "body"; Expression = {$_.body.storage.value}},
                                      @{Name = "ancestors"; Expression = {if ($_.ancestors) {$_.ancestors | ConvertTo-WikiPageAncestor} else {$null}}}
             ) -as [ConfluencePS.Page]
