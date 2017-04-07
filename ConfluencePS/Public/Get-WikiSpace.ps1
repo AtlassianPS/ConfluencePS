@@ -54,12 +54,14 @@
         Write-Debug "`$response: $($response | Out-String)"
 
         Write-Verbose "Processing results"
-        if ($response.results) {
+        if ($response | Get-Member -Name results) {
             # extract from array
             $response = $response | Select-Object -ExpandProperty results
         }
-        foreach ($item in $response) {
-            $item | ConvertTo-WikiSpace
+        if (($response | Measure-Object).count -ge 1) {
+            foreach ($item in $response) {
+                $item | ConvertTo-WikiSpace
+            }
         }
     }
 }

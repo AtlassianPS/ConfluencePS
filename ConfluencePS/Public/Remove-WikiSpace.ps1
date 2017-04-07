@@ -19,15 +19,21 @@
     .LINK
     https://github.com/brianbunke/ConfluencePS
     #>
-    [CmdletBinding(SupportsShouldProcess = $true,
-                   ConfirmImpact = 'Medium')]
+    [CmdletBinding(
+        SupportsShouldProcess = $true,
+        ConfirmImpact = 'Medium'
+    )]
+    [OutputType([Bool])]
     param (
         # The key (short code) of the space to delete. Accepts multiple keys via pipeline input.
-        [Parameter(Mandatory = $true,
-                   ValueFromPipeline = $true,
-                   ValueFromPipelineByPropertyName = $true)]
+        [Parameter(
+            Position = 0,
+            Mandatory = $true,
+            ValueFromPipeline = $true,
+            ValueFromPipelineByPropertyName = $true
+        )]
         [Alias('Key')]
-        [string]$SpaceKey
+        [string[]]$SpaceKey
 
         # Probably an extra param later to loop checking the status & wait for completion?
     )
@@ -40,14 +46,24 @@
     }
 
     PROCESS {
-        $URI = "$BaseURI/space/$SpaceKey"
+        Write-Debug "ParameterSetName: $($PsCmdlet.ParameterSetName)"
+        Write-Debug "PSBoundParameters: $($PSBoundParameters | Out-String)"
+        if (($_) -and ($_ -isnot [ConfluencePS.Space])) {
+            if (!$Force) {
+                Write-Warning "The Object in the pipe is not a Page"
+            }
+        }
 
-        Write-Verbose "Sending delete request to $URI"
-        If ($PSCmdlet.ShouldProcess("Space key $SpaceKey")) {
-            $response = Invoke-WikiMethod -Uri $URI -Method Delete
+        foreach ($_space in $SpaceKey) {
+            $URI = "$BaseURI/space/{0}" -f $_space
 
-            # Successful response provides a "longtask" status link
+            Write-Verbose "Sending delete request to $URI"
+            If ($PSCmdlet.ShouldProcess("Space key $_space")) {
+                $response = Invoke-WikiMethod -Uri $URI -Method Delete
+
+                # Successful response provides a "longtask" status link
                 # (add additional code here later to check and/or wait for the status)
+            }
         }
     }
 }
