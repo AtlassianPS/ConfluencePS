@@ -1,6 +1,10 @@
 function Invoke-WikiMethod {
+    <#
+    .SYNOPSIS
+    Extracted invokation of the REST method to own function.
+    #>
     [CmdletBinding()]
-    [OutputType([PSObject])]
+    [OutputType( [PSObject] )]
     param (
         # REST API to invoke
         [Parameter(Mandatory = $true)]
@@ -29,11 +33,13 @@ function Invoke-WikiMethod {
         if (!($Credential) -and ($script:Credential)) {
             # This allows for the Credential parameter to be used
             # and if missing, the Set-WikiInfo Credentials will be used
-            Write-Verbose "Using HTTP Basic authentication with username $($Credential.UserName)"
             $Credential = $script:Credential
+            Write-Verbose "Using HTTP Basic authentication with username $($Credential.UserName)"
         }
 
-        $SecureCreds = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($('{0}:{1}' -f $Credential.UserName, $Credential.GetNetworkCredential().Password)))
+        $SecureCreds = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes(
+            $('{0}:{1}' -f $Credential.UserName, $Credential.GetNetworkCredential().Password)
+        ))
         $Headers += @{
             "Authorization" = "Basic $($SecureCreds)"
             'Content-Type' = 'application/json; charset=utf-8'
@@ -49,7 +55,8 @@ function Invoke-WikiMethod {
         }
 
         # set optional parameters
-        if ($Body) {$splatParameters["Body"] = [System.Text.Encoding]::UTF8.GetBytes($Body)} # http://stackoverflow.com/questions/15290185/invoke-webrequest-issue-with-special-characters-in-json
+        # http://stackoverflow.com/questions/15290185/invoke-webrequest-issue-with-special-characters-in-json
+        if ($Body) {$splatParameters["Body"] = [System.Text.Encoding]::UTF8.GetBytes($Body)}
 
         # load DefaultParameters for Invoke-WebRequest
         # as the global PSDefaultParameterValues is not used
@@ -85,11 +92,18 @@ function Invoke-WikiMethod {
                 $readStream.Close()
 
                 Write-Verbose "[Invoke-WikiMethod] Retrieved body of HTTP response for more information about the error (`$responseBody)"
-                Write-Error $responseBody
+                try {
+                    $responseObject = ConvertFrom-Json -InputObject $responseBody -ErrorAction Stop
+                    if ($responseObject.message) {
+                        Write-Error $responseObject.message
+                    } else {throw}
+                }
+                catch {
+                    Write-Error $responseBody
+                }
             }
             else {
                 if ($webResponse.Content) {
-                    Write-Verbose "[Invoke-WikiMethod] Converting body of response from JSON"
                     $result = ConvertFrom-Json -InputObject $webResponse.Content
                 }
                 else {
