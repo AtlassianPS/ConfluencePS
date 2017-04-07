@@ -69,8 +69,6 @@
                 Write-Verbose "Sending delete request to $URI"
                 If ($PSCmdlet.ShouldProcess("Label $_label, PageID $_page")) {
                     Invoke-WikiMethod -Uri $URI -Method Delete
-
-                    $? # return errorlevel
                 }
             }
         }
