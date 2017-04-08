@@ -22,6 +22,7 @@
     https://github.com/brianbunke/ConfluencePS
     #>
     [CmdletBinding()]
+    [OutputType([ConfluencePS.Label])]
     param (
         # List the PageID number to check for labels. Accepts piped input.
         [Parameter(
