@@ -1,4 +1,4 @@
-﻿if (!("Wiki.Space" -as [Type])) {
+﻿if (!("ConfluencePS.Space" -as [Type])) {
     Add-Type -Path (Join-Path $PSScriptRoot ConfluencePS.Types.cs) -ReferencedAssemblies Microsoft.CSharp
 }
 
