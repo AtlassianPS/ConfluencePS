@@ -7,7 +7,7 @@
     Create a new blank space. Key and Name mandatory, Description recommended.
 
     .EXAMPLE
-    New-WikiSpace -Key 'TEST' -Name 'Test Space'
+    [ConfluencePS.Space]@{key="TEST";Name="Test Space"} | New-WikiSpace
     Create the new blank space. Runs Set-WikiInfo first if instance info unknown.
 
     .EXAMPLE
@@ -18,10 +18,11 @@
     https://github.com/brianbunke/ConfluencePS
     #>
     [CmdletBinding(
+        ConfirmImpact = 'Medium',
         SupportsShouldProcess = $true,
-        DefaultParameterSetName = "byObject",
-        ConfirmImpact = 'Medium'
+        DefaultParameterSetName = "byObject"
     )]
+    [OutputType([ConfluencePS.Space])]
     param (
         # Space Object
         [Parameter(

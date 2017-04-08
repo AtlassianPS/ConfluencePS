@@ -8,14 +8,14 @@
     Piped output into other cmdlets is generally tested and supported.
 
     .EXAMPLE
-    Get-WikiPage -Title Confluence -Limit 100
-    Get all pages with the word Confluence in the title. Title is not case sensitive.
-    Among only the first 100 pages found, returns all results matching *confluence*.
-
-    .EXAMPLE
     Get-WikiPage -Limit 500 | Select-Object ID, Title | Sort-Object Title
     List the first 500 pages found in your Confluence instance.
     Returns only each page's ID and Title, sorting results alphabetically by Title.
+
+    .EXAMPLE
+    Get-WikiPage -Title Confluence -Limit 100
+    Get all pages with the word Confluence in the title. Title is not case sensitive.
+    Among only the first 100 pages found, returns all results matching *confluence*.
 
     .EXAMPLE
     Get-WikiSpace -Name Demo | Get-WikiPage

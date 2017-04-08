@@ -9,24 +9,24 @@
     Piped output into other cmdlets is generally tested and supported.
 
     .EXAMPLE
-    Get-WikiSpace -ID 123456
-    Display the info of the space with ID 123456.
+    Get-WikiSpace
+    Display the info of all spaces on the server.
 
     .EXAMPLE
-    Get-WikiSpace -Name test
-    Display all spaces containing 'test' in the name.
+    Get-WikiSpace -SpaceKey NASA
+    Display the info of the space with key "NASA".
 
     .LINK
     https://github.com/brianbunke/ConfluencePS
     #>
-	[CmdletBinding()]
-	param (
+    [CmdletBinding()]
+    param (
         # Filter results by key. Supports wildcard matching on partial input.
         [Alias('Key')]
         [string]$SpaceKey,
 
         # Defaults to 25 max results; can be modified here.
-        [ValidateRange(1,[int]::MaxValue)]
+        [ValidateRange(1, [int]::MaxValue)]
         [int]$Limit
     )
 

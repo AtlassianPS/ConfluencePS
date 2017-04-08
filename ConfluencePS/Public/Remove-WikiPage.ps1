@@ -9,13 +9,12 @@
     Untested against non-page content, but probably works anyway.
 
     .EXAMPLE
-    Get-WikiSpace -Key SESAME | Get-WikiPage -Title Oscar | Remove-WikiPage -Confirm
+    Get-WikiPage -Title Oscar | Remove-WikiPage -Confirm
     Send Oscar to the trash. Each matching page will ask you to confirm the deletion.
 
     .EXAMPLE
-    Get-WikiLabelApplied -Label outdated -Limit 100 | Remove-WikiPage -Verbose -WhatIf
-    Find the first 100 content results that are labeled "outdated."
-    Would remove each page one by one with verbose output; -WhatIf flag active.
+    Remove-WikiPage -PageID 12345,12346 -Verbose -WhatIf
+    Simulates the removal of two specifc pages.
 
     .LINK
     https://github.com/brianbunke/ConfluencePS

@@ -14,9 +14,8 @@
     Verbose and Confirm flags both active.
 
     .EXAMPLE
-    Get-WikiLabelApplied -Label asdf -Limit 100 | Remove-WikiLabel -Label asdf -WhatIf
-    Would remove the label "asdf" from all of your Confluence pages. -WhatIf flag supported.
-    This may not remove everything if the max result limit for Get-WikiLabelApplied is reached.
+    Get-WikiPage -SpaceKey "ABC" | Remove-WikiLabel -Label asdf -WhatIf
+    Would remove the label "asdf" from all pages in the ABC space.
 
     .LINK
     https://github.com/brianbunke/ConfluencePS

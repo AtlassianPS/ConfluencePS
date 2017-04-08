@@ -8,13 +8,13 @@
     "The space is deleted in a long running task, so the space cannot be considered deleted when this resource returns."
 
     .EXAMPLE
-    Remove-WikiSpace -Key XYZ -Confirm
-    Delete a space with key XYZ (note that key != name). Confirm will prompt before deletion.
+    Remove-WikiSpace -Key ABC,XYZ -Confirm
+    Delete the space with key ABC and with key XYZ (note that key != name). Confirm will prompt before deletion.
 
     .EXAMPLE
-    Get-WikiSpace -Name ald | Remove-WikiSpace -Verbose -WhatIf
-    Get spaces matching '*ald*' (like Reginald and Alderaan), piping them to be deleted.
-    Would remove each space one by one with verbose output; -WhatIf flag active.
+    Get-WikiSpace | Where {$_.Name -like "*old"} | Remove-WikiSpace -Verbose -WhatIf
+    Get all spaces ending in 'old' and simulate the deletion of them.
+    Would simulate the removal of each space one by one with verbose output; -WhatIf flag active.
 
     .LINK
     https://github.com/brianbunke/ConfluencePS
@@ -35,7 +35,7 @@
         [Alias('Key')]
         [string[]]$SpaceKey
 
-        # Probably an extra param later to loop checking the status & wait for completion?
+        # TODO: Probably an extra param later to loop checking the status & wait for completion?
     )
 
     BEGIN {

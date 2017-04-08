@@ -8,21 +8,23 @@ function New-WikiPage {
     Content needs to be in "Confluence storage format;" see also -Convert.
 
     .EXAMPLE
-    New-WikiPage -Title 'Test New Page' -ParentID 123456 -Body '<p>Hello world</p>' -WhatIf
-    Creates a new test page (as a child member of existing page 123456) with one line of page text.
-    Automatically finds 123456 in space 'ABC' via Get-WikiPage and applies the key to the REST post.
-    -WhatIf support, so the page will not actually be created.
+    New-WikiPage -Title "My new fance Page" -Body "<h1>My Title</h1><p>The body of my fancy new page.</p>"
+    Creates a new page with a given title and body content (in "confluence's storeage format").
+    The information of the created page is returned to the console.
+
 
     .EXAMPLE
-    Get-WikiPage -Title 'Darth Vader' | New-WikiPage -Title 'Luke Skywalker' -Body $Body -Confirm
-    Searches for pages named *Darth Vader*, pipes page ID and space key. New page is a child of existing page.
-    Note that this can grab multiple pages via wildcard matching, potentially attempting multiple posts.
-    You will be asked to confirm each creation. Choose wisely.
+    New-WikiPage -Title 'Test New Page' -ParentID 123456 -Body 'Hello world' -Convert -WhatIf
+    Creates a new page as a child member of existing page 123456 with one line of page text.
+    The Body defined is converted to Storage fromat by the "-Convert" parameter
 
     .EXAMPLE
-    New-WikiPage -Title 'Loner Page' -SpaceKey TEST -Body $Body -Convert -Verbose
-    Creates a new page at the root of the specified space (no parent page). Verbose flag enabled.
-    $Body is not yet in Confluence storage format ("XHTML-based"), and needs to be converted.
+    New-WikiPage -Title "Luke Skywalker" -Parent (Get-WikiPage -title "Darth Vader" -SpaceKey "STARWARS")
+    Creates a new page with an empty body as a child page of the "Parent Page" in the "space" page.
+
+    .EXAMPLE
+    [ConfluencePS.Page]@{Title="My Title";Space=[ConfluencePS.Space]@{Key="ABC"}} | New-WikiPage
+    Creates a new page "My Title" in the space "ABC" with an empty body.
 
     .LINK
     Get-WikiPage
