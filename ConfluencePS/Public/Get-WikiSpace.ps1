@@ -9,24 +9,24 @@
     Piped output into other cmdlets is generally tested and supported.
 
     .EXAMPLE
-    Get-WikiSpace -ID 123456
-    Display the info of the space with ID 123456.
+    Get-WikiSpace
+    Display the info of all spaces on the server.
 
     .EXAMPLE
-    Get-WikiSpace -Name test
-    Display all spaces containing 'test' in the name.
+    Get-WikiSpace -SpaceKey NASA
+    Display the info of the space with key "NASA".
 
     .LINK
     https://github.com/brianbunke/ConfluencePS
     #>
-	[CmdletBinding()]
-	param (
+    [CmdletBinding()]
+    param (
         # Filter results by key. Supports wildcard matching on partial input.
         [Alias('Key')]
         [string]$SpaceKey,
 
         # Defaults to 25 max results; can be modified here.
-        [ValidateRange(1,[int]::MaxValue)]
+        [ValidateRange(1, [int]::MaxValue)]
         [int]$Limit
     )
 
@@ -43,26 +43,24 @@
         if ($SpaceKey) {
             $URI += "/$SpaceKey"
         }
+        $GETparameters += @{expand = "description.plain,icon,homepage,metadata.labels"}
+        If ($Limit) { $GETparameters["limit"] = $Limit }
 
-        If ($Limit) {
-            $URI += "?limit=$Limit"
-        }
+        Write-Debug "Using `$GETparameters: $($GETparameters | Out-String)"
+        $URI += (ConvertTo-GetParameter $GETparameters)
 
-        Write-Verbose "Fetching info from $URI"
+        Write-Verbose "Fetching data from $URI"
         $response = Invoke-WikiMethod -Uri $URI -Method Get
+        Write-Debug "`$response: $($response | Out-String)"
 
-        if ($response.Results) {
-            $response.Results | Select @{n='Key';     e={$_.key}},
-                                      @{n='Name';    e={$_.name}},
-                                      @{n='SpaceID'; e={$_.id}},
-                                      @{n='Type';    e={$_.type}}
+        if (($response) -and ($response | Get-Member -Name results)) {
+            # extract from array
+            $response = $response | Select-Object -ExpandProperty results
         }
-        else {
-            $response | Select @{n='Key';     e={$_.key}},
-                               @{n='Name';    e={$_.name}},
-                               @{n='SpaceID'; e={$_.id}},
-                               @{n='Type';    e={$_.type}}
+        if (($response | Measure-Object).count -ge 1) {
+            foreach ($item in $response) {
+                $item | ConvertTo-WikiSpace
+            }
         }
-
     }
 }

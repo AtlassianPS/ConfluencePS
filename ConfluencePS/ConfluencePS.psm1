@@ -1,4 +1,8 @@
-﻿# Gather all files
+﻿if (!("ConfluencePS.Space" -as [Type])) {
+    Add-Type -Path (Join-Path $PSScriptRoot ConfluencePS.Types.cs) -ReferencedAssemblies Microsoft.CSharp
+}
+
+# Gather all files
 $PublicFunctions = @( Get-ChildItem -Path $PSScriptRoot\Public\*.ps1 -ErrorAction SilentlyContinue )
 $PrivateFunctions = @( Get-ChildItem -Path $PSScriptRoot\Private\*.ps1 -ErrorAction SilentlyContinue )
 

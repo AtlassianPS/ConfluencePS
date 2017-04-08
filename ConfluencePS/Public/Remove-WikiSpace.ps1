@@ -8,28 +8,34 @@
     "The space is deleted in a long running task, so the space cannot be considered deleted when this resource returns."
 
     .EXAMPLE
-    Remove-WikiSpace -Key XYZ -Confirm
-    Delete a space with key XYZ (note that key != name). Confirm will prompt before deletion.
+    Remove-WikiSpace -Key ABC,XYZ -Confirm
+    Delete the space with key ABC and with key XYZ (note that key != name). Confirm will prompt before deletion.
 
     .EXAMPLE
-    Get-WikiSpace -Name ald | Remove-WikiSpace -Verbose -WhatIf
-    Get spaces matching '*ald*' (like Reginald and Alderaan), piping them to be deleted.
-    Would remove each space one by one with verbose output; -WhatIf flag active.
+    Get-WikiSpace | Where {$_.Name -like "*old"} | Remove-WikiSpace -Verbose -WhatIf
+    Get all spaces ending in 'old' and simulate the deletion of them.
+    Would simulate the removal of each space one by one with verbose output; -WhatIf flag active.
 
     .LINK
     https://github.com/brianbunke/ConfluencePS
     #>
-    [CmdletBinding(SupportsShouldProcess = $true,
-                   ConfirmImpact = 'Medium')]
+    [CmdletBinding(
+        SupportsShouldProcess = $true,
+        ConfirmImpact = 'Medium'
+    )]
+    [OutputType([Bool])]
     param (
         # The key (short code) of the space to delete. Accepts multiple keys via pipeline input.
-        [Parameter(Mandatory = $true,
-                   ValueFromPipeline = $true,
-                   ValueFromPipelineByPropertyName = $true)]
+        [Parameter(
+            Position = 0,
+            Mandatory = $true,
+            ValueFromPipeline = $true,
+            ValueFromPipelineByPropertyName = $true
+        )]
         [Alias('Key')]
-        [string]$SpaceKey
+        [string[]]$SpaceKey
 
-        # Probably an extra param later to loop checking the status & wait for completion?
+        # TODO: Probably an extra param later to loop checking the status & wait for completion?
     )
 
     BEGIN {
@@ -40,14 +46,24 @@
     }
 
     PROCESS {
-        $URI = "$BaseURI/space/$SpaceKey"
+        Write-Debug "ParameterSetName: $($PsCmdlet.ParameterSetName)"
+        Write-Debug "PSBoundParameters: $($PSBoundParameters | Out-String)"
+        if (($_) -and ($_ -isnot [ConfluencePS.Space])) {
+            if (!$Force) {
+                Write-Warning "The Object in the pipe is not a Page"
+            }
+        }
 
-        Write-Verbose "Sending delete request to $URI"
-        If ($PSCmdlet.ShouldProcess("Space key $SpaceKey")) {
-            $response = Invoke-WikiMethod -Uri $URI -Method Delete
+        foreach ($_space in $SpaceKey) {
+            $URI = "$BaseURI/space/{0}" -f $_space
 
-            # Successful response provides a "longtask" status link
+            Write-Verbose "Sending delete request to $URI"
+            If ($PSCmdlet.ShouldProcess("Space key $_space")) {
+                $response = Invoke-WikiMethod -Uri $URI -Method Delete
+
+                # Successful response provides a "longtask" status link
                 # (add additional code here later to check and/or wait for the status)
+            }
         }
     }
 }

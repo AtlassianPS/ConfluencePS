@@ -40,45 +40,53 @@
     .LINK
     https://github.com/brianbunke/ConfluencePS
     #>
-    [CmdletBinding(SupportsShouldProcess=$true,ConfirmImpact='Medium')]
+    [CmdletBinding(
+        SupportsShouldProcess = $true,
+        ConfirmImpact = 'Medium',
+        DefaultParameterSetName = 'byParameters'
+    )]
+    [OutputType([ConfluencePS.Page])]
     param (
-        # The ID of the page to edit. Accepts pipeline input by value/name. Mandatory.
-        [Parameter(Mandatory = $true,
-                   ValueFromPipeline = $true,
-                   ValueFromPipelineByPropertyName = $true)]
-        [ValidateRange(1,[int]::MaxValue)]
+        # Page Object
+        [Parameter(
+            Mandatory = $true,
+            ValueFromPipeline = $true,
+            ParameterSetName = 'byObject'
+        )]
+        [ConfluencePS.Page]$InputObject,
+
+        # The ID of the page to edit
+        [Parameter(
+            Mandatory = $true,
+            ValueFromPipeline = $true,
+            ParameterSetName = 'byParameters'
+        )]
+        [ValidateRange(1, [int]::MaxValue)]
         [Alias('ID')]
         [int]$PageID,
 
         # Name of the page; existing or new value can be used.
         # Existing will be automatically supplied via Get-WikiPage if not manually included.
-        # Accepts pipeline input by property name.
-        [Parameter(ValueFromPipelineByPropertyName = $true)]
+        [Parameter(ParameterSetName = 'byParameters')]
+        [ValidateNotNullOrEmpty()]
         [string]$Title,
-
-        # The current version of the page; will be incremented upon successful edit.
-        # Will be automatically supplied via Get-WikiPage if not manually included.
-        # Accepts pipeline input by property name.
-        [Parameter(ValueFromPipelineByPropertyName = $true)]
-        [ValidateRange(1,[int]::MaxValue)]
-        [int]$CurrentVersion,
 
         # The full contents of the updated body (existing contents will be overwritten).
         # If not yet in "storage format"--or you don't know what that is--also use -Convert.
-        # Mandatory. Current content may be piped in for no cosmetic change, if changing title or parent.
-        # Accepts pipeline input by property name.
-        [Parameter(Mandatory = $true,
-                   ValueFromPipelineByPropertyName = $true)]
+        [Parameter(ParameterSetName = 'byParameters')]
         [string]$Body,
 
         # Optional switch flag for calling ConvertTo-WikiStorageFormat against your Body.
+        [Parameter(ParameterSetName = 'byParameters')]
         [switch]$Convert,
 
         # Optionally define a new parent page. If unspecified, no change.
-        # Accepts pipeline input by property name.
-        [Parameter(ValueFromPipelineByPropertyName = $true)]
-        [ValidateRange(1,[int]::MaxValue)]
-        [int]$ParentID
+        [Parameter(ParameterSetName = 'byParameters')]
+        [ValidateRange(1, [int]::MaxValue)]
+        [int]$ParentID,
+        # Optionally define a new parent page. If unspecified, no change.
+        [Parameter(ParameterSetName = 'byParameters')]
+        [ConfluencePS.Page]$Parent
     )
 
     BEGIN {
@@ -95,70 +103,77 @@
     }
 
     PROCESS {
-        # Title & Version must be specified in the PUT
-        # If one or both are not found, use Get-WikiPage to capture them
-        If ((!$CurrentVersion) -and (!$Title)) {
-            Write-Verbose "Title and version unspecified. Calling Get-WikiPage w/ ID $PageID"
-            $CurrentPage   = Get-WikiPage -PageID $PageID -Expand
-            [int]$CurrentVersion  = $CurrentPage.Ver
-            [string]$Title = $CurrentPage.Title
-        } ElseIf (!$CurrentVersion) {
-            Write-Verbose "Version unspecified. Calling Get-WikiPage w/ ID $PageID"
-            [int]$CurrentVersion  = Get-WikiPage -PageID $PageID -Expand | Select -ExpandProperty Ver
-        } ElseIf (!$Title) {
-            Write-Verbose "Title unspecified. Calling Get-WikiPage w/ ID $PageID"
-            [string]$Title = Get-WikiPage -PageID $PageID -Expand | Select -ExpandProperty Title
+        Write-Debug "ParameterSetName: $($PsCmdlet.ParameterSetName)"
+        Write-Debug "PSBoundParameters: $($PSBoundParameters | Out-String)"
+
+        switch ($PsCmdlet.ParameterSetName) {
+            "byObject" {
+                Write-Verbose "Using Page Object as input"
+                Write-Debug "using object: $($InputObject | Out-String)"
+
+                $URI = "$BaseURI/content/$($InputObject.ID)"
+
+                $Content = @{
+                    version = @{ number = ++$InputObject.Version.Number }
+                    title = $InputObject.Title
+                    type = 'page'
+                    body = @{
+                        storage = @{
+                            value = $InputObject.Body
+                            representation = 'storage'
+                        }
+                    }
+                    # ancestors = @()
+                }
+                # Ancestors is undocumented! May break in the future
+                # http://stackoverflow.com/questions/23523705/how-to-create-new-page-in-confluence-using-their-rest-api
+                # if ($InputObject.Ancestors) {
+                # $Content["ancestors"] += @( $InputObject.Ancestors | Foreach-Object { @{ id = $_.ID } } )
+                # }
+            }
+            "byParameters" {
+                Write-Verbose "Using attributes as input"
+
+                $URI = "$BaseURI/content/$PageID"
+                $originalPage = Get-WikiPage -PageID $PageID
+
+                if (($Parent -is [ConfluencePS.Page]) -and ($Parent.ID)) {
+                    $ParentID = $Parent.ID
+                }
+
+                $Content = @{
+                    version = @{ number = ++$originalPage.Version.Number }
+                    type = 'page'
+                }
+                if ($Title) {
+                    $Content["title"] = $Title
+                }
+                else {
+                    $Content["title"] = $originalPage.Title
+                }
+                if ($PSBoundParameters.Keys -contains "Body") {
+                    # $Body might be empty
+                    $Content["body"] = @{ storage = @{ value = $Body; representation = 'storage' }}
+                }
+                else {
+                    $Content["body"] = @{ storage = @{ value = $originalPage.Body; representation = 'storage' }}
+                }
+                # Ancestors is undocumented! May break in the future
+                # http://stackoverflow.com/questions/23523705/how-to-create-new-page-in-confluence-using-their-rest-api
+                if ($ParentID) {
+                    $Content["ancestors"] = @( @{ id = $ParentID } )
+                }
+            }
         }
 
-        # The PUT wants new version, not current, so increment by one
-        $CurrentVersion++
+        $Content = $Content | ConvertTo-Json
 
-        $URI = "$BaseURI/content/$PageID"
-
-        If ($ParentID) {
-            $Content = @{
-                version = @{ number = $CurrentVersion }
-                title = $Title
-                type = 'page'
-                body = @{
-                    storage = @{
-                        value = $Body
-                        representation = 'storage'
-                    }
-                }
-                ancestors = @{id = $ParentID}
-            } | ConvertTo-Json -Compress # Using -Compress to make the -replace below easier
-
-            # Ancestors requires [] brackets around its JSON values to work correctly
-            # This is RegEx magic. If you're not familiar, regex101.com or similar sites
-            $Content = $Content -replace '(\{\"id\"\:\d+\})','[$1]'
-        } Else {
-            $Content = @{
-                version   = @{number = $CurrentVersion}
-                title     = $Title
-                type      = 'page'
-                body      = @{
-                    storage = @{
-                        value          = $Body
-                        representation = 'storage'
-                    }
-                }
-            } | ConvertTo-Json
-        }
-
-        Write-Verbose "PUT (edit) to $URI"
-        # -WhatIf wrapper
-        If ($PSCmdlet.ShouldProcess("PageID $PageID, Body $Body")) {
+        Write-Verbose "Putting to $URI"
+        Write-Verbose "Content: $($Content | Out-String)"
+        If ($PSCmdlet.ShouldProcess("Space $SpaceKey, Parent $ParentID")) {
+            # TODO
             $response = Invoke-WikiMethod -Uri $URI -Body $Content -Method Put
-
-            # Hashing everything because I don't like the lower case property names from the REST call
-            $response | Select @{n='ID';      e={$_.id}},
-                           @{n='Key';     e={$_.space.key}},
-                           @{n='Title';   e={$_.title}},
-                           @{n='ParentID';e={$_.ancestors.id}}
+            if ($response) { $response | ConvertTo-WikiPage }
         }
-
-        # If multiple pages are being piped in, need to check for version each time
-        $CurrentVersion = $null
     }
 }

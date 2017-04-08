@@ -8,21 +8,23 @@ function New-WikiPage {
     Content needs to be in "Confluence storage format;" see also -Convert.
 
     .EXAMPLE
-    New-WikiPage -Title 'Test New Page' -ParentID 123456 -Body '<p>Hello world</p>' -WhatIf
-    Creates a new test page (as a child member of existing page 123456) with one line of page text.
-    Automatically finds 123456 in space 'ABC' via Get-WikiPage and applies the key to the REST post.
-    -WhatIf support, so the page will not actually be created.
+    New-WikiPage -Title "My new fance Page" -Body "<h1>My Title</h1><p>The body of my fancy new page.</p>"
+    Creates a new page with a given title and body content (in "confluence's storeage format").
+    The information of the created page is returned to the console.
+
 
     .EXAMPLE
-    Get-WikiPage -Title 'Darth Vader' | New-WikiPage -Title 'Luke Skywalker' -Body $Body -Confirm
-    Searches for pages named *Darth Vader*, pipes page ID and space key. New page is a child of existing page.
-    Note that this can grab multiple pages via wildcard matching, potentially attempting multiple posts.
-    You will be asked to confirm each creation. Choose wisely.
+    New-WikiPage -Title 'Test New Page' -ParentID 123456 -Body 'Hello world' -Convert -WhatIf
+    Creates a new page as a child member of existing page 123456 with one line of page text.
+    The Body defined is converted to Storage fromat by the "-Convert" parameter
 
     .EXAMPLE
-    New-WikiPage -Title 'Loner Page' -SpaceKey TEST -Body $Body -Convert -Verbose
-    Creates a new page at the root of the specified space (no parent page). Verbose flag enabled.
-    $Body is not yet in Confluence storage format ("XHTML-based"), and needs to be converted.
+    New-WikiPage -Title "Luke Skywalker" -Parent (Get-WikiPage -title "Darth Vader" -SpaceKey "STARWARS")
+    Creates a new page with an empty body as a child page of the "Parent Page" in the "space" page.
+
+    .EXAMPLE
+    [ConfluencePS.Page]@{Title="My Title";Space=[ConfluencePS.Space]@{Key="ABC"}} | New-WikiPage
+    Creates a new page "My Title" in the space "ABC" with an empty body.
 
     .LINK
     Get-WikiPage
@@ -33,31 +35,52 @@ function New-WikiPage {
     .LINK
     https://github.com/brianbunke/ConfluencePS
     #>
-    [CmdletBinding(SupportsShouldProcess=$true,ConfirmImpact='Medium')]
+    [CmdletBinding(
+        SupportsShouldProcess = $true,
+        ConfirmImpact = 'Medium',
+        DefaultParameterSetName = 'byParameters'
+    )]
+    [OutputType([ConfluencePS.Page])]
     param (
+        # Page Object
+        [Parameter(
+            Mandatory = $true,
+            ValueFromPipeline = $true,
+            ParameterSetName = 'byObject'
+        )]
+        [ConfluencePS.Page]$InputObject,
+
         # Name of your new page.
-        [Parameter(Mandatory = $true)]
+        [Parameter(
+            Mandatory = $true,
+            ValueFromPipeline = $true,
+            ParameterSetName = 'byParameters'
+        )]
         [Alias('Name')]
         [string]$Title,
 
-        # The ID of the parent page. Accepts pipeline input by value/name.
+        # The ID of the parent page.
         # NOTE: This feature is not in the 5.8 REST API documentation, and should be considered experimental.
-        [Parameter(ValueFromPipeline = $true,
-                   ValueFromPipelineByPropertyName = $true)]
-        [ValidateRange(1,[int]::MaxValue)]
-        [Alias('ID')]
+        [Parameter(ParameterSetName = 'byParameters')]
+        [ValidateRange(1, [int]::MaxValue)]
         [int]$ParentID,
+        # Page Object of the parent page.
+        [Parameter(ParameterSetName = 'byParameters')]
+        [ConfluencePS.Page]$Parent,
 
         # Key of the space where the new page should exist. Only needed if you don't utilize ParentID.
-        [Parameter(ValueFromPipelineByPropertyName = $true)]
-        [Alias('Space','Key')]
+        [Parameter(ParameterSetName = 'byParameters')]
         [string]$SpaceKey,
+        # Space Object in which to create the new page.
+        [Parameter(ParameterSetName = 'byParameters')]
+        [ConfluencePS.Space]$Space,
 
         # The contents of your new page. Accepts pipeline input by property name.
-        [Parameter(ValueFromPipelineByPropertyName = $true)]
+        [Parameter(ParameterSetName = 'byParameters')]
         [string]$Body,
 
         # Optional flag to call ConvertTo-WikiStorageFormat against your Body.
+        [Parameter(ParameterSetName = 'byParameters')]
         [switch]$Convert
     )
 
@@ -69,51 +92,79 @@ function New-WikiPage {
     }
 
     PROCESS {
-        If (($ParentID) -and !($SpaceKey)) {
-            Write-Verbose "SpaceKey not specified. Retrieving from Get-WikiPage -PageID $ParentID"
-            $SpaceKey = Get-WikiPage -PageID $ParentID | Select -ExpandProperty Space
-        }
-
-        # If -Convert is flagged, call ConvertTo-WikiStorageFormat against the -Body
-        If ($Convert) {
-            Write-Verbose '-Convert flag active; converting content to Confluence storage format'
-            $Body = ConvertTo-WikiStorageFormat -Content $Body
-        }
+        Write-Debug "ParameterSetName: $($PsCmdlet.ParameterSetName)"
+        Write-Debug "PSBoundParameters: $($PSBoundParameters | Out-String)"
 
         $URI = "$BaseURI/content"
 
-        $Content = @{
-            type = "page"
-            title = $Title
-            space = @{key = $SpaceKey}
-            body = @{
-                storage = @{
-                    value = $Body
-                    representation = 'storage'
+        switch ($PsCmdlet.ParameterSetName) {
+            "byObject" {
+                Write-Verbose "Using Page Object as input"
+                Write-Debug "using object: $($InputObject | Out-String)"
+                $Content = @{
+                    type = "page"
+                    title = $InputObject.Title
+                    space = @{key = $InputObject.Space.Key}
+                    body = @{
+                        storage = @{
+                            value = $InputObject.Body
+                            representation = 'storage'
+                        }
+                    }
+                    ancestors = @()
+                }
+                # Ancestors is undocumented! May break in the future
+                # http://stackoverflow.com/questions/23523705/how-to-create-new-page-in-confluence-using-their-rest-api
+                if ($InputObject.Ancestors) {
+                    $Content["ancestors"] += @( $InputObject.Ancestors | Foreach-Object { @{ id = $_.ID } } )
                 }
             }
-            # Ancestors is undocumented! May break in the future
-            # http://stackoverflow.com/questions/23523705/how-to-create-new-page-in-confluence-using-their-rest-api
-            # Using [ordered] (requires Posh v3) to ensure -replace below works as desired
-            ancestors = [ordered]@{
-                id = $ParentID
-                type = "page"
-            }
-        } | ConvertTo-Json -Compress # Using -Compress to make the -replace below easier
+            "byParameters" {
+                Write-Verbose "Using attributes as input"
+                if (($Parent -is [ConfluencePS.Page]) -and ($Parent.ID)) {
+                    $ParentID = $Parent.ID
+                }
+                if (($Space -is [ConfluencePS.Space]) -and ($Space.Key)) {
+                    $SpaceKey = $Space.Key
+                }
 
-        # Ancestors requires [] brackets around its JSON values to work correctly
-        $Content = $Content -replace '"ancestors":','"ancestors":[' -replace '"page"},','"page"}],'
+                If (($ParentID) -and !($SpaceKey)) {
+                    Write-Verbose "SpaceKey not specified. Retrieving from Get-WikiPage -PageID $ParentID"
+                    $SpaceKey = (Get-WikiPage -PageID $ParentID).Space.Key
+                }
+
+                # If -Convert is flagged, call ConvertTo-WikiStorageFormat against the -Body
+                If ($Convert) {
+                    Write-Verbose '-Convert flag active; converting content to Confluence storage format'
+                    $Body = ConvertTo-WikiStorageFormat -Content $Body
+                }
+
+                $Content = @{
+                    type = "page"
+                    title = $Title
+                    space = @{key = $SpaceKey}
+                    body = @{
+                        storage = @{
+                            value = $Body
+                            representation = 'storage'
+                        }
+                    }
+                }
+                # Ancestors is undocumented! May break in the future
+                # http://stackoverflow.com/questions/23523705/how-to-create-new-page-in-confluence-using-their-rest-api
+                if ($ParentID) {
+                    $Content["ancestors"] = @( @{ id = $ParentID } )
+                }
+            }
+        }
+
+        $Content = $Content | ConvertTo-Json
 
         Write-Verbose "Posting to $URI"
         Write-Verbose "Content: $($Content | Out-String)"
         If ($PSCmdlet.ShouldProcess("Space $SpaceKey, Parent $ParentID")) {
             $response = Invoke-WikiMethod -Uri $URI -Body $Content -Method Post
-
-            # Hashing everything because I don't like the lower case property names from the REST call
-            $response | Select @{n='ID';      e={$_.id}},
-                           @{n='Key';     e={$_.space.key}},
-                           @{n='Title';   e={$_.title}},
-                           @{n='ParentID';e={$_.ancestors.id}}
+            if ($response) { $response | ConvertTo-WikiPage }
         }
     }
 }

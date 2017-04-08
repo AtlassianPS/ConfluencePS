@@ -9,27 +9,32 @@
     Untested against non-page content, but probably works anyway.
 
     .EXAMPLE
-    Get-WikiSpace -Key SESAME | Get-WikiPage -Title Oscar | Remove-WikiPage -Confirm
+    Get-WikiPage -Title Oscar | Remove-WikiPage -Confirm
     Send Oscar to the trash. Each matching page will ask you to confirm the deletion.
 
     .EXAMPLE
-    Get-WikiLabelApplied -Label outdated -Limit 100 | Remove-WikiPage -Verbose -WhatIf
-    Find the first 100 content results that are labeled "outdated."
-    Would remove each page one by one with verbose output; -WhatIf flag active.
+    Remove-WikiPage -PageID 12345,12346 -Verbose -WhatIf
+    Simulates the removal of two specifc pages.
 
     .LINK
     https://github.com/brianbunke/ConfluencePS
     #>
-    [CmdletBinding(SupportsShouldProcess = $true,
-                   ConfirmImpact = 'Medium')]
+    [CmdletBinding(
+        SupportsShouldProcess = $true,
+        ConfirmImpact = 'Medium'
+    )]
+    [OutputType([Bool])]
     param (
         # The page ID to delete. Accepts multiple IDs via pipeline input.
-        [Parameter(Mandatory = $true,
-                   ValueFromPipeline = $true,
-                   ValueFromPipelineByPropertyName = $true)]
-        [ValidateRange(1,[int]::MaxValue)]
+        [Parameter(
+            Position = 0,
+            Mandatory = $true,
+            ValueFromPipeline = $true,
+            ValueFromPipelineByPropertyName = $true
+        )]
+        [ValidateRange(1, [int]::MaxValue)]
         [Alias('ID')]
-        [int]$PageID
+        [int[]]$PageID
     )
 
     BEGIN {
@@ -40,16 +45,22 @@
     }
 
     PROCESS {
-        $URI = "$BaseURI/content/$PageID"
-
-        Write-Verbose "Sending delete request to $URI"
-        If ($PSCmdlet.ShouldProcess("PageID $PageID")) {
-            $response = Invoke-WikiMethod -Uri $URI -Method Delete
-
-            # Successful response is empty. Adding verbose output
-            If ($response -eq '') {
-                Write-Verbose "Delete of PageID $PageID successful."
+        Write-Debug "ParameterSetName: $($PsCmdlet.ParameterSetName)"
+        Write-Debug "PSBoundParameters: $($PSBoundParameters | Out-String)"
+        if (($_) -and ($_ -isnot [ConfluencePS.Page])) {
+            if (!$Force) {
+                Write-Warning "The Object in the pipe is not a Page"
             }
         }
+
+        foreach ($_page in $PageID) {
+            $URI = "$BaseURI/content/{0}" -f $_page
+
+            Write-Verbose "Sending delete request to $URI"
+            If ($PSCmdlet.ShouldProcess("PageID $_page")) {
+                Invoke-WikiMethod -Uri $URI -Method Delete
+            }
+        }
+
     }
 }

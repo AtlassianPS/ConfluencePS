@@ -17,19 +17,26 @@
     .LINK
     https://github.com/brianbunke/ConfluencePS
     #>
-    [CmdletBinding(SupportsShouldProcess=$true,ConfirmImpact='Medium')]
+    [CmdletBinding(
+        ConfirmImpact = 'Medium',
+        SupportsShouldProcess = $true
+    )]
+    [OutputType([ConfluencePS.Label])]
     param (
+        # The page ID to apply the label to. Accepts multiple IDs via pipeline input.
+        [Parameter(
+            Position = 0,
+            Mandatory = $true,
+            ValueFromPipeline = $true,
+            ValueFromPipelineByPropertyName = $true
+        )]
+        [ValidateRange(1, [int]::MaxValue)]
+        [Alias('ID')]
+        [int[]]$PageID,
+
         # One or more labels to be added. Currently supports labels of prefix "global."
         [Parameter(Mandatory = $true)]
-        [string[]]$Label,
-
-        # The page ID to apply the label to. Accepts multiple IDs via pipeline input.
-        [Parameter(Mandatory = $true,
-                   ValueFromPipeline = $true,
-                   ValueFromPipelineByPropertyName = $true)]
-        [ValidateRange(1,[int]::MaxValue)]
-        [Alias('ID')]
-        [int]$PageID
+        [string[]]$Label
     )
 
     BEGIN {
@@ -40,39 +47,33 @@
     }
 
     PROCESS {
-
-        # Set both of these for use inside the ForEach
-        $Int = 0
-        $Body = @()
-
-        ForEach ($SingleLabel in $Label) {
-            # If not the first loop, add a comma to separate previous
-            If ($Int -gt 0) {
-                $Body += ','
+        Write-Debug "ParameterSetName: $($PsCmdlet.ParameterSetName)"
+        Write-Debug "PSBoundParameters: $($PSBoundParameters | Out-String)"
+        if (($_) -and ($_ -isnot [ConfluencePS.Page])) {
+            if (!$Force) {
+                Write-Warning "The Object in the pipe is not a Page"
             }
-
-            $Body += @{
-                prefix = 'global'
-                name   = "$SingleLabel"
-            } | ConvertTo-Json -Compress
-
-            $Int++
         }
 
-        $Body = '[' + $Body + ']'
+        foreach ($_page in $PageID) {
+            $URI = "$BaseURI/content/{0}/label" -f $_page
 
-        $URI = "$BaseURI/content/$PageID/label"
+            $Content = $Label | Foreach-Object {@{prefix = 'global'; name = $_}} | ConvertTo-Json
 
-        Write-Verbose "Posting to $URI"
-        If ($PSCmdlet.ShouldProcess("Label $Label, PageID $PageID")) {
-            $response = Invoke-WikiMethod -Uri $URI -Body $Body -Method Post
+            Write-Verbose "Posting to $URI"
+            Write-Verbose "Content: $($Content | Out-String)"
+            If ($PSCmdlet.ShouldProcess("Label $Label, PageID $PageID")) {
+                $response = Invoke-WikiMethod -Uri $URI -Body $Content -Method Post
 
-            # Hashing everything because I don't like the lower case property names from the REST call
-            ForEach ($Result in $response.results) {
-                $Result | Select @{n='Label';   e={$_.name}},
-                                 @{n='LabelID'; e={$_.id}},
-                                 @{n='Prefix';  e={$_.prefix}},
-                                 @{n='PageID';  e={$PageID}}
+                if (($response) -and ($response | Get-Member -Name results)) {
+                    # Extract from array
+                    $response = $response | Select-Object -ExpandProperty results
+                }
+                if (($response | Measure-Object).count -ge 1) {
+                    foreach ($item in $response) {
+                        $item | ConvertTo-WikiLabel
+                    }
+                }
             }
         }
     }

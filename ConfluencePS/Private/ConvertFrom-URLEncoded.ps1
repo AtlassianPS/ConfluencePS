@@ -1,13 +1,13 @@
 function ConvertFrom-URLEncoded {
+    <#
+    .SYNOPSIS
+    Decode a URL encoded string
+    #>
     [CmdletBinding()]
     [OutputType([String])]
     param (
         # String to decode
-        [Parameter(
-            Position = $true,
-            Mandatory = $true,
-            ValueFromPipeline = $true
-        )]
+        [Parameter( Position = 0, Mandatory = $true, ValueFromPipeline = $true )]
         [string]$inputString
     )
 
