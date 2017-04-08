@@ -68,6 +68,7 @@
         [Alias('Key')]
         [string]$SpaceKey,
 
+        # Filter results by space object(s), typically from the pipeline
         [Parameter(
             Mandatory = $true,
             ValueFromPipeline = $true,
