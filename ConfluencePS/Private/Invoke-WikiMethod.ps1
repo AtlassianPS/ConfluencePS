@@ -21,6 +21,9 @@ function Invoke-WikiMethod {
         # Additional headers
         [hashtable]$Headers,
 
+        # GET Parameters
+        [hashtable]$GetParameters,
+
         # Type of object to which the output will be casted to
         [ValidateSet(
             [ConfluencePS.Page],
@@ -55,6 +58,11 @@ function Invoke-WikiMethod {
         $_headers += @{
             "Authorization" = "Basic $($SecureCreds)"
             'Content-Type' = 'application/json; charset=utf-8'
+        }
+
+        if ($GetParameters) {
+            Write-Debug "Using `$GetParameters: $($GetParameters | Out-String)"
+            [string]$URI += (ConvertTo-GetParameter $GetParameters)
         }
 
         # set mandatory parameters
@@ -108,7 +116,8 @@ function Invoke-WikiMethod {
                     $responseObject = ConvertFrom-Json -InputObject $responseBody -ErrorAction Stop
                     if ($responseObject.message) {
                         Write-Error $responseObject.message
-                    } else {throw}
+                    }
+                    else {throw}
                 }
                 catch {
                     Write-Error $responseBody
@@ -138,6 +147,7 @@ function Invoke-WikiMethod {
                     }
                     if ($Body) {$parameters["Body"] = $Body}
                     if ($Headers) {$parameters["Headers"] = $Headers}
+                    if ($GetParameters) {$parameters["Get$GetParameters"] = $GetParameters}
                     $result.results += (Invoke-WikiMethod @parameters)
                 }
 

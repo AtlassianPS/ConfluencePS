@@ -62,10 +62,10 @@
         $URI = "$BaseURI/content/$PageID/label"
 
         If ($PageSize) {
-            $URI = $URI + "?limit=$PageSize"
+            $GETparameters = @{limit = $PageSize}
         }
 
         Write-Verbose "Fetching info from $URI"
-        Invoke-WikiMethod -Uri $URI -Method Get -OutputType ([ConfluencePS.Label])
+        Invoke-WikiMethod -Uri $URI -Method Get -GetParameters $GETparameters -OutputType ([ConfluencePS.Label])
     }
 }

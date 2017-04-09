@@ -117,31 +117,22 @@
                 foreach ($_pageID in $PageID) {
                     $URI = "$contentRoot/$_pageID"
 
-                    Write-Debug "Using `$GETparameters: $($GETparameters | Out-String)"
-                    $URI += (ConvertTo-GetParameter $GETparameters)
-
                     Write-Verbose "Fetching data from $URI"
-                    Invoke-WikiMethod -Uri $URI -Method Get -OutputType ([ConfluencePS.Page])
-                    Write-Debug "`$response: $($response | Out-String)"
+                    Invoke-WikiMethod -Uri $URI -Method Get -GetParameters $GETparameters -OutputType ([ConfluencePS.Page])
                 }
                 break
             }
             "byTitle" {
-                if ($SpaceKey) { $GETparameters["spaceKey"] = $SpaceKey }
                 $GETparameters["title"] = $Title
-            }
-            "bySpace" {
-                $GETparameters["spaceKey"] = $SpaceKey
             }
             "(bySpace|byTitle)" {
                 $GETparameters["type"] = "page"
+                if ($SpaceKey) { $GETparameters["spaceKey"] = $SpaceKey }
                 If ($PageSize) { $GETparameters["limit"] = $PageSize }
 
-                Write-Debug "Using `$GETparameters: $($GETparameters | Out-String)"
-                $URI += (ConvertTo-GetParameter $GETparameters)
-
                 Write-Verbose "Fetching data from $URI"
-                Invoke-WikiMethod -Uri $URI -Method Get -OutputType ([ConfluencePS.Page])
+                Invoke-WikiMethod -Uri $URI -Method Get -GetParameters $GETparameters -OutputType ([ConfluencePS.Page])
+                break
             }
         }
     }

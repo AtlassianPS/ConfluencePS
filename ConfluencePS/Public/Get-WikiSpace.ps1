@@ -48,10 +48,7 @@
         $GETparameters += @{expand = "description.plain,icon,homepage,metadata.labels"}
         If ($PageSize) { $GETparameters["limit"] = $PageSize }
 
-        Write-Debug "Using `$GETparameters: $($GETparameters | Out-String)"
-        $URI += (ConvertTo-GetParameter $GETparameters)
-
         Write-Verbose "Fetching data from $URI"
-        Invoke-WikiMethod -Uri $URI -Method Get -OutputType ([ConfluencePS.Space])
+        Invoke-WikiMethod -Uri $URI -Method Get -GetParameters $GETparameters -OutputType ([ConfluencePS.Space])
     }
 }
