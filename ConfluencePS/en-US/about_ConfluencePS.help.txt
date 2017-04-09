@@ -33,23 +33,23 @@ LONG DESCRIPTION
 
     To view all pages in a specific space, you can use the pipeline:
 
-        Get-WikiSpace -Name Demo | Get-WikiPage -Limit 1000
+        Get-WikiSpace -Key Demo | Get-WikiPage -PageSize 1000
 
     Note that the REST API will limit your results in different ways.
-    
-    For example, if you do not supply the -Limit parameter,
+
+    For example, if you do not supply the -PageSize parameter,
     only 25 pages will be returned, and probably not in the order you choose.
     You may also find that 500 or 1000 is the maximum result supported,
     and any higher numbers will just return 500/1000 results anyway.
 
     You can fetch a page's content with the following command:
 
-        Get-WikiPage -Title 'Contacts' -Limit 1000 | Get-WikiPage -Expand
+        Get-WikiPage -Title 'Contacts' -PageSize 1000 | Get-WikiPage -Expand
 
     This will find any page matching "*contacts*", and then use the PageID(s)
     found to fetch the page body and version as well. If you don't already know
     the PageID, it should be done this way because -Expand drastically reduces
-    the amount of pages the API returns, regardless of the -Limit you specify.
+    the amount of pages the API returns, regardless of the -PageSize you specify.
 
   PRIMARY USE CASES
 
@@ -57,11 +57,11 @@ LONG DESCRIPTION
 
     To apply a new label to all pages matching specified criteria:
 
-        Get-WikiPage -Title 'Azure' -Limit 1000 | New-WikiLabel -Label azure
+        Get-WikiPage -Title 'Azure' -PageSize 1000 | New-WikiLabel -Label azure
 
     To delete pages with the label "test":
 
-        Get-WikiLabelApplied -Label test -Limit 1000 | Remove-WikiPage -WhatIf
+        Get-WikiLabelApplied -Label test -PageSize 1000 | Remove-WikiPage -WhatIf
 
     Use -WhatIf first to be sure only intended pages will be affected,
     then run the command again without the -WhatIf parameter.
@@ -89,7 +89,7 @@ LONG DESCRIPTION
             $Table = $CSV | Where Name -eq $VM | ConvertTo-WikiTable | Out-String
             $Body = $Table | ConvertTo-WikiStorageFormat
 
-            If ($ID = (Get-WikiPage -Title "$($VM.Name)" -Limit 500).ID) {
+            If ($ID = (Get-WikiPage -Title "$($VM.Name)" -PageSize 500).ID) {
                 # Current page found. With the ID, get the expanded result
                 $PageExists = Get-WikiPage -PageID $ID -Expand
                 $PageExists | Set-WikiPage -ParentID 123456 -Body $Body

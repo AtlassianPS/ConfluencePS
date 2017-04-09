@@ -8,9 +8,9 @@
     Currently accepts multiple pages only via piped input.
 
     .EXAMPLE
-    Get-WikiPageLabel -PageID 123456 -Limit 500
+    Get-WikiPageLabel -PageID 123456 -PageSize 500
     Lists the labels applied to page 123456.
-    This also increases the result limit from 200 to 500, in case you love to label.
+    This also increases the size of the result's page from 25 to 500.
 
     .EXAMPLE
     Get-WikiPage -SpaceKey NASA | Get-WikiPageLabel -Verbose
