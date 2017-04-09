@@ -24,7 +24,7 @@
         # The URi of the API interface.
         # Value can be set persistently with Set-WikiInfo.
         [Parameter( Mandatory = $true )]
-        [string]$apiURi,
+        [URi]$apiURi,
 
         # Confluence's credentials for authentication.
         # Value can be set persistently with Set-WikiInfo.
