@@ -25,9 +25,11 @@
         [Alias('Key')]
         [string]$SpaceKey,
 
-        # Defaults to 25 max results; can be modified here.
+        # Maximimum number of results to fetch per call.
+        # This setting can be tuned to get better performance according to the load on the server.
+        # Warning: too high of a PageSize can cause a timeout on the request.
         [ValidateRange(1, [int]::MaxValue)]
-        [int]$Limit
+        [int]$PageSize = 25
     )
 
     BEGIN {
@@ -44,7 +46,7 @@
             $URI += "/$SpaceKey"
         }
         $GETparameters += @{expand = "description.plain,icon,homepage,metadata.labels"}
-        If ($Limit) { $GETparameters["limit"] = $Limit }
+        If ($PageSize) { $GETparameters["limit"] = $PageSize }
 
         Write-Debug "Using `$GETparameters: $($GETparameters | Out-String)"
         $URI += (ConvertTo-GetParameter $GETparameters)

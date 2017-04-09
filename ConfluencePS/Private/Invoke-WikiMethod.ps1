@@ -51,7 +51,8 @@ function Invoke-WikiMethod {
         $SecureCreds = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes(
                 $('{0}:{1}' -f $Credential.UserName, $Credential.GetNetworkCredential().Password)
             ))
-        $Headers += @{
+        $_headers = $Headers
+        $_headers += @{
             "Authorization" = "Basic $($SecureCreds)"
             'Content-Type' = 'application/json; charset=utf-8'
         }
@@ -60,7 +61,7 @@ function Invoke-WikiMethod {
         $splatParameters = @{
             Uri = $URi
             Method = $Method
-            Headers = $Headers
+            Headers = $_headers
             UseBasicParsing = $true
             ErrorAction = 'SilentlyContinue'
         }
@@ -128,6 +129,18 @@ function Invoke-WikiMethod {
                 Write-Error $($result.errors | Out-String)
             }
             else {
+                # dected if result has more pages
+                if ($result._links.next) {
+                    Write-Verbose "[Invoke-WikiMethod] Invoking pagination"
+                    $parameters = @{
+                        URi = "{0}{1}" -f $result._links.base, $result._links.next
+                        Method = $Method
+                    }
+                    if ($Body) {$parameters["Body"] = $Body}
+                    if ($Headers) {$parameters["Headers"] = $Headers}
+                    $result.results += (Invoke-WikiMethod @parameters)
+                }
+
                 if (($result) -and ($result | Get-Member -Name results)) {
                     # extract from array
                     $result = $result | Select-Object -ExpandProperty results

@@ -301,8 +301,8 @@ InModuleScope ConfluencePS {
         $Content = "<p>Hi Pester!</p>"
 
         # ACT
-        $GetTitle1 = Get-WikiPage -Title $Title1 -Limit 200 -ErrorAction Stop
-        $GetTitle2 = Get-WikiPage -Title $Title2 -SpaceKey $SpaceKey -Limit 200 -ErrorAction Stop
+        $GetTitle1 = Get-WikiPage -Title $Title1 -PageSize 200 -ErrorAction Stop
+        $GetTitle2 = Get-WikiPage -Title $Title2 -SpaceKey $SpaceKey -PageSize 200 -ErrorAction Stop
         $GetID1 = Get-WikiPage -PageID $GetTitle1.ID -ErrorAction Stop
         $GetID2 = Get-WikiPage -PageID $GetTitle2.ID -ErrorAction Stop
         $GetKeys = Get-WikiPage -SpaceKey $SpaceKey | Sort ID -ErrorAction Stop

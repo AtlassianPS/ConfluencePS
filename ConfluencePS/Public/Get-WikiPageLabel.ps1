@@ -35,9 +35,11 @@
         [Alias('ID')]
         [int]$PageID,
 
-        # Defaults to 200 max results; can be modified here.
+        # Maximimum number of results to fetch per call.
+        # This setting can be tuned to get better performance according to the load on the server.
+        # Warning: too high of a PageSize can cause a timeout on the request.
         [ValidateRange(1, [int]::MaxValue)]
-        [int]$Limit
+        [int]$PageSize = 25
     )
 
     BEGIN {
@@ -59,8 +61,8 @@
         Write-Verbose "Processing request for PageID $PageID"
         $URI = "$BaseURI/content/$PageID/label"
 
-        If ($Limit) {
-            $URI = $URI + "?limit=$Limit"
+        If ($PageSize) {
+            $URI = $URI + "?limit=$PageSize"
         }
 
         Write-Verbose "Fetching info from $URI"

@@ -80,10 +80,11 @@
         )]
         [ConfluencePS.Space]$Space,
 
-        # Defaults to 25 max results; can be modified here.
-        # Numbers above 100 may not be honored if -Expand is used.
+        # Maximimum number of results to fetch per call.
+        # This setting can be tuned to get better performance according to the load on the server.
+        # Warning: too high of a PageSize can cause a timeout on the request.
         [ValidateRange(1, [int]::MaxValue)]
-        [int]$Limit, # TODO: pagination
+        [int]$PageSize = 25,
 
         # Additionally returns expanded results for each page (body, version, etc.).
         # May negatively affect -Limit, client/server performance, and network bandwidth.
@@ -134,7 +135,7 @@
             }
             "(bySpace|byTitle)" {
                 $GETparameters["type"] = "page"
-                If ($Limit) { $GETparameters["limit"] = $Limit }
+                If ($PageSize) { $GETparameters["limit"] = $PageSize }
 
                 Write-Debug "Using `$GETparameters: $($GETparameters | Out-String)"
                 $URI += (ConvertTo-GetParameter $GETparameters)
