@@ -59,7 +59,7 @@
         }
 
         foreach ($_page in $PageID) {
-            $URI = "$BaseURI/content/{0}/label" -f $_page
+            $URI = "$apiURi/content/{0}/label" -f $_page
 
             $Content = $Label | Foreach-Object {@{prefix = 'global'; name = $_}} | ConvertTo-Json
 

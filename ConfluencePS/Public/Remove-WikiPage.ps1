@@ -57,7 +57,7 @@
         }
 
         foreach ($_page in $PageID) {
-            $URI = "$BaseURI/content/{0}" -f $_page
+            $URI = "$apiURi/content/{0}" -f $_page
 
             Write-Verbose "Sending delete request to $URI"
             If ($PSCmdlet.ShouldProcess("PageID $_page")) {

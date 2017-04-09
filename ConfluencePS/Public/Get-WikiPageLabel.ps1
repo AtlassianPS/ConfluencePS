@@ -62,7 +62,7 @@
         }
 
         Write-Verbose "Processing request for PageID $PageID"
-        $URI = "$BaseURI/content/$PageID/label"
+        $URI = "$apiURi/content/$PageID/label"
 
         If ($PageSize) {
             $GETparameters = @{limit = $PageSize}

@@ -98,7 +98,7 @@ function New-WikiPage {
         Write-Debug "ParameterSetName: $($PsCmdlet.ParameterSetName)"
         Write-Debug "PSBoundParameters: $($PSBoundParameters | Out-String)"
 
-        $URI = "$BaseURI/content"
+        $URI = "$apiURi/content"
 
         switch ($PsCmdlet.ParameterSetName) {
             "byObject" {

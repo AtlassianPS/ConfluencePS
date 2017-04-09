@@ -66,7 +66,7 @@
 
         foreach ($_page in $PageID) {
             foreach ($_label in $Label) {
-                $URI = "$BaseURI/content/{0}/label?name={1}" -f $_page, $_label
+                $URI = "$apiURi/content/{0}/label?name={1}" -f $_page, $_label
 
                 Write-Verbose "Sending delete request to $URI"
                 If ($PSCmdlet.ShouldProcess("Label $_label, PageID $_page")) {

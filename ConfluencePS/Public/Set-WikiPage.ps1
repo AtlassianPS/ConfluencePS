@@ -116,7 +116,7 @@
                 Write-Verbose "Using Page Object as input"
                 Write-Debug "using object: $($InputObject | Out-String)"
 
-                $URI = "$BaseURI/content/{0}" -f $InputObject.ID
+                $URI = "$apiURi/content/{0}" -f $InputObject.ID
 
                 $Content = @{
                     version = @{ number = ++$InputObject.Version.Number }

@@ -65,7 +65,7 @@
     )
 
     PROCESS {
-        $URI = "$BaseURI/space"
+        $URI = "$apiURi/space"
 
         if ($PsCmdlet.ParameterSetName -eq "byObject") {
             $SpaceKey = $InputObject.Key

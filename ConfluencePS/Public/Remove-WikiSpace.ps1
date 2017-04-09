@@ -58,7 +58,7 @@
         }
 
         foreach ($_space in $SpaceKey) {
-            $URI = "$BaseURI/space/{0}" -f $_space
+            $URI = "$apiURi/space/{0}" -f $_space
 
             Write-Verbose "Sending delete request to $URI"
             If ($PSCmdlet.ShouldProcess("Space key $_space")) {

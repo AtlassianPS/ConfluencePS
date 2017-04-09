@@ -45,7 +45,7 @@
     )
 
     PROCESS {
-        $URI = "$BaseURI/contentbody/convert/storage"
+        $URI = "$apiURi/contentbody/convert/storage"
 
         $Body = @{
             value = "$Content"

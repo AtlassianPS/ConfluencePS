@@ -99,7 +99,7 @@
 
     BEGIN {
         # Base url for this resouce
-        $contentRoot = "$BaseURI/content"
+        $contentRoot = "$apiURi/content"
     }
 
     PROCESS {

@@ -24,7 +24,7 @@
         # The URi of the API interface.
         # Value can be set persistently with Set-WikiInfo.
         [Parameter( Mandatory = $true )]
-        [URi]$apiURi,
+        [string]$apiURi,
 
         # Confluence's credentials for authentication.
         # Value can be set persistently with Set-WikiInfo.
@@ -43,7 +43,7 @@
     )
 
     PROCESS {
-        $URI = "$BaseURI/space"
+        $URI = "$apiURi/space"
 
         if ($SpaceKey) {
             $URI += "/$SpaceKey"
