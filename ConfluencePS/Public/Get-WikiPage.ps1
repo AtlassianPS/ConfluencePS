@@ -120,7 +120,7 @@
                     $URI += (ConvertTo-GetParameter $GETparameters)
 
                     Write-Verbose "Fetching data from $URI"
-                    $response = Invoke-WikiMethod -Uri $URI -Method Get
+                    Invoke-WikiMethod -Uri $URI -Method Get -OutputType ([ConfluencePS.Page])
                     Write-Debug "`$response: $($response | Out-String)"
                 }
                 break
@@ -140,19 +140,7 @@
                 $URI += (ConvertTo-GetParameter $GETparameters)
 
                 Write-Verbose "Fetching data from $URI"
-                $response = Invoke-WikiMethod -Uri $URI -Method Get
-                Write-Debug "`$response: $($response | Out-String)"
-                # Collect results to process in END block
-            }
-        }
-
-        if (($response) -and ($response | Get-Member -Name results)) {
-            # Extract from array
-            $response = $response | Select-Object -ExpandProperty results
-        }
-        if (($response | Measure-Object).count -ge 1) {
-            foreach ($item in $response) {
-                $item | ConvertTo-WikiPage
+                Invoke-WikiMethod -Uri $URI -Method Get -OutputType ([ConfluencePS.Page])
             }
         }
     }

@@ -63,17 +63,7 @@
             Write-Verbose "Posting to $URI"
             Write-Verbose "Content: $($Content | Out-String)"
             If ($PSCmdlet.ShouldProcess("Label $Label, PageID $PageID")) {
-                $response = Invoke-WikiMethod -Uri $URI -Body $Content -Method Post
-
-                if (($response) -and ($response | Get-Member -Name results)) {
-                    # Extract from array
-                    $response = $response | Select-Object -ExpandProperty results
-                }
-                if (($response | Measure-Object).count -ge 1) {
-                    foreach ($item in $response) {
-                        $item | ConvertTo-WikiLabel
-                    }
-                }
+                Invoke-WikiMethod -Uri $URI -Body $Content -Method Post -OutputType ([ConfluencePS.Label])
             }
         }
     }

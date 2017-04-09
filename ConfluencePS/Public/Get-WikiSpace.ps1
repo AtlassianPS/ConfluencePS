@@ -50,17 +50,6 @@
         $URI += (ConvertTo-GetParameter $GETparameters)
 
         Write-Verbose "Fetching data from $URI"
-        $response = Invoke-WikiMethod -Uri $URI -Method Get
-        Write-Debug "`$response: $($response | Out-String)"
-
-        if (($response) -and ($response | Get-Member -Name results)) {
-            # extract from array
-            $response = $response | Select-Object -ExpandProperty results
-        }
-        if (($response | Measure-Object).count -ge 1) {
-            foreach ($item in $response) {
-                $item | ConvertTo-WikiSpace
-            }
-        }
+        Invoke-WikiMethod -Uri $URI -Method Get -OutputType ([ConfluencePS.Space])
     }
 }

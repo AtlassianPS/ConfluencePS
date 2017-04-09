@@ -21,6 +21,17 @@ function Invoke-WikiMethod {
         # Additional headers
         [hashtable]$Headers,
 
+        # Type of object to which the output will be casted to
+        [ValidateSet(
+            [ConfluencePS.Page],
+            [ConfluencePS.Space],
+            [ConfluencePS.Label],
+            [ConfluencePS.Icon],
+            [ConfluencePS.Version],
+            [ConfluencePS.User]
+        )]
+        [System.Type]$OutputType,
+
         # Authentication credentials
         [PSCredential]$Credential
     )
@@ -38,8 +49,8 @@ function Invoke-WikiMethod {
         }
 
         $SecureCreds = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes(
-            $('{0}:{1}' -f $Credential.UserName, $Credential.GetNetworkCredential().Password)
-        ))
+                $('{0}:{1}' -f $Credential.UserName, $Credential.GetNetworkCredential().Password)
+            ))
         $Headers += @{
             "Authorization" = "Basic $($SecureCreds)"
             'Content-Type' = 'application/json; charset=utf-8'
@@ -117,13 +128,29 @@ function Invoke-WikiMethod {
                 Write-Error $($result.errors | Out-String)
             }
             else {
-                Write-Verbose "[Invoke-WikiMethod] Outputting results from"
-                Write-Output $result
+                if (($result) -and ($result | Get-Member -Name results)) {
+                    # extract from array
+                    $result = $result | Select-Object -ExpandProperty results
+                }
+
+                if ($OutputType) {
+                    Write-Verbose "[Invoke-WikiMethod] Outputting results as $($OutputType.FullName)"
+                    $convertFunction = "ConvertTo-Wiki$($OutputType.Name)"
+
+                    if (($result | Measure-Object).count -ge 1) {
+                        foreach ($item in $result) {
+                            Write-Output ($item | & $convertFunction)
+                        }
+                    }
+                }
+                else {
+                    Write-Verbose "[Invoke-WikiMethod] Outputting results as PSCustomObject"
+                    Write-Output $result
+                }
             }
         }
         else {
             Write-Verbose "[Invoke-WikiMethod] No Web result object was returned from. This is unusual!"
-            Write-Warning "[Invoke-WikiMethod] No Web result object was returned from. This is unusual!"
         }
     }
 }
