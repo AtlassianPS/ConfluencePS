@@ -59,6 +59,10 @@
 
             PROCESS {
                 Write-Verbose "Setting [$command : $parameter] = $value"
+
+                # Needs to set both global and module scope for the private functions:
+                # http://stackoverflow.com/questions/30427110/set-psdefaultparametersvalues-for-use-within-module-scope
+                $PSDefaultParameterValues["${command}:${parameter}"] = $Value
                 $global:PSDefaultParameterValues["${command}:${parameter}"] = $Value
             }
         }
