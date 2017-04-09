@@ -13,7 +13,7 @@
     Stores the returned value '<p>Hello world!</p>' in $Body for use in New-WikiPage/Set-WikiPage/etc.
 
     .EXAMPLE
-    Get-Date -Format s | ConvertTo-WikiStorageFormat
+    Get-Date -Format s | ConvertTo-WikiStorageFormat -ApiURi "https://myserver.com/wiki" -Credential $cred
     Returns the current date/time in sortable format, and converts via pipeline input.
 
     .EXAMPLE
@@ -29,17 +29,20 @@
     #>
     [CmdletBinding()]
     param (
+        # The URi of the API interface.
+        # Value can be set persistently with Set-WikiInfo.
+        [Parameter( Mandatory = $true )]
+        [URi]$apiURi,
+
+        # Confluence's credentials for authentication.
+        # Value can be set persistently with Set-WikiInfo.
+        [Parameter( Mandatory = $true )]
+        [PSCredential]$Credential,
+
         # A string (in plain text and/or wiki markup) to be converted to storage format.
-        [Parameter(Mandatory=$true, ValueFromPipeline = $true)]
+        [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
         [string]$Content
     )
-
-    BEGIN {
-        If (!($Credential) -or !($BaseURI)) {
-            Write-Warning 'Confluence instance info not yet defined in this session. Calling Set-WikiInfo'
-            Set-WikiInfo
-        }
-    }
 
     PROCESS {
         $URI = "$BaseURI/contentbody/convert/storage"
@@ -49,7 +52,7 @@
             representation = 'wiki'
         } | ConvertTo-Json
 
-        $response = Invoke-WikiMethod -Uri $URI -Body $Body -Method Post
+        $response = Invoke-WikiMethod -Uri $URI -Credential $Credential -Body $Body -Method Post
         $response.value
     }
 }

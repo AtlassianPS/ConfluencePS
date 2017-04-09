@@ -47,6 +47,16 @@
     )]
     [OutputType([ConfluencePS.Page])]
     param (
+        # The URi of the API interface.
+        # Value can be set persistently with Set-WikiInfo.
+        [Parameter( Mandatory = $true )]
+        [URi]$apiURi,
+
+        # Confluence's credentials for authentication.
+        # Value can be set persistently with Set-WikiInfo.
+        [Parameter( Mandatory = $true )]
+        [PSCredential]$Credential,
+
         # Page Object
         [Parameter(
             Mandatory = $true,
@@ -90,11 +100,6 @@
     )
 
     BEGIN {
-        If (!($Credential) -or !($BaseURI)) {
-            Write-Warning 'Confluence instance info not yet defined in this session. Calling Set-WikiInfo'
-            Set-WikiInfo
-        }
-
         # If -Convert is flagged, call ConvertTo-WikiStorageFormat against the -Body
         If ($Convert) {
             Write-Verbose '-Convert flag active; converting content to Confluence storage format'
@@ -170,7 +175,7 @@
 
         Write-Verbose "Putting to $URI"
         If ($PSCmdlet.ShouldProcess("Space $SpaceKey, Parent $ParentID")) {
-            Invoke-WikiMethod -Uri $URI -Body $Content -Method Put -OutputType ([ConfluencePS.Page])
+            Invoke-WikiMethod -Uri $URI -Body $Content -Method Put -Credential $Credential -OutputType ([ConfluencePS.Page])
         }
     }
 }

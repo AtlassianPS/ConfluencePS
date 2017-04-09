@@ -9,7 +9,7 @@
     Piped output into other cmdlets is generally tested and supported.
 
     .EXAMPLE
-    Get-WikiSpace
+    Get-WikiSpace -ApiURi "https://myserver.com/wiki" -Credential $cred
     Display the info of all spaces on the server.
 
     .EXAMPLE
@@ -21,6 +21,16 @@
     #>
     [CmdletBinding()]
     param (
+        # The URi of the API interface.
+        # Value can be set persistently with Set-WikiInfo.
+        [Parameter( Mandatory = $true )]
+        [URi]$apiURi,
+
+        # Confluence's credentials for authentication.
+        # Value can be set persistently with Set-WikiInfo.
+        [Parameter( Mandatory = $true )]
+        [PSCredential]$Credential,
+
         # Filter results by key. Supports wildcard matching on partial input.
         [Alias('Key')]
         [string]$SpaceKey,
@@ -32,13 +42,6 @@
         [int]$PageSize = 25
     )
 
-    BEGIN {
-        If (!($Credential) -or !($BaseURI)) {
-            Write-Warning 'Confluence instance info not yet defined in this session. Calling Set-WikiInfo'
-            Set-WikiInfo
-        }
-    }
-
     PROCESS {
         $URI = "$BaseURI/space"
 
@@ -49,6 +52,6 @@
         If ($PageSize) { $GETparameters["limit"] = $PageSize }
 
         Write-Verbose "Fetching data from $URI"
-        Invoke-WikiMethod -Uri $URI -Method Get -GetParameters $GETparameters -OutputType ([ConfluencePS.Space])
+        Invoke-WikiMethod -Uri $URI -Method Get -Credential $Credential -GetParameters $GETparameters -OutputType ([ConfluencePS.Space])
     }
 }

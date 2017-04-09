@@ -7,7 +7,7 @@
     Add one or more labels to one or more Confluence pages. Label can be brand new.
 
     .EXAMPLE
-    New-WikiLabel -Label alpha,bravo,charlie -PageID 123456 -Verbose
+    New-WikiLabel -ApiURi "https://myserver.com/wiki" -Credential $cred -Label alpha,bravo,charlie -PageID 123456 -Verbose
     Apply the labels alpha, bravo, and charlie to the page with ID 123456. Verbose output.
 
     .EXAMPLE
@@ -23,6 +23,16 @@
     )]
     [OutputType([ConfluencePS.Label])]
     param (
+        # The URi of the API interface.
+        # Value can be set persistently with Set-WikiInfo.
+        [Parameter( Mandatory = $true )]
+        [URi]$apiURi,
+
+        # Confluence's credentials for authentication.
+        # Value can be set persistently with Set-WikiInfo.
+        [Parameter( Mandatory = $true )]
+        [PSCredential]$Credential,
+
         # The page ID to apply the label to. Accepts multiple IDs via pipeline input.
         [Parameter(
             Position = 0,
@@ -38,13 +48,6 @@
         [Parameter(Mandatory = $true)]
         [string[]]$Label
     )
-
-    BEGIN {
-        If (!($Credential) -or !($BaseURI)) {
-            Write-Warning 'Confluence instance info not yet defined in this session. Calling Set-WikiInfo'
-            Set-WikiInfo
-        }
-    }
 
     PROCESS {
         Write-Debug "ParameterSetName: $($PsCmdlet.ParameterSetName)"
@@ -63,7 +66,7 @@
             Write-Verbose "Posting to $URI"
             Write-Verbose "Content: $($Content | Out-String)"
             If ($PSCmdlet.ShouldProcess("Label $Label, PageID $PageID")) {
-                Invoke-WikiMethod -Uri $URI -Body $Content -Method Post -OutputType ([ConfluencePS.Label])
+                Invoke-WikiMethod -Uri $URI -Body $Content -Method Post -Credential $Credential -OutputType ([ConfluencePS.Label])
             }
         }
     }

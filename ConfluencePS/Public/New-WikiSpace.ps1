@@ -7,7 +7,7 @@
     Create a new blank space. Key and Name mandatory, Description recommended.
 
     .EXAMPLE
-    [ConfluencePS.Space]@{key="TEST";Name="Test Space"} | New-WikiSpace
+    [ConfluencePS.Space]@{key="TEST";Name="Test Space"} | New-WikiSpace -ApiURi "https://myserver.com/wiki" -Credential $cred
     Create the new blank space. Runs Set-WikiInfo first if instance info unknown.
 
     .EXAMPLE
@@ -24,6 +24,16 @@
     )]
     [OutputType([ConfluencePS.Space])]
     param (
+        # The URi of the API interface.
+        # Value can be set persistently with Set-WikiInfo.
+        [Parameter( Mandatory = $true )]
+        [URi]$apiURi,
+
+        # Confluence's credentials for authentication.
+        # Value can be set persistently with Set-WikiInfo.
+        [Parameter( Mandatory = $true )]
+        [PSCredential]$Credential,
+
         # Space Object
         [Parameter(
             Mandatory = $true,
@@ -54,13 +64,6 @@
         [string]$Description
     )
 
-    BEGIN {
-        If (!($Credential) -or !($BaseURI)) {
-            Write-Warning 'Confluence instance info not yet defined in this session. Calling Set-WikiInfo'
-            Set-WikiInfo
-        }
-    }
-
     PROCESS {
         $URI = "$BaseURI/space"
 
@@ -83,7 +86,7 @@
 
         Write-Verbose "Posting to $URI"
         If ($PSCmdlet.ShouldProcess("$SpaceKey $Name")) {
-            Invoke-WikiMethod -Uri $URI -Body $Body -Method Post -OutputType ([ConfluencePS.Space])
+            Invoke-WikiMethod -Uri $URI -Body $Body -Method Post -Credential $Credential -OutputType ([ConfluencePS.Space])
         }
     }
 }
