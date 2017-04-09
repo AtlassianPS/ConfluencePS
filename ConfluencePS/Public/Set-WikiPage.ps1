@@ -139,7 +139,7 @@
             "byParameters" {
                 Write-Verbose "Using attributes as input"
 
-                $URI = "$BaseURI/content/$PageID"
+                $URI = "$apiURi/content/$PageID"
                 $originalPage = Get-WikiPage -PageID $PageID
 
                 if (($Parent -is [ConfluencePS.Page]) -and ($Parent.ID)) {
