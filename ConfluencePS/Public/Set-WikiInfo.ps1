@@ -44,6 +44,25 @@
     )
 
     BEGIN {
+
+        function Add-WikiDefaultParameter {
+            param(
+                [Parameter(Mandatory = $true)]
+                [string]$Command,
+
+                [Parameter(Mandatory = $true)]
+                [string]$Parameter,
+
+                [Parameter(Mandatory = $true)]
+                $Value
+            )
+
+            PROCESS {
+                Write-Verbose "Setting [$command : $parameter] = $value"
+                $global:PSDefaultParameterValues["${command}:${parameter}"] = $Value
+            }
+        }
+
         $moduleCommands = Get-Command -Module ConfluencePS
 
         if ($PromptCredentials) {
@@ -53,27 +72,21 @@
 
     PROCESS {
 
-        if ($BaseURi) {
+        foreach ($command in $moduleCommands) {
+
             $parameter = "ApiURi"
-            foreach ($command in ($moduleCommands | Where-Object {$_.Parameters.Keys -contains $parameter})) {
-                Write-Verbose "Setting ApiURi for: $command"
-                $PSDefaultParameterValues["${command}:${parameter}"] = $BaseURi.AbsoluteUri.TrimEnd('/') + '/rest/api'
+            if ($BaseURi -and ($command.Parameters.Keys -contains $parameter)) {
+                Add-WikiDefaultParameter -Command $command -Parameter $parameter -Value ($BaseURi.AbsoluteUri.TrimEnd('/') + '/rest/api')
             }
-        }
 
-        if ($Credential) {
             $parameter = "Credential"
-            foreach ($command in ($moduleCommands | Where-Object {$_.Parameters.Keys -contains $parameter})) {
-                Write-Verbose "Setting Credential for: $command"
-                $PSDefaultParameterValues["${command}:${parameter}"] = $Credential
+            if ($Credential -and ($command.Parameters.Keys -contains $parameter)) {
+                Add-WikiDefaultParameter -Command $command -Parameter $parameter -Value $Credential
             }
-        }
 
-        if ($PageSize) {
             $parameter = "PageSize"
-            foreach ($command in ($moduleCommands | Where-Object {$_.Parameters.Keys -contains $parameter})) {
-                Write-Verbose "Setting PageSite for: $command"
-                $PSDefaultParameterValues["${command}:${parameter}"] = $PageSize
+            if ($PageSize -and ($command.Parameters.Keys -contains $parameter)) {
+                Add-WikiDefaultParameter -Command $command -Parameter $parameter -Value $PageSize
             }
         }
     }
