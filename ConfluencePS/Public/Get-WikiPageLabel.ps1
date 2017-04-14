@@ -8,9 +8,9 @@
     Currently accepts multiple pages only via piped input.
 
     .EXAMPLE
-    Get-WikiPageLabel -PageID 123456 -Limit 500
+    Get-WikiPageLabel -PageID 123456 -PageSize 500
     Lists the labels applied to page 123456.
-    This also increases the result limit from 200 to 500, in case you love to label.
+    This also increases the size of the result's page from 25 to 500.
 
     .EXAMPLE
     Get-WikiPage -SpaceKey NASA | Get-WikiPageLabel -Verbose
@@ -35,9 +35,11 @@
         [Alias('ID')]
         [int]$PageID,
 
-        # Defaults to 200 max results; can be modified here.
+        # Maximimum number of results to fetch per call.
+        # This setting can be tuned to get better performance according to the load on the server.
+        # Warning: too high of a PageSize can cause a timeout on the request.
         [ValidateRange(1, [int]::MaxValue)]
-        [int]$Limit
+        [int]$PageSize = 25
     )
 
     BEGIN {
@@ -59,21 +61,11 @@
         Write-Verbose "Processing request for PageID $PageID"
         $URI = "$BaseURI/content/$PageID/label"
 
-        If ($Limit) {
-            $URI = $URI + "?limit=$Limit"
+        If ($PageSize) {
+            $GETparameters = @{limit = $PageSize}
         }
 
         Write-Verbose "Fetching info from $URI"
-        $response = Invoke-WikiMethod -Uri $URI -Method Get
-
-        if (($response) -and ($response | Get-Member -Name results)) {
-            # Extract from array
-            $response = $response | Select-Object -ExpandProperty results
-        }
-        if (($response | Measure-Object).count -ge 1) {
-            foreach ($item in $response) {
-                $item | ConvertTo-WikiLabel
-            }
-        }
+        Invoke-WikiMethod -Uri $URI -Method Get -GetParameters $GETparameters -OutputType ([ConfluencePS.Label])
     }
 }

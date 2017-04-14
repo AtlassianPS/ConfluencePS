@@ -163,8 +163,7 @@ function New-WikiPage {
         Write-Verbose "Posting to $URI"
         Write-Verbose "Content: $($Content | Out-String)"
         If ($PSCmdlet.ShouldProcess("Space $SpaceKey, Parent $ParentID")) {
-            $response = Invoke-WikiMethod -Uri $URI -Body $Content -Method Post
-            if ($response) { $response | ConvertTo-WikiPage }
+            Invoke-WikiMethod -Uri $URI -Body $Content -Method Post -OutputType ([ConfluencePS.Page])
         }
     }
 }

@@ -25,9 +25,11 @@
         [Alias('Key')]
         [string]$SpaceKey,
 
-        # Defaults to 25 max results; can be modified here.
+        # Maximimum number of results to fetch per call.
+        # This setting can be tuned to get better performance according to the load on the server.
+        # Warning: too high of a PageSize can cause a timeout on the request.
         [ValidateRange(1, [int]::MaxValue)]
-        [int]$Limit
+        [int]$PageSize = 25
     )
 
     BEGIN {
@@ -44,23 +46,9 @@
             $URI += "/$SpaceKey"
         }
         $GETparameters += @{expand = "description.plain,icon,homepage,metadata.labels"}
-        If ($Limit) { $GETparameters["limit"] = $Limit }
-
-        Write-Debug "Using `$GETparameters: $($GETparameters | Out-String)"
-        $URI += (ConvertTo-GetParameter $GETparameters)
+        If ($PageSize) { $GETparameters["limit"] = $PageSize }
 
         Write-Verbose "Fetching data from $URI"
-        $response = Invoke-WikiMethod -Uri $URI -Method Get
-        Write-Debug "`$response: $($response | Out-String)"
-
-        if (($response) -and ($response | Get-Member -Name results)) {
-            # extract from array
-            $response = $response | Select-Object -ExpandProperty results
-        }
-        if (($response | Measure-Object).count -ge 1) {
-            foreach ($item in $response) {
-                $item | ConvertTo-WikiSpace
-            }
-        }
+        Invoke-WikiMethod -Uri $URI -Method Get -GetParameters $GETparameters -OutputType ([ConfluencePS.Space])
     }
 }

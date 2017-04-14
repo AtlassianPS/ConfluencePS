@@ -8,25 +8,25 @@
     Piped output into other cmdlets is generally tested and supported.
 
     .EXAMPLE
-    Get-WikiPage -Limit 500 | Select-Object ID, Title | Sort-Object Title
+    Get-WikiPage | Select-Object ID, Title -first 500 | Sort-Object Title
     List the first 500 pages found in your Confluence instance.
     Returns only each page's ID and Title, sorting results alphabetically by Title.
 
     .EXAMPLE
-    Get-WikiPage -Title Confluence -Limit 100
-    Get all pages with the word Confluence in the title. Title is not case sensitive.
-    Among only the first 100 pages found, returns all results matching *confluence*.
+    Get-WikiPage -Title Confluence -SpaceKey "ABC" -PageSize 100
+    Get all pages with the word Confluence in the title in the 'ABC' sapce. The calls
+    to the server are limited to 100 pages per call.
 
     .EXAMPLE
     Get-WikiSpace -Name Demo | Get-WikiPage
     Get all spaces with a name like *demo*, and then list pages from each returned space.
 
     .EXAMPLE
-    $FinalCountdown = Get-WikiPage -PageID 54321 -Expand
+    $FinalCountdown = Get-WikiPage -PageID 54321
     Store the page's ID, Title, Space Key, Version, and Body for use later in your script.
 
     .EXAMPLE
-    $WhereIsShe = Get-WikiPage -Title 'Rachel' -Limit 1000 | Get-WikiPage -Expand
+    $WhereIsShe = Get-WikiPage -Title 'Rachel' | Get-WikiPage
     Search Batman's 1000 pages for Rachel in order to find the correct page ID(s).
     Search again, this time piping in the page ID(s), to also capture version and body from the expanded results.
     Store them in a variable for later use (e.g. Set-WikiPage).
@@ -47,7 +47,7 @@
         )]
         [ValidateRange(1, [int]::MaxValue)]
         [Alias('ID')]
-        [int[]]$PageID,
+        [int]$PageID,
 
         # Filter results by name.
         [Parameter(
@@ -80,14 +80,11 @@
         )]
         [ConfluencePS.Space]$Space,
 
-        # Defaults to 25 max results; can be modified here.
-        # Numbers above 100 may not be honored if -Expand is used.
+        # Maximimum number of results to fetch per call.
+        # This setting can be tuned to get better performance according to the load on the server.
+        # Warning: too high of a PageSize can cause a timeout on the request.
         [ValidateRange(1, [int]::MaxValue)]
-        [int]$Limit, # TODO: pagination
-
-        # Additionally returns expanded results for each page (body, version, etc.).
-        # May negatively affect -Limit, client/server performance, and network bandwidth.
-        [switch]$Expand
+        [int]$PageSize = 25
     )
 
     BEGIN {
@@ -96,7 +93,8 @@
             Set-WikiInfo
         }
 
-        $contentRoot = "$BaseURI/content" # base url for this resouce
+        # Base url for this resouce
+        $contentRoot = "$BaseURI/content"
     }
 
     PROCESS {
@@ -116,43 +114,20 @@
                 foreach ($_pageID in $PageID) {
                     $URI = "$contentRoot/$_pageID"
 
-                    Write-Debug "Using `$GETparameters: $($GETparameters | Out-String)"
-                    $URI += (ConvertTo-GetParameter $GETparameters)
-
                     Write-Verbose "Fetching data from $URI"
-                    $response = Invoke-WikiMethod -Uri $URI -Method Get
-                    Write-Debug "`$response: $($response | Out-String)"
+                    Invoke-WikiMethod -Uri $URI -Method Get -GetParameters $GETparameters -OutputType ([ConfluencePS.Page])
                 }
                 break
             }
-            "byTitle" {
-                if ($SpaceKey) { $GETparameters["spaceKey"] = $SpaceKey }
-                $GETparameters["title"] = $Title
-            }
-            "bySpace" {
-                $GETparameters["spaceKey"] = $SpaceKey
-            }
             "(bySpace|byTitle)" {
                 $GETparameters["type"] = "page"
-                If ($Limit) { $GETparameters["limit"] = $Limit }
-
-                Write-Debug "Using `$GETparameters: $($GETparameters | Out-String)"
-                $URI += (ConvertTo-GetParameter $GETparameters)
+                if ($Title) { $GETparameters["title"] = $Title }
+                if ($SpaceKey) { $GETparameters["spaceKey"] = $SpaceKey }
+                If ($PageSize) { $GETparameters["limit"] = $PageSize }
 
                 Write-Verbose "Fetching data from $URI"
-                $response = Invoke-WikiMethod -Uri $URI -Method Get
-                Write-Debug "`$response: $($response | Out-String)"
-                # Collect results to process in END block
-            }
-        }
-
-        if (($response) -and ($response | Get-Member -Name results)) {
-            # Extract from array
-            $response = $response | Select-Object -ExpandProperty results
-        }
-        if (($response | Measure-Object).count -ge 1) {
-            foreach ($item in $response) {
-                $item | ConvertTo-WikiPage
+                Invoke-WikiMethod -Uri $URI -Method Get -GetParameters $GETparameters -OutputType ([ConfluencePS.Page])
+                break
             }
         }
     }

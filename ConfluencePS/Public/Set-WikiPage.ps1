@@ -111,7 +111,7 @@
                 Write-Verbose "Using Page Object as input"
                 Write-Debug "using object: $($InputObject | Out-String)"
 
-                $URI = "$BaseURI/content/$($InputObject.ID)"
+                $URI = "$BaseURI/content/{0}" -f $InputObject.ID
 
                 $Content = @{
                     version = @{ number = ++$InputObject.Version.Number }
@@ -151,8 +151,8 @@
                 else {
                     $Content["title"] = $originalPage.Title
                 }
+                # $Body might be empty
                 if ($PSBoundParameters.Keys -contains "Body") {
-                    # $Body might be empty
                     $Content["body"] = @{ storage = @{ value = $Body; representation = 'storage' }}
                 }
                 else {
@@ -169,11 +169,8 @@
         $Content = $Content | ConvertTo-Json
 
         Write-Verbose "Putting to $URI"
-        Write-Verbose "Content: $($Content | Out-String)"
         If ($PSCmdlet.ShouldProcess("Space $SpaceKey, Parent $ParentID")) {
-            # TODO
-            $response = Invoke-WikiMethod -Uri $URI -Body $Content -Method Put
-            if ($response) { $response | ConvertTo-WikiPage }
+            Invoke-WikiMethod -Uri $URI -Body $Content -Method Put -OutputType ([ConfluencePS.Page])
         }
     }
 }
