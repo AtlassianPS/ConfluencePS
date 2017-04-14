@@ -23,7 +23,7 @@ function New-WikiPage {
     Creates a new page with an empty body as a child page of the "Parent Page" in the "space" page.
 
     .EXAMPLE
-    [ConfluencePS.Page]@{Title="My Title";Space=[ConfluencePS.Space]@{Key="ABC"}} | New-WikiPage
+    [ConfluencePS.Page]@{Title="My Title";Space=[ConfluencePS.Space]@{Key="ABC"}} | New-WikiPage -ApiURi "https://myserver.com/wiki" -Credential $cred
     Creates a new page "My Title" in the space "ABC" with an empty body.
 
     .LINK
@@ -42,6 +42,16 @@ function New-WikiPage {
     )]
     [OutputType([ConfluencePS.Page])]
     param (
+        # The URi of the API interface.
+        # Value can be set persistently with Set-WikiInfo.
+        [Parameter( Mandatory = $true )]
+        [URi]$apiURi,
+
+        # Confluence's credentials for authentication.
+        # Value can be set persistently with Set-WikiInfo.
+        [Parameter( Mandatory = $true )]
+        [PSCredential]$Credential,
+
         # Page Object
         [Parameter(
             Mandatory = $true,
@@ -84,18 +94,11 @@ function New-WikiPage {
         [switch]$Convert
     )
 
-    BEGIN {
-        If (!($Credential) -or !($BaseURI)) {
-            Write-Warning 'Confluence instance info not yet defined in this session. Calling Set-WikiInfo'
-            Set-WikiInfo
-        }
-    }
-
     PROCESS {
         Write-Debug "ParameterSetName: $($PsCmdlet.ParameterSetName)"
         Write-Debug "PSBoundParameters: $($PSBoundParameters | Out-String)"
 
-        $URI = "$BaseURI/content"
+        $URI = "$apiURi/content"
 
         switch ($PsCmdlet.ParameterSetName) {
             "byObject" {
@@ -163,7 +166,7 @@ function New-WikiPage {
         Write-Verbose "Posting to $URI"
         Write-Verbose "Content: $($Content | Out-String)"
         If ($PSCmdlet.ShouldProcess("Space $SpaceKey, Parent $ParentID")) {
-            Invoke-WikiMethod -Uri $URI -Body $Content -Method Post -OutputType ([ConfluencePS.Page])
+            Invoke-WikiMethod -Uri $URI -Body $Content -Method Post -Credential $Credential -OutputType ([ConfluencePS.Page])
         }
     }
 }

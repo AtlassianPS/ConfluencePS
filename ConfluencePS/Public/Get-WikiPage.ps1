@@ -8,7 +8,7 @@
     Piped output into other cmdlets is generally tested and supported.
 
     .EXAMPLE
-    Get-WikiPage | Select-Object ID, Title -first 500 | Sort-Object Title
+    Get-WikiPage -ApiURi "https://myserver.com/wiki" -Credential $cred | Select-Object ID, Title -first 500 | Sort-Object Title
     List the first 500 pages found in your Confluence instance.
     Returns only each page's ID and Title, sorting results alphabetically by Title.
 
@@ -37,6 +37,16 @@
     [CmdletBinding(DefaultParameterSetName = "byId")]
     [OutputType([ConfluencePS.Page])]
     param (
+        # The URi of the API interface.
+        # Value can be set persistently with Set-WikiInfo.
+        [Parameter( Mandatory = $true )]
+        [URi]$apiURi,
+
+        # Confluence's credentials for authentication.
+        # Value can be set persistently with Set-WikiInfo.
+        [Parameter( Mandatory = $true )]
+        [PSCredential]$Credential,
+
         # Filter results by page ID.
         # Best option if you already know the ID, as it bypasses result limit problems.
         [Parameter(
@@ -88,13 +98,8 @@
     )
 
     BEGIN {
-        If (!($Credential) -or !($BaseURI)) {
-            Write-Warning 'Confluence instance info not yet defined in this session. Calling Set-WikiInfo'
-            Set-WikiInfo
-        }
-
         # Base url for this resouce
-        $contentRoot = "$BaseURI/content"
+        $contentRoot = "$apiURi/content"
     }
 
     PROCESS {
@@ -115,7 +120,7 @@
                     $URI = "$contentRoot/$_pageID"
 
                     Write-Verbose "Fetching data from $URI"
-                    Invoke-WikiMethod -Uri $URI -Method Get -GetParameters $GETparameters -OutputType ([ConfluencePS.Page])
+                    Invoke-WikiMethod -Uri $URI -Method Get -Credential $Credential -GetParameters $GETparameters -OutputType ([ConfluencePS.Page])
                 }
                 break
             }
@@ -126,7 +131,7 @@
                 If ($PageSize) { $GETparameters["limit"] = $PageSize }
 
                 Write-Verbose "Fetching data from $URI"
-                Invoke-WikiMethod -Uri $URI -Method Get -GetParameters $GETparameters -OutputType ([ConfluencePS.Page])
+                Invoke-WikiMethod -Uri $URI -Method Get -Credential $Credential -GetParameters $GETparameters -OutputType ([ConfluencePS.Page])
                 break
             }
         }

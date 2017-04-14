@@ -8,7 +8,7 @@
     Currently accepts multiple pages only via piped input.
 
     .EXAMPLE
-    Get-WikiPageLabel -PageID 123456 -PageSize 500
+    Get-WikiPageLabel -PageID 123456 -PageSize 500 -ApiURi "https://myserver.com/wiki" -Credential $cred
     Lists the labels applied to page 123456.
     This also increases the size of the result's page from 25 to 500.
 
@@ -24,6 +24,16 @@
     [CmdletBinding()]
     [OutputType([ConfluencePS.Label])]
     param (
+        # The URi of the API interface.
+        # Value can be set persistently with Set-WikiInfo.
+        [Parameter( Mandatory = $true )]
+        [URi]$apiURi,
+
+        # Confluence's credentials for authentication.
+        # Value can be set persistently with Set-WikiInfo.
+        [Parameter( Mandatory = $true )]
+        [PSCredential]$Credential,
+
         # List the PageID number to check for labels. Accepts piped input.
         [Parameter(
             Position = 0,
@@ -42,13 +52,6 @@
         [int]$PageSize = 25
     )
 
-    BEGIN {
-        If (!($Credential) -or !($BaseURI)) {
-            Write-Warning 'Confluence instance info not yet defined in this session. Calling Set-WikiInfo'
-            Set-WikiInfo
-        }
-    }
-
     PROCESS {
         Write-Debug "ParameterSetName: $($PsCmdlet.ParameterSetName)"
         Write-Debug "PSBoundParameters: $($PSBoundParameters | Out-String)"
@@ -59,13 +62,13 @@
         }
 
         Write-Verbose "Processing request for PageID $PageID"
-        $URI = "$BaseURI/content/$PageID/label"
+        $URI = "$apiURi/content/$PageID/label"
 
         If ($PageSize) {
             $GETparameters = @{limit = $PageSize}
         }
 
         Write-Verbose "Fetching info from $URI"
-        Invoke-WikiMethod -Uri $URI -Method Get -GetParameters $GETparameters -OutputType ([ConfluencePS.Label])
+        Invoke-WikiMethod -Uri $URI -Method Get -Credential $Credential -GetParameters $GETparameters -OutputType ([ConfluencePS.Label])
     }
 }

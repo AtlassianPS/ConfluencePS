@@ -47,6 +47,16 @@
     )]
     [OutputType([ConfluencePS.Page])]
     param (
+        # The URi of the API interface.
+        # Value can be set persistently with Set-WikiInfo.
+        [Parameter( Mandatory = $true )]
+        [URi]$apiURi,
+
+        # Confluence's credentials for authentication.
+        # Value can be set persistently with Set-WikiInfo.
+        [Parameter( Mandatory = $true )]
+        [PSCredential]$Credential,
+
         # Page Object
         [Parameter(
             Mandatory = $true,
@@ -90,11 +100,6 @@
     )
 
     BEGIN {
-        If (!($Credential) -or !($BaseURI)) {
-            Write-Warning 'Confluence instance info not yet defined in this session. Calling Set-WikiInfo'
-            Set-WikiInfo
-        }
-
         # If -Convert is flagged, call ConvertTo-WikiStorageFormat against the -Body
         If ($Convert) {
             Write-Verbose '-Convert flag active; converting content to Confluence storage format'
@@ -111,7 +116,7 @@
                 Write-Verbose "Using Page Object as input"
                 Write-Debug "using object: $($InputObject | Out-String)"
 
-                $URI = "$BaseURI/content/{0}" -f $InputObject.ID
+                $URI = "$apiURi/content/{0}" -f $InputObject.ID
 
                 $Content = @{
                     version = @{ number = ++$InputObject.Version.Number }
@@ -134,7 +139,7 @@
             "byParameters" {
                 Write-Verbose "Using attributes as input"
 
-                $URI = "$BaseURI/content/$PageID"
+                $URI = "$apiURi/content/$PageID"
                 $originalPage = Get-WikiPage -PageID $PageID
 
                 if (($Parent -is [ConfluencePS.Page]) -and ($Parent.ID)) {
@@ -170,7 +175,7 @@
 
         Write-Verbose "Putting to $URI"
         If ($PSCmdlet.ShouldProcess("Space $SpaceKey, Parent $ParentID")) {
-            Invoke-WikiMethod -Uri $URI -Body $Content -Method Put -OutputType ([ConfluencePS.Page])
+            Invoke-WikiMethod -Uri $URI -Body $Content -Method Put -Credential $Credential -OutputType ([ConfluencePS.Page])
         }
     }
 }

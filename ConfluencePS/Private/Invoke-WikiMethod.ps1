@@ -36,6 +36,7 @@ function Invoke-WikiMethod {
         [System.Type]$OutputType,
 
         # Authentication credentials
+        [Parameter(Mandatory = $true)]
         [PSCredential]$Credential
     )
 

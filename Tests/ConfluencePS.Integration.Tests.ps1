@@ -25,10 +25,12 @@ InModuleScope ConfluencePS {
 
         # ASSERT
         It 'credentials are stored' {
-            $script:Credential | Should BeOfType [PSCredential]
+            $global:PSDefaultParameterValues["Get-WikiPage:Credential"] | Should BeOfType [PSCredential]
+            #TODO: extend this
         }
         It 'url is stored' {
-            $script:BaseURI | Should Not BeNullOrEmpty
+            $global:PSDefaultParameterValues["Get-WikiPage:ApiURi"] | Should BeOfType [String]
+            $global:PSDefaultParameterValues["Get-WikiPage:ApiURi"] -match "^https?://.*\/rest\/api$" | Should Be $true
         }
     }
 

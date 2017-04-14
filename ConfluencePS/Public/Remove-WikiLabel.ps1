@@ -9,7 +9,7 @@
     Specifically tested against pages, but should work against all content IDs.
 
     .EXAMPLE
-    Remove-WikiLabel -Label seven -PageID 123456 -Verbose -Confirm
+    Remove-WikiLabel -ApiURi "https://myserver.com/wiki" -Credential $cred -Label seven -PageID 123456 -Verbose -Confirm
     Would remove label "seven" from the page with ID 123456.
     Verbose and Confirm flags both active.
 
@@ -26,6 +26,16 @@
     )]
     [OutputType([Bool])]
     param (
+        # The URi of the API interface.
+        # Value can be set persistently with Set-WikiInfo.
+        [Parameter( Mandatory = $true )]
+        [URi]$apiURi,
+
+        # Confluence's credentials for authentication.
+        # Value can be set persistently with Set-WikiInfo.
+        [Parameter( Mandatory = $true )]
+        [PSCredential]$Credential,
+
         # The page ID to remove the label from. Accepts multiple IDs via pipeline input.
         [Parameter(
             Position = 0,
@@ -45,13 +55,6 @@
         [switch]$Force
     )
 
-    BEGIN {
-        If (!($Credential) -or !($BaseURI)) {
-            Write-Warning 'Confluence instance info not yet defined in this session. Calling Set-WikiInfo'
-            Set-WikiInfo
-        }
-    }
-
     PROCESS {
         Write-Debug "ParameterSetName: $($PsCmdlet.ParameterSetName)"
         Write-Debug "PSBoundParameters: $($PSBoundParameters | Out-String)"
@@ -63,11 +66,11 @@
 
         foreach ($_page in $PageID) {
             foreach ($_label in $Label) {
-                $URI = "$BaseURI/content/{0}/label?name={1}" -f $_page, $_label
+                $URI = "$apiURi/content/{0}/label?name={1}" -f $_page, $_label
 
                 Write-Verbose "Sending delete request to $URI"
                 If ($PSCmdlet.ShouldProcess("Label $_label, PageID $_page")) {
-                    Invoke-WikiMethod -Uri $URI -Method Delete
+                    Invoke-WikiMethod -Uri $URI -Method Delete -Credential $Credential
                 }
             }
         }

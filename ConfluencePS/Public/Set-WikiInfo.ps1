@@ -9,9 +9,12 @@
     (If you have a better suggestion for how to handle this, please reach out on GitHub!)
 
     .EXAMPLE
-    Set-WikiInfo -BaseURI 'https://brianbunke.atlassian.net/wiki'
+    Set-WikiInfo -BaseURI 'https://brianbunke.atlassian.net/wiki' -PromptCredentials
     Declare your base install; be prompted for username and password.
-    Stored in script-scope variables $BaseURI and $Header.
+
+    .EXAMPLE
+    Set-WikiInfo -BaseURI $ConfluenceURL -Credential $MyCreds -PageSize 100
+    Sets the url, credentials and default page size for the session.
 
     .LINK
     https://github.com/brianbunke/ConfluencePS
@@ -25,20 +28,70 @@
     [CmdletBinding()]
     param (
         # Address of your base Confluence install. For Atlassian Cloud instances, include /wiki.
-        [Parameter(Mandatory = $true,
-            HelpMessage = 'Example = https://brianbunke.atlassian.net/wiki (/wiki for Cloud instances)')]
-        [Uri]$BaseURI,
+        [Parameter(
+            HelpMessage = 'Example = https://brianbunke.atlassian.net/wiki (/wiki for Cloud instances)'
+        )]
+        [Uri]$BaseURi,
 
         # The username/password combo you use to log in to Confluence.
-        [ValidateNotNullorEmpty()]
-        [PSCredential]$Credential = (Get-Credential)
+        [PSCredential]$Credential,
+
+        # Default PageSize for the invocations.
+        [int]$PageSize,
+
+        # Prompt the user for credentials
+        [switch]$PromptCredentials
     )
 
-    PROCESS {
-        # Append the common /rest/api to the URI
-        # Save as script-level variable for further use in the current session
-        $script:BaseURI = $BaseURI.AbsoluteUri.TrimEnd('/') + '/rest/api'
+    BEGIN {
 
-        $script:Credential = $Credential
+        function Add-WikiDefaultParameter {
+            param(
+                [Parameter(Mandatory = $true)]
+                [string]$Command,
+
+                [Parameter(Mandatory = $true)]
+                [string]$Parameter,
+
+                [Parameter(Mandatory = $true)]
+                $Value
+            )
+
+            PROCESS {
+                Write-Verbose "Setting [$command : $parameter] = $value"
+
+                # Needs to set both global and module scope for the private functions:
+                # http://stackoverflow.com/questions/30427110/set-psdefaultparametersvalues-for-use-within-module-scope
+                $PSDefaultParameterValues["${command}:${parameter}"] = $Value
+                $global:PSDefaultParameterValues["${command}:${parameter}"] = $Value
+            }
+        }
+
+        $moduleCommands = Get-Command -Module ConfluencePS
+
+        if ($PromptCredentials) {
+            $Credential = (Get-Credential)
+        }
+    }
+
+    PROCESS {
+
+        foreach ($command in $moduleCommands) {
+
+            $parameter = "ApiURi"
+            if ($BaseURi -and ($command.Parameters.Keys -contains $parameter)) {
+                Add-WikiDefaultParameter -Command $command -Parameter $parameter -Value ($BaseURi.AbsoluteUri.TrimEnd('/') + '/rest/api')
+            }
+
+            $parameter = "Credential"
+            if ($Credential -and ($command.Parameters.Keys -contains $parameter)) {
+                Add-WikiDefaultParameter -Command $command -Parameter $parameter -Value $Credential
+            }
+
+            $parameter = "PageSize"
+            if ($PageSize -and ($command.Parameters.Keys -contains $parameter)) {
+                Add-WikiDefaultParameter -Command $command -Parameter $parameter -Value $PageSize
+            }
+        }
     }
 }

@@ -13,7 +13,7 @@
     Send Oscar to the trash. Each matching page will ask you to confirm the deletion.
 
     .EXAMPLE
-    Remove-WikiPage -PageID 12345,12346 -Verbose -WhatIf
+    Remove-WikiPage -ApiURi "https://myserver.com/wiki" -Credential $cred -PageID 12345,12346 -Verbose -WhatIf
     Simulates the removal of two specifc pages.
 
     .LINK
@@ -25,6 +25,16 @@
     )]
     [OutputType([Bool])]
     param (
+        # The URi of the API interface.
+        # Value can be set persistently with Set-WikiInfo.
+        [Parameter( Mandatory = $true )]
+        [URi]$apiURi,
+
+        # Confluence's credentials for authentication.
+        # Value can be set persistently with Set-WikiInfo.
+        [Parameter( Mandatory = $true )]
+        [PSCredential]$Credential,
+
         # The page ID to delete. Accepts multiple IDs via pipeline input.
         [Parameter(
             Position = 0,
@@ -37,13 +47,6 @@
         [int[]]$PageID
     )
 
-    BEGIN {
-        If (!($Credential) -or !($BaseURI)) {
-            Write-Warning 'Confluence instance info not yet defined in this session. Calling Set-WikiInfo'
-            Set-WikiInfo
-        }
-    }
-
     PROCESS {
         Write-Debug "ParameterSetName: $($PsCmdlet.ParameterSetName)"
         Write-Debug "PSBoundParameters: $($PSBoundParameters | Out-String)"
@@ -54,11 +57,11 @@
         }
 
         foreach ($_page in $PageID) {
-            $URI = "$BaseURI/content/{0}" -f $_page
+            $URI = "$apiURi/content/{0}" -f $_page
 
             Write-Verbose "Sending delete request to $URI"
             If ($PSCmdlet.ShouldProcess("PageID $_page")) {
-                Invoke-WikiMethod -Uri $URI -Method Delete
+                Invoke-WikiMethod -Uri $URI -Method Delete -Credential $Credential
             }
         }
 
