@@ -441,42 +441,46 @@ InModuleScope ConfluencePS {
         }
     }
 
-    # Describe 'Get-WikiPageLabel' {
-    #     # ARRANGE
-    #     $SpaceKey = "PESTER"
-    #     $Label1 = "pester"
-    #     $PartialLabel = "pest"
-    #     $Page = Get-WikiPage -Title "Pester New Page Piped"
+    Describe 'Get-WikiLabel' {
+        # ARRANGE
+        $SpaceKey = "PESTER"
+        $patternLabel1 = "pester[abc]$"
+        $patternLabel2 = "(pest|import)"
+        $Page = Get-WikiPage -Title "Pester New Page Piped"
 
-    #     # ACT
-    #     $GetPageLabel1 = Get-WikiPageLabel -PageID $Page.ID
-    #     $GetPageLabel2 = Get-WikiPage -SpaceKey $SpaceKey | Sort ID | Select -ExpandProperty ID | Get-WikiPageLabel
+        # ACT
+        $GetPageLabel1 = Get-WikiLabel -PageID $Page.ID
+        $GetPageLabel2 = Get-WikiPage -SpaceKey $SpaceKey | Get-WikiLabel
 
-    #     # ASSERT
-    #     It 'returns the correct amount of results' {
-    #         ($GetPageLabel1).Count | Should Be 4
-    #         ($GetPageLabel2).Count | Should Be 6
-    #         ($GetPageLabel2 | Where {$_.Label -eq $Label1}).Count | Should Be 3
-    #     }
-    #     It 'returns an object with specific properties' {
-    #         $GetPageLabel1 | Should BeOfType [ConfluencePS.Page]
-    #         $GetPageLabel2 | Should BeOfType [ConfluencePS.Page]
-    #         ($GetPageLabel1 | Get-Member -MemberType NoteProperty).Count | Should Be 4
-    #         ($GetPageLabel2 | Get-Member -MemberType NoteProperty).Count | Should Be 4
-    #     }
-    #     It 'label matches the specified value' {
-    #         $GetPageLabel1.Label | Should Match $PartialLabel
-    #         $GetPageLabel2.Label | Should Match $PartialLabel
-    #     }
-    #     It 'labelid is not null or empty' {
-    #         $GetPageLabel1.LabelID | Should Not BeNullOrEmpty
-    #         $GetPageLabel2.LabelID | Should Not BeNullOrEmpty
-    #     }
-    #     It 'pageid matches the specified value' {
-    #         $GetPageLabel1.PageID -contains $PageID | Should Be $true
-    #         $GetPageLabel2.PageID -contains $PageID | Should Be $true
-    #     }
-    # }
+        # ASSERT
+        It 'returns the correct amount of results' {
+            ($GetPageLabel1.Labels).Count | Should Be 4
+            ($GetPageLabel2.Labels).Count | Should Be 9
+            ($GetPageLabel2.Labels | Where {$_.Name -match $patternLabel1}).Count | Should Be 3
+        }
+        It 'returns an object with specific properties' {
+            $GetPageLabel1 | Should BeOfType [ConfluencePS.ContentLabelSet]
+            $GetPageLabel1.Page | Should BeOfType [ConfluencePS.Page]
+            $GetPageLabel1.Labels | Should BeOfType [ConfluencePS.Label]
+            $GetPageLabel2 | Should BeOfType [ConfluencePS.ContentLabelSet]
+            $GetPageLabel2.Page | Should BeOfType [ConfluencePS.Page]
+            $GetPageLabel2.Labels | Should BeOfType [ConfluencePS.Label]
+            ($GetPageLabel1 | Get-Member -MemberType Property).Count | Should Be 2
+            ($GetPageLabel2 | Get-Member -MemberType Property).Count | Should Be 2
+        }
+        It 'label matches the specified value' {
+            $GetPageLabel1.Labels.Name | Should Match $patternLabel2
+            $GetPageLabel2.Labels.Name | Should Match $patternLabel2
+        }
+        It 'labelid is not null or empty' {
+            $GetPageLabel1.Labels.ID | Should Not BeNullOrEmpty
+            $GetPageLabel2.Labels.ID | Should Not BeNullOrEmpty
+        }
+        It 'pageid matches the specified value' {
+            $GetPageLabel1.Page.ID | Should BeExactly $Page.ID
+            $GetPageLabel2.Page.ID -contains $Page.ID | Should Be $true
+        }
+    }
 
     Describe 'Set-WikiPage' {
         <# TODO:
@@ -651,16 +655,16 @@ InModuleScope ConfluencePS {
         $Page1 = Get-WikiPage -Title 'Pester New Page Piped' -ErrorAction Stop
 
         # ACT
-        $Before = Get-WikiPage -PageID $Page1.ID | Get-WikiPageLabel -ErrorAction SilentlyContinue
+        $Before = Get-WikiPage -PageID $Page1.ID | Get-WikiLabel -ErrorAction SilentlyContinue
         Remove-WikiLabel -Label $Label1 -PageID $Page1.ID  -ErrorAction SilentlyContinue
-        $After = Get-WikiPage -PageID $Page1.ID | Get-WikiPageLabel -ErrorAction SilentlyContinue
+        $After = Get-WikiPage -PageID $Page1.ID | Get-WikiLabel -ErrorAction SilentlyContinue
 
         # ASSERT
         It 'page has one label less' {
-            ($Before).Count - ($After).Count| Should Be 1
+            ($Before.Labels).Count - ($After.Labels).Count| Should Be 1
         }
         It 'page does not have label' {
-            $After -notcontains $Label1 | Should Be $true
+            $After.Labels.Name -notcontains $Label1 | Should Be $true
         }
     }
 

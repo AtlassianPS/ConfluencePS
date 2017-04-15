@@ -71,7 +71,7 @@
         'ConvertTo-WikiTable',
         'Get-WikiChildPage',
         'Get-WikiPage',
-        'Get-WikiPageLabel',
+        'Get-WikiLabel',
         'Get-WikiSpace',
         'New-WikiLabel',
         'New-WikiPage',

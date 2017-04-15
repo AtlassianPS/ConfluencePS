@@ -56,4 +56,9 @@ namespace ConfluencePS
 		public String Prefix { get; set; }
 		public String Name { get; set; }
 	}
+
+	public class ContentLabelSet {
+		public Page Page { get; set; }
+		public Label[] Labels { get; set; }
+	}
 }
