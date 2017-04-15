@@ -31,6 +31,10 @@
     Search again, this time piping in the page ID(s), to also capture version and body from the expanded results.
     Store them in a variable for later use (e.g. Set-WikiPage).
 
+    .EXAMPLE
+    $meetingPages = Get-WikiPage -Label "meeting-notes" -SpaceKey PROJ1
+    Captures all the meeting note pages in the Proj1 Space.
+
     .LINK
     https://github.com/brianbunke/ConfluencePS
     #>
@@ -57,7 +61,7 @@
         )]
         [ValidateRange(1, [int]::MaxValue)]
         [Alias('ID')]
-        [int]$PageID,
+        [int[]]$PageID,
 
         # Filter results by name.
         [Parameter(
@@ -75,6 +79,9 @@
         [Parameter(
             ParameterSetName = "byTitle"
         )]
+        [Parameter(
+            ParameterSetName = "byLabel"
+        )]
         [Alias('Key')]
         [string]$SpaceKey,
 
@@ -88,7 +95,18 @@
             ValueFromPipeline = $true,
             ParameterSetName = "byTitle"
         )]
+        [Parameter(
+            ValueFromPipeline = $true,
+            ParameterSetName = "byLabel"
+        )]
         [ConfluencePS.Space]$Space,
+
+        # Label(s) to use as search criteria to find pages
+        [Parameter(
+            Mandatory = $true,
+            ParameterSetName = "byLabel"
+        )]
+        [string[]]$Label,
 
         # Maximimum number of results to fetch per call.
         # This setting can be tuned to get better performance according to the load on the server.
@@ -128,6 +146,21 @@
                 $GETparameters["type"] = "page"
                 if ($Title) { $GETparameters["title"] = $Title }
                 if ($SpaceKey) { $GETparameters["spaceKey"] = $SpaceKey }
+                If ($PageSize) { $GETparameters["limit"] = $PageSize }
+
+                Write-Verbose "Fetching data from $URI"
+                Invoke-WikiMethod -Uri $URI -Method Get -Credential $Credential -GetParameters $GETparameters -OutputType ([ConfluencePS.Page])
+                break
+            }
+            "byLabel" {
+                $URI = "$contentRoot/search"
+
+                $CQLparameters = @("type=page", "label=$Label")
+                if ($SpaceKey) {$CQLparameters += "space=$SpaceKey"}
+
+                $cqlQuery = ConvertTo-URLEncoded ($CQLparameters -join (" AND "))
+
+                $GETparameters["cql"] = $cqlQuery
                 If ($PageSize) { $GETparameters["limit"] = $PageSize }
 
                 Write-Verbose "Fetching data from $URI"

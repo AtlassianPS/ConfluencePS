@@ -301,14 +301,16 @@ InModuleScope ConfluencePS {
         $Title2 = "Pester New Page Orphan"
         $Title3 = "Pester Test Space Home"
         $Content = "<p>Hi Pester!</p>"
+        (Get-WikiSpace -SpaceKey $SpaceKey).Homepage | New-WikiLabel -Label "important" -ErrorAction Stop
 
         # ACT
-        $GetTitle1 = Get-WikiPage -Title $Title1 -PageSize 200 -ErrorAction Stop
-        $GetTitle2 = Get-WikiPage -Title $Title2 -SpaceKey $SpaceKey -PageSize 200 -ErrorAction Stop
-        $GetID1 = Get-WikiPage -PageID $GetTitle1.ID -ErrorAction Stop
-        $GetID2 = Get-WikiPage -PageID $GetTitle2.ID -ErrorAction Stop
-        $GetKeys = Get-WikiPage -SpaceKey $SpaceKey | Sort ID -ErrorAction Stop
-        $GetSpacePage = Get-WikiPage -Space (Get-WikiSpace -SpaceKey $SpaceKey) -ErrorAction Stop
+        $GetTitle1 = Get-WikiPage -Title $Title1 -PageSize 200 -ErrorAction SilentlyContinue
+        $GetTitle2 = Get-WikiPage -Title $Title2 -SpaceKey $SpaceKey -PageSize 200 -ErrorAction SilentlyContinue
+        $GetID1 = Get-WikiPage -PageID $GetTitle1.ID -ErrorAction SilentlyContinue
+        $GetID2 = Get-WikiPage -PageID $GetTitle2.ID -ErrorAction SilentlyContinue
+        $GetKeys = Get-WikiPage -SpaceKey $SpaceKey | Sort ID -ErrorAction SilentlyContinue
+        $GetByLabel = Get-WikiPage -Label "important" -ErrorAction SilentlyContinue
+        $GetSpacePage = Get-WikiPage -Space (Get-WikiSpace -SpaceKey $SpaceKey) -ErrorAction SilentlyContinue
 
         # ASSERT
         It 'returns the correct amount of results' {
@@ -317,6 +319,7 @@ InModuleScope ConfluencePS {
             $GetID1.Count | Should Be 1
             $GetID2.Count | Should Be 1
             $GetKeys.Count | Should Be 5
+            $GetByLabel.Count | Should Be 1
             $GetSpacePage.Count | Should Be 5
         }
         It 'returns an object with specific properties' {
@@ -325,11 +328,13 @@ InModuleScope ConfluencePS {
             $GetID1 | Should BeOfType [ConfluencePS.Page]
             $GetID2 | Should BeOfType [ConfluencePS.Page]
             $GetKeys | Should BeOfType [ConfluencePS.Page]
+            $GetByLabel | Should BeOfType [ConfluencePS.Page]
             ($GetTitle1 | Get-Member -MemberType Property).Count | Should Be 9
             ($GetTitle2 | Get-Member -MemberType Property).Count | Should Be 9
             ($GetID1 | Get-Member -MemberType Property).Count | Should Be 9
             ($GetID2 | Get-Member -MemberType Property).Count | Should Be 9
             ($GetKeys | Get-Member -MemberType Property).Count | Should Be 9
+            ($GetByLabel | Get-Member -MemberType Property).Count | Should Be 9
         }
         It 'id is integer' {
             $GetTitle1.ID | Should BeOfType [Int]
@@ -337,6 +342,7 @@ InModuleScope ConfluencePS {
             $GetID1.ID | Should BeOfType [Int]
             $GetID2.ID | Should BeOfType [Int]
             $GetKeys.ID | Should BeOfType [Int]
+            $GetByLabel.ID | Should BeOfType [Int]
         }
         It 'id matches the specified value' {
             $GetID1.ID | Should Be $GetTitle1.ID
@@ -351,6 +357,7 @@ InModuleScope ConfluencePS {
             $GetID2.Title | Should BeExactly $Title2
             $GetKeys.Title -contains $Title3 | Should Be $true
             $GetKeys.Title -contains $GetID1.Title | Should Be $true
+            $GetByLabel.Title -like "PESTER * Home" | Should Be $true
         }
         It 'space matches the specified value' {
             $GetTitle1.Space.Key | Should BeExactly $SpaceKey
@@ -358,11 +365,13 @@ InModuleScope ConfluencePS {
             $GetID1.Space.Key | Should BeExactly $SpaceKey
             $GetID2.Space.Key | Should BeExactly $SpaceKey
             $GetKeys.Space.Key -contains $SpaceKey | Should Be $true
+            $GetByLabel.Space.Key | Should BeExactly $SpaceKey
         }
         It 'version matches the specified value' {
             $GetTitle2.Version.Number | Should Be 1
             $GetID2.Version.Number | Should Be 1
             $GetKeys.Version.Number -contains 1 | Should Be $true
+            $GetByLabel.Version.Number | Should Be 1
         }
         It 'body matches the specified value' {
             $GetTitle1.Body | Should BeExactly $Content
@@ -380,6 +389,8 @@ InModuleScope ConfluencePS {
             $GetID2.URL | Should Not BeNullOrEmpty
             $GetKeys.URL | Should BeOfType [String]
             $GetKeys.URL | Should Not BeNullOrEmpty
+            $GetByLabel.URL | Should BeOfType [String]
+            $GetByLabel.URL | Should Not BeNullOrEmpty
         }
         It 'shorturl is string' {
             $GetTitle1.ShortURL | Should BeOfType [String]
@@ -392,6 +403,8 @@ InModuleScope ConfluencePS {
             $GetID2.ShortURL | Should Not BeNullOrEmpty
             $GetKeys.ShortURL | Should BeOfType [String]
             $GetKeys.ShortURL | Should Not BeNullOrEmpty
+            $GetByLabel.ShortURL | Should BeOfType [String]
+            $GetByLabel.ShortURL | Should Not BeNullOrEmpty
         }
     }
 
@@ -410,7 +423,7 @@ InModuleScope ConfluencePS {
         # ASSERT
         It 'returns the correct amount of results' {
             ($NewLabel1).Count | Should Be 3
-            ($NewLabel2).Count | Should Be 8
+            ($NewLabel2).Count | Should Be 9
         }
         It 'returns an object with specific properties' {
             $NewLabel1 | Should BeOfType [ConfluencePS.Label]
