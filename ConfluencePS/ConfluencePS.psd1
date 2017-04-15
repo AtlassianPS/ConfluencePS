@@ -70,7 +70,6 @@
         'ConvertTo-WikiStorageFormat',
         'ConvertTo-WikiTable',
         'Get-WikiChildPage',
-        'Get-WikiLabelApplied',
         'Get-WikiPage',
         'Get-WikiPageLabel',
         'Get-WikiSpace',

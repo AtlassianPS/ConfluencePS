@@ -478,45 +478,6 @@ InModuleScope ConfluencePS {
     #     }
     # }
 
-    # Can't get this working...always works during manual testing
-    # Start-Sleep (and wait loop variants) haven't helped during full runs
-    # Describe 'Get-WikiLabelApplied' {
-    #     # ARRANGE
-    #     Start-Sleep -sec 30
-    #     $SpaceKey = "PESTER"
-    #     $Label1 = "pesterc"
-    #     $Label2 = "pester"
-    #     $Title1 = "Pester New Page Piped"
-    #     $Title2 = "Pester New Page Orphan"
-    #     $Type = "page"
-
-    #     # ACT
-    #     $GetApplied1 = Get-WikiLabelApplied -Label $Label1
-    #     $GetApplied2 = Get-WikiSpace -Key $SpaceKey | Get-WikiLabelApplied -Label $Label2 | Sort ID
-
-    #     # ASSERT
-    #     It 'returns the correct amount of results' {
-    #         @($GetApplied1).Count | Should Be 1
-    #         @($GetApplied2).Count | Should Be 3
-    #     }
-    #     It 'returns an object with specific properties' {
-    #         ($GetApplied1 | Get-Member -MemberType NoteProperty).Count | Should Be 3
-    #         ($GetApplied2 | Get-Member -MemberType NoteProperty).Count | Should Be 3
-    #     }
-    #     It 'id is not null or empty' {
-    #         $GetApplied1.ID | Should Not BeNullOrEmpty
-    #         $GetApplied2.ID | Should Not BeNullOrEmpty
-    #     }
-    #     It 'title has the specified value' {
-    #         $GetApplied1.Title | Should BeExactly $Title1
-    #         $GetApplied2[2].Title | Should BeExactly $Title2
-    #     }
-    #     It 'type has the specified value' {
-    #         $GetApplied1.Type | Should BeExactly $Type
-    #         $GetApplied2.Type -contains $Type | Should Be $true
-    #     }
-    # }
-
     Describe 'Set-WikiPage' {
         <# TODO:
         * Title may not be empty
