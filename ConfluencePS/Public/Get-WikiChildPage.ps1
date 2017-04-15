@@ -45,19 +45,12 @@
             Position = 0,
             Mandatory = $true,
             ValueFromPipeline = $true,
+            ValueFromPipelineByPropertyName = $true,
             ParameterSetName = "byID"
         )]
         [ValidateRange(1, [int]::MaxValue)]
         [Alias('ID')]
         [int]$PageID,
-
-        # Find child pages by Page Object
-        [Parameter(
-            Mandatory = $true,
-            ValueFromPipeline = $true,
-            ParameterSetName = "byObject"
-        )]
-        [ConfluencePS.Page]$InputObject,
 
         # Get all child pages recursively
         [switch]$Recurse,
@@ -75,6 +68,12 @@
     PROCESS {
         Write-Debug "ParameterSetName: $($PsCmdlet.ParameterSetName)"
         Write-Debug "PSBoundParameters: $($PSBoundParameters | Out-String)"
+
+        if (($_) -and -not($_ -is [ConfluencePS.Page] -or $_ -is [int])) {
+            $message = "The Object in the pipe is not a Page."
+            $exception = New-Object -TypeName System.ArgumentException -ArgumentList $message
+            Throw $exception
+        }
 
         if ($PsCmdlet.ParameterSetName -eq "byObject") {
             $PageID = $InputObject.ID

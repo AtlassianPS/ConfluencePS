@@ -649,7 +649,25 @@ InModuleScope ConfluencePS {
         }
     }
 
-    Describe 'Remove-WikiLabel' {
+    Describe 'Get-WikiChildPage' {
+        # ARRANGE
+
+        # ACT
+        $ChildPages = (Get-WikiSpace -SpaceKey PESTER).Homepage | Get-WikiChildPage
+        $DesendantPages = (Get-WikiSpace -SpaceKey PESTER).Homepage | Get-WikiChildPage -Recurse
+
+        # ASSERT
+        It 'returns the correct amount of results' {
+            $ChildPages.Count | Should Be 2
+            $DesendantPages.Count | Should Be 4
+        }
+        It 'returns an object with specific properties' {
+            $ChildPages | Should BeOfType [ConfluencePS.Page]
+            $DesendantPages | Should BeOfType [ConfluencePS.Page]
+        }
+    }
+
+Describe 'Remove-WikiLabel' {
         # ARRANGE
         $Label1 = "pesterc"
         $Page1 = Get-WikiPage -Title 'Pester New Page Piped' -ErrorAction Stop
