@@ -679,16 +679,16 @@ InModuleScope ConfluencePS {
         $Page1 = Get-WikiPage -Title 'Pester New Page Piped' -ErrorAction Stop
 
         # ACT
-        $Before = $Page1 | Get-WikiPageLabel -ErrorAction SilentlyContinue
+        $Before = Get-WikiPage -PageID $Page1.ID | Get-WikiPageLabel -ErrorAction SilentlyContinue
         Remove-WikiLabel -Label $Label1 -PageID $Page1.ID  -ErrorAction SilentlyContinue
-        $After = $Page1 | Get-WikiPageLabel -ErrorAction SilentlyContinue
+        $After = Get-WikiPage -PageID $Page1.ID | Get-WikiPageLabel -ErrorAction SilentlyContinue
 
         # ASSERT
         It 'page has one label less' {
-            ($Before.Labels).Count - ($After.Labels).Count| Should Be 1
+            ($Before).Count - ($After).Count| Should Be 1
         }
         It 'page does not have label' {
-            $After.Labels.Name -notcontains $Label1 | Should Be $true
+            $After -notcontains $Label1 | Should Be $true
         }
     }
 
