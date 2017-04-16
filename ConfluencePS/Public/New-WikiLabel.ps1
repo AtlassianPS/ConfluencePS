@@ -19,7 +19,8 @@
     #>
     [CmdletBinding(
         ConfirmImpact = 'Medium',
-        SupportsShouldProcess = $true
+        SupportsShouldProcess = $true,
+        DefaultParameterSetName = 'byLabelName'
     )]
     [OutputType([ConfluencePS.Label])]
     param (
@@ -36,7 +37,6 @@
         # The page ID to apply the label to. Accepts multiple IDs via pipeline input.
         [Parameter(
             Position = 0,
-            Mandatory = $true,
             ValueFromPipeline = $true,
             ValueFromPipelineByPropertyName = $true
         )]
@@ -45,17 +45,40 @@
         [int[]]$PageID,
 
         # One or more labels to be added. Currently supports labels of prefix "global."
-        [Parameter(Mandatory = $true)]
-        [string[]]$Label
+        [Parameter(
+            Mandatory = $true,
+            ValueFromPipeline = $true,
+            ParameterSetName = 'byLabelName'
+        )]
+        [string[]]$Label,
+
+        # Labels from a ContentLabelSet.
+        [Parameter(
+            Mandatory = $true,
+            ValueFromPipeline = $true,
+            ValueFromPipelineByPropertyName = $true,
+            ParameterSetName = 'byLabelSet'
+        )]
+        [ConfluencePS.ContentLabelSet]$Labels
     )
+
+    DynamicParam {
+        if (!($Page)) {
+            $paramDictionary["PageID"] | Out-String | Write-Host
+        }
+    }
 
     PROCESS {
         Write-Debug "ParameterSetName: $($PsCmdlet.ParameterSetName)"
         Write-Debug "PSBoundParameters: $($PSBoundParameters | Out-String)"
-        if (($_) -and ($_ -isnot [ConfluencePS.Page])) {
-            if (!$Force) {
-                Write-Warning "The Object in the pipe is not a Page"
-            }
+        if (($_) -and -not($_ -is [ConfluencePS.Page] -or $_ -is [int] -or $_ -is [ConfluencePS.ContentLabelSet])) {
+            $message = "The Object in the pipe is not a Page."
+            $exception = New-Object -TypeName System.ArgumentException -ArgumentList $message
+            Throw $exception
+        }
+
+        if ($Labels) {
+            $Label = $Labels.Labels | Select -ExpandProperty Name
         }
 
         foreach ($_page in $PageID) {

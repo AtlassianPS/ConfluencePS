@@ -419,25 +419,31 @@ InModuleScope ConfluencePS {
         # ACT
         $NewLabel1 = New-WikiLabel -Label $Label1 -PageID $Page1.ID -ErrorAction Stop
         $NewLabel2 = Get-WikiPage -SpaceKey $SpaceKey | New-WikiLabel -Label $Label2 -ErrorAction Stop
+        $NewLabel3 = (Get-WikiSpace -SpaceKey $SpaceKey).Homepage | Get-WikiLabel | New-WikiLabel -PageID $Page1.ID
 
         # ASSERT
         It 'returns the correct amount of results' {
             ($NewLabel1).Count | Should Be 3
             ($NewLabel2).Count | Should Be 9
+            ($NewLabel3).Count | Should Be 5
         }
         It 'returns an object with specific properties' {
             $NewLabel1 | Should BeOfType [ConfluencePS.Label]
             $NewLabel2 | Should BeOfType [ConfluencePS.Label]
+            $NewLabel3 | Should BeOfType [ConfluencePS.Label]
             ($NewLabel1 | Get-Member -MemberType Property).Count | Should Be 3
             ($NewLabel2 | Get-Member -MemberType Property).Count | Should Be 3
+            ($NewLabel3 | Get-Member -MemberType Property).Count | Should Be 3
         }
         It 'label matches the specified value' {
             $NewLabel1.Name | Should BeExactly $Label1
             $NewLabel2.Name -contains $Label2 | Should Be $true
+            $NewLabel3.Name -match $PartialLabel | Should Be $true
         }
         It 'labelid is not null or empty' {
             $NewLabel1.ID | Should Not BeNullOrEmpty
             $NewLabel2.ID | Should Not BeNullOrEmpty
+            $NewLabel3.ID | Should Not BeNullOrEmpty
         }
     }
 
@@ -454,8 +460,8 @@ InModuleScope ConfluencePS {
 
         # ASSERT
         It 'returns the correct amount of results' {
-            ($GetPageLabel1.Labels).Count | Should Be 4
-            ($GetPageLabel2.Labels).Count | Should Be 9
+            ($GetPageLabel1.Labels).Count | Should Be 5
+            ($GetPageLabel2.Labels).Count | Should Be 10
             ($GetPageLabel2.Labels | Where {$_.Name -match $patternLabel1}).Count | Should Be 3
         }
         It 'returns an object with specific properties' {
