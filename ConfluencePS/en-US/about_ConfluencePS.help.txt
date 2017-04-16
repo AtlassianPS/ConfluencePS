@@ -61,7 +61,7 @@ LONG DESCRIPTION
 
     To delete pages with the label "test":
 
-        Get-WikiLabelApplied -Label test -PageSize 1000 | Remove-WikiPage -WhatIf
+        Get-WikiPage -Label test -PageSize 1000 | Remove-WikiPage -WhatIf
 
     Use -WhatIf first to be sure only intended pages will be affected,
     then run the command again without the -WhatIf parameter.
