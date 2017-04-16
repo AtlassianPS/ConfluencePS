@@ -98,15 +98,17 @@ InModuleScope ConfluencePS {
     Describe 'Get-WikiSpace' {
         # ARRANGE
         # Set up test values:
-        $Key = "PESTER"
-        $Name = "Pester Test Space"
+        $Key1 = "PESTER"
+        $Key2 = "PESTER1"
+        $Name1 = "Pester Test Space"
+        $Name2 = "Second Pester Space"
         $Description = "<p>A nice description</p>"
 
         # ACT
         $AllSpaces = Get-WikiSpace
-        $GetSpace1 = Get-WikiSpace -Key $Key
+        $GetSpace1 = Get-WikiSpace -Key $Key1
         $GetSpace2 = Get-WikiSpace | Where-Object {$_.Name -like '*ter test sp*'}
-        $GetSpace3 = Get-WikiSpace | Where-Object {$_.ID -eq $GetSpace1.ID}
+        $GetSpace3 = Get-WikiSpace @($Key1, $Key2)
 
         # ASSERT
         It 'returns an object with specific properties' {
@@ -122,7 +124,7 @@ InModuleScope ConfluencePS {
             $AllSpaces.Count | Should BeGreaterThan 2
             $GetSpace1.Count | Should Be 1
             $GetSpace2.Count | Should Be 1
-            $GetSpace3.Count | Should Be 1
+            $GetSpace3.Count | Should Be 2
         }
         It 'id is integer' {
             $GetSpace1.ID | Should BeOfType [Int]
@@ -135,9 +137,9 @@ InModuleScope ConfluencePS {
             $GetSpace3.Key | Should BeOfType [String]
         }
         It 'key matches the specified value' {
-            $GetSpace1.Key | Should BeExactly $Key
-            $GetSpace2.Key | Should BeExactly $Key
-            $GetSpace3.Key | Should BeExactly $Key
+            $GetSpace1.Key | Should BeExactly $Key1
+            $GetSpace2.Key | Should BeExactly $Key1
+            $GetSpace3.Key | Should BeExactly @($Key1, $Key2)
         }
         It 'name is string' {
             $GetSpace1.Name | Should BeOfType [String]
@@ -145,9 +147,9 @@ InModuleScope ConfluencePS {
             $GetSpace3.Name | Should BeOfType [String]
         }
         It 'name matches the specified value' {
-            $GetSpace1.Name | Should BeExactly $Name
-            $GetSpace2.Name | Should BeExactly $Name
-            $GetSpace3.Name | Should BeExactly $Name
+            $GetSpace1.Name | Should BeExactly $Name1
+            $GetSpace2.Name | Should BeExactly $Name1
+            $GetSpace3.Name | Should BeExactly @($Name1, $Name2)
         }
         It 'description is string' {
             $GetSpace1.Description | Should BeOfType [String]
@@ -157,7 +159,7 @@ InModuleScope ConfluencePS {
         It 'description matches the specified value' {
             $GetSpace1.Description | Should BeExactly $Description
             $GetSpace2.Description | Should BeExactly $Description
-            $GetSpace3.Description | Should BeExactly $Description
+            # $GetSpace3.Description | Should BeExactly $Description
         }
         It 'type is string' {
             $GetSpace1.Type | Should BeOfType [String]
@@ -177,7 +179,7 @@ InModuleScope ConfluencePS {
         It 'homepage matches the specified value' {
             $GetSpace1.Homepage.Title | Should BeExactly "$($GetSpace1.Name) Home"
             $GetSpace2.Homepage.Title | Should BeExactly "$($GetSpace2.Name) Home"
-            $GetSpace3.Homepage.Title | Should BeExactly "$($GetSpace3.Name) Home"
+            $GetSpace3.Homepage.Title | Should BeExactly @("$Name1 Home", "$Name2 Home")
         }
     }
 

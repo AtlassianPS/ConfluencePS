@@ -20,6 +20,7 @@
     https://github.com/brianbunke/ConfluencePS
     #>
     [CmdletBinding()]
+    [OutputType([ConfluencePS.Space])]
     param (
         # The URi of the API interface.
         # Value can be set persistently with Set-WikiInfo.
@@ -32,8 +33,11 @@
         [PSCredential]$Credential,
 
         # Filter results by key. Supports wildcard matching on partial input.
+        [Parameter(
+            Position = 0
+        )]
         [Alias('Key')]
-        [string]$SpaceKey,
+        [string[]]$SpaceKey,
 
         # Maximimum number of results to fetch per call.
         # This setting can be tuned to get better performance according to the load on the server.
@@ -43,15 +47,26 @@
     )
 
     PROCESS {
-        $URI = "$apiURi/space"
+        Write-Debug "ParameterSetName: $($PsCmdlet.ParameterSetName)"
+        Write-Debug "PSBoundParameters: $($PSBoundParameters | Out-String)"
 
-        if ($SpaceKey) {
-            $URI += "/$SpaceKey"
-        }
+        $resourceURI = "$apiURi/space"
+
         $GETparameters += @{expand = "description.plain,icon,homepage,metadata.labels"}
         If ($PageSize) { $GETparameters["limit"] = $PageSize }
 
-        Write-Verbose "Fetching data from $URI"
-        Invoke-WikiMethod -Uri $URI -Method Get -Credential $Credential -GetParameters $GETparameters -OutputType ([ConfluencePS.Space])
+        if ($SpaceKey) {
+            foreach ($_space in $SpaceKey) {
+                $URI = "$resourceURI/$_space"
+
+                Write-Verbose "Fetching data from $URI"
+                Invoke-WikiMethod -Uri $URI -Method Get -Credential $Credential -GetParameters $GETparameters -OutputType ([ConfluencePS.Space])
+            }
+        }
+        else {
+            $URI = $resourceURI
+            Write-Verbose "Fetching data from $URI"
+            Invoke-WikiMethod -Uri $URI -Method Get -Credential $Credential -GetParameters $GETparameters -OutputType ([ConfluencePS.Space])
+        }
     }
 }
