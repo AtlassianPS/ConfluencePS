@@ -42,7 +42,7 @@
         )]
         [ValidateRange(1, [int]::MaxValue)]
         [Alias('ID')]
-        [int]$PageID,
+        [int[]]$PageID,
 
         # Maximimum number of results to fetch per call.
         # This setting can be tuned to get better performance according to the load on the server.
@@ -65,24 +65,26 @@
             Throw $exception
         }
 
-        if (!($_)) {
-            $InputObject = Get-WikiPage -PageID $PageID
+        foreach ($_page in $PageID) {
+            if ($_ -is [ConfluencePS.Page]) {
+                $InputObject = $_
+            }
+            else {
+                $InputObject = Get-WikiPage -PageID $_page
+            }
+
+            Write-Verbose "Processing request for PageID $_page"
+            $URI = "$apiURi/content/{0}/label" -f $_page
+
+            If ($PageSize) { $GETparameters = @{limit = $PageSize} }
+
+            $output = New-Object -TypeName ConfluencePS.ContentLabelSet -Property @{
+                Page = $InputObject
+            }
+
+            Write-Verbose "Fetching info from $URI"
+            $output.Labels += (Invoke-WikiMethod -Uri $URI -Method Get -Credential $Credential -GetParameters $GETparameters -OutputType ([ConfluencePS.Label]))
+            $output
         }
-        else {
-            $InputObject = $_
-        }
-
-        Write-Verbose "Processing request for PageID $PageID"
-        $URI = "$apiURi/content/{0}/label" -f $PageID
-
-        If ($PageSize) { $GETparameters = @{limit = $PageSize} }
-
-        $output = New-Object -TypeName ConfluencePS.ContentLabelSet -Property @{
-            Page = $InputObject
-        }
-
-        Write-Verbose "Fetching info from $URI"
-        $output.Labels += (Invoke-WikiMethod -Uri $URI -Method Get -Credential $Credential -GetParameters $GETparameters -OutputType ([ConfluencePS.Label]))
-        $output
     }
 }

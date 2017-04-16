@@ -62,11 +62,11 @@ function Set-WikiLabel {
         }
 
         foreach ($_page in $PageID) {
-            if (!($_)) {
-                $InputObject = Get-WikiPage -PageID $_page
+            if ($_ -is [ConfluencePS.Page]) {
+                $InputObject = $_
             }
             else {
-                $InputObject = $_
+                $InputObject = Get-WikiPage -PageID $_page
             }
 
             Write-Verbose "Removing all previous labels"

@@ -22,7 +22,7 @@
         SupportsShouldProcess = $true,
         DefaultParameterSetName = 'byLabelName'
     )]
-    [OutputType([ConfluencePS.Label])]
+    [OutputType([ConfluencePS.ContentLabelSet])]
     param (
         # The URi of the API interface.
         # Value can be set persistently with Set-WikiInfo.
@@ -82,14 +82,24 @@
         }
 
         foreach ($_page in $PageID) {
+            if ($_ -is [ConfluencePS.Page]) {
+                $InputObject = $_
+            }
+            else {
+                $InputObject = Get-WikiPage -PageID $_page
+            }
+
             $URI = "$apiURi/content/{0}/label" -f $_page
 
             $Content = $Label | Foreach-Object {@{prefix = 'global'; name = $_}} | ConvertTo-Json
+            $output = New-Object -TypeName ConfluencePS.ContentLabelSet
+            $output.Page = $InputObject
 
             Write-Verbose "Posting to $URI"
             Write-Verbose "Content: $($Content | Out-String)"
-            If ($PSCmdlet.ShouldProcess("Label $Label, PageID $PageID")) {
-                Invoke-WikiMethod -Uri $URI -Body $Content -Method Post -Credential $Credential -OutputType ([ConfluencePS.Label])
+            If ($PSCmdlet.ShouldProcess("Label $Label, PageID $_page")) {
+                $output.Labels += (Invoke-WikiMethod -Uri $URI -Body $Content -Method Post -Credential $Credential -OutputType ([ConfluencePS.Label]))
+                $output
             }
         }
     }

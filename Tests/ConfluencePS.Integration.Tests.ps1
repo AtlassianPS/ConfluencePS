@@ -411,39 +411,45 @@ InModuleScope ConfluencePS {
     Describe 'Add-WikiLabel' {
         # ARRANGE
         $SpaceKey = "PESTER"
-        $Page1 = Get-WikiPage -Title "Pester New Page Piped"
+        $Page1 = Get-WikiPage -Title "Pester New Page Piped" -ErrorAction Stop
         $Label1 = @("pestera", "pesterb", "pesterc")
         $Label2 = "pesterall"
         $PartialLabel = "pest"
 
         # ACT
-        $NewLabel1 = Add-WikiLabel -Label $Label1 -PageID $Page1.ID -ErrorAction Stop
-        $NewLabel2 = Get-WikiPage -SpaceKey $SpaceKey | Add-WikiLabel -Label $Label2 -ErrorAction Stop
-        $NewLabel3 = (Get-WikiSpace -SpaceKey $SpaceKey).Homepage | Get-WikiLabel | Add-WikiLabel -PageID $Page1.ID
+        $NewLabel1 = Add-WikiLabel -Label $Label1 -PageID $Page1.ID -ErrorAction SilentlyContinue
+        $NewLabel2 = Get-WikiPage -SpaceKey $SpaceKey | Add-WikiLabel -Label $Label2 -ErrorAction SilentlyContinue
+        $NewLabel3 = (Get-WikiSpace -SpaceKey $SpaceKey).Homepage | Get-WikiLabel | Add-WikiLabel -PageID $Page1.ID -ErrorAction SilentlyContinue
 
         # ASSERT
         It 'returns the correct amount of results' {
-            ($NewLabel1).Count | Should Be 3
-            ($NewLabel2).Count | Should Be 9
-            ($NewLabel3).Count | Should Be 5
+            ($NewLabel1.Labels).Count | Should Be 3
+            ($NewLabel2.Labels).Count | Should Be 9
+            ($NewLabel3.Labels).Count | Should Be 5
         }
         It 'returns an object with specific properties' {
-            $NewLabel1 | Should BeOfType [ConfluencePS.Label]
-            $NewLabel2 | Should BeOfType [ConfluencePS.Label]
-            $NewLabel3 | Should BeOfType [ConfluencePS.Label]
-            ($NewLabel1 | Get-Member -MemberType Property).Count | Should Be 3
-            ($NewLabel2 | Get-Member -MemberType Property).Count | Should Be 3
-            ($NewLabel3 | Get-Member -MemberType Property).Count | Should Be 3
+            $NewLabel1 | Should BeOfType [ConfluencePS.ContentLabelSet]
+            $NewLabel1.Page | Should BeOfType [ConfluencePS.Page]
+            $NewLabel1.Labels | Should BeOfType [ConfluencePS.Label]
+            ($NewLabel1.Labels | Get-Member -MemberType Property).Count | Should Be 3
+            $NewLabel2 | Should BeOfType [ConfluencePS.ContentLabelSet]
+            $NewLabel2.Page | Should BeOfType [ConfluencePS.Page]
+            $NewLabel2.Labels | Should BeOfType [ConfluencePS.Label]
+            ($NewLabel2.Labels | Get-Member -MemberType Property).Count | Should Be 3
+            $NewLabel3 | Should BeOfType [ConfluencePS.ContentLabelSet]
+            $NewLabel3.Page | Should BeOfType [ConfluencePS.Page]
+            $NewLabel3.Labels | Should BeOfType [ConfluencePS.Label]
+            ($NewLabel3.Labels | Get-Member -MemberType Property).Count | Should Be 3
         }
         It 'label matches the specified value' {
-            $NewLabel1.Name | Should BeExactly $Label1
-            $NewLabel2.Name -contains $Label2 | Should Be $true
-            $NewLabel3.Name -match $PartialLabel | Should Be $true
+            $NewLabel1.Labels.Name | Should BeExactly $Label1
+            $NewLabel2.Labels.Name -contains $Label2 | Should Be $true
+            $NewLabel3.Labels.Name -match $PartialLabel | Should Be $true
         }
         It 'labelid is not null or empty' {
-            $NewLabel1.ID | Should Not BeNullOrEmpty
-            $NewLabel2.ID | Should Not BeNullOrEmpty
-            $NewLabel3.ID | Should Not BeNullOrEmpty
+            $NewLabel1.Labels.ID | Should Not BeNullOrEmpty
+            $NewLabel2.Labels.ID | Should Not BeNullOrEmpty
+            $NewLabel3.Labels.ID | Should Not BeNullOrEmpty
         }
     }
 
@@ -466,13 +472,13 @@ InModuleScope ConfluencePS {
         }
         It 'returns an object with specific properties' {
             $After1 | Should BeOfType [ConfluencePS.ContentLabelSet]
-            $After2 | Should BeOfType [ConfluencePS.ContentLabelSet]
-            ($After1 | Get-Member -MemberType Property).Count | Should Be 2
-            ($After2 | Get-Member -MemberType Property).Count | Should Be 2
             $After1.Page | Should BeOfType [ConfluencePS.Page]
             $After1.Labels | Should BeOfType [ConfluencePS.Label]
+            ($After1 | Get-Member -MemberType Property).Count | Should Be 2
+            $After2 | Should BeOfType [ConfluencePS.ContentLabelSet]
             $After2.Page | Should BeOfType [ConfluencePS.Page]
             $After2.Labels | Should BeOfType [ConfluencePS.Label]
+            ($After2 | Get-Member -MemberType Property).Count | Should Be 2
         }
         It 'label matches the specified value' {
             $After1.Labels.Name | Should BeExactly $Label1
@@ -490,7 +496,7 @@ InModuleScope ConfluencePS {
         # ARRANGE
         $SpaceKey = "PESTER"
         $patternLabel1 = "pester[abc]$"
-        $patternLabel2 = "(pest|import)"
+        $patternLabel2 = "(pest|import|fin)"
         $Page = Get-WikiPage -Title "Pester New Page Piped"
 
         # ACT
