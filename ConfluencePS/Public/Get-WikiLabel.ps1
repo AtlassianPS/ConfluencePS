@@ -21,7 +21,7 @@
     https://github.com/brianbunke/ConfluencePS
     #>
     [CmdletBinding()]
-    [OutputType([ConfluencePS.Label])]
+    [OutputType([ConfluencePS.ContentLabelSet])]
     param (
         # The URi of the API interface.
         # Value can be set persistently with Set-WikiInfo.
