@@ -80,6 +80,7 @@
         'Remove-WikiPage',
         'Remove-WikiSpace',
         'Set-WikiInfo',
+        'Set-WikiLabel',
         'Set-WikiPage'
     )
 

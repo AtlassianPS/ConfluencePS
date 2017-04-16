@@ -447,6 +447,45 @@ InModuleScope ConfluencePS {
         }
     }
 
+    Describe 'Set-WikiLabel' {
+        # ARRANGE
+        $Title1 = "Pester New Page from Object"
+        $Label1 = @("overwrite", "remove")
+        $Label2 = "final"
+        $Page1 = Get-WikiPage -Title $Title1 -ErrorAction SilentlyContinue
+        $Before1 = $Page1 | Get-WikiLabel
+
+        # ACT
+        $After1 = Set-WikiLabel -PageID $Page1.ID -Label $Label1 -ErrorAction Stop
+        $After2 = $Page1 | Set-WikiLabel -Label $Label2 -ErrorAction Stop
+
+        # ASSERT
+        It 'returns the correct amount of results' {
+            ($After1.Labels).Count | Should Be 2
+            ($After2.Labels).Count | Should Be 1
+        }
+        It 'returns an object with specific properties' {
+            $After1 | Should BeOfType [ConfluencePS.ContentLabelSet]
+            $After2 | Should BeOfType [ConfluencePS.ContentLabelSet]
+            ($After1 | Get-Member -MemberType Property).Count | Should Be 2
+            ($After2 | Get-Member -MemberType Property).Count | Should Be 2
+            $After1.Page | Should BeOfType [ConfluencePS.Page]
+            $After1.Labels | Should BeOfType [ConfluencePS.Label]
+            $After2.Page | Should BeOfType [ConfluencePS.Page]
+            $After2.Labels | Should BeOfType [ConfluencePS.Label]
+        }
+        It 'label matches the specified value' {
+            $After1.Labels.Name | Should BeExactly $Label1
+            $After2.Labels.Name | Should BeExactly $Label2
+            $After1.Labels.Name -notcontains $Before.Labels.Name | Should Be $true
+            $After2.Labels.Name -notcontains $Before.Labels.Name | Should Be $true
+        }
+        It 'labelid is not null or empty' {
+            $After1.Labels.ID | Should Not BeNullOrEmpty
+            $After2.Labels.ID | Should Not BeNullOrEmpty
+        }
+    }
+
     Describe 'Get-WikiLabel' {
         # ARRANGE
         $SpaceKey = "PESTER"
