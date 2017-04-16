@@ -301,7 +301,7 @@ InModuleScope ConfluencePS {
         $Title2 = "Pester New Page Orphan"
         $Title3 = "Pester Test Space Home"
         $Content = "<p>Hi Pester!</p>"
-        (Get-WikiSpace -SpaceKey $SpaceKey).Homepage | New-WikiLabel -Label "important" -ErrorAction Stop
+        (Get-WikiSpace -SpaceKey $SpaceKey).Homepage | Add-WikiLabel -Label "important" -ErrorAction Stop
 
         # ACT
         $GetTitle1 = Get-WikiPage -Title $Title1 -PageSize 200 -ErrorAction SilentlyContinue
@@ -408,7 +408,7 @@ InModuleScope ConfluencePS {
         }
     }
 
-    Describe 'New-WikiLabel' {
+    Describe 'Add-WikiLabel' {
         # ARRANGE
         $SpaceKey = "PESTER"
         $Page1 = Get-WikiPage -Title "Pester New Page Piped"
@@ -417,9 +417,9 @@ InModuleScope ConfluencePS {
         $PartialLabel = "pest"
 
         # ACT
-        $NewLabel1 = New-WikiLabel -Label $Label1 -PageID $Page1.ID -ErrorAction Stop
-        $NewLabel2 = Get-WikiPage -SpaceKey $SpaceKey | New-WikiLabel -Label $Label2 -ErrorAction Stop
-        $NewLabel3 = (Get-WikiSpace -SpaceKey $SpaceKey).Homepage | Get-WikiLabel | New-WikiLabel -PageID $Page1.ID
+        $NewLabel1 = Add-WikiLabel -Label $Label1 -PageID $Page1.ID -ErrorAction Stop
+        $NewLabel2 = Get-WikiPage -SpaceKey $SpaceKey | Add-WikiLabel -Label $Label2 -ErrorAction Stop
+        $NewLabel3 = (Get-WikiSpace -SpaceKey $SpaceKey).Homepage | Get-WikiLabel | Add-WikiLabel -PageID $Page1.ID
 
         # ASSERT
         It 'returns the correct amount of results' {

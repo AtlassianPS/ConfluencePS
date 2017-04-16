@@ -73,7 +73,7 @@
         'Get-WikiPage',
         'Get-WikiLabel',
         'Get-WikiSpace',
-        'New-WikiLabel',
+        'Add-WikiLabel',
         'New-WikiPage',
         'New-WikiSpace',
         'Remove-WikiLabel',

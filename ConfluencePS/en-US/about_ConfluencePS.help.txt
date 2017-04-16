@@ -57,7 +57,7 @@ LONG DESCRIPTION
 
     To apply a new label to all pages matching specified criteria:
 
-        Get-WikiPage -Title 'Azure' -PageSize 1000 | New-WikiLabel -Label azure
+        Get-WikiPage -Title 'Azure' -PageSize 1000 | Add-WikiLabel -Label azure
 
     To delete pages with the label "test":
 

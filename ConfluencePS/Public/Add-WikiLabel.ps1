@@ -1,4 +1,4 @@
-﻿function New-WikiLabel {
+﻿function Add-WikiLabel {
     <#
     .SYNOPSIS
     Add a new global label to an existing Confluence page.
@@ -7,11 +7,11 @@
     Add one or more labels to one or more Confluence pages. Label can be brand new.
 
     .EXAMPLE
-    New-WikiLabel -ApiURi "https://myserver.com/wiki" -Credential $cred -Label alpha,bravo,charlie -PageID 123456 -Verbose
+    Add-WikiLabel -ApiURi "https://myserver.com/wiki" -Credential $cred -Label alpha,bravo,charlie -PageID 123456 -Verbose
     Apply the labels alpha, bravo, and charlie to the page with ID 123456. Verbose output.
 
     .EXAMPLE
-    Get-WikiPage -SpaceKey SRV | New-WikiLabel -Label servers -WhatIf
+    Get-WikiPage -SpaceKey SRV | Add-WikiLabel -Label servers -WhatIf
     Would apply the label "servers" to all pages in the space with key SRV. -WhatIf flag supported.
 
     .LINK
