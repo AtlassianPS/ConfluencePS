@@ -677,18 +677,24 @@ Describe 'Remove-WikiLabel' {
         # ARRANGE
         $Label1 = "pesterc"
         $Page1 = Get-WikiPage -Title 'Pester New Page Piped' -ErrorAction Stop
+        $Page2 = (Get-WikiSpace -SpaceKey PESTER).Homepage
 
         # ACT
-        $Before = Get-WikiPage -PageID $Page1.ID | Get-WikiLabel -ErrorAction SilentlyContinue
-        Remove-WikiLabel -Label $Label1 -PageID $Page1.ID  -ErrorAction SilentlyContinue
-        $After = Get-WikiPage -PageID $Page1.ID | Get-WikiLabel -ErrorAction SilentlyContinue
+        $Before1 = $Page1 | Get-WikiLabel -ErrorAction SilentlyContinue
+        $Before2 = $Page2 | Get-WikiLabel -ErrorAction SilentlyContinue
+        Remove-WikiLabel -Label $Label1 -PageID $Page1.ID -ErrorAction SilentlyContinue
+        $Page2 | Remove-WikiLabel -ErrorAction SilentlyContinue
+        $After1 = $Page1 | Get-WikiLabel -ErrorAction SilentlyContinue
+        $After2 = $Page2 | Get-WikiLabel -ErrorAction SilentlyContinue
 
         # ASSERT
         It 'page has one label less' {
-            ($Before.Labels).Count - ($After.Labels).Count| Should Be 1
+            ($Before1.Labels).Count - ($After1.Labels).Count| Should Be 1
+            ($Before2.Labels).Count - ($After2.Labels).Count| Should Be 2
         }
-        It 'page does not have label' {
-            $After.Labels.Name -notcontains $Label1 | Should Be $true
+        It 'page does not have labels' {
+            $After1.Labels.Name -notcontains $Label1 | Should Be $true
+            $After2.Labels.Name -notcontains $Label1 | Should Be $true
         }
     }
 
