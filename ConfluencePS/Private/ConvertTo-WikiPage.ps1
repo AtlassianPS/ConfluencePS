@@ -14,6 +14,7 @@ function ConvertTo-WikiPage {
 
     Process {
         foreach ($object in $inputObject) {
+            Write-Verbose "[$($MyInvocation.MyCommand.Name)] Converting Object to Page"
             ($object | Select-Object `
                 id,
                 status,
