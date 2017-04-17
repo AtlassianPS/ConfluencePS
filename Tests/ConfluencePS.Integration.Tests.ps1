@@ -444,7 +444,7 @@ InModuleScope ConfluencePS {
         It 'label matches the specified value' {
             $NewLabel1.Labels.Name | Should BeExactly $Label1
             $NewLabel2.Labels.Name -contains $Label2 | Should Be $true
-            $NewLabel3.Labels.Name -match $PartialLabel | Should Be $true
+            $NewLabel3.Labels.Name -match $PartialLabel | Should Be ($Label1 + $Label2)
         }
         It 'labelid is not null or empty' {
             $NewLabel1.Labels.ID | Should Not BeNullOrEmpty
