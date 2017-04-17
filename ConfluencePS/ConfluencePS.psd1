@@ -67,20 +67,20 @@
 
     # Functions to export from this module
     FunctionsToExport = @(
+        'Add-WikiLabel',
         'ConvertTo-WikiStorageFormat',
         'ConvertTo-WikiTable',
         'Get-WikiChildPage',
-        'Get-WikiLabelApplied',
+        'Get-WikiLabel',
         'Get-WikiPage',
-        'Get-WikiPageLabel',
         'Get-WikiSpace',
-        'New-WikiLabel',
         'New-WikiPage',
         'New-WikiSpace',
         'Remove-WikiLabel',
         'Remove-WikiPage',
         'Remove-WikiSpace',
         'Set-WikiInfo',
+        'Set-WikiLabel',
         'Set-WikiPage'
     )
 

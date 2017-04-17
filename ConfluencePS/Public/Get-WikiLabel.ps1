@@ -1,19 +1,18 @@
-﻿function Get-WikiPageLabel {
+﻿function Get-WikiLabel {
     <#
     .SYNOPSIS
-    Returns the list of labels on a page.
+    Returns the list of labels.
 
     .DESCRIPTION
-    View all labels applied to a page (specified by PageID).
-    Currently accepts multiple pages only via piped input.
+    View all labels applied to a content.
 
     .EXAMPLE
-    Get-WikiPageLabel -PageID 123456 -PageSize 500 -ApiURi "https://myserver.com/wiki" -Credential $cred
+    Get-WikiLabel -PageID 123456 -PageSize 500 -ApiURi "https://myserver.com/wiki" -Credential $cred
     Lists the labels applied to page 123456.
     This also increases the size of the result's page from 25 to 500.
 
     .EXAMPLE
-    Get-WikiPage -SpaceKey NASA | Get-WikiPageLabel -Verbose
+    Get-WikiPage -SpaceKey NASA | Get-WikiLabel -Verbose
     Get all pages that exist in NASA space (literally?).
     Search all of those pages (piped to -PageID) for all of their active labels.
     Verbose flag would be good here to keep track of the request.
@@ -22,7 +21,7 @@
     https://github.com/brianbunke/ConfluencePS
     #>
     [CmdletBinding()]
-    [OutputType([ConfluencePS.Label])]
+    [OutputType([ConfluencePS.ContentLabelSet])]
     param (
         # The URi of the API interface.
         # Value can be set persistently with Set-WikiInfo.
@@ -43,7 +42,7 @@
         )]
         [ValidateRange(1, [int]::MaxValue)]
         [Alias('ID')]
-        [int]$PageID,
+        [int[]]$PageID,
 
         # Maximimum number of results to fetch per call.
         # This setting can be tuned to get better performance according to the load on the server.
@@ -52,23 +51,40 @@
         [int]$PageSize = 25
     )
 
+    BEGIN {
+        $result = @()
+    }
+
     PROCESS {
         Write-Debug "ParameterSetName: $($PsCmdlet.ParameterSetName)"
         Write-Debug "PSBoundParameters: $($PSBoundParameters | Out-String)"
-        if (($_) -and ($_ -isnot [ConfluencePS.Page])) {
-            if (!$Force) {
-                Write-Warning "The Object in the pipe is not a Page"
+
+        if (($_) -and -not($_ -is [ConfluencePS.Page] -or $_ -is [int])) {
+            $message = "The Object in the pipe is not a Page."
+            $exception = New-Object -TypeName System.ArgumentException -ArgumentList $message
+            Throw $exception
+        }
+
+        foreach ($_page in $PageID) {
+            if ($_ -is [ConfluencePS.Page]) {
+                $InputObject = $_
             }
+            else {
+                $InputObject = Get-WikiPage -PageID $_page
+            }
+
+            Write-Verbose "Processing request for PageID $_page"
+            $URI = "$apiURi/content/{0}/label" -f $_page
+
+            If ($PageSize) { $GETparameters = @{limit = $PageSize} }
+
+            $output = New-Object -TypeName ConfluencePS.ContentLabelSet -Property @{
+                Page = $InputObject
+            }
+
+            Write-Verbose "Fetching info from $URI"
+            $output.Labels += (Invoke-WikiMethod -Uri $URI -Method Get -Credential $Credential -GetParameters $GETparameters -OutputType ([ConfluencePS.Label]))
+            $output
         }
-
-        Write-Verbose "Processing request for PageID $PageID"
-        $URI = "$apiURi/content/$PageID/label"
-
-        If ($PageSize) {
-            $GETparameters = @{limit = $PageSize}
-        }
-
-        Write-Verbose "Fetching info from $URI"
-        Invoke-WikiMethod -Uri $URI -Method Get -Credential $Credential -GetParameters $GETparameters -OutputType ([ConfluencePS.Label])
     }
 }
