@@ -62,12 +62,6 @@
         [ConfluencePS.ContentLabelSet]$Labels
     )
 
-    DynamicParam {
-        if (!($Page)) {
-            $paramDictionary["PageID"] | Out-String | Write-Host
-        }
-    }
-
     PROCESS {
         Write-Debug "ParameterSetName: $($PsCmdlet.ParameterSetName)"
         Write-Debug "PSBoundParameters: $($PSBoundParameters | Out-String)"
