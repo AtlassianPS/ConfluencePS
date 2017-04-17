@@ -94,16 +94,22 @@ function New-WikiPage {
         [switch]$Convert
     )
 
+    BEGIN {
+        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function started"
+    }
+
     PROCESS {
-        Write-Debug "ParameterSetName: $($PsCmdlet.ParameterSetName)"
-        Write-Debug "PSBoundParameters: $($PSBoundParameters | Out-String)"
+        if ($PSBoundParameters['Debug']) { $DebugPreference = 'Continue' }
+        Write-Debug "[$($MyInvocation.MyCommand.Name)] ParameterSetName: $($PsCmdlet.ParameterSetName)"
+        Write-Debug "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
+        $DebugPreference = $_debugPreference
 
         $URI = "$apiURi/content"
 
         switch ($PsCmdlet.ParameterSetName) {
             "byObject" {
-                Write-Verbose "Using Page Object as input"
-                Write-Debug "using object: $($InputObject | Out-String)"
+                Write-Verbose "[$($MyInvocation.MyCommand.Name)] Using Page Object as input"
+                Write-Debug "[$($MyInvocation.MyCommand.Name)] using object: $($InputObject | Out-String)"
                 $Content = @{
                     type = "page"
                     title = $InputObject.Title
@@ -123,7 +129,7 @@ function New-WikiPage {
                 }
             }
             "byParameters" {
-                Write-Verbose "Using attributes as input"
+                Write-Verbose "[$($MyInvocation.MyCommand.Name)] Using attributes as input"
                 if (($Parent -is [ConfluencePS.Page]) -and ($Parent.ID)) {
                     $ParentID = $Parent.ID
                 }
@@ -132,13 +138,13 @@ function New-WikiPage {
                 }
 
                 If (($ParentID) -and !($SpaceKey)) {
-                    Write-Verbose "SpaceKey not specified. Retrieving from Get-WikiPage -PageID $ParentID"
+                    Write-Verbose "[$($MyInvocation.MyCommand.Name)] SpaceKey not specified. Retrieving from Get-WikiPage -PageID $ParentID"
                     $SpaceKey = (Get-WikiPage -PageID $ParentID).Space.Key
                 }
 
                 # If -Convert is flagged, call ConvertTo-WikiStorageFormat against the -Body
                 If ($Convert) {
-                    Write-Verbose '-Convert flag active; converting content to Confluence storage format'
+                    Write-Verbose '[$($MyInvocation.MyCommand.Name)] -Convert flag active; converting content to Confluence storage format'
                     $Body = ConvertTo-WikiStorageFormat -Content $Body
                 }
 
@@ -163,10 +169,14 @@ function New-WikiPage {
 
         $Content = $Content | ConvertTo-Json
 
-        Write-Verbose "Posting to $URI"
-        Write-Verbose "Content: $($Content | Out-String)"
+        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Posting to $URI"
+        Write-Debug "[$($MyInvocation.MyCommand.Name)] Content to be sent: $($Content | Out-String)"
         If ($PSCmdlet.ShouldProcess("Space $SpaceKey, Parent $ParentID")) {
             Invoke-WikiMethod -Uri $URI -Body $Content -Method Post -Credential $Credential -OutputType ([ConfluencePS.Page])
         }
+    }
+
+    END {
+        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function ended"
     }
 }

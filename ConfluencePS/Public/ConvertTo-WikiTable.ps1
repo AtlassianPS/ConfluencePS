@@ -36,8 +36,10 @@
     [CmdletBinding()]
     param (
         # Object array you would like to see displayed as a table on a wiki page.
-        [Parameter(Mandatory=$true,
-                   ValueFromPipeline = $true)]
+        [Parameter(
+            Mandatory = $true,
+            ValueFromPipeline = $true
+        )]
         $Content,
 
         # Ignore the property names, and just have a table of values with no header row highlighting.
@@ -45,10 +47,17 @@
     )
 
     BEGIN {
+        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function started"
+
         $RowArray = New-Object System.Collections.ArrayList
     }
 
     PROCESS {
+        if ($PSBoundParameters['Debug']) { $DebugPreference = 'Continue' }
+        Write-Debug "[$($MyInvocation.MyCommand.Name)] ParameterSetName: $($PsCmdlet.ParameterSetName)"
+        Write-Debug "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
+        $DebugPreference = $_debugPreference
+
         If ($NoHeader) {
             $HeaderGenerated = $true
         }
@@ -57,22 +66,24 @@
         $Content | ForEach-Object {
             # First row enclosed by ||, all other rows by |
             If (!$HeaderGenerated) {
-		        $_.PSObject.Properties |
-                    ForEach-Object -Begin   {$Header = ""} `
+                $_.PSObject.Properties |
+                    ForEach-Object -Begin {$Header = ""} `
                                    -Process {$Header += "||$($_.Name)"} `
-                                   -End     {$Header += "||"}
+                                   -End {$Header += "||"}
                 $RowArray.Add($Header) | Out-Null
                 $HeaderGenerated = $true
             }
-		    $_.PSObject.Properties |
-                ForEach-Object -Begin   {$Row = ""} `
+            $_.PSObject.Properties |
+                ForEach-Object -Begin {$Row = ""} `
                                -Process {$Row += "|$($_.Value)"} `
-                               -End     {$Row += "|"}
+                               -End {$Row += "|"}
             $RowArray.Add($Row) | Out-Null
         }
     }
 
     END {
         $RowArray | Out-String
+
+        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function ened"
     }
 }

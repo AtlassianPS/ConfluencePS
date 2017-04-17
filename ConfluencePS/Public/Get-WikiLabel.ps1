@@ -52,12 +52,14 @@
     )
 
     BEGIN {
-        $result = @()
+        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function started"
     }
 
     PROCESS {
-        Write-Debug "ParameterSetName: $($PsCmdlet.ParameterSetName)"
-        Write-Debug "PSBoundParameters: $($PSBoundParameters | Out-String)"
+        if ($PSBoundParameters['Debug']) { $DebugPreference = 'Continue' }
+        Write-Debug "[$($MyInvocation.MyCommand.Name)] ParameterSetName: $($PsCmdlet.ParameterSetName)"
+        Write-Debug "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
+        $DebugPreference = $_debugPreference
 
         if (($_) -and -not($_ -is [ConfluencePS.Page] -or $_ -is [int])) {
             $message = "The Object in the pipe is not a Page."
@@ -73,18 +75,20 @@
                 $InputObject = Get-WikiPage -PageID $_page
             }
 
-            Write-Verbose "Processing request for PageID $_page"
             $URI = "$apiURi/content/{0}/label" -f $_page
-
             If ($PageSize) { $GETparameters = @{limit = $PageSize} }
 
             $output = New-Object -TypeName ConfluencePS.ContentLabelSet -Property @{
                 Page = $InputObject
             }
 
-            Write-Verbose "Fetching info from $URI"
+            Write-Verbose "[$($MyInvocation.MyCommand.Name)] Fetching info from $URI"
             $output.Labels += (Invoke-WikiMethod -Uri $URI -Method Get -Credential $Credential -GetParameters $GETparameters -OutputType ([ConfluencePS.Label]))
             $output
         }
+    }
+
+    END {
+        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function ended"
     }
 }

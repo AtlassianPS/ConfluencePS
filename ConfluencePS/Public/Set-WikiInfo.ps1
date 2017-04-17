@@ -58,7 +58,7 @@
             )
 
             PROCESS {
-                Write-Verbose "Setting [$command : $parameter] = $value"
+                Write-Verbose "[$($MyInvocation.MyCommand.Name)] Setting [$command : $parameter] = $value"
 
                 # Needs to set both global and module scope for the private functions:
                 # http://stackoverflow.com/questions/30427110/set-psdefaultparametersvalues-for-use-within-module-scope
@@ -75,7 +75,6 @@
     }
 
     PROCESS {
-
         foreach ($command in $moduleCommands) {
 
             $parameter = "ApiURi"

@@ -62,12 +62,16 @@
     )
 
     BEGIN {
+        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function started"
+
         $depthLevel = "child"
     }
 
     PROCESS {
-        Write-Debug "ParameterSetName: $($PsCmdlet.ParameterSetName)"
-        Write-Debug "PSBoundParameters: $($PSBoundParameters | Out-String)"
+        if ($PSBoundParameters['Debug']) { $DebugPreference = 'Continue' }
+        Write-Debug "[$($MyInvocation.MyCommand.Name)] ParameterSetName: $($PsCmdlet.ParameterSetName)"
+        Write-Debug "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
+        $DebugPreference = $_debugPreference
 
         if (($_) -and -not($_ -is [ConfluencePS.Page] -or $_ -is [int])) {
             $message = "The Object in the pipe is not a Page."
@@ -85,7 +89,11 @@
         $GETparameters = @{expand = "space,version,body.storage,ancestors"}
         If ($PageSize) { $GETparameters["limit"] = $PageSize }
 
-        Write-Verbose "Fetching data from $URI"
+        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Fetching data from $URI"
         Invoke-WikiMethod -Uri $URI -Method Get -Credential $Credential -GetParameters $GETparameters -OutputType ([ConfluencePS.Page])
+    }
+
+    END {
+        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function ended"
     }
 }

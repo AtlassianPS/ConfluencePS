@@ -40,19 +40,36 @@
         [PSCredential]$Credential,
 
         # A string (in plain text and/or wiki markup) to be converted to storage format.
-        [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
+        [Parameter(
+            Mandatory = $true,
+            ValueFromPipeline = $true
+        )]
         [string]$Content
     )
 
+    BEGIN {
+        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function started"
+    }
+
     PROCESS {
+        if ($PSBoundParameters['Debug']) { $DebugPreference = 'Continue' }
+        Write-Debug "[$($MyInvocation.MyCommand.Name)] ParameterSetName: $($PsCmdlet.ParameterSetName)"
+        Write-Debug "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
+        $DebugPreference = $_debugPreference
+
         $URI = "$apiURi/contentbody/convert/storage"
 
-        $Body = @{
+        $Content = @{
             value = "$Content"
             representation = 'wiki'
         } | ConvertTo-Json
 
-        $response = Invoke-WikiMethod -Uri $URI -Credential $Credential -Body $Body -Method Post
-        $response.value
+        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Fetching data from $URI"
+        Write-Debug "[$($MyInvocation.MyCommand.Name)] Content to be sent: $($Content | Out-String)"
+        (Invoke-WikiMethod -Uri $URI -Credential $Credential -Body $Content -Method Post).value
+    }
+
+    END {
+        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function ended"
     }
 }

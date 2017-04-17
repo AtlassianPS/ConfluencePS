@@ -48,19 +48,26 @@
         # TODO: Probably an extra param later to loop checking the status & wait for completion?
     )
 
+    BEGIN {
+        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function started"
+    }
+
     PROCESS {
-        Write-Debug "ParameterSetName: $($PsCmdlet.ParameterSetName)"
-        Write-Debug "PSBoundParameters: $($PSBoundParameters | Out-String)"
+        if ($PSBoundParameters['Debug']) { $DebugPreference = 'Continue' }
+        Write-Debug "[$($MyInvocation.MyCommand.Name)] ParameterSetName: $($PsCmdlet.ParameterSetName)"
+        Write-Debug "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
+        $DebugPreference = $_debugPreference
+
         if (($_) -and ($_ -isnot [ConfluencePS.Space])) {
             if (!$Force) {
-                Write-Warning "The Object in the pipe is not a Page"
+                Write-Warning "[$($MyInvocation.MyCommand.Name)] The Object in the pipe is not a Page"
             }
         }
 
         foreach ($_space in $SpaceKey) {
             $URI = "$apiURi/space/{0}" -f $_space
 
-            Write-Verbose "Sending delete request to $URI"
+            Write-Verbose "[$($MyInvocation.MyCommand.Name)] Sending delete request to $URI"
             If ($PSCmdlet.ShouldProcess("Space key $_space")) {
                 $response = Invoke-WikiMethod -Uri $URI -Method Delete -Credential $Credential
 
@@ -68,5 +75,9 @@
                 # (add additional code here later to check and/or wait for the status)
             }
         }
+    }
+
+    END {
+        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function ended"
     }
 }

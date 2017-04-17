@@ -46,9 +46,15 @@
         [int]$PageSize = 25
     )
 
+    BEGIN {
+        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function started"
+    }
+
     PROCESS {
-        Write-Debug "ParameterSetName: $($PsCmdlet.ParameterSetName)"
-        Write-Debug "PSBoundParameters: $($PSBoundParameters | Out-String)"
+        if ($PSBoundParameters['Debug']) { $DebugPreference = 'Continue' }
+        Write-Debug "[$($MyInvocation.MyCommand.Name)] ParameterSetName: $($PsCmdlet.ParameterSetName)"
+        Write-Debug "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
+        $DebugPreference = $_debugPreference
 
         $resourceURI = "$apiURi/space"
 
@@ -59,14 +65,18 @@
             foreach ($_space in $SpaceKey) {
                 $URI = "$resourceURI/$_space"
 
-                Write-Verbose "Fetching data from $URI"
+                Write-Verbose "[$($MyInvocation.MyCommand.Name)] Fetching data from $URI"
                 Invoke-WikiMethod -Uri $URI -Method Get -Credential $Credential -GetParameters $GETparameters -OutputType ([ConfluencePS.Space])
             }
         }
         else {
             $URI = $resourceURI
-            Write-Verbose "Fetching data from $URI"
+            Write-Verbose "[$($MyInvocation.MyCommand.Name)] Fetching data from $URI"
             Invoke-WikiMethod -Uri $URI -Method Get -Credential $Credential -GetParameters $GETparameters -OutputType ([ConfluencePS.Space])
         }
+    }
+
+    END {
+        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function ended"
     }
 }

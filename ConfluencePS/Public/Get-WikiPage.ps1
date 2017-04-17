@@ -116,13 +116,17 @@
     )
 
     BEGIN {
+        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function started"
+
         # Base url for this resouce
         $contentRoot = "$apiURi/content"
     }
 
     PROCESS {
-        Write-Debug "ParameterSetName: $($PsCmdlet.ParameterSetName)"
-        Write-Debug "PSBoundParameters: $($PSBoundParameters | Out-String)"
+        if ($PSBoundParameters['Debug']) { $DebugPreference = 'Continue' }
+        Write-Debug "[$($MyInvocation.MyCommand.Name)] ParameterSetName: $($PsCmdlet.ParameterSetName)"
+        Write-Debug "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
+        $DebugPreference = $_debugPreference
 
         $URI = $contentRoot
 
@@ -137,7 +141,7 @@
                 foreach ($_pageID in $PageID) {
                     $URI = "$contentRoot/$_pageID"
 
-                    Write-Verbose "Fetching data from $URI"
+                    Write-Verbose "[$($MyInvocation.MyCommand.Name)] Fetching data from $URI"
                     Invoke-WikiMethod -Uri $URI -Method Get -Credential $Credential -GetParameters $GETparameters -OutputType ([ConfluencePS.Page])
                 }
                 break
@@ -148,7 +152,7 @@
                 if ($SpaceKey) { $GETparameters["spaceKey"] = $SpaceKey }
                 If ($PageSize) { $GETparameters["limit"] = $PageSize }
 
-                Write-Verbose "Fetching data from $URI"
+                Write-Verbose "[$($MyInvocation.MyCommand.Name)] Fetching data from $URI"
                 Invoke-WikiMethod -Uri $URI -Method Get -Credential $Credential -GetParameters $GETparameters -OutputType ([ConfluencePS.Page])
                 break
             }
@@ -163,10 +167,14 @@
                 $GETparameters["cql"] = $cqlQuery
                 If ($PageSize) { $GETparameters["limit"] = $PageSize }
 
-                Write-Verbose "Fetching data from $URI"
+                Write-Verbose "[$($MyInvocation.MyCommand.Name)] Fetching data from $URI"
                 Invoke-WikiMethod -Uri $URI -Method Get -Credential $Credential -GetParameters $GETparameters -OutputType ([ConfluencePS.Page])
                 break
             }
         }
+    }
+
+    END {
+        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function ended"
     }
 }

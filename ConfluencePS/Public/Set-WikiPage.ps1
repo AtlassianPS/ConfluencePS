@@ -100,21 +100,25 @@
     )
 
     BEGIN {
+        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function started"
+
         # If -Convert is flagged, call ConvertTo-WikiStorageFormat against the -Body
         If ($Convert) {
-            Write-Verbose '-Convert flag active; converting content to Confluence storage format'
+            Write-Verbose '[$($MyInvocation.MyCommand.Name)] -Convert flag active; converting content to Confluence storage format'
             $Body = ConvertTo-WikiStorageFormat -Content $Body
         }
     }
 
     PROCESS {
-        Write-Debug "ParameterSetName: $($PsCmdlet.ParameterSetName)"
-        Write-Debug "PSBoundParameters: $($PSBoundParameters | Out-String)"
+        if ($PSBoundParameters['Debug']) { $DebugPreference = 'Continue' }
+        Write-Debug "[$($MyInvocation.MyCommand.Name)] ParameterSetName: $($PsCmdlet.ParameterSetName)"
+        Write-Debug "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
+        $DebugPreference = $_debugPreference
 
         switch ($PsCmdlet.ParameterSetName) {
             "byObject" {
-                Write-Verbose "Using Page Object as input"
-                Write-Debug "using object: $($InputObject | Out-String)"
+                Write-Verbose "[$($MyInvocation.MyCommand.Name)] Using Page Object as input"
+                Write-Debug "[$($MyInvocation.MyCommand.Name)] using object: $($InputObject | Out-String)"
 
                 $URI = "$apiURi/content/{0}" -f $InputObject.ID
 
@@ -137,7 +141,7 @@
                 # }
             }
             "byParameters" {
-                Write-Verbose "Using attributes as input"
+                Write-Verbose "[$($MyInvocation.MyCommand.Name)] Using attributes as input"
 
                 $URI = "$apiURi/content/$PageID"
                 $originalPage = Get-WikiPage -PageID $PageID
@@ -173,9 +177,14 @@
 
         $Content = $Content | ConvertTo-Json
 
-        Write-Verbose "Putting to $URI"
+        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Putting to $URI"
+        Write-Debug "[$($MyInvocation.MyCommand.Name)] Content to be sent: $($Content | Out-String)"
         If ($PSCmdlet.ShouldProcess("Space $SpaceKey, Parent $ParentID")) {
             Invoke-WikiMethod -Uri $URI -Body $Content -Method Put -Credential $Credential -OutputType ([ConfluencePS.Page])
         }
+    }
+
+    END {
+        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function ended"
     }
 }
