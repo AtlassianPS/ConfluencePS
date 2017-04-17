@@ -301,7 +301,7 @@ InModuleScope ConfluencePS {
         $Title3 = "Pester Test Space Home"
         $Content = "<p>Hi Pester!</p>"
         (Get-WikiSpace -SpaceKey $SpaceKey).Homepage | Add-WikiLabel -Label "important" -ErrorAction Stop
-        Start-Sleep -Seconds 10 # Delay to allow DB index to update
+        Start-Sleep -Seconds 20 # Delay to allow DB index to update
 
         # ACT
         $GetTitle1 = Get-WikiPage -Title $Title1 -PageSize 200 -ErrorAction SilentlyContinue
