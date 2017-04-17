@@ -295,7 +295,7 @@ InModuleScope ConfluencePS {
 
     Describe 'Get-WikiPage' {
         # ARRANGE
-        Start-Sleep -Seconds 5 # Delay to allow DB index to update
+        Start-Sleep -Seconds 25 # Delay to allow DB index to update
         $SpaceKey = "PESTER"
         $Title1 = "Pester New Page from Object"
         $Title2 = "Pester New Page Orphan"
