@@ -772,8 +772,8 @@ Describe 'Remove-WikiLabel' {
         $WarningPreference = 'SilentlyContinue'
 
         # ACT
-        Remove-WikiSpace -Key PESTER -ErrorAction Stop
-        "PESTER1" | Remove-WikiSpace -ErrorAction Stop
+        Remove-WikiSpace -Key PESTER -Force -ErrorAction Stop
+        "PESTER1" | Remove-WikiSpace -Force -ErrorAction Stop
 
         # ASSERT
         Start-Sleep -Seconds 1
