@@ -20,7 +20,7 @@ function Set-WikiLabel {
     https://github.com/brianbunke/ConfluencePS
     #>
     [CmdletBinding(
-        ConfirmImpact = 'Medium',
+        ConfirmImpact = 'Low',
         SupportsShouldProcess = $true
     )]
     [OutputType([ConfluencePS.ContentLabelSet])]

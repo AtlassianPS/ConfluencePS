@@ -41,8 +41,8 @@
     https://github.com/brianbunke/ConfluencePS
     #>
     [CmdletBinding(
-        SupportsShouldProcess = $true,
         ConfirmImpact = 'Medium',
+        SupportsShouldProcess = $true,
         DefaultParameterSetName = 'byParameters'
     )]
     [OutputType([ConfluencePS.Page])]

@@ -36,8 +36,8 @@ function New-WikiPage {
     https://github.com/brianbunke/ConfluencePS
     #>
     [CmdletBinding(
+        ConfirmImpact = 'Low',
         SupportsShouldProcess = $true,
-        ConfirmImpact = 'Medium',
         DefaultParameterSetName = 'byParameters'
     )]
     [OutputType([ConfluencePS.Page])]

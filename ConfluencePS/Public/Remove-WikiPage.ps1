@@ -20,8 +20,8 @@
     https://github.com/brianbunke/ConfluencePS
     #>
     [CmdletBinding(
-        SupportsShouldProcess = $true,
-        ConfirmImpact = 'Medium'
+        ConfirmImpact = 'Medium',
+        SupportsShouldProcess = $true
     )]
     [OutputType([Bool])]
     param (

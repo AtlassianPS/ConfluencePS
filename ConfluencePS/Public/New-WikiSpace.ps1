@@ -18,7 +18,7 @@
     https://github.com/brianbunke/ConfluencePS
     #>
     [CmdletBinding(
-        ConfirmImpact = 'Medium',
+        ConfirmImpact = 'Low',
         SupportsShouldProcess = $true,
         DefaultParameterSetName = "byObject"
     )]

@@ -20,8 +20,8 @@
     https://github.com/brianbunke/ConfluencePS
     #>
     [CmdletBinding(
-        SupportsShouldProcess = $true,
-        ConfirmImpact = 'Medium'
+        ConfirmImpact = 'High',
+        SupportsShouldProcess = $true
     )]
     [OutputType([Bool])]
     param (
@@ -43,13 +43,22 @@
             ValueFromPipelineByPropertyName = $true
         )]
         [Alias('Key')]
-        [string[]]$SpaceKey
+        [string[]]$SpaceKey,
+
+        # Forces the deletion of the space without prompting for confirmation.
+        [switch]$Force
 
         # TODO: Probably an extra param later to loop checking the status & wait for completion?
     )
 
     BEGIN {
         Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function started"
+
+        if ($Force) {
+            Write-Debug "[$($MyInvocation.MyCommand.Name)] -Force was passed. Backing up current ConfirmPreference [$ConfirmPreference] and setting to None"
+            $oldConfirmPreference = $ConfirmPreference
+            $ConfirmPreference = 'None'
+        }
     }
 
     PROCESS {
@@ -76,6 +85,11 @@
     }
 
     END {
+        if ($Force) {
+            Write-Debug "[$($MyInvocation.MyCommand.Name)] Restoring ConfirmPreference to [$oldConfirmPreference]"
+            $ConfirmPreference = $oldConfirmPreference
+        }
+
         Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function ended"
     }
 }
