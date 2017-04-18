@@ -52,10 +52,8 @@
     }
 
     PROCESS {
-        if ($PSBoundParameters['Debug']) { $DebugPreference = 'Continue' }
         Write-Debug "[$($MyInvocation.MyCommand.Name)] ParameterSetName: $($PsCmdlet.ParameterSetName)"
         Write-Debug "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
-        $DebugPreference = $_debugPreference
 
         $URI = "$apiURi/contentbody/convert/storage"
 
@@ -64,7 +62,6 @@
             representation = 'wiki'
         } | ConvertTo-Json
 
-        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Fetching data from $URI"
         Write-Debug "[$($MyInvocation.MyCommand.Name)] Content to be sent: $($Content | Out-String)"
         (Invoke-WikiMethod -Uri $URI -Credential $Credential -Body $Content -Method Post).value
     }

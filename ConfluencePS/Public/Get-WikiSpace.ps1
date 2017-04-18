@@ -51,27 +51,23 @@
     }
 
     PROCESS {
-        if ($PSBoundParameters['Debug']) { $DebugPreference = 'Continue' }
         Write-Debug "[$($MyInvocation.MyCommand.Name)] ParameterSetName: $($PsCmdlet.ParameterSetName)"
         Write-Debug "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
-        $DebugPreference = $_debugPreference
 
         $resourceURI = "$apiURi/space"
-
         $GETparameters += @{expand = "description.plain,icon,homepage,metadata.labels"}
         If ($PageSize) { $GETparameters["limit"] = $PageSize }
 
         if ($SpaceKey) {
             foreach ($_space in $SpaceKey) {
-                $URI = "$resourceURI/$_space"
+                $URI = "$resourceURI/{0}" -f $_space
 
-                Write-Verbose "[$($MyInvocation.MyCommand.Name)] Fetching data from $URI"
                 Invoke-WikiMethod -Uri $URI -Method Get -Credential $Credential -GetParameters $GETparameters -OutputType ([ConfluencePS.Space])
             }
         }
         else {
             $URI = $resourceURI
-            Write-Verbose "[$($MyInvocation.MyCommand.Name)] Fetching data from $URI"
+
             Invoke-WikiMethod -Uri $URI -Method Get -Credential $Credential -GetParameters $GETparameters -OutputType ([ConfluencePS.Space])
         }
     }

@@ -117,57 +117,48 @@
 
     BEGIN {
         Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function started"
-
-        # Base url for this resouce
-        $contentRoot = "$apiURi/content"
     }
 
     PROCESS {
-        if ($PSBoundParameters['Debug']) { $DebugPreference = 'Continue' }
         Write-Debug "[$($MyInvocation.MyCommand.Name)] ParameterSetName: $($PsCmdlet.ParameterSetName)"
         Write-Debug "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
-        $DebugPreference = $_debugPreference
-
-        $URI = $contentRoot
 
         if ($Space -is [ConfluencePS.Space] -and ($Space.Key)) {
             $SpaceKey = $Space.Key
         }
 
-        # URI prep based on specified parameters
+        $resourceURI = "$apiURi/content"
         $GETparameters = @{expand = "space,version,body.storage,ancestors"}
+
         switch -regex ($PsCmdlet.ParameterSetName) {
             "byId" {
                 foreach ($_pageID in $PageID) {
-                    $URI = "$contentRoot/$_pageID"
+                    $URI = "$resourceURI/{0}" -f $_pageID
 
-                    Write-Verbose "[$($MyInvocation.MyCommand.Name)] Fetching data from $URI"
                     Invoke-WikiMethod -Uri $URI -Method Get -Credential $Credential -GetParameters $GETparameters -OutputType ([ConfluencePS.Page])
                 }
                 break
             }
             "(bySpace|byTitle)" {
+                $URI = "$resourceURI"
                 $GETparameters["type"] = "page"
                 if ($Title) { $GETparameters["title"] = $Title }
                 if ($SpaceKey) { $GETparameters["spaceKey"] = $SpaceKey }
                 If ($PageSize) { $GETparameters["limit"] = $PageSize }
 
-                Write-Verbose "[$($MyInvocation.MyCommand.Name)] Fetching data from $URI"
                 Invoke-WikiMethod -Uri $URI -Method Get -Credential $Credential -GetParameters $GETparameters -OutputType ([ConfluencePS.Page])
                 break
             }
             "byLabel" {
-                $URI = "$contentRoot/search"
+                $URI = "$resourceURI/search"
 
                 $CQLparameters = @("type=page", "label=$Label")
                 if ($SpaceKey) {$CQLparameters += "space=$SpaceKey"}
-
                 $cqlQuery = ConvertTo-URLEncoded ($CQLparameters -join (" AND "))
 
                 $GETparameters["cql"] = $cqlQuery
                 If ($PageSize) { $GETparameters["limit"] = $PageSize }
 
-                Write-Verbose "[$($MyInvocation.MyCommand.Name)] Fetching data from $URI"
                 Invoke-WikiMethod -Uri $URI -Method Get -Credential $Credential -GetParameters $GETparameters -OutputType ([ConfluencePS.Page])
                 break
             }

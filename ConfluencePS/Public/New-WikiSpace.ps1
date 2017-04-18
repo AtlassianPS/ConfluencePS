@@ -69,10 +69,8 @@
     }
 
     PROCESS {
-        if ($PSBoundParameters['Debug']) { $DebugPreference = 'Continue' }
         Write-Debug "[$($MyInvocation.MyCommand.Name)] ParameterSetName: $($PsCmdlet.ParameterSetName)"
         Write-Debug "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
-        $DebugPreference = $_debugPreference
 
         $URI = "$apiURi/space"
 
@@ -93,7 +91,6 @@
             }
         } | ConvertTo-Json
 
-        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Posting to $URI"
         Write-Debug "[$($MyInvocation.MyCommand.Name)] Content to be sent: $($Content | Out-String)"
         If ($PSCmdlet.ShouldProcess("$SpaceKey $Name")) {
             Invoke-WikiMethod -Uri $URI -Body $Content -Method Post -Credential $Credential -OutputType ([ConfluencePS.Space])

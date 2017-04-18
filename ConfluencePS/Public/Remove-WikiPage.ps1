@@ -52,21 +52,18 @@
     }
 
     PROCESS {
-        if ($PSBoundParameters['Debug']) { $DebugPreference = 'Continue' }
         Write-Debug "[$($MyInvocation.MyCommand.Name)] ParameterSetName: $($PsCmdlet.ParameterSetName)"
         Write-Debug "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
-        $DebugPreference = $_debugPreference
 
-        if (($_) -and ($_ -isnot [ConfluencePS.Page])) {
-            if (!$Force) {
-                Write-Warning "[$($MyInvocation.MyCommand.Name)] The Object in the pipe is not a Page"
-            }
+        if (($_) -and -not($_ -is [ConfluencePS.Page] -or $_ -is [int])) {
+            $message = "The Object in the pipe is not a Page."
+            $exception = New-Object -TypeName System.ArgumentException -ArgumentList $message
+            Throw $exception
         }
 
         foreach ($_page in $PageID) {
             $URI = "$apiURi/content/{0}" -f $_page
 
-            Write-Verbose "[$($MyInvocation.MyCommand.Name)] Sending delete request to $URI"
             If ($PSCmdlet.ShouldProcess("PageID $_page")) {
                 Invoke-WikiMethod -Uri $URI -Method Delete -Credential $Credential
             }

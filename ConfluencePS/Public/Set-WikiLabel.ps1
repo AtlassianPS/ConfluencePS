@@ -56,10 +56,8 @@ function Set-WikiLabel {
     }
 
     PROCESS {
-        if ($PSBoundParameters['Debug']) { $DebugPreference = 'Continue' }
         Write-Debug "[$($MyInvocation.MyCommand.Name)] ParameterSetName: $($PsCmdlet.ParameterSetName)"
         Write-Debug "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
-        $DebugPreference = $_debugPreference
 
         if (($_) -and -not($_ -is [ConfluencePS.Page] -or $_ -is [int])) {
             $message = "The Object in the pipe is not a Page."
@@ -81,13 +79,11 @@ function Set-WikiLabel {
             $URI = "$apiURi/content/{0}/label" -f $_page
 
             $Content = $Label | Foreach-Object {@{prefix = 'global'; name = $_}} | ConvertTo-Json
-            $output = New-Object -TypeName ConfluencePS.ContentLabelSet -Property @{
-                Page = $InputObject
-            }
 
-            Write-Verbose "[$($MyInvocation.MyCommand.Name)] Posting to $URI"
             Write-Debug "[$($MyInvocation.MyCommand.Name)] Content to be sent: $($Content | Out-String)"
             If ($PSCmdlet.ShouldProcess("Label $Label, PageID $_page")) {
+                $output = New-Object -TypeName ConfluencePS.ContentLabelSet
+                $output.Page = $InputObject
                 $output.Labels += (Invoke-WikiMethod -Uri $URI -Body $Content -Method Post -Credential $Credential -OutputType ([ConfluencePS.Label]))
                 $output
             }

@@ -56,10 +56,8 @@
     }
 
     PROCESS {
-        if ($PSBoundParameters['Debug']) { $DebugPreference = 'Continue' }
         Write-Debug "[$($MyInvocation.MyCommand.Name)] ParameterSetName: $($PsCmdlet.ParameterSetName)"
         Write-Debug "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
-        $DebugPreference = $_debugPreference
 
         if (($_) -and -not($_ -is [ConfluencePS.Page] -or $_ -is [int])) {
             $message = "The Object in the pipe is not a Page."
@@ -82,7 +80,6 @@
                 Page = $InputObject
             }
 
-            Write-Verbose "[$($MyInvocation.MyCommand.Name)] Fetching info from $URI"
             $output.Labels += (Invoke-WikiMethod -Uri $URI -Method Get -Credential $Credential -GetParameters $GETparameters -OutputType ([ConfluencePS.Label]))
             $output
         }

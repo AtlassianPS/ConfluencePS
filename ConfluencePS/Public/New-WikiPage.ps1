@@ -99,17 +99,13 @@ function New-WikiPage {
     }
 
     PROCESS {
-        if ($PSBoundParameters['Debug']) { $DebugPreference = 'Continue' }
         Write-Debug "[$($MyInvocation.MyCommand.Name)] ParameterSetName: $($PsCmdlet.ParameterSetName)"
         Write-Debug "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
-        $DebugPreference = $_debugPreference
 
         $URI = "$apiURi/content"
 
         switch ($PsCmdlet.ParameterSetName) {
             "byObject" {
-                Write-Verbose "[$($MyInvocation.MyCommand.Name)] Using Page Object as input"
-                Write-Debug "[$($MyInvocation.MyCommand.Name)] using object: $($InputObject | Out-String)"
                 $Content = @{
                     type = "page"
                     title = $InputObject.Title
@@ -129,7 +125,6 @@ function New-WikiPage {
                 }
             }
             "byParameters" {
-                Write-Verbose "[$($MyInvocation.MyCommand.Name)] Using attributes as input"
                 if (($Parent -is [ConfluencePS.Page]) -and ($Parent.ID)) {
                     $ParentID = $Parent.ID
                 }
@@ -169,7 +164,6 @@ function New-WikiPage {
 
         $Content = $Content | ConvertTo-Json
 
-        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Posting to $URI"
         Write-Debug "[$($MyInvocation.MyCommand.Name)] Content to be sent: $($Content | Out-String)"
         If ($PSCmdlet.ShouldProcess("Space $SpaceKey, Parent $ParentID")) {
             Invoke-WikiMethod -Uri $URI -Body $Content -Method Post -Credential $Credential -OutputType ([ConfluencePS.Page])

@@ -68,10 +68,8 @@
     }
 
     PROCESS {
-        if ($PSBoundParameters['Debug']) { $DebugPreference = 'Continue' }
         Write-Debug "[$($MyInvocation.MyCommand.Name)] ParameterSetName: $($PsCmdlet.ParameterSetName)"
         Write-Debug "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
-        $DebugPreference = $_debugPreference
 
         if (($_) -and -not($_ -is [ConfluencePS.Page] -or $_ -is [int])) {
             $message = "The Object in the pipe is not a Page."
@@ -83,13 +81,11 @@
             $PageID = $InputObject.ID
         }
         if ($Recurse) {$depthLevel = "descendant"} # depth = ALL
-        $URI = "$apiURi/content/{0}/{1}/page" -f $PageID, $depthLevel
 
-        # URI prep based on specified parameters
+        $URI = "$apiURi/content/{0}/{1}/page" -f $PageID, $depthLevel
         $GETparameters = @{expand = "space,version,body.storage,ancestors"}
         If ($PageSize) { $GETparameters["limit"] = $PageSize }
 
-        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Fetching data from $URI"
         Invoke-WikiMethod -Uri $URI -Method Get -Credential $Credential -GetParameters $GETparameters -OutputType ([ConfluencePS.Page])
     }
 

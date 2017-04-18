@@ -53,15 +53,13 @@
     }
 
     PROCESS {
-        if ($PSBoundParameters['Debug']) { $DebugPreference = 'Continue' }
         Write-Debug "[$($MyInvocation.MyCommand.Name)] ParameterSetName: $($PsCmdlet.ParameterSetName)"
         Write-Debug "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
-        $DebugPreference = $_debugPreference
 
-        if (($_) -and ($_ -isnot [ConfluencePS.Space])) {
-            if (!$Force) {
-                Write-Warning "[$($MyInvocation.MyCommand.Name)] The Object in the pipe is not a Page"
-            }
+        if (($_) -and -not($_ -is [ConfluencePS.Space] -or $_ -is [string])) {
+            $message = "The Object in the pipe is not a Space."
+            $exception = New-Object -TypeName System.ArgumentException -ArgumentList $message
+            Throw $exception
         }
 
         foreach ($_space in $SpaceKey) {

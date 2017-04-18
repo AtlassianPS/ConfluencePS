@@ -61,10 +61,8 @@
     }
 
     PROCESS {
-        if ($PSBoundParameters['Debug']) { $DebugPreference = 'Continue' }
         Write-Debug "[$($MyInvocation.MyCommand.Name)] ParameterSetName: $($PsCmdlet.ParameterSetName)"
         Write-Debug "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
-        $DebugPreference = $_debugPreference
 
         if (($_) -and -not($_ -is [ConfluencePS.Page] -or $_ -is [int])) {
             $message = "The Object in the pipe is not a Page."
@@ -86,7 +84,6 @@
             foreach ($_label in $_labels) {
                 $URI = "$apiURi/content/{0}/label?name={1}" -f $_page, $_label
 
-                Write-Verbose "[$($MyInvocation.MyCommand.Name)] Sending delete request to $URI"
                 If ($PSCmdlet.ShouldProcess("Label $_label, PageID $_page")) {
                     Invoke-WikiMethod -Uri $URI -Method Delete -Credential $Credential
                 }
