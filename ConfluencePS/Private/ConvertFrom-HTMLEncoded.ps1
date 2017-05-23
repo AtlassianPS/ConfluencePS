@@ -12,7 +12,7 @@ function ConvertFrom-HTMLEncoded {
     )
 
     PROCESS {
-        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Dencoding string from HTML"
+        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Decoding string from HTML"
         [System.Web.HttpUtility]::HtmlEncode($inputString)
     }
 }

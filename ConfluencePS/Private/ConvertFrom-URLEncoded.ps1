@@ -12,7 +12,7 @@ function ConvertFrom-URLEncoded {
     )
 
     PROCESS {
-        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Dencoding string from URL"
+        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Decoding string from URL"
         [System.Web.HttpUtility]::UrlDecode($inputString)
     }
 }
