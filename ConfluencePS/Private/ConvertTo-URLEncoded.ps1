@@ -12,6 +12,7 @@ function ConvertTo-URLEncoded {
     )
 
     PROCESS {
+        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Encoding string to URL"
         [System.Web.HttpUtility]::UrlEncode($inputString)
     }
 }

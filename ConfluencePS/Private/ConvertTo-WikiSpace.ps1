@@ -14,6 +14,7 @@ function ConvertTo-WikiSpace {
 
     Process {
         foreach ($object in $inputObject) {
+            Write-Verbose "[$($MyInvocation.MyCommand.Name)] Converting Object to Space"
             ($object | Select-Object `
                 id,
                 key,

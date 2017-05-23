@@ -14,6 +14,7 @@ function ConvertTo-WikiUser {
 
     Process {
         foreach ($object in $inputObject) {
+            Write-Verbose "[$($MyInvocation.MyCommand.Name)] Converting Object to User"
             ($object | Select-Object `
                 username,
                 userKey,

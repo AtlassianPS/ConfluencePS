@@ -14,6 +14,7 @@ function ConvertTo-WikiLabel {
 
     Process {
         foreach ($object in $inputObject) {
+            Write-Verbose "[$($MyInvocation.MyCommand.Name)] Converting Object to Label"
             ($object | Select-Object `
                 id,
                 name,

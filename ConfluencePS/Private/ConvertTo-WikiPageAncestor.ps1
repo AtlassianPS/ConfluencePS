@@ -14,6 +14,7 @@ function ConvertTo-WikiPageAncestor {
 
     Process {
         foreach ($object in $inputObject) {
+            Write-Verbose "[$($MyInvocation.MyCommand.Name)] Converting Object to Page (Ancestor)"
             ($object | Select-Object `
                 id,
                 status,

@@ -14,6 +14,7 @@ function ConvertTo-WikiVersion {
 
     Process {
         foreach ($object in $inputObject) {
+            Write-Verbose "[$($MyInvocation.MyCommand.Name)] Converting Object to Version"
             ($object | Select-Object `
                 @{Name = "by"; Expression = {$_.by | ConvertTo-WikiUser}},
                 when,

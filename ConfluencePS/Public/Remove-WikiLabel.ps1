@@ -25,7 +25,7 @@
     https://github.com/brianbunke/ConfluencePS
     #>
     [CmdletBinding(
-        ConfirmImpact = 'Medium',
+        ConfirmImpact = 'Low',
         SupportsShouldProcess = $true
     )]
     [OutputType([Bool])]
@@ -56,9 +56,13 @@
         [string[]]$Label
     )
 
+    BEGIN {
+        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function started"
+    }
+
     PROCESS {
-        Write-Debug "ParameterSetName: $($PsCmdlet.ParameterSetName)"
-        Write-Debug "PSBoundParameters: $($PSBoundParameters | Out-String)"
+        Write-Debug "[$($MyInvocation.MyCommand.Name)] ParameterSetName: $($PsCmdlet.ParameterSetName)"
+        Write-Debug "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
 
         if (($_) -and -not($_ -is [ConfluencePS.Page] -or $_ -is [int])) {
             $message = "The Object in the pipe is not a Page."
@@ -69,22 +73,25 @@
         foreach ($_page in $PageID) {
             $_labels = $Label
             if (!$_labels) {
-                Write-Verbose "Collecting all Labels for page $_page"
+                Write-Verbose "[$($MyInvocation.MyCommand.Name)] Collecting all Labels for page $_page"
                 $allLabels = Get-WikiLabel -PageID $_page
                 if ($allLabels.Labels) {
                     $_labels = $allLabels.Labels | Select -ExpandProperty Name
                 }
             }
-            Write-Debug "Labels to remove: `$_labels"
+            Write-Debug "[$($MyInvocation.MyCommand.Name)] Labels to remove: `$_labels"
 
             foreach ($_label in $_labels) {
                 $URI = "$apiURi/content/{0}/label?name={1}" -f $_page, $_label
 
-                Write-Verbose "Sending delete request to $URI"
                 If ($PSCmdlet.ShouldProcess("Label $_label, PageID $_page")) {
                     Invoke-WikiMethod -Uri $URI -Method Delete -Credential $Credential
                 }
             }
         }
+    }
+
+    END {
+        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function ended"
     }
 }

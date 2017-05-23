@@ -20,8 +20,8 @@
     https://github.com/brianbunke/ConfluencePS
     #>
     [CmdletBinding(
-        SupportsShouldProcess = $true,
-        ConfirmImpact = 'Medium'
+        ConfirmImpact = 'Medium',
+        SupportsShouldProcess = $true
     )]
     [OutputType([Bool])]
     param (
@@ -47,23 +47,30 @@
         [int[]]$PageID
     )
 
+    BEGIN {
+        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function started"
+    }
+
     PROCESS {
-        Write-Debug "ParameterSetName: $($PsCmdlet.ParameterSetName)"
-        Write-Debug "PSBoundParameters: $($PSBoundParameters | Out-String)"
-        if (($_) -and ($_ -isnot [ConfluencePS.Page])) {
-            if (!$Force) {
-                Write-Warning "The Object in the pipe is not a Page"
-            }
+        Write-Debug "[$($MyInvocation.MyCommand.Name)] ParameterSetName: $($PsCmdlet.ParameterSetName)"
+        Write-Debug "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
+
+        if (($_) -and -not($_ -is [ConfluencePS.Page] -or $_ -is [int])) {
+            $message = "The Object in the pipe is not a Page."
+            $exception = New-Object -TypeName System.ArgumentException -ArgumentList $message
+            Throw $exception
         }
 
         foreach ($_page in $PageID) {
             $URI = "$apiURi/content/{0}" -f $_page
 
-            Write-Verbose "Sending delete request to $URI"
             If ($PSCmdlet.ShouldProcess("PageID $_page")) {
                 Invoke-WikiMethod -Uri $URI -Method Delete -Credential $Credential
             }
         }
+    }
 
+    END {
+        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function ended"
     }
 }

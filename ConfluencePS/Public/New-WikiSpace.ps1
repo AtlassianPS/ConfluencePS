@@ -18,7 +18,7 @@
     https://github.com/brianbunke/ConfluencePS
     #>
     [CmdletBinding(
-        ConfirmImpact = 'Medium',
+        ConfirmImpact = 'Low',
         SupportsShouldProcess = $true,
         DefaultParameterSetName = "byObject"
     )]
@@ -64,7 +64,14 @@
         [string]$Description
     )
 
+    BEGIN {
+        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function started"
+    }
+
     PROCESS {
+        Write-Debug "[$($MyInvocation.MyCommand.Name)] ParameterSetName: $($PsCmdlet.ParameterSetName)"
+        Write-Debug "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
+
         $URI = "$apiURi/space"
 
         if ($PsCmdlet.ParameterSetName -eq "byObject") {
@@ -73,7 +80,7 @@
             $Description = $InputObject.Description
         }
 
-        $Body = @{
+        $Content = @{
             key = $SpaceKey
             name = $Name
             description = @{
@@ -84,9 +91,13 @@
             }
         } | ConvertTo-Json
 
-        Write-Verbose "Posting to $URI"
+        Write-Debug "[$($MyInvocation.MyCommand.Name)] Content to be sent: $($Content | Out-String)"
         If ($PSCmdlet.ShouldProcess("$SpaceKey $Name")) {
-            Invoke-WikiMethod -Uri $URI -Body $Body -Method Post -Credential $Credential -OutputType ([ConfluencePS.Space])
+            Invoke-WikiMethod -Uri $URI -Body $Content -Method Post -Credential $Credential -OutputType ([ConfluencePS.Space])
         }
+    }
+
+    END {
+        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function ended"
     }
 }
