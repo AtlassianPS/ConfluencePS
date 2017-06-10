@@ -158,7 +158,7 @@ function Invoke-WikiMethod {
                     }
                     if ($Body) {$parameters["Body"] = $Body}
                     if ($Headers) {$parameters["Headers"] = $Headers}
-                    if ($GetParameters) {$parameters["Get$GetParameters"] = $GetParameters}
+                    if ($GetParameters) {$parameters["GetParameters"] = $GetParameters}
 
                     # Append results
                     $result.results += (Invoke-WikiMethod @parameters)
