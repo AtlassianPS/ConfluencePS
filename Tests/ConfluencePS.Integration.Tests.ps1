@@ -414,7 +414,7 @@ InModuleScope ConfluencePS {
         # ARRANGE
         $SpaceKey = "PESTER"
         $Page1 = Get-WikiPage -Title "Pester New Page Piped" -ErrorAction Stop
-        $Label1 = @("pestera", "pesterb", "pesterc")
+        $Label1 = [string[]]("pestera", "pesterb", "pesterc")
         $Label2 = "pesterall"
         $PartialLabel = "pest"
 

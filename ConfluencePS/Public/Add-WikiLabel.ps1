@@ -19,8 +19,7 @@
     #>
     [CmdletBinding(
         ConfirmImpact = 'Low',
-        SupportsShouldProcess = $true,
-        DefaultParameterSetName = 'byLabelName'
+        SupportsShouldProcess = $true
     )]
     [OutputType([ConfluencePS.ContentLabelSet])]
     param (
@@ -48,18 +47,10 @@
         [Parameter(
             Mandatory = $true,
             ValueFromPipeline = $true,
-            ParameterSetName = 'byLabelName'
+            ValueFromPipelineByPropertyName = $true
         )]
-        [string[]]$Label,
-
-        # Labels from a ContentLabelSet.
-        [Parameter(
-            Mandatory = $true,
-            ValueFromPipeline = $true,
-            ValueFromPipelineByPropertyName = $true,
-            ParameterSetName = 'byLabelSet'
-        )]
-        [ConfluencePS.ContentLabelSet]$Labels
+        [Alias('Labels')]
+        $Label
     )
 
     BEGIN {
@@ -70,19 +61,43 @@
         Write-Debug "[$($MyInvocation.MyCommand.Name)] ParameterSetName: $($PsCmdlet.ParameterSetName)"
         Write-Debug "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
 
+        # Validade input object from Pipeline
         if (($_) -and -not($_ -is [ConfluencePS.Page] -or $_ -is [int] -or $_ -is [ConfluencePS.ContentLabelSet])) {
             $message = "The Object in the pipe is not a Page."
             $exception = New-Object -TypeName System.ArgumentException -ArgumentList $message
             Throw $exception
         }
 
-        if ($Labels) {
-            $Label = $Labels.Labels | Select -ExpandProperty Name
+        # The parameter "Label" has no type declared. Because of this, a piped object of
+        # type "ConfluencePS.ContentLabelSet" will be assigned to "Label". Lets fix this:
+        if ($_ -and $Label -is [ConfluencePS.ContentLabelSet]) {
+            $Label  = $Label.Labels
+        }
+
+        # Allow only for Label to be a [String[]] or [ConfluencePS.Label[]]
+        $allowedLabelTypes = @(
+            "System.String"
+            "System.String[]"
+            "ConfluencePS.Label"
+            "ConfluencePS.Label[]"
+        )
+        if ($Label.GetType().FullName -notin $allowedLabelTypes) {
+            $message = "Parameter 'Label' is not a Label or a String. It is $($Label.gettype().FullName)"
+            $exception = New-Object -TypeName System.ArgumentException -ArgumentList $message
+            Throw $exception
+        }
+
+        # Extract name if an Object is provided
+        if (($Label -is [ConfluencePS.Label]) -or $Label -is [ConfluencePS.Label[]]) {
+            $Label = $Label | Select -ExpandProperty Name
         }
 
         foreach ($_page in $PageID) {
             if ($_ -is [ConfluencePS.Page]) {
                 $InputObject = $_
+            }
+            elseif ($_ -is [ConfluencePS.ContentLabelSet]) {
+                $InputObject = $_.Page
             }
             else {
                 $InputObject = Get-WikiPage -PageID $_page
