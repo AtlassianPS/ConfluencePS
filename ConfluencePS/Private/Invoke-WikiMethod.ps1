@@ -69,6 +69,8 @@ function Invoke-WikiMethod {
         if ($GetParameters) {
             Write-Debug "Using `$GetParameters: $($GetParameters | Out-String)"
             [string]$URI += (ConvertTo-GetParameter $GetParameters)
+            # Prevent recursive appends
+            $GetParameters = $null
         }
 
         # set mandatory parameters
@@ -99,7 +101,7 @@ function Invoke-WikiMethod {
             # Invoke-WebRequest is hard-coded to throw an exception if the Web request returns a 4xx or 5xx error.
             # This is the best workaround I can find to retrieve the actual results of the request.
             # This shall be fixed with PoSh v6: https://github.com/PowerShell/PowerShell/issues/2193
-            Write-Verbose "[$($MyInvocation.MyCommand.Name)] Failed to get an anser from the server"
+            Write-Verbose "[$($MyInvocation.MyCommand.Name)] Failed to get an answer from the server"
             $webResponse = $_.Exception.Response
         }
 
@@ -147,7 +149,7 @@ function Invoke-WikiMethod {
                 Write-Error $($result.errors | Out-String)
             }
             else {
-                # Dected if result is paginated
+                # Detect if result is paginated
                 if ($result._links.next) {
                     Write-Verbose "[$($MyInvocation.MyCommand.Name)] Invoking pagination"
 
@@ -158,7 +160,6 @@ function Invoke-WikiMethod {
                     }
                     if ($Body) {$parameters["Body"] = $Body}
                     if ($Headers) {$parameters["Headers"] = $Headers}
-                    if ($GetParameters) {$parameters["GetParameters"] = $GetParameters}
 
                     # Append results
                     $result.results += (Invoke-WikiMethod @parameters)
