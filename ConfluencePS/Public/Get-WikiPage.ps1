@@ -71,7 +71,8 @@
             Position = 0,
             Mandatory = $true,
             ParameterSetName = "byId",
-            ValueFromPipeline = $true
+            ValueFromPipeline = $true,
+            ValueFromPipelineByPropertyName = $true
         )]
         [ValidateRange(1, [int]::MaxValue)]
         [Alias('ID')]
@@ -146,7 +147,7 @@
 
         # Paging
         ($PSCmdlet.PagingParameters | Get-Member -MemberType Property).Name | ForEach-Object {
-            $PSDefaultParameterValues["Invoke-WikiMethod:$_"] = $PSCmdlet.PagingParameters.$_
+            $script:PSDefaultParameterValues["Invoke-WikiMethod:$_"] = $PSCmdlet.PagingParameters.$_
         }
 
         switch -regex ($PsCmdlet.ParameterSetName) {

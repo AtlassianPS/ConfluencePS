@@ -77,7 +77,7 @@ function Invoke-WikiMethod {
         if (($PSCmdlet.PagingParameters) -and ($PSCmdlet.PagingParameters.Skip)) {
             $GetParameters["start"] = $PSCmdlet.PagingParameters.Skip
         }
-        if ($GetParameters) {
+        if ($GetParameters -and ($URi -notlike "*\?*")) {
             Write-Debug "Using `$GetParameters: $($GetParameters | Out-String)"
             [string]$URI += (ConvertTo-GetParameter $GetParameters)
             # Prevent recursive appends
@@ -144,22 +144,23 @@ function Invoke-WikiMethod {
             else {
                 if ($webResponse.Content) {
                     # API returned a Content: lets work wit it
-                    $result = ConvertFrom-Json -InputObject $webResponse.Content
+                    $response = ConvertFrom-Json -InputObject $webResponse.Content
 
-                    if ($result.errors -ne $null) {
+                    if ($response.errors -ne $null) {
                         Write-Verbose "[$($MyInvocation.MyCommand.Name)] An error response was received from; resolving"
                         # This could be handled nicely in an function such as:
-                        # ResolveError $result -WriteError
-                        Write-Error $($result.errors | Out-String)
+                        # ResolveError $response -WriteError
+                        Write-Error $($response.errors | Out-String)
                     }
                     else {
                         if ($PSCmdlet.PagingParameters.IncludeTotalCount) {
-                            [double]$Accuracy = 1.0
-                            $PSCmdlet.PagingParameters.NewTotalCount($result.size, $Accuracy)
+                            [double]$Accuracy = 0.0
+                            $PSCmdlet.PagingParameters.NewTotalCount($response.size, $Accuracy)
                         }
                         # None paginated results / first page of pagination
-                        if (($result) -and ($result | Get-Member -Name results)) {
-                            $result = $result.results
+                        $result = $response
+                        if (($response) -and ($response | Get-Member -Name results)) {
+                            $result = $response.results
                         }
                         if ($OutputType) {
                             # Results shall be casted to custom objects (see ValidateSet)
@@ -172,16 +173,23 @@ function Invoke-WikiMethod {
                         }
 
                         # Detect if result is paginated
-                        if ($result._links.next) {
+                        if ($response._links.next) {
                             Write-Verbose "[Invoke-WikiMethod] Invoking pagination"
+
+                            # Remove Parameters that don't need propagation
+                            $script:PSDefaultParameterValues.Remove("Invoke-WikiMethod:GetParameters")
+                            $script:PSDefaultParameterValues.Remove("Invoke-WikiMethod:IncludeTotalCount")
 
                             # Self-Invoke function for recursion
                             $parameters = @{
-                                URi    = "{0}{1}" -f $result._links.base, $result._links.next
+                                URi    = "{0}{1}" -f $response._links.base, $response._links.next
                                 Method = $Method
+                                Credential = $Credential
                             }
                             if ($Body) {$parameters["Body"] = $Body}
                             if ($Headers) {$parameters["Headers"] = $Headers}
+
+                            Write-Verbose "NEXT PAGE: $($parameters["URi"])"
 
                             Invoke-WikiMethod @parameters
                         }
