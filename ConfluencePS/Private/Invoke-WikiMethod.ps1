@@ -69,8 +69,6 @@ function Invoke-WikiMethod {
         if ($GetParameters) {
             Write-Debug "Using `$GetParameters: $($GetParameters | Out-String)"
             [string]$URI += (ConvertTo-GetParameter $GetParameters)
-            # Prevent recursive appends
-            $GetParameters = $null
         }
 
         # set mandatory parameters
