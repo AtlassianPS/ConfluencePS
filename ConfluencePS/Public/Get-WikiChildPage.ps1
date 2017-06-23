@@ -27,7 +27,10 @@
     .LINK
     https://github.com/brianbunke/ConfluencePS
     #>
-    [CmdletBinding(DefaultParameterSetName = "byID")]
+    [CmdletBinding(
+        SupportsPaging = $true,
+        DefaultParameterSetName = "byID"
+    )]
     [OutputType([ConfluencePS.Page])]
     param (
         # The URi of the API interface.
@@ -75,6 +78,11 @@
             $message = "The Object in the pipe is not a Page."
             $exception = New-Object -TypeName System.ArgumentException -ArgumentList $message
             Throw $exception
+        }
+
+        # Paging
+        ($PSCmdlet.PagingParameters | Get-Member -MemberType Property).Name | ForEach-Object {
+            $script:PSDefaultParameterValues["Invoke-WikiMethod:$_"] = $PSCmdlet.PagingParameters.$_
         }
 
         if ($PsCmdlet.ParameterSetName -eq "byObject") {

@@ -19,7 +19,9 @@
     .LINK
     https://github.com/brianbunke/ConfluencePS
     #>
-    [CmdletBinding()]
+    [CmdletBinding(
+        SupportsPaging = $true
+    )]
     [OutputType([ConfluencePS.Space])]
     param (
         # The URi of the API interface.
@@ -57,6 +59,11 @@
         $resourceURI = "$apiURi/space"
         $GETparameters += @{expand = "description.plain,icon,homepage,metadata.labels"}
         If ($PageSize) { $GETparameters["limit"] = $PageSize }
+
+        # Paging
+        ($PSCmdlet.PagingParameters | Get-Member -MemberType Property).Name | ForEach-Object {
+            $script:PSDefaultParameterValues["Invoke-WikiMethod:$_"] = $PSCmdlet.PagingParameters.$_
+        }
 
         if ($SpaceKey) {
             foreach ($_space in $SpaceKey) {

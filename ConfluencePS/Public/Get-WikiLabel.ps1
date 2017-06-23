@@ -20,7 +20,9 @@
     .LINK
     https://github.com/brianbunke/ConfluencePS
     #>
-    [CmdletBinding()]
+    [CmdletBinding(
+        SupportsPaging = $true
+    )]
     [OutputType([ConfluencePS.ContentLabelSet])]
     param (
         # The URi of the API interface.
@@ -65,6 +67,11 @@
             Throw $exception
         }
 
+        # Paging
+        ($PSCmdlet.PagingParameters | Get-Member -MemberType Property).Name | ForEach-Object {
+            $script:PSDefaultParameterValues["Invoke-WikiMethod:$_"] = $PSCmdlet.PagingParameters.$_
+        }
+
         foreach ($_page in $PageID) {
             if ($_ -is [ConfluencePS.Page]) {
                 $InputObject = $_
@@ -74,7 +81,8 @@
             }
 
             $URI = "$apiURi/content/{0}/label" -f $_page
-            If ($PageSize) { $GETparameters = @{limit = $PageSize} }
+            If ($PageSize) { $GETparameters = @{limit = $PageSize}
+            }
 
             $output = New-Object -TypeName ConfluencePS.ContentLabelSet -Property @{
                 Page = $InputObject
