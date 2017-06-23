@@ -8,6 +8,17 @@
 
     This API method only returns the immediate children (results are not recursive).
 
+    .PARAMETER Skip
+    Controls how many things will be skipped before starting output. Defaults to 0.
+
+    .PARAMETER First
+    Currently not supported.
+    Indicates how many items to return. Defaults to 100.
+
+    .PARAMETER IncludeTotalCount
+    Causes an extra output of the total count at the beginning.
+    Note this is actually a uInt64, but with a custom string representation.
+
     .EXAMPLE
     Get-WikiChildPage -ParentID 1234 | Select-Object ID, Title | Sort-Object Title
     For the wiki page with ID 1234, get all pages immediately beneath it.

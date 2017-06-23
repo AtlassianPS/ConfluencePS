@@ -8,6 +8,17 @@
     Input for all parameters is not case sensitive.
     Piped output into other cmdlets is generally tested and supported.
 
+    .PARAMETER Skip
+    Controls how many things will be skipped before starting output. Defaults to 0.
+
+    .PARAMETER First
+    Currently not supported.
+    Indicates how many items to return. Defaults to 100.
+
+    .PARAMETER IncludeTotalCount
+    Causes an extra output of the total count at the beginning.
+    Note this is actually a uInt64, but with a custom string representation.
+
     .EXAMPLE
     Get-WikiSpace -ApiURi "https://myserver.com/wiki" -Credential $cred
     Display the info of all spaces on the server.
