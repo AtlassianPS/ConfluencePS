@@ -188,6 +188,7 @@ function Invoke-WikiMethod {
                             }
                             if ($Body) {$parameters["Body"] = $Body}
                             if ($Headers) {$parameters["Headers"] = $Headers}
+                            if ($OutputType) {$parameters["OutputType"] = $OutputType}
 
                             Write-Verbose "NEXT PAGE: $($parameters["URi"])"
 
