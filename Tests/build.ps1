@@ -1,4 +1,4 @@
-﻿# Pester. Let's run some tests!
+# Pester. Let's run some tests!
 # https://github.com/pester/Pester/wiki/Showing-Test-Results-in-CI-(TeamCity,-AppVeyor)
 # https://www.appveyor.com/docs/running-tests/#build-worker-api
 
@@ -45,7 +45,14 @@ If ($env:APPVEYOR_REPO_BRANCH -ne 'master') {
         # Join the functions and apply new lines "`n" and tabs "`t" to match original formatting
         $FunctionString = "@(`n`t'$($Functions -join "',`n`t'")'`n)"
         # Replace the placeholder text
-        (Get-Content .\ConfluencePS\ConfluencePS.psd1) `            -replace 'I hate you, stupid Update-ModuleManifest', $FunctionString |            Set-Content .\ConfluencePS\ConfluencePS.psd1 -ErrorAction Stop        # Now, have to get rid of the '' quotes wrapping the function array        # Two replaces because the quotes are on separate lines        (Get-Content .\ConfluencePS\ConfluencePS.psd1) `            -replace "(FunctionsToExport = )(')",'$1' -replace "\)'",')' |            Set-Content .\ConfluencePS\ConfluencePS.psd1 -ErrorAction Stop
+        (Get-Content .\ConfluencePS\ConfluencePS.psd1) `
+            -replace 'I hate you, stupid Update-ModuleManifest', $FunctionString |
+            Set-Content .\ConfluencePS\ConfluencePS.psd1 -ErrorAction Stop
+        # Now, have to get rid of the '' quotes wrapping the function array
+        # Two replaces because the quotes are on separate lines
+        (Get-Content .\ConfluencePS\ConfluencePS.psd1) `
+            -replace "(FunctionsToExport = )(')",'$1' -replace "\)'",')' |
+            Set-Content .\ConfluencePS\ConfluencePS.psd1 -ErrorAction Stop
     } Catch {
         throw 'Version update failed. Skipping publish to gallery'
     }
