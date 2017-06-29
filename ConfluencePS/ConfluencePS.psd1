@@ -67,21 +67,21 @@
 
     # Functions to export from this module
     FunctionsToExport = @(
-        'Add-WikiLabel',
-        'ConvertTo-WikiStorageFormat',
-        'ConvertTo-WikiTable',
-        'Get-WikiChildPage',
-        'Get-WikiLabel',
-        'Get-WikiPage',
-        'Get-WikiSpace',
-        'New-WikiPage',
-        'New-WikiSpace',
-        'Remove-WikiLabel',
-        'Remove-WikiPage',
-        'Remove-WikiSpace',
-        'Set-WikiInfo',
-        'Set-WikiLabel',
-        'Set-WikiPage'
+        'Add-Label',
+        'ConvertTo-StorageFormat',
+        'ConvertTo-Table',
+        'Get-ChildPage',
+        'Get-Label',
+        'Get-Page',
+        'Get-Space',
+        'New-Page',
+        'New-Space',
+        'Remove-Label',
+        'Remove-Page',
+        'Remove-Space',
+        'Set-Info',
+        'Set-Label',
+        'Set-Page'
     )
 
     # Cmdlets to export from this module
@@ -130,6 +130,6 @@
     # HelpInfoURI = ''
 
     # Default prefix for commands exported from this module. Override the default prefix using Import-Module -Prefix.
-    # DefaultCommandPrefix = ''
+    DefaultCommandPrefix = 'Confluence'
 
 }

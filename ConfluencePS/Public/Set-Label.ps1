@@ -1,4 +1,4 @@
-function Set-WikiLabel {
+function Set-Label {
     <#
     .SYNOPSIS
     Sets the label for an existing Confluence content.
@@ -8,12 +8,12 @@ function Set-WikiLabel {
     All previous labels will be removed in the process.
 
     .EXAMPLE
-    Set-WikiLabel -ApiURi "https://myserver.com/wiki" -Credential $cred -Label seven -PageID 123456 -Verbose -Confirm
+    Set-ConfluenceLabel -ApiURi "https://myserver.com/wiki" -Credential $cred -Label seven -PageID 123456 -Verbose -Confirm
     Would remove any label previously assigned to the page with ID 123456 and would add the label "seven"
     Verbose and Confirm flags both active.
 
     .EXAMPLE
-    Get-WikiPage -SpaceKey "ABC" | Set-WikiLabel -Label "asdf","qwer" -WhatIf
+    Get-ConfluencePage -SpaceKey "ABC" | Set-ConfluenceLabel -Label "asdf","qwer" -WhatIf
     Would remove all labels and adds "asdf" and "qwer" to all pages in the ABC space.
 
     .LINK
@@ -26,12 +26,12 @@ function Set-WikiLabel {
     [OutputType([ConfluencePS.ContentLabelSet])]
     param (
         # The URi of the API interface.
-        # Value can be set persistently with Set-WikiInfo.
+        # Value can be set persistently with Set-ConfluenceInfo.
         [Parameter( Mandatory = $true )]
         [URi]$apiURi,
 
         # Confluence's credentials for authentication.
-        # Value can be set persistently with Set-WikiInfo.
+        # Value can be set persistently with Set-ConfluenceInfo.
         [Parameter( Mandatory = $true )]
         [PSCredential]$Credential,
 
@@ -70,11 +70,11 @@ function Set-WikiLabel {
                 $InputObject = $_
             }
             else {
-                $InputObject = Get-WikiPage -PageID $_page
+                $InputObject = Get-Page -PageID $_page -ApiURi $apiURi -Credential $Credential
             }
 
             Write-Verbose "[$($MyInvocation.MyCommand.Name)] Removing all previous labels"
-            Remove-WikiLabel -PageID $_page | Out-Null
+            Remove-Label -PageID $_page -ApiURi $apiURi -Credential $Credential | Out-Null
 
             $URI = "$apiURi/content/{0}/label" -f $_page
 
@@ -84,7 +84,7 @@ function Set-WikiLabel {
             If ($PSCmdlet.ShouldProcess("Label $Label, PageID $_page")) {
                 $output = New-Object -TypeName ConfluencePS.ContentLabelSet
                 $output.Page = $InputObject
-                $output.Labels += (Invoke-WikiMethod -Uri $URI -Body $Content -Method Post -Credential $Credential -OutputType ([ConfluencePS.Label]))
+                $output.Labels += (Invoke-Method -Uri $URI -Body $Content -Method Post -Credential $Credential -OutputType ([ConfluencePS.Label]))
                 $output
             }
         }

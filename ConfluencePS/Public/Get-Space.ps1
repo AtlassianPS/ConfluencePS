@@ -1,4 +1,4 @@
-﻿function Get-WikiSpace {
+﻿function Get-Space {
     <#
     .SYNOPSIS
     Retrieve a listing of spaces in your Confluence instance.
@@ -9,11 +9,11 @@
     Piped output into other cmdlets is generally tested and supported.
 
     .EXAMPLE
-    Get-WikiSpace -ApiURi "https://myserver.com/wiki" -Credential $cred
+    Get-ConfluenceSpace -ApiURi "https://myserver.com/wiki" -Credential $cred
     Display the info of all spaces on the server.
 
     .EXAMPLE
-    Get-WikiSpace -SpaceKey NASA
+    Get-ConfluenceSpace -SpaceKey NASA
     Display the info of the space with key "NASA".
 
     .LINK
@@ -23,12 +23,12 @@
     [OutputType([ConfluencePS.Space])]
     param (
         # The URi of the API interface.
-        # Value can be set persistently with Set-WikiInfo.
+        # Value can be set persistently with Set-ConfluenceInfo.
         [Parameter( Mandatory = $true )]
         [URi]$apiURi,
 
         # Confluence's credentials for authentication.
-        # Value can be set persistently with Set-WikiInfo.
+        # Value can be set persistently with Set-ConfluenceInfo.
         [Parameter( Mandatory = $true )]
         [PSCredential]$Credential,
 
@@ -62,13 +62,13 @@
             foreach ($_space in $SpaceKey) {
                 $URI = "$resourceURI/{0}" -f $_space
 
-                Invoke-WikiMethod -Uri $URI -Method Get -Credential $Credential -GetParameters $GETparameters -OutputType ([ConfluencePS.Space])
+                Invoke-Method -Uri $URI -Method Get -Credential $Credential -GetParameters $GETparameters -OutputType ([ConfluencePS.Space])
             }
         }
         else {
             $URI = $resourceURI
 
-            Invoke-WikiMethod -Uri $URI -Method Get -Credential $Credential -GetParameters $GETparameters -OutputType ([ConfluencePS.Space])
+            Invoke-Method -Uri $URI -Method Get -Credential $Credential -GetParameters $GETparameters -OutputType ([ConfluencePS.Space])
         }
     }
 

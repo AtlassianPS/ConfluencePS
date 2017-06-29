@@ -1,4 +1,4 @@
-function ConvertTo-WikiIcon {
+function ConvertTo-Icon {
     <#
     .SYNOPSIS
     Extracted the conversion to private function in order to have a single place

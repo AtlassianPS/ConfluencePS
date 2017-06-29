@@ -1,4 +1,4 @@
-function ConvertTo-WikiPage {
+function ConvertTo-Page {
     <#
     .SYNOPSIS
     Extracted the conversion to private function in order to have a single place to
@@ -21,18 +21,18 @@ function ConvertTo-WikiPage {
                 title,
                 @{Name = "space"; Expression = {
                     if ($_.space) {
-                        $_.space | ConvertTo-WikiSpace
+                        $_.space | ConvertTo-Space
                     } else {$null}
                 }},
                 @{Name = "version"; Expression = {
                     if ($_.version) {
-                        $_.version | ConvertTo-WikiVersion
+                        $_.version | ConvertTo-Version
                     } else {$null}
                 }},
                 @{Name = "body"; Expression = {$_.body.storage.value}},
                 @{Name = "ancestors"; Expression = {
                     if ($_.ancestors) {
-                        $_.ancestors | ConvertTo-WikiPageAncestor
+                        $_.ancestors | ConvertTo-PageAncestor
                     }
                     else {$null}
                 }},

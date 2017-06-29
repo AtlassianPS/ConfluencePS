@@ -1,4 +1,4 @@
-﻿function Get-WikiChildPage {
+﻿function Get-ChildPage {
     <#
     .SYNOPSIS
     For a given wiki page, list all child wiki pages.
@@ -9,17 +9,17 @@
     This API method only returns the immediate children (results are not recursive).
 
     .EXAMPLE
-    Get-WikiChildPage -ParentID 1234 | Select-Object ID, Title | Sort-Object Title
+    Get-ConfluenceChildPage -ParentID 1234 | Select-Object ID, Title | Sort-Object Title
     For the wiki page with ID 1234, get all pages immediately beneath it.
     Returns only each page's ID and Title, sorting results alphabetically by Title.
 
     .EXAMPLE
-    Get-WikiPage -Title 'Genghis Khan' | Get-WikiChildPage -Limit 500
+    Get-ConfluencePage -Title 'Genghis Khan' | Get-ConfluenceChildPage -Limit 500
     Find the Genghis Khan wiki page and pipe the results.
     Get only the first 500 children beneath that page.
 
     .EXAMPLE
-    Get-WikiChildPage -ParentID 9999 -Expand -Limit 100
+    Get-ConfluenceChildPage -ParentID 9999 -Expand -Limit 100
     For each child page found, expand the results to also include properties
     like Body and Version (Ver). Typically, using -Expand will not return
     more than 100 results, even if -Limit is set to a higher value.
@@ -31,12 +31,12 @@
     [OutputType([ConfluencePS.Page])]
     param (
         # The URi of the API interface.
-        # Value can be set persistently with Set-WikiInfo.
+        # Value can be set persistently with Set-ConfluenceInfo.
         [Parameter( Mandatory = $true )]
         [URi]$apiURi,
 
         # Confluence's credentials for authentication.
-        # Value can be set persistently with Set-WikiInfo.
+        # Value can be set persistently with Set-ConfluenceInfo.
         [Parameter( Mandatory = $true )]
         [PSCredential]$Credential,
 
@@ -86,7 +86,7 @@
         $GETparameters = @{expand = "space,version,body.storage,ancestors"}
         If ($PageSize) { $GETparameters["limit"] = $PageSize }
 
-        Invoke-WikiMethod -Uri $URI -Method Get -Credential $Credential -GetParameters $GETparameters -OutputType ([ConfluencePS.Page])
+        Invoke-Method -Uri $URI -Method Get -Credential $Credential -GetParameters $GETparameters -OutputType ([ConfluencePS.Page])
     }
 
     END {

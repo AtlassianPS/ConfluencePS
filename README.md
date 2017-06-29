@@ -19,12 +19,12 @@ Update-Module ConfluencePS
 
 # To use each session:
 Import-Module ConfluencePS
-Set-WikiInfo -BaseURI 'https://YourCloudWiki.atlassian.net/wiki'
+Set-ConfluenceInfo -BaseURI 'https://YourCloudWiki.atlassian.net/wiki'
 
 # Review the help at any time!
 Get-Help about_ConfluencePS
 Get-Command -Module ConfluencePS
-Get-Help Get-WikiPage -Full   # or any other command
+Get-Help Get-ConfluencePage -Full   # or any other command
 ```
 
 ## Potential Future Work
@@ -57,7 +57,7 @@ Hopefully this is obvious, but:
 This is an open source project (under the [MIT license]). I am a volunteer, as are any other contributors. All commands are executed at your own risk. Please have good backups before you start, because you can delete a lot of stuff if you're not careful.
 
   [Confluence]: <https://www.atlassian.com/software/confluence>
-  [REST API]: <https://docs.atlassian.com/atlassian-confluence/REST/latest/>
+  [REST API]: <https://docs.atlassian.com/atlassian-/REST/latest/>
   [PowerShell Gallery]: <https://www.powershellgallery.com/>
   [thomykay]: <https://github.com/thomykay>
   [PoshConfluence]: <https://github.com/thomykay/PoshConfluence>

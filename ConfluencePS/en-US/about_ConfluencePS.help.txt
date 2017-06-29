@@ -7,7 +7,7 @@ SHORT DESCRIPTION
 
     Comment-based help is provided for all cmdlets:
 
-        Get-Help Get-WikiPage -Full
+        Get-Help Get-ConfluencePage -Full
 
 LONG DESCRIPTION
     Confluence is a wiki product from Atlassian.
@@ -19,21 +19,21 @@ LONG DESCRIPTION
 
   GETTING STARTED
     Import-Module ConfluencePS
-    Set-WikiInfo -BaseURI 'https://mywiki.company.com'
+    Set-ConfluenceInfo -BaseURI 'https://mywiki.company.com'
 
     Unless supplying the credentials (-Credential $cred), you will then be
     prompted for a username/password to connect to the wiki instance.
     The connection is established via basic header authentication, and
-    Set-WikiInfo needs to be run at the beginning of each PowerShell session.
+    Set-ConfluenceInfo needs to be run at the beginning of each PowerShell session.
 
   DISCOVERING YOUR ENVIRONMENT
     To view all spaces, run the following command:
 
-        Get-WikiSpace
+        Get-ConfluenceSpace
 
     To view all pages in a specific space, you can use the pipeline:
 
-        Get-WikiSpace -Key Demo | Get-WikiPage -PageSize 1000
+        Get-ConfluenceSpace -Key Demo | Get-Page -PageSize 1000
 
     Note that the REST API will limit your results in different ways.
 
@@ -44,7 +44,7 @@ LONG DESCRIPTION
 
     You can fetch a page's content with the following command:
 
-        Get-WikiPage -Title 'Contacts' -PageSize 1000 | Get-WikiPage -Expand
+        Get-ConfluencePage -Title 'Contacts' -PageSize 1000 | Get-ConfluencePage -Expand
 
     This will find any page matching "*contacts*", and then use the PageID(s)
     found to fetch the page body and version as well. If you don't already know
@@ -57,11 +57,11 @@ LONG DESCRIPTION
 
     To apply a new label to all pages matching specified criteria:
 
-        Get-WikiPage -Title 'Azure' -PageSize 1000 | Add-WikiLabel -Label azure
+        Get-ConfluencePage -Title 'Azure' -PageSize 1000 | Add-ConfluenceLabel -Label azure
 
     To delete pages with the label "test":
 
-        Get-WikiPage -Label test -PageSize 1000 | Remove-WikiPage -WhatIf
+        Get-ConfluencePage -Label test -PageSize 1000 | Remove-ConfluencePage -WhatIf
 
     Use -WhatIf first to be sure only intended pages will be affected,
     then run the command again without the -WhatIf parameter.
@@ -86,15 +86,15 @@ LONG DESCRIPTION
 
         $CSV = Import-Csv .\vmlist.csv
         ForEach ($VM in (Get-Content .\changes.txt)) {
-            $Table = $CSV | Where Name -eq $VM | ConvertTo-WikiTable | Out-String
-            $Body = $Table | ConvertTo-WikiStorageFormat
+            $Table = $CSV | Where Name -eq $VM | ConvertTo-ConfluenceTable | Out-String
+            $Body = $Table | ConvertTo-ConfluenceStorageFormat
 
-            If ($ID = (Get-WikiPage -Title "$($VM.Name)" -PageSize 500).ID) {
+            If ($ID = (Get-ConfluencePage -Title "$($VM.Name)" -PageSize 500).ID) {
                 # Current page found. With the ID, get the expanded result
-                $PageExists = Get-WikiPage -PageID $ID -Expand
-                $PageExists | Set-WikiPage -ParentID 123456 -Body $Body
+                $PageExists = Get-ConfluencePage -PageID $ID -Expand
+                $PageExists | Set-ConfluencePage -ParentID 123456 -Body $Body
             } Else {
-                New-WikiPage -Title "$($VM.Name)" -Body $Body -ParentID 123456
+                New-ConfluencePage -Title "$($VM.Name)" -Body $Body -ParentID 123456
             }
         }
 

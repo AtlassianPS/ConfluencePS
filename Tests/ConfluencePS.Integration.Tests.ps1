@@ -4,37 +4,49 @@
 Describe 'Load Module' {
     # ARRANGE
     Remove-Module ConfluencePS -Force -ErrorAction SilentlyContinue
+
     # ACT
     Import-Module "$PSScriptRoot\..\ConfluencePS" -Force -ErrorAction Stop
+
     #ASSERT
     It "imports the module" {
         Get-Module ConfluencePS | Should BeOfType [PSModuleInfo]
+        Remove-Module ConfluencePS -ErrorAction Stop
+    }
+
+    It "imports the module with custom prefix" {
+        Import-Module "$PSScriptRoot\..\ConfluencePS" -Prefix "Wiki" -Force -ErrorAction Stop
+        (Get-Command -Module ConfluencePS).Name | ForEach-Object {
+            $_ -match "\-Wiki" | Should Be $true
+        }
+        # Remove-Module ConfluencePS -ErrorAction Stop
     }
 }
 
+Import-Module "$PSScriptRoot\..\ConfluencePS" -Force -ErrorAction Stop
 InModuleScope ConfluencePS {
 
-    Describe 'Set-WikiInfo' {
+    Describe 'Set-ConfluenceInfo' {
         # ARRANGE
         # Could be a long one-liner, but breaking down for readability
         $Pass = ConvertTo-SecureString -AsPlainText -Force -String $env:WikiPass
         $Cred = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList ($env:WikiUser, $Pass)
 
         # ACT
-        Set-WikiInfo -BaseURI $env:WikiURI -Credential $Cred
+        Set-ConfluenceInfo -BaseURI $env:WikiURI -Credential $Cred
 
         # ASSERT
         It 'credentials are stored' {
-            $global:PSDefaultParameterValues["Get-WikiPage:Credential"] | Should BeOfType [PSCredential]
+            $global:PSDefaultParameterValues["Get-ConfluencePage:Credential"] | Should BeOfType [PSCredential]
             #TODO: extend this
         }
         It 'url is stored' {
-            $global:PSDefaultParameterValues["Get-WikiPage:ApiURi"] | Should BeOfType [String]
-            $global:PSDefaultParameterValues["Get-WikiPage:ApiURi"] -match "^https?://.*\/rest\/api$" | Should Be $true
+            $global:PSDefaultParameterValues["Get-ConfluencePage:ApiURi"] | Should BeOfType [String]
+            $global:PSDefaultParameterValues["Get-ConfluencePage:ApiURi"] -match "^https?://.*\/rest\/api$" | Should Be $true
         }
     }
 
-    Describe 'New-WikiSpace' {
+    Describe 'New-ConfluenceSpace' {
         # ARRANGE
         # We don't want warnings on the screen
         $WarningPreference = 'SilentlyContinue'
@@ -55,12 +67,12 @@ InModuleScope ConfluencePS {
         }
         # $Space3
         # Ensure the space doesn't already exist
-        Get-WikiSpace -Key $Key -ErrorAction SilentlyContinue #TODO
+        Get-ConfluenceSpace -Key $Key -ErrorAction SilentlyContinue #TODO
 
 
         # ACT
-        $NewSpace1 = New-WikiSpace -Key $Key -Name $Name -Description $Description -ErrorAction Stop
-        $NewSpace2 = $Space2 | New-WikiSpace -ErrorAction Stop
+        $NewSpace1 = New-ConfluenceSpace -Key $Key -Name $Name -Description $Description -ErrorAction Stop
+        $NewSpace2 = $Space2 | New-ConfluenceSpace -ErrorAction Stop
 
         # ASSERT
         It 'returns an object with specific properties' {
@@ -95,7 +107,7 @@ InModuleScope ConfluencePS {
         }
     }
 
-    Describe 'Get-WikiSpace' {
+    Describe 'Get-ConfluenceSpace' {
         # ARRANGE
         # Set up test values:
         $Key1 = "PESTER"
@@ -105,10 +117,10 @@ InModuleScope ConfluencePS {
         $Description = "<p>A nice description</p>"
 
         # ACT
-        $AllSpaces = Get-WikiSpace
-        $GetSpace1 = Get-WikiSpace -Key $Key1
-        $GetSpace2 = Get-WikiSpace | Where-Object {$_.Name -like '*ter test sp*'}
-        $GetSpace3 = Get-WikiSpace @($Key1, $Key2)
+        $AllSpaces = Get-ConfluenceSpace
+        $GetSpace1 = Get-ConfluenceSpace -Key $Key1
+        $GetSpace2 = Get-ConfluenceSpace | Where-Object {$_.Name -like '*ter test sp*'}
+        $GetSpace3 = Get-ConfluenceSpace @($Key1, $Key2)
 
         # ASSERT
         It 'returns an object with specific properties' {
@@ -183,14 +195,14 @@ InModuleScope ConfluencePS {
         }
     }
 
-    Describe 'ConvertTo-WikiStorageFormat' {
+    Describe 'ConvertTo-ConfluenceStorageFormat' {
         # ARRANGE
         $InputString = "Hi Pester!"
         $OutputString = "<p>Hi Pester!</p>"
 
         # ACT
-        $result1 = $inputString | ConvertTo-WikiStorageFormat
-        $result2 = ConvertTo-WikiStorageFormat -Content $inputString
+        $result1 = $inputString | ConvertTo-ConfluenceStorageFormat
+        $result2 = ConvertTo-ConfluenceStorageFormat -Content $inputString
 
         # ASSERT
         It 'returns a string' {
@@ -203,7 +215,7 @@ InModuleScope ConfluencePS {
         }
     }
 
-    Describe 'New-WikiPage' {
+    Describe 'New-ConfluencePage' {
         <# TODO:
             * Title may not be empty
             * Space may not be empty when no parent is provided
@@ -211,7 +223,7 @@ InModuleScope ConfluencePS {
 
         # ARRANGE
         $SpaceKey = "PESTER"
-        $parentPage = Get-WikiPage -Title "Pester Test Space Home"
+        $parentPage = Get-ConfluencePage -Title "Pester Test Space Home" -ErrorAction Stop
         $Title1 = "Pester New Page Piped"
         $Title2 = "Pester New Page Orphan"
         $Title3 = "Pester New Page from Object"
@@ -226,10 +238,10 @@ InModuleScope ConfluencePS {
         }
 
         # ACT
-        $NewPage1 = $Title1 | New-WikiPage -ParentID $parentPage.ID -ErrorAction Stop
-        $NewPage2 = New-WikiPage -Title $Title2 -SpaceKey $SpaceKey -Body $RawContent -Convert -ErrorAction Stop
-        $NewPage3 = $pageObject | New-WikiPage -ErrorAction Stop
-        $NewPage4 = New-WikiPage -Title $Title4 -Parent $parentPage -ErrorAction Stop
+        $NewPage1 = $Title1 | New-ConfluencePage -ParentID $parentPage.ID -ErrorAction Stop
+        $NewPage2 = New-ConfluencePage -Title $Title2 -SpaceKey $SpaceKey -Body $RawContent -Convert -ErrorAction Stop
+        $NewPage3 = $pageObject | New-ConfluencePage -ErrorAction Stop
+        $NewPage4 = New-ConfluencePage -Title $Title4 -Parent $parentPage -ErrorAction Stop
 
         # ASSERT
         It 'returns an object with specific properties' {
@@ -295,24 +307,24 @@ InModuleScope ConfluencePS {
         }
     }
 
-    Describe 'Get-WikiPage' {
+    Describe 'Get-ConfluencePage' {
         # ARRANGE
         $SpaceKey = "PESTER"
         $Title1 = "Pester New Page from Object"
         $Title2 = "Pester New Page Orphan"
         $Title3 = "Pester Test Space Home"
         $Content = "<p>Hi Pester!</p>"
-        (Get-WikiSpace -SpaceKey $SpaceKey).Homepage | Add-WikiLabel -Label "important" -ErrorAction Stop
+        (Get-ConfluenceSpace -SpaceKey $SpaceKey).Homepage | Add-ConfluenceLabel -Label "important" -ErrorAction Stop
         Start-Sleep -Seconds 20 # Delay to allow DB index to update
 
         # ACT
-        $GetTitle1 = Get-WikiPage -Title $Title1 -PageSize 200 -ErrorAction SilentlyContinue
-        $GetTitle2 = Get-WikiPage -Title $Title2 -SpaceKey $SpaceKey -PageSize 200 -ErrorAction SilentlyContinue
-        $GetID1 = Get-WikiPage -PageID $GetTitle1.ID -ErrorAction SilentlyContinue
-        $GetID2 = Get-WikiPage -PageID $GetTitle2.ID -ErrorAction SilentlyContinue
-        $GetKeys = Get-WikiPage -SpaceKey $SpaceKey | Sort ID -ErrorAction SilentlyContinue
-        $GetByLabel = Get-WikiPage -Label "important" -ErrorAction SilentlyContinue
-        $GetSpacePage = Get-WikiPage -Space (Get-WikiSpace -SpaceKey $SpaceKey) -ErrorAction SilentlyContinue
+        $GetTitle1 = Get-ConfluencePage -Title $Title1 -PageSize 200 -ErrorAction SilentlyContinue
+        $GetTitle2 = Get-ConfluencePage -Title $Title2 -SpaceKey $SpaceKey -PageSize 200 -ErrorAction SilentlyContinue
+        $GetID1 = Get-ConfluencePage -PageID $GetTitle1.ID -ErrorAction SilentlyContinue
+        $GetID2 = Get-ConfluencePage -PageID $GetTitle2.ID -ErrorAction SilentlyContinue
+        $GetKeys = Get-ConfluencePage -SpaceKey $SpaceKey | Sort ID -ErrorAction SilentlyContinue
+        $GetByLabel = Get-ConfluencePage -Label "important" -ErrorAction SilentlyContinue
+        $GetSpacePage = Get-ConfluencePage -Space (Get-ConfluenceSpace -SpaceKey $SpaceKey) -ErrorAction SilentlyContinue
 
         # ASSERT
         It 'returns the correct amount of results' {
@@ -410,18 +422,18 @@ InModuleScope ConfluencePS {
         }
     }
 
-    Describe 'Add-WikiLabel' {
+    Describe 'Add-ConfluenceLabel' {
         # ARRANGE
         $SpaceKey = "PESTER"
-        $Page1 = Get-WikiPage -Title "Pester New Page Piped" -ErrorAction Stop
+        $Page1 = Get-ConfluencePage -Title "Pester New Page Piped" -ErrorAction Stop
         $Label1 = [string[]]("pestera", "pesterb", "pesterc")
         $Label2 = "pesterall"
         $PartialLabel = "pest"
 
         # ACT
-        $NewLabel1 = Add-WikiLabel -Label $Label1 -PageID $Page1.ID -ErrorAction SilentlyContinue
-        $NewLabel2 = Get-WikiPage -SpaceKey $SpaceKey | Add-WikiLabel -Label $Label2 -ErrorAction SilentlyContinue
-        $NewLabel3 = (Get-WikiSpace -SpaceKey $SpaceKey).Homepage | Get-WikiLabel | Add-WikiLabel -PageID $Page1.ID -ErrorAction SilentlyContinue
+        $NewLabel1 = Add-ConfluenceLabel -Label $Label1 -PageID $Page1.ID -ErrorAction SilentlyContinue
+        $NewLabel2 = Get-ConfluencePage -SpaceKey $SpaceKey | Add-ConfluenceLabel -Label $Label2 -ErrorAction SilentlyContinue
+        $NewLabel3 = (Get-ConfluenceSpace -SpaceKey $SpaceKey).Homepage | Get-ConfluenceLabel | Add-ConfluenceLabel -PageID $Page1.ID -ErrorAction SilentlyContinue
 
         # ASSERT
         It 'returns the correct amount of results' {
@@ -455,17 +467,17 @@ InModuleScope ConfluencePS {
         }
     }
 
-    Describe 'Set-WikiLabel' {
+    Describe 'Set-ConfluenceLabel' {
         # ARRANGE
         $Title1 = "Pester New Page from Object"
         $Label1 = @("overwrite", "remove")
         $Label2 = "final"
-        $Page1 = Get-WikiPage -Title $Title1 -ErrorAction SilentlyContinue
-        $Before1 = $Page1 | Get-WikiLabel
+        $Page1 = Get-ConfluencePage -Title $Title1 -ErrorAction SilentlyContinue
+        $Before1 = $Page1 | Get-ConfluenceLabel
 
         # ACT
-        $After1 = Set-WikiLabel -PageID $Page1.ID -Label $Label1 -ErrorAction Stop
-        $After2 = $Page1 | Set-WikiLabel -Label $Label2 -ErrorAction Stop
+        $After1 = Set-ConfluenceLabel -PageID $Page1.ID -Label $Label1 -ErrorAction Stop
+        $After2 = $Page1 | Set-ConfluenceLabel -Label $Label2 -ErrorAction Stop
 
         # ASSERT
         It 'returns the correct amount of results' {
@@ -494,16 +506,16 @@ InModuleScope ConfluencePS {
         }
     }
 
-    Describe 'Get-WikiLabel' {
+    Describe 'Get-ConfluenceLabel' {
         # ARRANGE
         $SpaceKey = "PESTER"
         $patternLabel1 = "pester[abc]$"
         $patternLabel2 = "(pest|import|fin)"
-        $Page = Get-WikiPage -Title "Pester New Page Piped"
+        $Page = Get-ConfluencePage -Title "Pester New Page Piped"
 
         # ACT
-        $GetPageLabel1 = Get-WikiLabel -PageID $Page.ID
-        $GetPageLabel2 = Get-WikiPage -SpaceKey $SpaceKey | Get-WikiLabel
+        $GetPageLabel1 = Get-ConfluenceLabel -PageID $Page.ID
+        $GetPageLabel2 = Get-ConfluencePage -SpaceKey $SpaceKey | Get-ConfluenceLabel
 
         # ASSERT
         It 'returns the correct amount of results' {
@@ -535,7 +547,7 @@ InModuleScope ConfluencePS {
         }
     }
 
-    Describe 'Set-WikiPage' {
+    Describe 'Set-ConfluencePage' {
         <# TODO:
         * Title may not be empty
         * fails when version is 1 larger than current version
@@ -567,13 +579,13 @@ InModuleScope ConfluencePS {
         }
 
         $SpaceKey = "PESTER"
-        $Page1 = Get-WikiPage -SpaceKey $SpaceKey -Title "Pester New Page Piped"
-        $Page2 = Get-WikiPage -SpaceKey $SpaceKey -Title "Pester New Page Orphan"
-        $Page3 = Get-WikiPage -SpaceKey $SpaceKey -Title "Pester New Page from Object"
-        $Page4 = Get-WikiPage -SpaceKey $SpaceKey -Title "Pester New Page with Parent Object"
+        $Page1 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page Piped"
+        $Page2 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page Orphan"
+        $Page3 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page from Object"
+        $Page4 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page with Parent Object"
         # create some more pages
-        $Page5, $Page6, $Page7, $Page8 = ("Page 5", "Page 6", "Page 7", "Page 8" | New-WikiPage -SpaceKey $SpaceKey -Body "<p>Lorem ipsum</p>" -ErrorAction Stop)
-        $AllPages = Get-WikiPage -SpaceKey $SpaceKey
+        $Page5, $Page6, $Page7, $Page8 = ("Page 5", "Page 6", "Page 7", "Page 8" | New-ConfluencePage -SpaceKey $SpaceKey -Body "<p>Lorem ipsum</p>" -ErrorAction Stop)
+        $AllPages = Get-ConfluencePage -SpaceKey $SpaceKey
         $ParentPage = $AllPages | Where-Object {$_.Title -like "*Home"}
 
         $NewTitle6 = "Renamed Page 6"
@@ -585,24 +597,24 @@ InModuleScope ConfluencePS {
 
         # ACT
         # change the body of all pages - all pages should have version 2
-        $AllChangedPages = $AllPages | dummy-Function -Body $NewContent1 | Set-WikiPage -ErrorAction Stop
+        $AllChangedPages = $AllPages | dummy-Function -Body $NewContent1 | Set-ConfluencePage -ErrorAction Stop
         # set the body of a page to the same value as it already had - should remain on verion 2
-        $SetPage1 = $Page1.ID | Set-WikiPage -Body $NewContent1 -ErrorAction Stop
+        $SetPage1 = $Page1.ID | Set-ConfluencePage -Body $NewContent1 -ErrorAction Stop
         # change the body of a page by property - this page should have version 3
-        $SetPage2 = $Page2.ID | Set-WikiPage -Body $NewContent2 -ErrorAction Stop
+        $SetPage2 = $Page2.ID | Set-ConfluencePage -Body $NewContent2 -ErrorAction Stop
         # make a non-relevant change just to bump page version
-        $SetPage3 = $Page3.ID | Set-WikiPage -Body "..."
+        $SetPage3 = $Page3.ID | Set-ConfluencePage -Body "..."
         # change the title of a page by property - this page should have version 4
-        $SetPage3 = $Page3.ID | Set-WikiPage -Body $RawContent3 -Convert
+        $SetPage3 = $Page3.ID | Set-ConfluencePage -Body $RawContent3 -Convert
         # change the parent page by object
-        $SetPage4 = Set-WikiPage -PageID $Page4.ID -Parent $Page3
+        $SetPage4 = Set-ConfluencePage -PageID $Page4.ID -Parent $Page3
         # change the parent page by pageid
-        $SetPage5 = Set-WikiPage -PageID $Page5.ID -ParentID $Page4.ID
+        $SetPage5 = Set-ConfluencePage -PageID $Page5.ID -ParentID $Page4.ID
         # change the title of a page
-        $SetPage6 = $Page6.ID | Set-WikiPage -Title $NewTitle6
-        $SetPage7 = $AllChangedPages | Where {$_.ID -eq $Page7.ID} | dummy-Function -Title $NewTitle7 | Set-WikiPage
+        $SetPage6 = $Page6.ID | Set-ConfluencePage -Title $NewTitle6
+        $SetPage7 = $AllChangedPages | Where {$_.ID -eq $Page7.ID} | dummy-Function -Title $NewTitle7 | Set-ConfluencePage
         # clear the body of a page
-        $SetPage8 = Set-WikiPage -PageID $Page8.ID -Body ""
+        $SetPage8 = Set-ConfluencePage -PageID $Page8.ID -Body ""
 
         # ASSERT
         It 'returns the correct amount of results' {
@@ -702,12 +714,12 @@ InModuleScope ConfluencePS {
         }
     }
 
-    Describe 'Get-WikiChildPage' {
+    Describe 'Get-ConfluenceChildPage' {
         # ARRANGE
 
         # ACT
-        $ChildPages = (Get-WikiSpace -SpaceKey PESTER).Homepage | Get-WikiChildPage
-        $DesendantPages = (Get-WikiSpace -SpaceKey PESTER).Homepage | Get-WikiChildPage -Recurse
+        $ChildPages = (Get-ConfluenceSpace -SpaceKey PESTER).Homepage | Get-ConfluenceChildPage
+        $DesendantPages = (Get-ConfluenceSpace -SpaceKey PESTER).Homepage | Get-ConfluenceChildPage -Recurse
 
         # ASSERT
         It 'returns the correct amount of results' {
@@ -720,19 +732,19 @@ InModuleScope ConfluencePS {
         }
     }
 
-Describe 'Remove-WikiLabel' {
+Describe 'Remove-ConfluenceLabel' {
         # ARRANGE
         $Label1 = "pesterc"
-        $Page1 = Get-WikiPage -Title 'Pester New Page Piped' -ErrorAction Stop
-        $Page2 = (Get-WikiSpace -SpaceKey PESTER).Homepage
+        $Page1 = Get-ConfluencePage -Title 'Pester New Page Piped' -ErrorAction Stop
+        $Page2 = (Get-ConfluenceSpace -SpaceKey PESTER).Homepage
 
         # ACT
-        $Before1 = $Page1 | Get-WikiLabel -ErrorAction SilentlyContinue
-        $Before2 = $Page2 | Get-WikiLabel -ErrorAction SilentlyContinue
-        Remove-WikiLabel -Label $Label1 -PageID $Page1.ID -ErrorAction SilentlyContinue
-        $Page2 | Remove-WikiLabel -ErrorAction SilentlyContinue
-        $After1 = $Page1 | Get-WikiLabel -ErrorAction SilentlyContinue
-        $After2 = $Page2 | Get-WikiLabel -ErrorAction SilentlyContinue
+        $Before1 = $Page1 | Get-ConfluenceLabel -ErrorAction SilentlyContinue
+        $Before2 = $Page2 | Get-ConfluenceLabel -ErrorAction SilentlyContinue
+        Remove-ConfluenceLabel -Label $Label1 -PageID $Page1.ID -ErrorAction SilentlyContinue
+        $Page2 | Remove-ConfluenceLabel -ErrorAction SilentlyContinue
+        $After1 = $Page1 | Get-ConfluenceLabel -ErrorAction SilentlyContinue
+        $After2 = $Page2 | Get-ConfluenceLabel -ErrorAction SilentlyContinue
 
         # ASSERT
         It 'page has one label less' {
@@ -745,17 +757,17 @@ Describe 'Remove-WikiLabel' {
         }
     }
 
-    Describe 'Remove-WikiPage' {
+    Describe 'Remove-ConfluencePage' {
         # ARRANGE
         $SpaceKey = "PESTER"
         $Title = "Pester New Page Orphan"
-        $PageID = Get-WikiPage -Title $Title -ErrorAction Stop
-        $Before = Get-WikiPage -SpaceKey $SpaceKey -ErrorAction Stop
+        $PageID = Get-ConfluencePage -Title $Title -ErrorAction Stop
+        $Before = Get-ConfluencePage -SpaceKey $SpaceKey -ErrorAction Stop
 
         # ACT
-        Remove-WikiPage -PageID $PageID.ID -ErrorAction SilentlyContinue
-        Get-WikiPage -SpaceKey $SpaceKey | Remove-WikiPage -ErrorAction SilentlyContinue
-        $After = Get-WikiPage -SpaceKey $SpaceKey -ErrorAction SilentlyContinue
+        Remove-ConfluencePage -PageID $PageID.ID -ErrorAction SilentlyContinue
+        Get-ConfluencePage -SpaceKey $SpaceKey | Remove-ConfluencePage -ErrorAction SilentlyContinue
+        $After = Get-ConfluencePage -SpaceKey $SpaceKey -ErrorAction SilentlyContinue
 
         # ASSERT
         It 'has pages before' {
@@ -766,20 +778,20 @@ Describe 'Remove-WikiLabel' {
         }
     }
 
-    Describe 'Remove-WikiSpace' {
+    Describe 'Remove-ConfluenceSpace' {
         # ARRANGE
         # We don't want warnings on the screen
         $WarningPreference = 'SilentlyContinue'
 
         # ACT
-        Remove-WikiSpace -Key PESTER -Force -ErrorAction Stop
-        "PESTER1" | Remove-WikiSpace -Force -ErrorAction Stop
+        Remove-ConfluenceSpace -Key PESTER -Force -ErrorAction Stop
+        "PESTER1" | Remove-ConfluenceSpace -Force -ErrorAction Stop
 
         # ASSERT
         Start-Sleep -Seconds 1
         It 'space is no longer available' {
-            { Get-WikiSpace -Key PESTER -ErrorAction Stop } | Should Throw
-            { Get-WikiSpace -Key PESTER1 -ErrorAction Stop } | Should Throw
+            { Get-ConfluenceSpace -Key PESTER -ErrorAction Stop } | Should Throw
+            { Get-ConfluenceSpace -Key PESTER1 -ErrorAction Stop } | Should Throw
         }
     }
 }

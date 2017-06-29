@@ -1,4 +1,4 @@
-function Invoke-WikiMethod {
+function Invoke-Method {
     <#
     .SYNOPSIS
     Extracted invokation of the REST method to own function.
@@ -160,7 +160,7 @@ function Invoke-WikiMethod {
                     if ($Headers) {$parameters["Headers"] = $Headers}
 
                     # Append results
-                    $result.results += (Invoke-WikiMethod @parameters)
+                    $result.results += (Invoke-Method @parameters)
                 }
 
                 # Extract results from array
@@ -172,13 +172,13 @@ function Invoke-WikiMethod {
                 if ($OutputType) {
                     # Results shall be casted to custom objects (see ValidateSet)
                     Write-Verbose "[$($MyInvocation.MyCommand.Name)] Outputting results as $($OutputType.FullName)"
-                    $convertFunction = "ConvertTo-Wiki$($OutputType.Name)"
+                    $convertFunction = "ConvertTo-$($OutputType.Name)"
 
                     # We need to test if there is 1+ result to convert
                     # If not, we would return an empty object
                     if (($result | Measure-Object).count -ge 1) {
                         foreach ($item in $result) {
-                            # Use private function `ConvertTo-Wiki<ObjectName>` to cast objects
+                            # Use private function `ConvertTo-<ObjectName>` to cast objects
                             Write-Output ($item | & $convertFunction)
                         }
                     }
