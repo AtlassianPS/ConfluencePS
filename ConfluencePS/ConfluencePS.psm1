@@ -15,5 +15,3 @@ ForEach ($File in @($PublicFunctions + $PrivateFunctions)) {
         Write-Error -Message "Failed to import function $($File.FullName): $_"
     }
 }
-
-Export-ModuleMember -Function $PublicFunctions.Basename
