@@ -7,6 +7,17 @@
     Fetch Confluence pages, optionally filtering by Name/Space/ID.
     Piped output into other cmdlets is generally tested and supported.
 
+    .PARAMETER Skip
+    Controls how many things will be skipped before starting output. Defaults to 0.
+
+    .PARAMETER First
+    Currently not supported.
+    Indicates how many items to return. Defaults to 100.
+
+    .PARAMETER IncludeTotalCount
+    Causes an extra output of the total count at the beginning.
+    Note this is actually a uInt64, but with a custom string representation.
+
     .EXAMPLE
     Get-WikiPage -ApiURi "https://myserver.com/wiki" -Credential $cred | Select-Object ID, Title -first 500 | Sort-Object Title
     List the first 500 pages found in your Confluence instance.
@@ -38,7 +49,10 @@
     .LINK
     https://github.com/brianbunke/ConfluencePS
     #>
-    [CmdletBinding(DefaultParameterSetName = "byId")]
+    [CmdletBinding(
+        SupportsPaging = $true,
+        DefaultParameterSetName = "byId"
+    )]
     [OutputType([ConfluencePS.Page])]
     param (
         # The URi of the API interface.
@@ -57,7 +71,8 @@
             Position = 0,
             Mandatory = $true,
             ParameterSetName = "byId",
-            ValueFromPipeline = $true
+            ValueFromPipeline = $true,
+            ValueFromPipelineByPropertyName = $true
         )]
         [ValidateRange(1, [int]::MaxValue)]
         [Alias('ID')]
@@ -129,6 +144,11 @@
 
         $resourceURI = "$apiURi/content"
         $GETparameters = @{expand = "space,version,body.storage,ancestors"}
+
+        # Paging
+        ($PSCmdlet.PagingParameters | Get-Member -MemberType Property).Name | ForEach-Object {
+            $script:PSDefaultParameterValues["Invoke-WikiMethod:$_"] = $PSCmdlet.PagingParameters.$_
+        }
 
         switch -regex ($PsCmdlet.ParameterSetName) {
             "byId" {

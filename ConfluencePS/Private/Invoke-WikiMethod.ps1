@@ -3,8 +3,16 @@ function Invoke-WikiMethod {
     .SYNOPSIS
     Extracted invokation of the REST method to own function.
     #>
-    [CmdletBinding()]
-    [OutputType( [PSObject] )]
+    [CmdletBinding(SupportsPaging = $true)]
+    [OutputType(
+        [PSObject],
+        [ConfluencePS.Page],
+        [ConfluencePS.Space],
+        [ConfluencePS.Label],
+        [ConfluencePS.Icon],
+        [ConfluencePS.Version],
+        [ConfluencePS.User]
+    )]
     param (
         # REST API to invoke
         [Parameter(Mandatory = $true)]
@@ -19,10 +27,10 @@ function Invoke-WikiMethod {
         [string]$Body,
 
         # Additional headers
-        [hashtable]$Headers,
+        [Hashtable]$Headers,
 
         # GET Parameters
-        [hashtable]$GetParameters,
+        [Hashtable]$GetParameters,
 
         # Type of object to which the output will be casted to
         [ValidateSet(
@@ -60,24 +68,29 @@ function Invoke-WikiMethod {
             ))
         $_headers += @{
             "Authorization" = "Basic $($SecureCreds)"
-            'Content-Type' = 'application/json; charset=utf-8'
+            'Content-Type'  = 'application/json; charset=utf-8'
         }
     }
 
     Process {
         # Append GET parameters to URi
-        if ($GetParameters) {
+        if (($PSCmdlet.PagingParameters) -and ($PSCmdlet.PagingParameters.Skip)) {
+            $GetParameters["start"] = $PSCmdlet.PagingParameters.Skip
+        }
+        if ($GetParameters -and ($URi -notlike "*\?*")) {
             Write-Debug "Using `$GetParameters: $($GetParameters | Out-String)"
             [string]$URI += (ConvertTo-GetParameter $GetParameters)
+            # Prevent recursive appends
+            $GetParameters = $null
         }
 
         # set mandatory parameters
         $splatParameters = @{
-            Uri = $URi
-            Method = $Method
-            Headers = $_headers
+            Uri             = $URi
+            Method          = $Method
+            Headers         = $_headers
             UseBasicParsing = $true
-            ErrorAction = 'SilentlyContinue'
+            ErrorAction     = 'SilentlyContinue'
         }
 
         # set optional parameters
@@ -109,7 +122,7 @@ function Invoke-WikiMethod {
             Write-Verbose "[$($MyInvocation.MyCommand.Name)] Status code: $($webResponse.StatusCode)"
 
             if ($webResponse.StatusCode.value__ -ge 400) {
-                Write-Warning "Conflunce returned HTTP error $($webResponse.StatusCode.value__) - $($webResponse.StatusCode)"
+                Write-Warning "Confluence returned HTTP error $($webResponse.StatusCode.value__) - $($webResponse.StatusCode)"
 
                 # Retrieve body of HTTP response - this contains more useful information about exactly why the error occurred
                 $readStream = New-Object -TypeName System.IO.StreamReader -ArgumentList ($webResponse.GetResponseStream())
@@ -131,62 +144,62 @@ function Invoke-WikiMethod {
             else {
                 if ($webResponse.Content) {
                     # API returned a Content: lets work wit it
-                    $result = ConvertFrom-Json -InputObject $webResponse.Content
+                    $response = ConvertFrom-Json -InputObject $webResponse.Content
+
+                    if ($response.errors -ne $null) {
+                        Write-Verbose "[$($MyInvocation.MyCommand.Name)] An error response was received from; resolving"
+                        # This could be handled nicely in an function such as:
+                        # ResolveError $response -WriteError
+                        Write-Error $($response.errors | Out-String)
+                    }
+                    else {
+                        if ($PSCmdlet.PagingParameters.IncludeTotalCount) {
+                            [double]$Accuracy = 0.0
+                            $PSCmdlet.PagingParameters.NewTotalCount($response.size, $Accuracy)
+                        }
+                        # None paginated results / first page of pagination
+                        $result = $response
+                        if (($response) -and ($response | Get-Member -Name results)) {
+                            $result = $response.results
+                        }
+                        if ($OutputType) {
+                            # Results shall be casted to custom objects (see ValidateSet)
+                            Write-Verbose "[$($MyInvocation.MyCommand.Name)] Outputting results as $($OutputType.FullName)"
+                            $converter = "ConvertTo-Wiki$($OutputType.Name)"
+                            $result | & $converter
+                        }
+                        else {
+                            $result
+                        }
+
+                        # Detect if result is paginated
+                        if ($response._links.next) {
+                            Write-Verbose "[Invoke-WikiMethod] Invoking pagination"
+
+                            # Remove Parameters that don't need propagation
+                            $script:PSDefaultParameterValues.Remove("Invoke-WikiMethod:GetParameters")
+                            $script:PSDefaultParameterValues.Remove("Invoke-WikiMethod:IncludeTotalCount")
+
+                            # Self-Invoke function for recursion
+                            $parameters = @{
+                                URi    = "{0}{1}" -f $response._links.base, $response._links.next
+                                Method = $Method
+                                Credential = $Credential
+                            }
+                            if ($Body) {$parameters["Body"] = $Body}
+                            if ($Headers) {$parameters["Headers"] = $Headers}
+                            if ($OutputType) {$parameters["OutputType"] = $OutputType}
+
+                            Write-Verbose "NEXT PAGE: $($parameters["URi"])"
+
+                            Invoke-WikiMethod @parameters
+                        }
+                    }
                 }
                 else {
                     # No content, although statusCode < 400
                     # This could be wanted behavior of the API
                     Write-Verbose "[$($MyInvocation.MyCommand.Name)] No content was returned from."
-                }
-            }
-
-            if ($result.errors -ne $null) {
-                Write-Verbose "[$($MyInvocation.MyCommand.Name)] An error response was received from; resolving"
-                # This could be handled nicely in an function such as:
-                # ResolveError $result -WriteError
-                Write-Error $($result.errors | Out-String)
-            }
-            else {
-                # Detect if result is paginated
-                if ($result._links.next) {
-                    Write-Verbose "[$($MyInvocation.MyCommand.Name)] Invoking pagination"
-
-                    # Self-Invoke function for recursion
-                    $parameters = @{
-                        URi = "{0}{1}" -f $result._links.base, $result._links.next
-                        Method = $Method
-                    }
-                    if ($Body) {$parameters["Body"] = $Body}
-                    if ($Headers) {$parameters["Headers"] = $Headers}
-
-                    # Append results
-                    $result.results += (Invoke-WikiMethod @parameters)
-                }
-
-                # Extract results from array
-                # This allows for harmonized handling of single or multiple results
-                if (($result) -and ($result | Get-Member -Name results)) {
-                    $result = $result | Select-Object -ExpandProperty results
-                }
-
-                if ($OutputType) {
-                    # Results shall be casted to custom objects (see ValidateSet)
-                    Write-Verbose "[$($MyInvocation.MyCommand.Name)] Outputting results as $($OutputType.FullName)"
-                    $convertFunction = "ConvertTo-Wiki$($OutputType.Name)"
-
-                    # We need to test if there is 1+ result to convert
-                    # If not, we would return an empty object
-                    if (($result | Measure-Object).count -ge 1) {
-                        foreach ($item in $result) {
-                            # Use private function `ConvertTo-Wiki<ObjectName>` to cast objects
-                            Write-Output ($item | & $convertFunction)
-                        }
-                    }
-                }
-                else {
-                    # Return results as PSCustomObject
-                    Write-Verbose "[$($MyInvocation.MyCommand.Name)] Outputting results as PSCustomObject"
-                    Write-Output $result
                 }
             }
         }
