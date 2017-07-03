@@ -8,6 +8,17 @@
     Input for all parameters is not case sensitive.
     Piped output into other cmdlets is generally tested and supported.
 
+    .PARAMETER Skip
+    Controls how many things will be skipped before starting output. Defaults to 0.
+
+    .PARAMETER First
+    Currently not supported.
+    Indicates how many items to return. Defaults to 100.
+
+    .PARAMETER IncludeTotalCount
+    Causes an extra output of the total count at the beginning.
+    Note this is actually a uInt64, but with a custom string representation.
+
     .EXAMPLE
     Get-ConfluenceSpace -ApiURi "https://myserver.com/wiki" -Credential $cred
     Display the info of all spaces on the server.
@@ -19,7 +30,9 @@
     .LINK
     https://github.com/brianbunke/ConfluencePS
     #>
-    [CmdletBinding()]
+    [CmdletBinding(
+        SupportsPaging = $true
+    )]
     [OutputType([ConfluencePS.Space])]
     param (
         # The URi of the API interface.
@@ -57,6 +70,11 @@
         $resourceURI = "$apiURi/space"
         $GETparameters += @{expand = "description.plain,icon,homepage,metadata.labels"}
         If ($PageSize) { $GETparameters["limit"] = $PageSize }
+
+        # Paging
+        ($PSCmdlet.PagingParameters | Get-Member -MemberType Property).Name | ForEach-Object {
+            $script:PSDefaultParameterValues["Invoke-WikiMethod:$_"] = $PSCmdlet.PagingParameters.$_
+        }
 
         if ($SpaceKey) {
             foreach ($_space in $SpaceKey) {

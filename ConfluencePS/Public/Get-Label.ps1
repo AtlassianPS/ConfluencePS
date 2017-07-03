@@ -6,6 +6,17 @@
     .DESCRIPTION
     View all labels applied to a content.
 
+    .PARAMETER Skip
+    Controls how many things will be skipped before starting output. Defaults to 0.
+
+    .PARAMETER First
+    Currently not supported.
+    Indicates how many items to return. Defaults to 100.
+
+    .PARAMETER IncludeTotalCount
+    Causes an extra output of the total count at the beginning.
+    Note this is actually a uInt64, but with a custom string representation.
+
     .EXAMPLE
     Get-ConfluenceLabel -PageID 123456 -PageSize 500 -ApiURi "https://myserver.com/wiki" -Credential $cred
     Lists the labels applied to page 123456.
@@ -20,7 +31,9 @@
     .LINK
     https://github.com/brianbunke/ConfluencePS
     #>
-    [CmdletBinding()]
+    [CmdletBinding(
+        SupportsPaging = $true
+    )]
     [OutputType([ConfluencePS.ContentLabelSet])]
     param (
         # The URi of the API interface.
@@ -65,6 +78,11 @@
             Throw $exception
         }
 
+        # Paging
+        ($PSCmdlet.PagingParameters | Get-Member -MemberType Property).Name | ForEach-Object {
+            $script:PSDefaultParameterValues["Invoke-WikiMethod:$_"] = $PSCmdlet.PagingParameters.$_
+        }
+
         foreach ($_page in $PageID) {
             if ($_ -is [ConfluencePS.Page]) {
                 $InputObject = $_
@@ -74,7 +92,8 @@
             }
 
             $URI = "$apiURi/content/{0}/label" -f $_page
-            If ($PageSize) { $GETparameters = @{limit = $PageSize} }
+            If ($PageSize) { $GETparameters = @{limit = $PageSize}
+            }
 
             $output = New-Object -TypeName ConfluencePS.ContentLabelSet -Property @{
                 Page = $InputObject
