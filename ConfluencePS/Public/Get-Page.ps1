@@ -1,4 +1,4 @@
-﻿function Get-WikiPage {
+﻿function Get-Page {
     <#
     .SYNOPSIS
     Retrieve a listing of pages in your Confluence instance.
@@ -19,31 +19,31 @@
     Note this is actually a uInt64, but with a custom string representation.
 
     .EXAMPLE
-    Get-WikiPage -ApiURi "https://myserver.com/wiki" -Credential $cred | Select-Object ID, Title -first 500 | Sort-Object Title
+    Get-ConfluencePage -ApiURi "https://myserver.com/wiki" -Credential $cred | Select-Object ID, Title -first 500 | Sort-Object Title
     List the first 500 pages found in your Confluence instance.
     Returns only each page's ID and Title, sorting results alphabetically by Title.
 
     .EXAMPLE
-    Get-WikiPage -Title Confluence -SpaceKey "ABC" -PageSize 100
+    Get-ConfluencePage -Title Confluence -SpaceKey "ABC" -PageSize 100
     Get all pages with the word Confluence in the title in the 'ABC' sapce. The calls
     to the server are limited to 100 pages per call.
 
     .EXAMPLE
-    Get-WikiSpace -Name Demo | Get-WikiPage
+    Get-ConfluenceSpace -Name Demo | Get-ConfluencePage
     Get all spaces with a name like *demo*, and then list pages from each returned space.
 
     .EXAMPLE
-    $FinalCountdown = Get-WikiPage -PageID 54321
+    $FinalCountdown = Get-ConfluencePage -PageID 54321
     Store the page's ID, Title, Space Key, Version, and Body for use later in your script.
 
     .EXAMPLE
-    $WhereIsShe = Get-WikiPage -Title 'Rachel' | Get-WikiPage
+    $WhereIsShe = Get-ConfluencePage -Title 'Rachel' | Get-ConfluencePage
     Search Batman's 1000 pages for Rachel in order to find the correct page ID(s).
     Search again, this time piping in the page ID(s), to also capture version and body from the expanded results.
-    Store them in a variable for later use (e.g. Set-WikiPage).
+    Store them in a variable for later use (e.g. Set-ConfluencePage).
 
     .EXAMPLE
-    $meetingPages = Get-WikiPage -Label "meeting-notes" -SpaceKey PROJ1
+    $meetingPages = Get-ConfluencePage -Label "meeting-notes" -SpaceKey PROJ1
     Captures all the meeting note pages in the Proj1 Space.
 
     .LINK
@@ -56,12 +56,12 @@
     [OutputType([ConfluencePS.Page])]
     param (
         # The URi of the API interface.
-        # Value can be set persistently with Set-WikiInfo.
+        # Value can be set persistently with Set-ConfluenceInfo.
         [Parameter( Mandatory = $true )]
-        [URi]$apiURi,
+        [URi]$ApiURi,
 
         # Confluence's credentials for authentication.
-        # Value can be set persistently with Set-WikiInfo.
+        # Value can be set persistently with Set-ConfluenceInfo.
         [Parameter( Mandatory = $true )]
         [PSCredential]$Credential,
 
@@ -155,7 +155,7 @@
                 foreach ($_pageID in $PageID) {
                     $URI = "$resourceURI/{0}" -f $_pageID
 
-                    Invoke-WikiMethod -Uri $URI -Method Get -Credential $Credential -GetParameters $GETparameters -OutputType ([ConfluencePS.Page])
+                    Invoke-Method -Uri $URI -Method Get -Credential $Credential -GetParameters $GETparameters -OutputType ([ConfluencePS.Page])
                 }
                 break
             }
@@ -166,7 +166,7 @@
                 if ($SpaceKey) { $GETparameters["spaceKey"] = $SpaceKey }
                 If ($PageSize) { $GETparameters["limit"] = $PageSize }
 
-                Invoke-WikiMethod -Uri $URI -Method Get -Credential $Credential -GetParameters $GETparameters -OutputType ([ConfluencePS.Page])
+                Invoke-Method -Uri $URI -Method Get -Credential $Credential -GetParameters $GETparameters -OutputType ([ConfluencePS.Page])
                 break
             }
             "byLabel" {
@@ -179,7 +179,7 @@
                 $GETparameters["cql"] = $cqlQuery
                 If ($PageSize) { $GETparameters["limit"] = $PageSize }
 
-                Invoke-WikiMethod -Uri $URI -Method Get -Credential $Credential -GetParameters $GETparameters -OutputType ([ConfluencePS.Page])
+                Invoke-Method -Uri $URI -Method Get -Credential $Credential -GetParameters $GETparameters -OutputType ([ConfluencePS.Page])
                 break
             }
         }

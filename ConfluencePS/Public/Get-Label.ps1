@@ -1,4 +1,4 @@
-﻿function Get-WikiLabel {
+﻿function Get-Label {
     <#
     .SYNOPSIS
     Returns the list of labels.
@@ -18,12 +18,12 @@
     Note this is actually a uInt64, but with a custom string representation.
 
     .EXAMPLE
-    Get-WikiLabel -PageID 123456 -PageSize 500 -ApiURi "https://myserver.com/wiki" -Credential $cred
+    Get-ConfluenceLabel -PageID 123456 -PageSize 500 -ApiURi "https://myserver.com/wiki" -Credential $cred
     Lists the labels applied to page 123456.
     This also increases the size of the result's page from 25 to 500.
 
     .EXAMPLE
-    Get-WikiPage -SpaceKey NASA | Get-WikiLabel -Verbose
+    Get-ConfluencePage -SpaceKey NASA | Get-ConfluenceLabel -Verbose
     Get all pages that exist in NASA space (literally?).
     Search all of those pages (piped to -PageID) for all of their active labels.
     Verbose flag would be good here to keep track of the request.
@@ -37,12 +37,12 @@
     [OutputType([ConfluencePS.ContentLabelSet])]
     param (
         # The URi of the API interface.
-        # Value can be set persistently with Set-WikiInfo.
+        # Value can be set persistently with Set-ConfluenceInfo.
         [Parameter( Mandatory = $true )]
         [URi]$apiURi,
 
         # Confluence's credentials for authentication.
-        # Value can be set persistently with Set-WikiInfo.
+        # Value can be set persistently with Set-ConfluenceInfo.
         [Parameter( Mandatory = $true )]
         [PSCredential]$Credential,
 
@@ -88,7 +88,7 @@
                 $InputObject = $_
             }
             else {
-                $InputObject = Get-WikiPage -PageID $_page
+                $InputObject = Get-Page -PageID $_page -ApiURi $apiURi -Credential $Credential
             }
 
             $URI = "$apiURi/content/{0}/label" -f $_page
@@ -99,7 +99,7 @@
                 Page = $InputObject
             }
 
-            $output.Labels += (Invoke-WikiMethod -Uri $URI -Method Get -Credential $Credential -GetParameters $GETparameters -OutputType ([ConfluencePS.Label]))
+            $output.Labels += (Invoke-Method -Uri $URI -Method Get -Credential $Credential -GetParameters $GETparameters -OutputType ([ConfluencePS.Label]))
             $output
         }
     }

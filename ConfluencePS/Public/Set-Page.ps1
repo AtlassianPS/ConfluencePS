@@ -1,4 +1,4 @@
-﻿function Set-WikiPage {
+﻿function Set-Page {
     <#
     .SYNOPSIS
     Edit an existing Confluence page.
@@ -8,34 +8,34 @@
     Content needs to be in "Confluence storage format." Use -Convert if not preconditioned.
 
     .EXAMPLE
-    Get-WikiPage -Title 'My First Page' -Expand | Set-WikiPage -Body 'Hello World!' -Convert
+    Get-ConfluencePage -Title 'My First Page' -Expand | Set-ConfluencePage -Body 'Hello World!' -Convert
     Probably the easiest edit method, overwriting contents with a short sentence.
-    Use Get-WikiPage -Expand to pipe in PageID & CurrentVersion.
-    (See "Get-Help Get-WikiPage -Examples" for help with -Expand and >100 pages.)
+    Use Get-ConfluencePage -Expand to pipe in PageID & CurrentVersion.
+    (See "Get-Help Get-ConfluencePage -Examples" for help with -Expand and >100 pages.)
     -Convert molds the sentence into a format Confluence will accept.
 
     .EXAMPLE
-    Get-WikiPage -Title 'Lew Alcindor' -Limit 100 -Expand | Set-WikiPage -Title 'Kareem Abdul-Jabbar' -Verbose
+    Get-ConfluencePage -Title 'Lew Alcindor' -Limit 100 -Expand | Set-ConfluencePage -Title 'Kareem Abdul-Jabbar' -Verbose
     Change the page's name. Body remains the same, via piping the existing contents.
     Verbose flag active for additional screen output.
 
     .EXAMPLE
-    Get-WikiPage -SpaceKey MATRIX | Set-WikiPage -Body 'Agent Smith' -Convert -WhatIf
+    Get-ConfluencePage -SpaceKey MATRIX | Set-ConfluencePage -Body 'Agent Smith' -Convert -WhatIf
     Overwrites the contents of all pages in the MATRIX space.
     WhatIf flag tells you how many pages would have been affected.
 
     .EXAMPLE
-    Set-WikiPage -PageID 12345 -Title 'My Luggage Combo' -CurrentVersion 1 -Body '<p>Spaceballs</p>'
+    Set-ConfluencePage -PageID 12345 -Title 'My Luggage Combo' -CurrentVersion 1 -Body '<p>Spaceballs</p>'
     An example of what needs to be known and specified to avoid:
     1) Piping in values required for the PUT method
-    2) Calling Get-WikiPage mid-function to retrieve those same values
-    3) Calling ConvertTo-WikiStorageFormat mid-function to condition the string
+    2) Calling Get-ConfluencePage mid-function to retrieve those same values
+    3) Calling ConvertTo-ConfluenceStorageFormat mid-function to condition the string
 
     .LINK
-    Get-WikiPage
+    Get-ConfluencePage
 
     .LINK
-    ConvertTo-WikiStorageFormat
+    ConvertTo-ConfluenceStorageFormat
 
     .LINK
     https://github.com/brianbunke/ConfluencePS
@@ -48,12 +48,12 @@
     [OutputType([ConfluencePS.Page])]
     param (
         # The URi of the API interface.
-        # Value can be set persistently with Set-WikiInfo.
+        # Value can be set persistently with Set-ConfluenceInfo.
         [Parameter( Mandatory = $true )]
         [URi]$apiURi,
 
         # Confluence's credentials for authentication.
-        # Value can be set persistently with Set-WikiInfo.
+        # Value can be set persistently with Set-ConfluenceInfo.
         [Parameter( Mandatory = $true )]
         [PSCredential]$Credential,
 
@@ -76,7 +76,7 @@
         [int]$PageID,
 
         # Name of the page; existing or new value can be used.
-        # Existing will be automatically supplied via Get-WikiPage if not manually included.
+        # Existing will be automatically supplied via Get-ConfluencePage if not manually included.
         [Parameter(ParameterSetName = 'byParameters')]
         [ValidateNotNullOrEmpty()]
         [string]$Title,
@@ -86,7 +86,7 @@
         [Parameter(ParameterSetName = 'byParameters')]
         [string]$Body,
 
-        # Optional switch flag for calling ConvertTo-WikiStorageFormat against your Body.
+        # Optional switch flag for calling ConvertTo-ConfluenceStorageFormat against your Body.
         [Parameter(ParameterSetName = 'byParameters')]
         [switch]$Convert,
 
@@ -102,10 +102,10 @@
     BEGIN {
         Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function started"
 
-        # If -Convert is flagged, call ConvertTo-WikiStorageFormat against the -Body
+        # If -Convert is flagged, call ConvertTo-ConfluenceStorageFormat against the -Body
         If ($Convert) {
             Write-Verbose '[$($MyInvocation.MyCommand.Name)] -Convert flag active; converting content to Confluence storage format'
-            $Body = ConvertTo-WikiStorageFormat -Content $Body
+            $Body = ConvertTo-StorageFormat -Content $Body -ApiURi $apiURi -Credential $Credential
         }
     }
 
@@ -137,7 +137,7 @@
             }
             "byParameters" {
                 $URI = "$apiURi/content/{0}" -f $PageID
-                $originalPage = Get-WikiPage -PageID $PageID
+                $originalPage = Get-Page -PageID $PageID -ApiURi $apiURi -Credential $Credential
 
                 if (($Parent -is [ConfluencePS.Page]) -and ($Parent.ID)) {
                     $ParentID = $Parent.ID
@@ -172,7 +172,7 @@
 
         Write-Debug "[$($MyInvocation.MyCommand.Name)] Content to be sent: $($Content | Out-String)"
         If ($PSCmdlet.ShouldProcess("Space $SpaceKey, Parent $ParentID")) {
-            Invoke-WikiMethod -Uri $URI -Body $Content -Method Put -Credential $Credential -OutputType ([ConfluencePS.Page])
+            Invoke-Method -Uri $URI -Body $Content -Method Put -Credential $Credential -OutputType ([ConfluencePS.Page])
         }
     }
 

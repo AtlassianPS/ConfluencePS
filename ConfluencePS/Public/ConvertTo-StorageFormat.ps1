@@ -1,4 +1,4 @@
-﻿function ConvertTo-WikiStorageFormat {
+﻿function ConvertTo-StorageFormat {
     <#
     .SYNOPSIS
     Convert your content to Confluence's storage format.
@@ -9,20 +9,20 @@
     https://confluence.atlassian.com/doc/confluence-storage-format-790796544.html
 
     .EXAMPLE
-    $Body = ConvertTo-WikiStorageFormat -Content 'Hello world!'
-    Stores the returned value '<p>Hello world!</p>' in $Body for use in New-WikiPage/Set-WikiPage/etc.
+    $Body = ConvertTo-ConfluenceStorageFormat -Content 'Hello world!'
+    Stores the returned value '<p>Hello world!</p>' in $Body for use in New-ConfluencePage/Set-ConfluencePage/etc.
 
     .EXAMPLE
-    Get-Date -Format s | ConvertTo-WikiStorageFormat -ApiURi "https://myserver.com/wiki" -Credential $cred
+    Get-Date -Format s | ConvertTo-ConfluenceStorageFormat -ApiURi "https://myserver.com/wiki" -Credential $cred
     Returns the current date/time in sortable format, and converts via pipeline input.
 
     .EXAMPLE
-    New-WikiPage -Title 'Loner Page' -SpaceKey TEST -Body $Body -Convert -Verbose
+    New-ConfluencePage -Title 'Loner Page' -SpaceKey TEST -Body $Body -Convert -Verbose
     Creates a new page at the root of the specified space (no parent page). Verbose flag enabled.
-    Need to invoke ConvertTo-WikiStorageFormat on $Body to prep it for page creation.
+    Need to invoke ConvertTo-ConfluenceStorageFormat on $Body to prep it for page creation.
 
     .LINK
-    New-WikiPage
+    New-ConfluencePage
 
     .LINK
     https://github.com/brianbunke/ConfluencePS
@@ -30,12 +30,12 @@
     [CmdletBinding()]
     param (
         # The URi of the API interface.
-        # Value can be set persistently with Set-WikiInfo.
+        # Value can be set persistently with Set-ConfluenceInfo.
         [Parameter( Mandatory = $true )]
         [URi]$apiURi,
 
         # Confluence's credentials for authentication.
-        # Value can be set persistently with Set-WikiInfo.
+        # Value can be set persistently with Set-ConfluenceInfo.
         [Parameter( Mandatory = $true )]
         [PSCredential]$Credential,
 
@@ -63,7 +63,7 @@
         } | ConvertTo-Json
 
         Write-Debug "[$($MyInvocation.MyCommand.Name)] Content to be sent: $($Content | Out-String)"
-        (Invoke-WikiMethod -Uri $URI -Credential $Credential -Body $Content -Method Post).value
+        (Invoke-Method -Uri $URI -Credential $Credential -Body $Content -Method Post).value
     }
 
     END {

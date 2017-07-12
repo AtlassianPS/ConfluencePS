@@ -1,4 +1,4 @@
-﻿function Set-WikiInfo {
+﻿function Set-Info {
     <#
     .SYNOPSIS
     Gather URI/auth info for use in this session's REST API requests.
@@ -9,11 +9,11 @@
     (If you have a better suggestion for how to handle this, please reach out on GitHub!)
 
     .EXAMPLE
-    Set-WikiInfo -BaseURI 'https://brianbunke.atlassian.net/wiki' -PromptCredentials
+    Set-ConfluenceInfo -BaseURI 'https://brianbunke.atlassian.net/wiki' -PromptCredentials
     Declare your base install; be prompted for username and password.
 
     .EXAMPLE
-    Set-WikiInfo -BaseURI $ConfluenceURL -Credential $MyCreds -PageSize 100
+    Set-ConfluenceInfo -BaseURI $ConfluenceURL -Credential $MyCreds -PageSize 100
     Sets the url, credentials and default page size for the session.
 
     .LINK
@@ -45,7 +45,7 @@
 
     BEGIN {
 
-        function Add-WikiDefaultParameter {
+        function Add-ConfluenceDefaultParameter {
             param(
                 [Parameter(Mandatory = $true)]
                 [string]$Command,
@@ -79,17 +79,17 @@
 
             $parameter = "ApiURi"
             if ($BaseURi -and ($command.Parameters.Keys -contains $parameter)) {
-                Add-WikiDefaultParameter -Command $command -Parameter $parameter -Value ($BaseURi.AbsoluteUri.TrimEnd('/') + '/rest/api')
+                Add-ConfluenceDefaultParameter -Command $command -Parameter $parameter -Value ($BaseURi.AbsoluteUri.TrimEnd('/') + '/rest/api')
             }
 
             $parameter = "Credential"
             if ($Credential -and ($command.Parameters.Keys -contains $parameter)) {
-                Add-WikiDefaultParameter -Command $command -Parameter $parameter -Value $Credential
+                Add-ConfluenceDefaultParameter -Command $command -Parameter $parameter -Value $Credential
             }
 
             $parameter = "PageSize"
             if ($PageSize -and ($command.Parameters.Keys -contains $parameter)) {
-                Add-WikiDefaultParameter -Command $command -Parameter $parameter -Value $PageSize
+                Add-ConfluenceDefaultParameter -Command $command -Parameter $parameter -Value $PageSize
             }
         }
     }

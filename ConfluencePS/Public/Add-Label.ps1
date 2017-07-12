@@ -1,4 +1,4 @@
-﻿function Add-WikiLabel {
+﻿function Add-Label {
     <#
     .SYNOPSIS
     Add a new global label to an existing Confluence page.
@@ -7,11 +7,11 @@
     Add one or more labels to one or more Confluence pages. Label can be brand new.
 
     .EXAMPLE
-    Add-WikiLabel -ApiURi "https://myserver.com/wiki" -Credential $cred -Label alpha,bravo,charlie -PageID 123456 -Verbose
+    Add-Label -ApiURi "https://myserver.com/wiki" -Credential $cred -Label alpha,bravo,charlie -PageID 123456 -Verbose
     Apply the labels alpha, bravo, and charlie to the page with ID 123456. Verbose output.
 
     .EXAMPLE
-    Get-WikiPage -SpaceKey SRV | Add-WikiLabel -Label servers -WhatIf
+    Get-Page -SpaceKey SRV | Add-Label -Label servers -WhatIf
     Would apply the label "servers" to all pages in the space with key SRV. -WhatIf flag supported.
 
     .LINK
@@ -24,12 +24,12 @@
     [OutputType([ConfluencePS.ContentLabelSet])]
     param (
         # The URi of the API interface.
-        # Value can be set persistently with Set-WikiInfo.
+        # Value can be set persistently with Set-Info.
         [Parameter( Mandatory = $true )]
         [URi]$apiURi,
 
         # Confluence's credentials for authentication.
-        # Value can be set persistently with Set-WikiInfo.
+        # Value can be set persistently with Set-Info.
         [Parameter( Mandatory = $true )]
         [PSCredential]$Credential,
 
@@ -100,7 +100,7 @@
                 $InputObject = $_.Page
             }
             else {
-                $InputObject = Get-WikiPage -PageID $_page
+                $InputObject = Get-Page -PageID $_page -ApiURi $apiURi -Credential $Credential
             }
 
             $URI = "$apiURi/content/{0}/label" -f $_page
@@ -111,7 +111,7 @@
             If ($PSCmdlet.ShouldProcess("Label $Label, PageID $_page")) {
                 $output = New-Object -TypeName ConfluencePS.ContentLabelSet
                 $output.Page = $InputObject
-                $output.Labels += (Invoke-WikiMethod -Uri $URI -Body $Content -Method Post -Credential $Credential -OutputType ([ConfluencePS.Label]))
+                $output.Labels += (Invoke-Method -Uri $URI -Body $Content -Method Post -Credential $Credential -OutputType ([ConfluencePS.Label]))
                 $output
             }
         }

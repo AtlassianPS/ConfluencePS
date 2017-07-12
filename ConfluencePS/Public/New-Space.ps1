@@ -1,4 +1,4 @@
-﻿function New-WikiSpace {
+﻿function New-Space {
     <#
     .SYNOPSIS
     Create a new blank space in your Confluence instance.
@@ -7,11 +7,11 @@
     Create a new blank space. Key and Name mandatory, Description recommended.
 
     .EXAMPLE
-    [ConfluencePS.Space]@{key="TEST";Name="Test Space"} | New-WikiSpace -ApiURi "https://myserver.com/wiki" -Credential $cred
-    Create the new blank space. Runs Set-WikiInfo first if instance info unknown.
+    [ConfluencePS.Space]@{key="TEST";Name="Test Space"} | New-ConfluenceSpace -ApiURi "https://myserver.com/wiki" -Credential $cred
+    Create the new blank space. Runs Set-ConfluenceInfo first if instance info unknown.
 
     .EXAMPLE
-    New-WikiSpace -Key 'TEST' -Name 'Test Space' -Description 'New blank space via REST API' -Verbose
+    New-ConfluenceSpace -Key 'TEST' -Name 'Test Space' -Description 'New blank space via REST API' -Verbose
     Create the new blank space with the optional description and verbose output.
 
     .LINK
@@ -25,12 +25,12 @@
     [OutputType([ConfluencePS.Space])]
     param (
         # The URi of the API interface.
-        # Value can be set persistently with Set-WikiInfo.
+        # Value can be set persistently with Set-ConfluenceInfo.
         [Parameter( Mandatory = $true )]
         [URi]$apiURi,
 
         # Confluence's credentials for authentication.
-        # Value can be set persistently with Set-WikiInfo.
+        # Value can be set persistently with Set-ConfluenceInfo.
         [Parameter( Mandatory = $true )]
         [PSCredential]$Credential,
 
@@ -93,7 +93,7 @@
 
         Write-Debug "[$($MyInvocation.MyCommand.Name)] Content to be sent: $($Content | Out-String)"
         If ($PSCmdlet.ShouldProcess("$SpaceKey $Name")) {
-            Invoke-WikiMethod -Uri $URI -Body $Content -Method Post -Credential $Credential -OutputType ([ConfluencePS.Space])
+            Invoke-Method -Uri $URI -Body $Content -Method Post -Credential $Credential -OutputType ([ConfluencePS.Space])
         }
     }
 

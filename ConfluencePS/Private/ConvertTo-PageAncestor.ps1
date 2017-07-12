@@ -1,11 +1,11 @@
-function ConvertTo-WikiLabel {
+function ConvertTo-PageAncestor {
     <#
     .SYNOPSIS
     Extracted the conversion to private function in order to have a single place to
     select the properties to use when casting to custom object type
     #>
     [CmdletBinding()]
-    [OutputType( [ConfluencePS.Version] )]
+    [OutputType( [ConfluencePS.Page] )]
     param (
         # object to convert
         [Parameter( Mandatory = $true, ValueFromPipeline = $true )]
@@ -14,12 +14,12 @@ function ConvertTo-WikiLabel {
 
     Process {
         foreach ($object in $inputObject) {
-            Write-Verbose "[$($MyInvocation.MyCommand.Name)] Converting Object to Label"
+            Write-Verbose "[$($MyInvocation.MyCommand.Name)] Converting Object to Page (Ancestor)"
             ($object | Select-Object `
                 id,
-                name,
-                prefix
-            ) -as [ConfluencePS.Label]
+                status,
+                title
+            ) -as [ConfluencePS.Page]
         }
     }
 }

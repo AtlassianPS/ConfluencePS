@@ -1,4 +1,4 @@
-function Invoke-WikiMethod {
+function Invoke-Method {
     <#
     .SYNOPSIS
     Extracted invokation of the REST method to own function.

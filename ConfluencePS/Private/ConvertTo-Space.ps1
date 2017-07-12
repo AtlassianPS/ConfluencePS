@@ -1,4 +1,4 @@
-function ConvertTo-WikiSpace {
+function ConvertTo-Space {
     <#
     .SYNOPSIS
     Extracted the conversion to private function in order to have a single place to
@@ -24,7 +24,7 @@ function ConvertTo-WikiSpace {
                 type,
                 @{Name = "Homepage"; Expression = {
                     if ($_.homepage -is [PSCustomObject]) {
-                            $_.homepage | ConvertTo-WikiPage
+                            $_.homepage | ConvertTo-Page
                     } else {$null} # homepage might be a string
                 }}
             ) -as [ConfluencePS.Space]

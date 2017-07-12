@@ -1,4 +1,4 @@
-﻿function Remove-WikiSpace {
+﻿function Remove-Space {
     <#
     .SYNOPSIS
     Remove an existing Confluence space.
@@ -8,11 +8,11 @@
     "The space is deleted in a long running task, so the space cannot be considered deleted when this resource returns."
 
     .EXAMPLE
-    Remove-WikiSpace -ApiURi "https://myserver.com/wiki" -Credential $cred -Key ABC,XYZ -Confirm
+    Remove-ConfluenceSpace -ApiURi "https://myserver.com/wiki" -Credential $cred -Key ABC,XYZ -Confirm
     Delete the space with key ABC and with key XYZ (note that key != name). Confirm will prompt before deletion.
 
     .EXAMPLE
-    Get-WikiSpace | Where {$_.Name -like "*old"} | Remove-WikiSpace -Verbose -WhatIf
+    Get-ConfluenceSpace | Where {$_.Name -like "*old"} | Remove-ConfluenceSpace -Verbose -WhatIf
     Get all spaces ending in 'old' and simulate the deletion of them.
     Would simulate the removal of each space one by one with verbose output; -WhatIf flag active.
 
@@ -26,12 +26,12 @@
     [OutputType([Bool])]
     param (
         # The URi of the API interface.
-        # Value can be set persistently with Set-WikiInfo.
+        # Value can be set persistently with Set-ConfluenceInfo.
         [Parameter( Mandatory = $true )]
         [URi]$apiURi,
 
         # Confluence's credentials for authentication.
-        # Value can be set persistently with Set-WikiInfo.
+        # Value can be set persistently with Set-ConfluenceInfo.
         [Parameter( Mandatory = $true )]
         [PSCredential]$Credential,
 
@@ -76,7 +76,7 @@
 
             Write-Verbose "[$($MyInvocation.MyCommand.Name)] Sending delete request to $URI"
             If ($PSCmdlet.ShouldProcess("Space key $_space")) {
-                $response = Invoke-WikiMethod -Uri $URI -Method Delete -Credential $Credential
+                $response = Invoke-Method -Uri $URI -Method Delete -Credential $Credential
 
                 # Successful response provides a "longtask" status link
                 # (add additional code here later to check and/or wait for the status)

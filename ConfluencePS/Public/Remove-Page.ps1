@@ -1,4 +1,4 @@
-﻿function Remove-WikiPage {
+﻿function Remove-Page {
     <#
     .SYNOPSIS
     Trash an existing Confluence page.
@@ -9,11 +9,11 @@
     Untested against non-page content, but probably works anyway.
 
     .EXAMPLE
-    Get-WikiPage -Title Oscar | Remove-WikiPage -Confirm
+    Get-ConfluencePage -Title Oscar | Remove-ConfluencePage -Confirm
     Send Oscar to the trash. Each matching page will ask you to confirm the deletion.
 
     .EXAMPLE
-    Remove-WikiPage -ApiURi "https://myserver.com/wiki" -Credential $cred -PageID 12345,12346 -Verbose -WhatIf
+    Remove-ConfluencePage -ApiURi "https://myserver.com/wiki" -Credential $cred -PageID 12345,12346 -Verbose -WhatIf
     Simulates the removal of two specifc pages.
 
     .LINK
@@ -26,12 +26,12 @@
     [OutputType([Bool])]
     param (
         # The URi of the API interface.
-        # Value can be set persistently with Set-WikiInfo.
+        # Value can be set persistently with Set-ConfluenceInfo.
         [Parameter( Mandatory = $true )]
         [URi]$apiURi,
 
         # Confluence's credentials for authentication.
-        # Value can be set persistently with Set-WikiInfo.
+        # Value can be set persistently with Set-ConfluenceInfo.
         [Parameter( Mandatory = $true )]
         [PSCredential]$Credential,
 
@@ -65,7 +65,7 @@
             $URI = "$apiURi/content/{0}" -f $_page
 
             If ($PSCmdlet.ShouldProcess("PageID $_page")) {
-                Invoke-WikiMethod -Uri $URI -Method Delete -Credential $Credential
+                Invoke-Method -Uri $URI -Method Delete -Credential $Credential
             }
         }
     }

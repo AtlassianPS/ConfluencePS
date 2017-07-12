@@ -6,6 +6,7 @@ Import-Module "$PSScriptRoot\..\ConfluencePS" -Force
 Describe 'Check module files for breaking changes' {
     $ModuleRoot = "$PSScriptRoot\..\ConfluencePS"
     $PublicFiles = (Get-ChildItem "$ModuleRoot\Public").BaseName
+    $ExportedFunctions = $PublicFiles | ForEach-Object {$_ -replace "\-(\w)", "-Confluence`$1"}
 
     It 'Contains expected helper files and directories' {
         "$ModuleRoot\en-US\about_ConfluencePS.help.txt" | Should Exist
@@ -32,7 +33,7 @@ Describe 'Check module files for breaking changes' {
             $manifest.Copyright | Should BeExactly 'MIT License'
             $manifest.Description | Should BeOfType String
             $manifest.PowerShellVersion | Should Be '3.0'
-            $manifest.ExportedFunctions.Values.Name | Should BeExactly $PublicFiles
+            $manifest.ExportedFunctions.Values.Name | Should BeExactly $ExportedFunctions
 
             $manifest.PrivateData.PSData.Tags | Should BeExactly @('confluence','wiki','atlassian')
             $manifest.PrivateData.PSData.LicenseUri | Should BeExactly 'https://github.com/brianbunke/ConfluencePS/blob/master/LICENSE'
@@ -40,7 +41,7 @@ Describe 'Check module files for breaking changes' {
         }
 
         It 'Exports all functions within the Public folder' {
-            (Get-Command -Module ConfluencePS).Name | Should BeExactly $PublicFiles
+            (Get-Command -Module ConfluencePS).Name | Should BeExactly $ExportedFunctions
         }
     }
 

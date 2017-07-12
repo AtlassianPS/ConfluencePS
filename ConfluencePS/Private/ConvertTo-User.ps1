@@ -1,11 +1,11 @@
-function ConvertTo-WikiVersion {
+function ConvertTo-User {
     <#
     .SYNOPSIS
     Extracted the conversion to private function in order to have a single place to
     select the properties to use when casting to custom object type
     #>
     [CmdletBinding()]
-    [OutputType( [ConfluencePS.Version] )]
+    [OutputType( [ConfluencePS.User] )]
     param (
         # object to convert
         [Parameter( Mandatory = $true, ValueFromPipeline = $true )]
@@ -14,15 +14,13 @@ function ConvertTo-WikiVersion {
 
     Process {
         foreach ($object in $inputObject) {
-            Write-Verbose "[$($MyInvocation.MyCommand.Name)] Converting Object to Version"
+            Write-Verbose "[$($MyInvocation.MyCommand.Name)] Converting Object to User"
             ($object | Select-Object `
-                @{Name = "by"; Expression = {$_.by | ConvertTo-WikiUser}},
-                when,
-                friendlyWhen,
-                number,
-                message,
-                minoredit
-            ) -as [ConfluencePS.Version]
+                username,
+                userKey,
+                @{Name = "profilePicture"; Expression = {$_.profilePicture | ConvertTo-Icon}},
+                displayname
+            ) -as [ConfluencePS.User]
         }
     }
 }
