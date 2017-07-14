@@ -165,7 +165,7 @@ function Invoke-Method {
                         if ($OutputType) {
                             # Results shall be casted to custom objects (see ValidateSet)
                             Write-Verbose "[$($MyInvocation.MyCommand.Name)] Outputting results as $($OutputType.FullName)"
-                            $converter = "ConvertTo-Wiki$($OutputType.Name)"
+                            $converter = "ConvertTo-$($OutputType.Name)"
                             $result | & $converter
                         }
                         else {
@@ -174,11 +174,11 @@ function Invoke-Method {
 
                         # Detect if result is paginated
                         if ($response._links.next) {
-                            Write-Verbose "[Invoke-WikiMethod] Invoking pagination"
+                            Write-Verbose "[$($MyInvocation.MyCommand.Name)] Invoking pagination"
 
                             # Remove Parameters that don't need propagation
-                            $script:PSDefaultParameterValues.Remove("Invoke-WikiMethod:GetParameters")
-                            $script:PSDefaultParameterValues.Remove("Invoke-WikiMethod:IncludeTotalCount")
+                            $script:PSDefaultParameterValues.Remove("$($MyInvocation.MyCommand.Name):GetParameters")
+                            $script:PSDefaultParameterValues.Remove("$($MyInvocation.MyCommand.Name):IncludeTotalCount")
 
                             # Self-Invoke function for recursion
                             $parameters = @{
@@ -192,7 +192,7 @@ function Invoke-Method {
 
                             Write-Verbose "NEXT PAGE: $($parameters["URi"])"
 
-                            Invoke-WikiMethod @parameters
+                            Invoke-Method @parameters
                         }
                     }
                 }
