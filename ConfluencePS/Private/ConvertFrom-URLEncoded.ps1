@@ -8,11 +8,11 @@ function ConvertFrom-URLEncoded {
     param (
         # String to decode
         [Parameter( Position = 0, Mandatory = $true, ValueFromPipeline = $true )]
-        [string]$inputString
+        [string]$InputString
     )
 
     PROCESS {
         Write-Verbose "[$($MyInvocation.MyCommand.Name)] Decoding string from URL"
-        [System.Web.HttpUtility]::UrlDecode($inputString)
+        [System.Web.HttpUtility]::UrlDecode($InputString)
     }
 }

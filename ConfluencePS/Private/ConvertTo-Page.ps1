@@ -8,45 +8,53 @@ function ConvertTo-Page {
     [OutputType( [ConfluencePS.Page] )]
     param (
         # object to convert
-        [Parameter( Mandatory = $true, ValueFromPipeline = $true )]
-        $inputObject
+        [Parameter( Position = 0, ValueFromPipeline = $true )]
+        $InputObject
     )
 
     Process {
-        foreach ($object in $inputObject) {
+        foreach ($object in $InputObject) {
             Write-Verbose "[$($MyInvocation.MyCommand.Name)] Converting Object to Page"
             ($object | Select-Object `
                 id,
                 status,
                 title,
                 @{Name = "space"; Expression = {
-                    if ($_.space) {
-                        $_.space | ConvertTo-Space
-                    } else {$null}
-                }},
+                        if ($_.space) {
+                            ConvertTo-Space $_.space
+                        }
+                        else {$null}
+                    }
+                },
                 @{Name = "version"; Expression = {
-                    if ($_.version) {
-                        $_.version | ConvertTo-Version
-                    } else {$null}
-                }},
+                        if ($_.version) {
+                            ConvertTo-Version $_.version
+                        }
+                        else {$null}
+                    }
+                },
                 @{Name = "body"; Expression = {$_.body.storage.value}},
                 @{Name = "ancestors"; Expression = {
-                    if ($_.ancestors) {
-                        $_.ancestors | ConvertTo-PageAncestor
+                        if ($_.ancestors) {
+                            ConvertTo-PageAncestor $_.ancestors
+                        }
+                        else {$null}
                     }
-                    else {$null}
-                }},
+                },
                 @{Name = "URL"; Expression = {
-                    if ($_._links.webui) {
-                        "{0}{1}" -f $_._links.base, $_._links.webui
+                        if ($_._links.webui) {
+                            "{0}{1}" -f $_._links.base, $_._links.webui
+                        }
+                        else {$null}
                     }
-                    else {$null}
-                }},
+                },
                 @{Name = "ShortURL"; Expression = {
-                    if ($_._links.tinyui) {
-                        "{0}{1}" -f $_._links.base, $_._links.tinyui
-                    } else {$null}
-                }}
+                        if ($_._links.tinyui) {
+                            "{0}{1}" -f $_._links.base, $_._links.tinyui
+                        }
+                        else {$null}
+                    }
+                }
             ) -as [ConfluencePS.Page]
         }
     }

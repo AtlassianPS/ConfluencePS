@@ -8,12 +8,12 @@ function ConvertTo-Space {
     [OutputType( [ConfluencePS.Space] )]
     param (
         # object to convert
-        [Parameter( Mandatory = $true, ValueFromPipeline = $true )]
-        $inputObject
+        [Parameter( Position = 0, ValueFromPipeline = $true )]
+        $InputObject
     )
 
     Process {
-        foreach ($object in $inputObject) {
+        foreach ($object in $InputObject) {
             Write-Verbose "[$($MyInvocation.MyCommand.Name)] Converting Object to Space"
             ($object | Select-Object `
                 id,
@@ -24,7 +24,7 @@ function ConvertTo-Space {
                 type,
                 @{Name = "Homepage"; Expression = {
                     if ($_.homepage -is [PSCustomObject]) {
-                            $_.homepage | ConvertTo-Page
+                            ConvertTo-Page $_.homepage
                     } else {$null} # homepage might be a string
                 }}
             ) -as [ConfluencePS.Space]

@@ -8,12 +8,12 @@ function ConvertTo-Label {
     [OutputType( [ConfluencePS.Version] )]
     param (
         # object to convert
-        [Parameter( Mandatory = $true, ValueFromPipeline = $true )]
-        $inputObject
+        [Parameter( Position = 0, ValueFromPipeline = $true )]
+        $InputObject
     )
 
     Process {
-        foreach ($object in $inputObject) {
+        foreach ($object in $InputObject) {
             Write-Verbose "[$($MyInvocation.MyCommand.Name)] Converting Object to Label"
             ($object | Select-Object `
                 id,
