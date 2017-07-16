@@ -61,32 +61,41 @@
 
     BEGIN {
         Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function started"
+
+        $resourceApi = "$apiURi/space{0}"
     }
 
     PROCESS {
         Write-Debug "[$($MyInvocation.MyCommand.Name)] ParameterSetName: $($PsCmdlet.ParameterSetName)"
         Write-Debug "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
 
-        $resourceURI = "$apiURi/space"
-        $GETparameters += @{expand = "description.plain,icon,homepage,metadata.labels"}
-        If ($PageSize) { $GETparameters["limit"] = $PageSize }
+        $iwParameters = @{
+            Uri           = ""
+            Method        = 'Get'
+            GetParameters = @{
+                expand = "description.plain,icon,homepage,metadata.labels"
+                limit  = $PageSize
+            }
+            OutputType    = [ConfluencePS.Space]
+            Credential    = $Credential
+        }
 
         # Paging
         ($PSCmdlet.PagingParameters | Get-Member -MemberType Property).Name | ForEach-Object {
-            $script:PSDefaultParameterValues["Invoke-WikiMethod:$_"] = $PSCmdlet.PagingParameters.$_
+            $iwParameters[$_] = $PSCmdlet.PagingParameters.$_
         }
 
         if ($SpaceKey) {
             foreach ($_space in $SpaceKey) {
-                $URI = "$resourceURI/{0}" -f $_space
+                $iwParameters["Uri"] = $resourceApi -f "/$_space"
 
-                Invoke-Method -Uri $URI -Method Get -Credential $Credential -GetParameters $GETparameters -OutputType ([ConfluencePS.Space])
+                Invoke-Method @iwParameters
             }
         }
         else {
-            $URI = $resourceURI
+            $iwParameters["Uri"] = $resourceApi -f ""
 
-            Invoke-Method -Uri $URI -Method Get -Credential $Credential -GetParameters $GETparameters -OutputType ([ConfluencePS.Space])
+            Invoke-Method @iwParameters
         }
     }
 

@@ -132,6 +132,8 @@
 
     BEGIN {
         Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function started"
+
+        $resourceApi = "$apiURi/content{0}"
     }
 
     PROCESS {
@@ -142,44 +144,50 @@
             $SpaceKey = $Space.Key
         }
 
-        $resourceURI = "$apiURi/content"
-        $GETparameters = @{expand = "space,version,body.storage,ancestors"}
+        $iwParameters = @{
+            Uri           = ""
+            Method        = 'Get'
+            GetParameters = @{
+                expand = "space,version,body.storage,ancestors"
+                limit  = $PageSize
+            }
+            OutputType    = [ConfluencePS.Page]
+            Credential    = $Credential
+        }
 
         # Paging
         ($PSCmdlet.PagingParameters | Get-Member -MemberType Property).Name | ForEach-Object {
-            $script:PSDefaultParameterValues["Invoke-WikiMethod:$_"] = $PSCmdlet.PagingParameters.$_
+            $iwParameters[$_] = $PSCmdlet.PagingParameters.$_
         }
 
         switch -regex ($PsCmdlet.ParameterSetName) {
             "byId" {
                 foreach ($_pageID in $PageID) {
-                    $URI = "$resourceURI/{0}" -f $_pageID
+                    $iwParameters["Uri"] = $resourceApi -f "/$_pageID"
 
-                    Invoke-Method -Uri $URI -Method Get -Credential $Credential -GetParameters $GETparameters -OutputType ([ConfluencePS.Page])
+                    Invoke-Method @iwParameters
                 }
                 break
             }
             "(bySpace|byTitle)" {
-                $URI = "$resourceURI"
-                $GETparameters["type"] = "page"
-                if ($Title) { $GETparameters["title"] = $Title }
-                if ($SpaceKey) { $GETparameters["spaceKey"] = $SpaceKey }
-                If ($PageSize) { $GETparameters["limit"] = $PageSize }
+                $iwParameters["Uri"] = $resourceApi -f ''
+                $iwParameters["GetParameters"]["type"] = "page"
+                if ($Title) { $iwParameters["GetParameters"]["title"] = $Title }
+                if ($SpaceKey) { $iwParameters["GetParameters"]["spaceKey"] = $SpaceKey }
 
-                Invoke-Method -Uri $URI -Method Get -Credential $Credential -GetParameters $GETparameters -OutputType ([ConfluencePS.Page])
+                Invoke-Method @iwParameters
                 break
             }
             "byLabel" {
-                $URI = "$resourceURI/search"
+                $iwParameters["Uri"] = $resourceApi -f "/search"
 
                 $CQLparameters = @("type=page", "label=$Label")
                 if ($SpaceKey) {$CQLparameters += "space=$SpaceKey"}
                 $cqlQuery = ConvertTo-URLEncoded ($CQLparameters -join (" AND "))
 
-                $GETparameters["cql"] = $cqlQuery
-                If ($PageSize) { $GETparameters["limit"] = $PageSize }
+                $iwParameters["GetParameters"]["cql"] = $cqlQuery
 
-                Invoke-Method -Uri $URI -Method Get -Credential $Credential -GetParameters $GETparameters -OutputType ([ConfluencePS.Page])
+                Invoke-Method @iwParameters
                 break
             }
         }

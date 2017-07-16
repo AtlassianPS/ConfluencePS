@@ -55,15 +55,18 @@
         Write-Debug "[$($MyInvocation.MyCommand.Name)] ParameterSetName: $($PsCmdlet.ParameterSetName)"
         Write-Debug "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
 
-        $URI = "$apiURi/contentbody/convert/storage"
-
-        $Content = @{
-            value = "$Content"
-            representation = 'wiki'
-        } | ConvertTo-Json
+        $iwParameters = @{
+            Uri        = "$apiURi/contentbody/convert/storage"
+            Method     = 'Post'
+            Body       = @{
+                value          = "$Content"
+                representation = 'wiki'
+            } | ConvertTo-Json
+            Credential = $Credential
+        }
 
         Write-Debug "[$($MyInvocation.MyCommand.Name)] Content to be sent: $($Content | Out-String)"
-        (Invoke-Method -Uri $URI -Credential $Credential -Body $Content -Method Post).value
+        (Invoke-Method @iwParameters).value
     }
 
     END {

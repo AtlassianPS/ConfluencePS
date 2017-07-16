@@ -69,10 +69,11 @@
         # Get all child pages recursively
         [switch]$Recurse,
 
-        # Defaults to 25 max results; can be modified here.
-        # Numbers above 100 may not be honored if -Expand is used.
+        # Maximimum number of results to fetch per call.
+        # This setting can be tuned to get better performance according to the load on the server.
+        # Warning: too high of a PageSize can cause a timeout on the request.
         [ValidateRange(1, [int]::MaxValue)]
-        [int]$PageSize
+        [int]$PageSize = 25
     )
 
     BEGIN {
@@ -91,21 +92,28 @@
             Throw $exception
         }
 
-        # Paging
-        ($PSCmdlet.PagingParameters | Get-Member -MemberType Property).Name | ForEach-Object {
-            $script:PSDefaultParameterValues["Invoke-WikiMethod:$_"] = $PSCmdlet.PagingParameters.$_
-        }
-
         if ($PsCmdlet.ParameterSetName -eq "byObject") {
             $PageID = $InputObject.ID
         }
-        if ($Recurse) {$depthLevel = "descendant"} # depth = ALL
+        if ($Recurse) { $depthLevel = "descendant" } # depth = ALL
 
-        $URI = "$apiURi/content/{0}/{1}/page" -f $PageID, $depthLevel
-        $GETparameters = @{expand = "space,version,body.storage,ancestors"}
-        If ($PageSize) { $GETparameters["limit"] = $PageSize }
+        $iwParameters = @{
+            Uri           = "$apiURi/content/{0}/{1}/page" -f $PageID, $depthLevel
+            Method        = 'Get'
+            GetParameters = @{
+                expand = "space,version,body.storage,ancestors"
+                limit  = $PageSize
+            }
+            OutputType    = [ConfluencePS.Page]
+            Credential    = $Credential
+        }
 
-        Invoke-Method -Uri $URI -Method Get -Credential $Credential -GetParameters $GETparameters -OutputType ([ConfluencePS.Page])
+        # Paging
+        ($PSCmdlet.PagingParameters | Get-Member -MemberType Property).Name | ForEach-Object {
+            $iwParameters[$_] = $PSCmdlet.PagingParameters.$_
+        }
+
+        Invoke-Method @iwParameters
     }
 
     END {
