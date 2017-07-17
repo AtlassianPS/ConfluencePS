@@ -1,24 +1,4 @@
 ﻿function Remove-Page {
-    <#
-    .SYNOPSIS
-    Trash an existing Confluence page.
-
-    .DESCRIPTION
-    Delete existing Confluence content by page ID.
-    This trashes most content, but will permanently delete "un-trashable" content.
-    Untested against non-page content, but probably works anyway.
-
-    .EXAMPLE
-    Get-ConfluencePage -Title Oscar | Remove-ConfluencePage -Confirm
-    Send Oscar to the trash. Each matching page will ask you to confirm the deletion.
-
-    .EXAMPLE
-    Remove-ConfluencePage -ApiURi "https://myserver.com/wiki" -Credential $cred -PageID 12345,12346 -Verbose -WhatIf
-    Simulates the removal of two specifc pages.
-
-    .LINK
-    https://github.com/brianbunke/ConfluencePS
-    #>
     [CmdletBinding(
         ConfirmImpact = 'Medium',
         SupportsShouldProcess = $true

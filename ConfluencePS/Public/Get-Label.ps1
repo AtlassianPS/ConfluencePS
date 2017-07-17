@@ -1,36 +1,4 @@
 ﻿function Get-Label {
-    <#
-    .SYNOPSIS
-    Returns the list of labels.
-
-    .DESCRIPTION
-    View all labels applied to a content.
-
-    .PARAMETER Skip
-    Controls how many things will be skipped before starting output. Defaults to 0.
-
-    .PARAMETER First
-    Currently not supported.
-    Indicates how many items to return. Defaults to 100.
-
-    .PARAMETER IncludeTotalCount
-    Causes an extra output of the total count at the beginning.
-    Note this is actually a uInt64, but with a custom string representation.
-
-    .EXAMPLE
-    Get-ConfluenceLabel -PageID 123456 -PageSize 500 -ApiURi "https://myserver.com/wiki" -Credential $cred
-    Lists the labels applied to page 123456.
-    This also increases the size of the result's page from 25 to 500.
-
-    .EXAMPLE
-    Get-ConfluencePage -SpaceKey NASA | Get-ConfluenceLabel -Verbose
-    Get all pages that exist in NASA space (literally?).
-    Search all of those pages (piped to -PageID) for all of their active labels.
-    Verbose flag would be good here to keep track of the request.
-
-    .LINK
-    https://github.com/brianbunke/ConfluencePS
-    #>
     [CmdletBinding(
         SupportsPaging = $true
     )]

@@ -1,22 +1,4 @@
 ﻿function Add-Label {
-    <#
-    .SYNOPSIS
-    Add a new global label to an existing Confluence page.
-
-    .DESCRIPTION
-    Add one or more labels to one or more Confluence pages. Label can be brand new.
-
-    .EXAMPLE
-    Add-Label -ApiURi "https://myserver.com/wiki" -Credential $cred -Label alpha,bravo,charlie -PageID 123456 -Verbose
-    Apply the labels alpha, bravo, and charlie to the page with ID 123456. Verbose output.
-
-    .EXAMPLE
-    Get-Page -SpaceKey SRV | Add-Label -Label servers -WhatIf
-    Would apply the label "servers" to all pages in the space with key SRV. -WhatIf flag supported.
-
-    .LINK
-    https://github.com/brianbunke/ConfluencePS
-    #>
     [CmdletBinding(
         ConfirmImpact = 'Low',
         SupportsShouldProcess = $true

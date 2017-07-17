@@ -1,22 +1,4 @@
 ﻿function New-Space {
-    <#
-    .SYNOPSIS
-    Create a new blank space in your Confluence instance.
-
-    .DESCRIPTION
-    Create a new blank space. Key and Name mandatory, Description recommended.
-
-    .EXAMPLE
-    [ConfluencePS.Space]@{key="TEST";Name="Test Space"} | New-ConfluenceSpace -ApiURi "https://myserver.com/wiki" -Credential $cred
-    Create the new blank space. Runs Set-ConfluenceInfo first if instance info unknown.
-
-    .EXAMPLE
-    New-ConfluenceSpace -Key 'TEST' -Name 'Test Space' -Description 'New blank space via REST API' -Verbose
-    Create the new blank space with the optional description and verbose output.
-
-    .LINK
-    https://github.com/brianbunke/ConfluencePS
-    #>
     [CmdletBinding(
         ConfirmImpact = 'Low',
         SupportsShouldProcess = $true,

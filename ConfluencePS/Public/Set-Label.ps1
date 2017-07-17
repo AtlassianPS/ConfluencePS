@@ -1,24 +1,4 @@
 function Set-Label {
-    <#
-    .SYNOPSIS
-    Sets the label for an existing Confluence content.
-
-    .DESCRIPTION
-    Sets the label for Confluence content.
-    All previous labels will be removed in the process.
-
-    .EXAMPLE
-    Set-ConfluenceLabel -ApiURi "https://myserver.com/wiki" -Credential $cred -Label seven -PageID 123456 -Verbose -Confirm
-    Would remove any label previously assigned to the page with ID 123456 and would add the label "seven"
-    Verbose and Confirm flags both active.
-
-    .EXAMPLE
-    Get-ConfluencePage -SpaceKey "ABC" | Set-ConfluenceLabel -Label "asdf","qwer" -WhatIf
-    Would remove all labels and adds "asdf" and "qwer" to all pages in the ABC space.
-
-    .LINK
-    https://github.com/brianbunke/ConfluencePS
-    #>
     [CmdletBinding(
         ConfirmImpact = 'Low',
         SupportsShouldProcess = $true

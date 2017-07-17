@@ -1,45 +1,4 @@
 ﻿function Set-Page {
-    <#
-    .SYNOPSIS
-    Edit an existing Confluence page.
-
-    .DESCRIPTION
-    For existing page(s): Edit page content, page title, and/or change parent page.
-    Content needs to be in "Confluence storage format." Use -Convert if not preconditioned.
-
-    .EXAMPLE
-    Get-ConfluencePage -Title 'My First Page' -Expand | Set-ConfluencePage -Body 'Hello World!' -Convert
-    Probably the easiest edit method, overwriting contents with a short sentence.
-    Use Get-ConfluencePage -Expand to pipe in PageID & CurrentVersion.
-    (See "Get-Help Get-ConfluencePage -Examples" for help with -Expand and >100 pages.)
-    -Convert molds the sentence into a format Confluence will accept.
-
-    .EXAMPLE
-    Get-ConfluencePage -Title 'Lew Alcindor' -Limit 100 -Expand | Set-ConfluencePage -Title 'Kareem Abdul-Jabbar' -Verbose
-    Change the page's name. Body remains the same, via piping the existing contents.
-    Verbose flag active for additional screen output.
-
-    .EXAMPLE
-    Get-ConfluencePage -SpaceKey MATRIX | Set-ConfluencePage -Body 'Agent Smith' -Convert -WhatIf
-    Overwrites the contents of all pages in the MATRIX space.
-    WhatIf flag tells you how many pages would have been affected.
-
-    .EXAMPLE
-    Set-ConfluencePage -PageID 12345 -Title 'My Luggage Combo' -CurrentVersion 1 -Body '<p>Spaceballs</p>'
-    An example of what needs to be known and specified to avoid:
-    1) Piping in values required for the PUT method
-    2) Calling Get-ConfluencePage mid-function to retrieve those same values
-    3) Calling ConvertTo-ConfluenceStorageFormat mid-function to condition the string
-
-    .LINK
-    Get-ConfluencePage
-
-    .LINK
-    ConvertTo-ConfluenceStorageFormat
-
-    .LINK
-    https://github.com/brianbunke/ConfluencePS
-    #>
     [CmdletBinding(
         ConfirmImpact = 'Medium',
         SupportsShouldProcess = $true,

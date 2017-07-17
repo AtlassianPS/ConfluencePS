@@ -1,24 +1,4 @@
 ﻿function Remove-Space {
-    <#
-    .SYNOPSIS
-    Remove an existing Confluence space.
-
-    .DESCRIPTION
-    Delete an existing Confluence space, including child content.
-    "The space is deleted in a long running task, so the space cannot be considered deleted when this resource returns."
-
-    .EXAMPLE
-    Remove-ConfluenceSpace -ApiURi "https://myserver.com/wiki" -Credential $cred -Key ABC,XYZ -Confirm
-    Delete the space with key ABC and with key XYZ (note that key != name). Confirm will prompt before deletion.
-
-    .EXAMPLE
-    Get-ConfluenceSpace | Where {$_.Name -like "*old"} | Remove-ConfluenceSpace -Verbose -WhatIf
-    Get all spaces ending in 'old' and simulate the deletion of them.
-    Would simulate the removal of each space one by one with verbose output; -WhatIf flag active.
-
-    .LINK
-    https://github.com/brianbunke/ConfluencePS
-    #>
     [CmdletBinding(
         ConfirmImpact = 'High',
         SupportsShouldProcess = $true

@@ -1,29 +1,4 @@
 ﻿function Remove-Label {
-    <#
-    .SYNOPSIS
-    Remove a label from existing Confluence content.
-
-    .DESCRIPTION
-    Remove a single label from Confluence content.
-    Does accept multiple pages piped via Get-ConfluencePage.
-    Specifically tested against pages, but should work against all content IDs.
-
-    .EXAMPLE
-    Remove-ConfluenceLabel -ApiURi "https://myserver.com/wiki" -Credential $cred -Label seven -PageID 123456 -Verbose -Confirm
-    Would remove label "seven" from the page with ID 123456.
-    Verbose and Confirm flags both active.
-
-    .EXAMPLE
-    Get-ConfluencePage -SpaceKey "ABC" | Remove-ConfluenceLabel -Label asdf -WhatIf
-    Would remove the label "asdf" from all pages in the ABC space.
-
-    .EXAMPLE
-    (Get-ConfluenceSpace "ABC").Homepage | Remove-ConfluenceLabel
-    Removes all labels from the homepage of the ABC space.
-
-    .LINK
-    https://github.com/brianbunke/ConfluencePS
-    #>
     [CmdletBinding(
         ConfirmImpact = 'Low',
         SupportsShouldProcess = $true

@@ -1,40 +1,4 @@
 function New-Page {
-    <#
-    .SYNOPSIS
-    Create a new page in your Confluence instance.
-
-    .DESCRIPTION
-    Create a new page in Confluence. Optionally include content in -Body.
-    Content needs to be in "Confluence storage format;" see also -Convert.
-
-    .EXAMPLE
-    New-ConfluencePage -Title "My new fance Page" -Body "<h1>My Title</h1><p>The body of my fancy new page.</p>"
-    Creates a new page with a given title and body content (in "confluence's storeage format").
-    The information of the created page is returned to the console.
-
-
-    .EXAMPLE
-    New-ConfluencePage -Title 'Test New Page' -ParentID 123456 -Body 'Hello world' -Convert -WhatIf
-    Creates a new page as a child member of existing page 123456 with one line of page text.
-    The Body defined is converted to Storage fromat by the "-Convert" parameter
-
-    .EXAMPLE
-    New-ConfluencePage -Title "Luke Skywalker" -Parent (Get-ConfluencePage -title "Darth Vader" -SpaceKey "STARWARS")
-    Creates a new page with an empty body as a child page of the "Parent Page" in the "space" page.
-
-    .EXAMPLE
-    [ConfluencePS.Page]@{Title="My Title";Space=[ConfluencePS.Space]@{Key="ABC"}} | New-ConfluencePage -ApiURi "https://myserver.com/wiki" -Credential $cred
-    Creates a new page "My Title" in the space "ABC" with an empty body.
-
-    .LINK
-    Get-ConfluencePage
-
-    .LINK
-    ConvertTo-ConfluenceStorageFormat
-
-    .LINK
-    https://github.com/brianbunke/ConfluencePS
-    #>
     [CmdletBinding(
         ConfirmImpact = 'Low',
         SupportsShouldProcess = $true,

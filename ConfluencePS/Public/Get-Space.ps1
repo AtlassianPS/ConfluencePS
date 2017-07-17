@@ -1,35 +1,4 @@
 ﻿function Get-Space {
-    <#
-    .SYNOPSIS
-    Retrieve a listing of spaces in your Confluence instance.
-
-    .DESCRIPTION
-    Fetch all Confluence spaces, optionally filtering by Name/Key/ID.
-    Input for all parameters is not case sensitive.
-    Piped output into other cmdlets is generally tested and supported.
-
-    .PARAMETER Skip
-    Controls how many things will be skipped before starting output. Defaults to 0.
-
-    .PARAMETER First
-    Currently not supported.
-    Indicates how many items to return. Defaults to 100.
-
-    .PARAMETER IncludeTotalCount
-    Causes an extra output of the total count at the beginning.
-    Note this is actually a uInt64, but with a custom string representation.
-
-    .EXAMPLE
-    Get-ConfluenceSpace -ApiURi "https://myserver.com/wiki" -Credential $cred
-    Display the info of all spaces on the server.
-
-    .EXAMPLE
-    Get-ConfluenceSpace -SpaceKey NASA
-    Display the info of the space with key "NASA".
-
-    .LINK
-    https://github.com/brianbunke/ConfluencePS
-    #>
     [CmdletBinding(
         SupportsPaging = $true
     )]
