@@ -1,6 +1,6 @@
 ---
 external help file: ConfluencePS-help.xml
-online version: https://github.com/brianbunke/ConfluencePS
+online version:
 schema: 2.0.0
 ---
 
@@ -52,7 +52,7 @@ Object array you would like to see displayed as a table on a wiki page.
 ```yaml
 Type: Object
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: True
 Position: 1
@@ -67,7 +67,7 @@ Ignore the property names, and just have a table of values with no header row hi
 ```yaml
 Type: SwitchParameter
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: False
 Position: Named
@@ -88,7 +88,7 @@ See link below.
 
 ## RELATED LINKS
 
-[https://github.com/brianbunke/ConfluencePS](https://github.com/brianbunke/ConfluencePS)
+[https://github.com/AtlassianPS/ConfluencePS](https://github.com/AtlassianPS/ConfluencePS)
 
 [https://github.com/thomykay/PoshConfluence](https://github.com/thomykay/PoshConfluence)
 

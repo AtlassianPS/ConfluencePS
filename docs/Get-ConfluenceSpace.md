@@ -1,6 +1,6 @@
 ---
 external help file: ConfluencePS-help.xml
-online version: https://github.com/brianbunke/ConfluencePS
+online version:
 schema: 2.0.0
 ---
 
@@ -46,7 +46,7 @@ Value can be set persistently with Set-ConfluenceInfo.
 ```yaml
 Type: Uri
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: True
 Position: Named
@@ -62,7 +62,7 @@ Value can be set persistently with Set-ConfluenceInfo.
 ```yaml
 Type: PSCredential
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: True
 Position: Named
@@ -95,7 +95,7 @@ Warning: too high of a PageSize can cause a timeout on the request.
 ```yaml
 Type: Int32
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: False
 Position: Named
@@ -111,7 +111,7 @@ Note this is actually a uInt64, but with a custom string representation.
 ```yaml
 Type: SwitchParameter
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: False
 Position: Named
@@ -127,7 +127,7 @@ Defaults to 0.
 ```yaml
 Type: UInt64
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: False
 Position: Named
@@ -144,7 +144,7 @@ Defaults to 100.
 ```yaml
 Type: UInt64
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: False
 Position: Named
@@ -163,5 +163,5 @@ Accept wildcard characters: False
 
 ## RELATED LINKS
 
-[https://github.com/brianbunke/ConfluencePS](https://github.com/brianbunke/ConfluencePS)
+[https://github.com/AtlassianPS/ConfluencePS](https://github.com/AtlassianPS/ConfluencePS)
 

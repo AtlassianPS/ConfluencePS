@@ -1,6 +1,6 @@
 ---
 external help file: ConfluencePS-help.xml
-online version: 
+online version:
 schema: 2.0.0
 ---
 
@@ -54,7 +54,7 @@ Value can be set persistently with Set-ConfluenceInfo.
 ```yaml
 Type: Uri
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: True
 Position: Named
@@ -70,7 +70,7 @@ Value can be set persistently with Set-ConfluenceInfo.
 ```yaml
 Type: PSCredential
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: True
 Position: Named
@@ -85,7 +85,7 @@ A string (in plain text and/or wiki markup) to be converted to storage format.
 ```yaml
 Type: String
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: True
 Position: 1
@@ -106,5 +106,5 @@ Accept wildcard characters: False
 
 [New-ConfluencePage]()
 
-[https://github.com/brianbunke/ConfluencePS](https://github.com/brianbunke/ConfluencePS)
+[https://github.com/AtlassianPS/ConfluencePS](https://github.com/AtlassianPS/ConfluencePS)
 

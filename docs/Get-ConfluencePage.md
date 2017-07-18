@@ -1,6 +1,6 @@
 ---
 external help file: ConfluencePS-help.xml
-online version: https://github.com/brianbunke/ConfluencePS
+online version:
 schema: 2.0.0
 ---
 
@@ -80,13 +80,12 @@ Store the page's ID, Title, Space Key, Version, and Body for use later in your s
 
 ### -------------------------- EXAMPLE 5 --------------------------
 ```
-$WhereIsShe = Get-ConfluencePage -Title 'Rachel' | Get-ConfluencePage
+$WhereIsShe = Get-ConfluencePage -Title 'Rachel'
 ```
 
 Search Batman's 1000 pages for Rachel in order to find the correct page ID(s).
 Search again, this time piping in the page ID(s), to also capture version and body from the expanded results.
-Store them in a variable for later use (e.g.
-Set-ConfluencePage).
+Store them in a variable for later use (e.g. Set-ConfluencePage).
 
 ### -------------------------- EXAMPLE 6 --------------------------
 ```
@@ -104,7 +103,7 @@ Value can be set persistently with Set-ConfluenceInfo.
 ```yaml
 Type: Uri
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: True
 Position: Named
@@ -120,7 +119,7 @@ Value can be set persistently with Set-ConfluenceInfo.
 ```yaml
 Type: PSCredential
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: True
 Position: Named
@@ -194,7 +193,7 @@ Filter results by space object(s), typically from the pipeline
 ```yaml
 Type: Space
 Parameter Sets: byTitle, byLabel
-Aliases: 
+Aliases:
 
 Required: False
 Position: Named
@@ -206,7 +205,7 @@ Accept wildcard characters: False
 ```yaml
 Type: Space
 Parameter Sets: bySpaceObject
-Aliases: 
+Aliases:
 
 Required: True
 Position: Named
@@ -221,7 +220,7 @@ Label(s) to use as search criteria to find pages
 ```yaml
 Type: String[]
 Parameter Sets: byLabel
-Aliases: 
+Aliases:
 
 Required: True
 Position: Named
@@ -238,7 +237,7 @@ Warning: too high of a PageSize can cause a timeout on the request.
 ```yaml
 Type: Int32
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: False
 Position: Named
@@ -254,7 +253,7 @@ Note this is actually a uInt64, but with a custom string representation.
 ```yaml
 Type: SwitchParameter
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: False
 Position: Named
@@ -270,7 +269,7 @@ Defaults to 0.
 ```yaml
 Type: UInt64
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: False
 Position: Named
@@ -287,7 +286,7 @@ Defaults to 100.
 ```yaml
 Type: UInt64
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: False
 Position: Named
@@ -306,5 +305,5 @@ Accept wildcard characters: False
 
 ## RELATED LINKS
 
-[https://github.com/brianbunke/ConfluencePS](https://github.com/brianbunke/ConfluencePS)
+[https://github.com/AtlassianPS/ConfluencePS](https://github.com/AtlassianPS/ConfluencePS)
 

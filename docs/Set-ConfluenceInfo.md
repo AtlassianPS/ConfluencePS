@@ -1,6 +1,6 @@
 ---
 external help file: ConfluencePS-help.xml
-online version: https://github.com/brianbunke/ConfluencePS
+online version:
 schema: 2.0.0
 ---
 
@@ -45,7 +45,7 @@ For Atlassian Cloud instances, include /wiki.
 ```yaml
 Type: Uri
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: False
 Position: 1
@@ -60,7 +60,7 @@ The username/password combo you use to log in to Confluence.
 ```yaml
 Type: PSCredential
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: False
 Position: 2
@@ -75,7 +75,7 @@ Default PageSize for the invocations.
 ```yaml
 Type: Int32
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: False
 Position: 3
@@ -90,7 +90,7 @@ Prompt the user for credentials
 ```yaml
 Type: SwitchParameter
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: False
 Position: Named
@@ -107,7 +107,7 @@ Accept wildcard characters: False
 
 ## RELATED LINKS
 
-[https://github.com/brianbunke/ConfluencePS](https://github.com/brianbunke/ConfluencePS)
+[https://github.com/AtlassianPS/ConfluencePS](https://github.com/AtlassianPS/ConfluencePS)
 
 [http://stackoverflow.com/questions/27951561/use-invoke-webrequest-with-a-username-and-password-for-basic-authentication-on-t](http://stackoverflow.com/questions/27951561/use-invoke-webrequest-with-a-username-and-password-for-basic-authentication-on-t)
 

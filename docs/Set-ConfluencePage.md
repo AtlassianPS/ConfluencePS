@@ -1,6 +1,6 @@
 ---
 external help file: ConfluencePS-help.xml
-online version: 
+online version:
 schema: 2.0.0
 ---
 
@@ -55,16 +55,6 @@ Get-ConfluencePage -SpaceKey MATRIX | Set-ConfluencePage -Body 'Agent Smith' -Co
 Overwrites the contents of all pages in the MATRIX space.
 WhatIf flag tells you how many pages would have been affected.
 
-### -------------------------- EXAMPLE 4 --------------------------
-```
-Spaceballs</p>'
-```
-
-An example of what needs to be known and specified to avoid:
-1) Piping in values required for the PUT method
-2) Calling Get-ConfluencePage mid-function to retrieve those same values
-3) Calling ConvertTo-ConfluenceStorageFormat mid-function to condition the string
-
 ## PARAMETERS
 
 ### -apiURi
@@ -74,7 +64,7 @@ Value can be set persistently with Set-ConfluenceInfo.
 ```yaml
 Type: Uri
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: True
 Position: Named
@@ -90,7 +80,7 @@ Value can be set persistently with Set-ConfluenceInfo.
 ```yaml
 Type: PSCredential
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: True
 Position: Named
@@ -105,7 +95,7 @@ Page Object
 ```yaml
 Type: Page
 Parameter Sets: byObject
-Aliases: 
+Aliases:
 
 Required: True
 Position: Named
@@ -136,7 +126,7 @@ Existing will be automatically supplied via Get-ConfluencePage if not manually i
 ```yaml
 Type: String
 Parameter Sets: byParameters
-Aliases: 
+Aliases:
 
 Required: False
 Position: Named
@@ -152,7 +142,7 @@ If not yet in "storage format"--or you don't know what that is--also use -Conver
 ```yaml
 Type: String
 Parameter Sets: byParameters
-Aliases: 
+Aliases:
 
 Required: False
 Position: Named
@@ -167,7 +157,7 @@ Optional switch flag for calling ConvertTo-ConfluenceStorageFormat against your 
 ```yaml
 Type: SwitchParameter
 Parameter Sets: byParameters
-Aliases: 
+Aliases:
 
 Required: False
 Position: Named
@@ -183,7 +173,7 @@ If unspecified, no change.
 ```yaml
 Type: Int32
 Parameter Sets: byParameters
-Aliases: 
+Aliases:
 
 Required: False
 Position: Named
@@ -199,7 +189,7 @@ If unspecified, no change.
 ```yaml
 Type: Page
 Parameter Sets: byParameters
-Aliases: 
+Aliases:
 
 Required: False
 Position: Named
@@ -253,5 +243,5 @@ Accept wildcard characters: False
 
 [ConvertTo-ConfluenceStorageFormat]()
 
-[https://github.com/brianbunke/ConfluencePS](https://github.com/brianbunke/ConfluencePS)
+[https://github.com/AtlassianPS/ConfluencePS](https://github.com/AtlassianPS/ConfluencePS)
 

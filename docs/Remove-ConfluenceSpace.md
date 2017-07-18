@@ -1,6 +1,6 @@
 ---
 external help file: ConfluencePS-help.xml
-online version: https://github.com/brianbunke/ConfluencePS
+online version:
 schema: 2.0.0
 ---
 
@@ -47,7 +47,7 @@ Value can be set persistently with Set-ConfluenceInfo.
 ```yaml
 Type: Uri
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: True
 Position: Named
@@ -63,7 +63,7 @@ Value can be set persistently with Set-ConfluenceInfo.
 ```yaml
 Type: PSCredential
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: True
 Position: Named
@@ -95,7 +95,7 @@ TODO: Probably an extra param later to loop checking the status & wait for compl
 ```yaml
 Type: SwitchParameter
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: False
 Position: Named
@@ -145,5 +145,5 @@ Accept wildcard characters: False
 
 ## RELATED LINKS
 
-[https://github.com/brianbunke/ConfluencePS](https://github.com/brianbunke/ConfluencePS)
+[https://github.com/AtlassianPS/ConfluencePS](https://github.com/AtlassianPS/ConfluencePS)
 

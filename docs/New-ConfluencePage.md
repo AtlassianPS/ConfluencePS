@@ -1,6 +1,6 @@
 ---
 external help file: ConfluencePS-help.xml
-online version: 
+online version:
 schema: 2.0.0
 ---
 
@@ -31,28 +31,20 @@ Content needs to be in "Confluence storage format;" see also -Convert.
 
 ### -------------------------- EXAMPLE 1 --------------------------
 ```
-My Title</h1><p>The body of my fancy new page.</p>"
-```
-
-Creates a new page with a given title and body content (in "confluence's storeage format").
-The information of the created page is returned to the console.
-
-### -------------------------- EXAMPLE 2 --------------------------
-```
 New-ConfluencePage -Title 'Test New Page' -ParentID 123456 -Body 'Hello world' -Convert -WhatIf
 ```
 
 Creates a new page as a child member of existing page 123456 with one line of page text.
 The Body defined is converted to Storage fromat by the "-Convert" parameter
 
-### -------------------------- EXAMPLE 3 --------------------------
+### -------------------------- EXAMPLE 2 --------------------------
 ```
 New-ConfluencePage -Title "Luke Skywalker" -Parent (Get-ConfluencePage -title "Darth Vader" -SpaceKey "STARWARS")
 ```
 
 Creates a new page with an empty body as a child page of the "Parent Page" in the "space" page.
 
-### -------------------------- EXAMPLE 4 --------------------------
+### -------------------------- EXAMPLE 3 --------------------------
 ```
 [ConfluencePS.Page]@{Title="My Title";Space=[ConfluencePS.Space]@{Key="ABC"}} | New-ConfluencePage -ApiURi "https://myserver.com/wiki" -Credential $cred
 ```
@@ -68,7 +60,7 @@ Value can be set persistently with Set-ConfluenceInfo.
 ```yaml
 Type: Uri
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: True
 Position: Named
@@ -84,7 +76,7 @@ Value can be set persistently with Set-ConfluenceInfo.
 ```yaml
 Type: PSCredential
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: True
 Position: Named
@@ -99,7 +91,7 @@ Page Object
 ```yaml
 Type: Page
 Parameter Sets: byObject
-Aliases: 
+Aliases:
 
 Required: True
 Position: Named
@@ -130,7 +122,7 @@ NOTE: This feature is not in the 5.8 REST API documentation, and should be consi
 ```yaml
 Type: Int32
 Parameter Sets: byParameters
-Aliases: 
+Aliases:
 
 Required: False
 Position: Named
@@ -145,7 +137,7 @@ Page Object of the parent page.
 ```yaml
 Type: Page
 Parameter Sets: byParameters
-Aliases: 
+Aliases:
 
 Required: False
 Position: Named
@@ -161,7 +153,7 @@ Only needed if you don't utilize ParentID.
 ```yaml
 Type: String
 Parameter Sets: byParameters
-Aliases: 
+Aliases:
 
 Required: False
 Position: Named
@@ -176,7 +168,7 @@ Space Object in which to create the new page.
 ```yaml
 Type: Space
 Parameter Sets: byParameters
-Aliases: 
+Aliases:
 
 Required: False
 Position: Named
@@ -192,7 +184,7 @@ Accepts pipeline input by property name.
 ```yaml
 Type: String
 Parameter Sets: byParameters
-Aliases: 
+Aliases:
 
 Required: False
 Position: Named
@@ -207,7 +199,7 @@ Optional flag to call ConvertTo-ConfluenceStorageFormat against your Body.
 ```yaml
 Type: SwitchParameter
 Parameter Sets: byParameters
-Aliases: 
+Aliases:
 
 Required: False
 Position: Named
@@ -261,5 +253,5 @@ Accept wildcard characters: False
 
 [ConvertTo-ConfluenceStorageFormat]()
 
-[https://github.com/brianbunke/ConfluencePS](https://github.com/brianbunke/ConfluencePS)
+[https://github.com/AtlassianPS/ConfluencePS](https://github.com/AtlassianPS/ConfluencePS)
 
