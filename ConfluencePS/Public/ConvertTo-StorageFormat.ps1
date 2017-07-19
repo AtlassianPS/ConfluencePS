@@ -28,6 +28,7 @@
     https://github.com/brianbunke/ConfluencePS
     #>
     [CmdletBinding()]
+    [OutputType([String])]
     param (
         # The URi of the API interface.
         # Value can be set persistently with Set-ConfluenceInfo.
@@ -41,6 +42,7 @@
 
         # A string (in plain text and/or wiki markup) to be converted to storage format.
         [Parameter(
+            Position = 0,
             Mandatory = $true,
             ValueFromPipeline = $true
         )]
