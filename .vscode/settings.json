@@ -5,5 +5,12 @@
     "files.trimTrailingWhitespace": true,
     "files.insertFinalNewline": true,
     "editor.tabSize": 4,
-    "powershell.scriptAnalysis.settingsPath": "PSScriptAnalyzerSettings.psd1"
+    "powershell.scriptAnalysis.settingsPath": "PSScriptAnalyzerSettings.psd1",
+    "[markdown]": {
+        "editor.wordwrap": "on",
+        "editor.renderWhitespace": "all",
+        "editor.acceptSuggestionOnEnter": false,
+        "editor.rulers": [80],
+        "editor.trimAutoWhitespace": false
+    },
 }
