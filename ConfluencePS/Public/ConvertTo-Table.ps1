@@ -66,15 +66,15 @@
             If (!$HeaderGenerated) {
                 $_.PSObject.Properties |
                     ForEach-Object -Begin {$Header = ""} `
-                                   -Process {$Header += "||$($_.Name)"} `
-                                   -End {$Header += "||"}
+                    -Process {$Header += "||$($_.Name)"} `
+                    -End {$Header += "||"}
                 $RowArray.Add($Header) | Out-Null
                 $HeaderGenerated = $true
             }
             $_.PSObject.Properties |
                 ForEach-Object -Begin {$Row = ""} `
-                               -Process {$Row += "|$($_.Value)"} `
-                               -End {$Row += "|"}
+                -Process {$Row += "|$($_.Value)"} `
+                -End {$Row += "|"}
             $RowArray.Add($Row) | Out-Null
         }
     }

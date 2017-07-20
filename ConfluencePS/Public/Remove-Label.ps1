@@ -58,6 +58,8 @@
 
     BEGIN {
         Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function started"
+
+        $resourceApi = "$apiURi/content/{0}/label?name={1}"
     }
 
     PROCESS {
@@ -68,6 +70,12 @@
             $message = "The Object in the pipe is not a Page."
             $exception = New-Object -TypeName System.ArgumentException -ArgumentList $message
             Throw $exception
+        }
+
+        $iwParameters = @{
+            Uri        = ""
+            Method     = 'Delete'
+            Credential = $Credential
         }
 
         foreach ($_page in $PageID) {
@@ -82,10 +90,10 @@
             Write-Debug "[$($MyInvocation.MyCommand.Name)] Labels to remove: `$_labels"
 
             foreach ($_label in $_labels) {
-                $URI = "$apiURi/content/{0}/label?name={1}" -f $_page, $_label
+                $iwParameters["Uri"] = $resourceApi -f $_page, $_label
 
                 If ($PSCmdlet.ShouldProcess("Label $_label, PageID $_page")) {
-                    Invoke-Method -Uri $URI -Method Delete -Credential $Credential
+                    Invoke-Method @iwParameters
                 }
             }
         }

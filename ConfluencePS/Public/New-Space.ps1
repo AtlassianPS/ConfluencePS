@@ -66,13 +66,13 @@
 
     BEGIN {
         Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function started"
+
+        $resourceApi = "$apiURi/space"
     }
 
     PROCESS {
         Write-Debug "[$($MyInvocation.MyCommand.Name)] ParameterSetName: $($PsCmdlet.ParameterSetName)"
         Write-Debug "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
-
-        $URI = "$apiURi/space"
 
         if ($PsCmdlet.ParameterSetName -eq "byObject") {
             $SpaceKey = $InputObject.Key
@@ -80,20 +80,29 @@
             $Description = $InputObject.Description
         }
 
-        $Content = @{
-            key = $SpaceKey
-            name = $Name
+        $iwParameters = @{
+            Uri        = $resourceApi
+            Method     = 'Post'
+            Body       = ""
+            OutputType = [ConfluencePS.Space]
+            Credential = $Credential
+        }
+        $Body = @{
+            key         = $SpaceKey
+            name        = $Name
             description = @{
                 plain = @{
-                    value = $Description
+                    value          = $Description
                     representation = 'plain'
                 }
             }
-        } | ConvertTo-Json
+        }
 
-        Write-Debug "[$($MyInvocation.MyCommand.Name)] Content to be sent: $($Content | Out-String)"
+        $iwParameters["Body"] = $Body | ConvertTo-Json
+
+        Write-Debug "[$($MyInvocation.MyCommand.Name)] Content to be sent: $($Body | Out-String)"
         If ($PSCmdlet.ShouldProcess("$SpaceKey $Name")) {
-            Invoke-Method -Uri $URI -Body $Content -Method Post -Credential $Credential -OutputType ([ConfluencePS.Space])
+            Invoke-Method @iwParameters
         }
     }
 

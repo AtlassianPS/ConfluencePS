@@ -96,32 +96,40 @@ function New-Page {
 
     BEGIN {
         Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function started"
+
+        $resourceApi = "$apiURi/content"
     }
 
     PROCESS {
         Write-Debug "[$($MyInvocation.MyCommand.Name)] ParameterSetName: $($PsCmdlet.ParameterSetName)"
         Write-Debug "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
 
-        $URI = "$apiURi/content"
+        $iwParameters = @{
+            Uri        = $resourceApi
+            Method     = 'Post'
+            Body       = ""
+            OutputType = [ConfluencePS.Page]
+            Credential = $Credential
+        }
+        $Content = [PSObject]@{
+            type      = "page"
+            space     = [PSObject]@{ key = ""}
+            title     = ""
+            body      = [PSObject]@{
+                storage = [PSObject]@{
+                    representation = 'storage'
+                }
+            }
+            ancestors = @()
+        }
 
         switch ($PsCmdlet.ParameterSetName) {
             "byObject" {
-                $Content = @{
-                    type = "page"
-                    title = $InputObject.Title
-                    space = @{key = $InputObject.Space.Key}
-                    body = @{
-                        storage = @{
-                            value = $InputObject.Body
-                            representation = 'storage'
-                        }
-                    }
-                    ancestors = @()
-                }
-                # Ancestors is undocumented! May break in the future
-                # http://stackoverflow.com/questions/23523705/how-to-create-new-page-in-confluence-using-their-rest-api
+                $Content.title = $InputObject.Title
+                $Content.space.key = $InputObject.Space.Key
+                $Content.body.storage.value = $InputObject.Body
                 if ($InputObject.Ancestors) {
-                    $Content["ancestors"] += @( $InputObject.Ancestors | Foreach-Object { @{ id = $_.ID } } )
+                    $Content.ancestors += @( $InputObject.Ancestors | Foreach-Object { @{ id = $_.ID } } )
                 }
             }
             "byParameters" {
@@ -143,30 +151,20 @@ function New-Page {
                     $Body = ConvertTo-StorageFormat -Content $Body -ApiURi $apiURi -Credential $Credential
                 }
 
-                $Content = @{
-                    type = "page"
-                    title = $Title
-                    space = @{key = $SpaceKey}
-                    body = @{
-                        storage = @{
-                            value = $Body
-                            representation = 'storage'
-                        }
-                    }
-                }
-                # Ancestors is undocumented! May break in the future
-                # http://stackoverflow.com/questions/23523705/how-to-create-new-page-in-confluence-using-their-rest-api
+                $Content.title = $Title
+                $Content.space = @{ key = $SpaceKey }
+                $Content.body.storage.value = $Body
                 if ($ParentID) {
-                    $Content["ancestors"] = @( @{ id = $ParentID } )
+                    $Content.ancestors = @( @{ id = $ParentID } )
                 }
             }
         }
 
-        $Content = $Content | ConvertTo-Json
+        $iwParameters["Body"] = $Content | ConvertTo-Json
 
         Write-Debug "[$($MyInvocation.MyCommand.Name)] Content to be sent: $($Content | Out-String)"
-        If ($PSCmdlet.ShouldProcess("Space $SpaceKey, Parent $ParentID")) {
-            Invoke-Method -Uri $URI -Body $Content -Method Post -Credential $Credential -OutputType ([ConfluencePS.Page])
+        If ($PSCmdlet.ShouldProcess("Space $($Content.space.key)")) {
+            Invoke-Method @iwParameters
         }
     }
 

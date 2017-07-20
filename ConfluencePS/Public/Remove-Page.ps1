@@ -49,6 +49,8 @@
 
     BEGIN {
         Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function started"
+
+        $resourceApi = "$apiURi/content/{0}"
     }
 
     PROCESS {
@@ -61,11 +63,17 @@
             Throw $exception
         }
 
+        $iwParameters = @{
+            Uri        = ""
+            Method     = 'Delete'
+            Credential = $Credential
+        }
+
         foreach ($_page in $PageID) {
-            $URI = "$apiURi/content/{0}" -f $_page
+            $iwParameters["Uri"] = $resourceApi -f $_page
 
             If ($PSCmdlet.ShouldProcess("PageID $_page")) {
-                Invoke-Method -Uri $URI -Method Delete -Credential $Credential
+                Invoke-Method @iwParameters
             }
         }
     }
