@@ -8,11 +8,11 @@ function ConvertTo-HTMLEncoded {
     param (
         # String to encode
         [Parameter( Position = $true, Mandatory = $true, ValueFromPipeline = $true )]
-        [string]$inputString
+        [string]$InputString
     )
 
     PROCESS {
         Write-Verbose "[$($MyInvocation.MyCommand.Name)] Encoding string to HTML"
-        [System.Web.HttpUtility]::HtmlEncode($inputString)
+        [System.Web.HttpUtility]::HtmlEncode($InputString)
     }
 }

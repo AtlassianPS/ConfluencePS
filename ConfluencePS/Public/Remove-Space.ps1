@@ -34,6 +34,8 @@
     BEGIN {
         Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function started"
 
+        $resourceApi = "$apiURi/space/{0}"
+
         if ($Force) {
             Write-Debug "[$($MyInvocation.MyCommand.Name)] -Force was passed. Backing up current ConfirmPreference [$ConfirmPreference] and setting to None"
             $oldConfirmPreference = $ConfirmPreference
@@ -51,12 +53,17 @@
             Throw $exception
         }
 
-        foreach ($_space in $SpaceKey) {
-            $URI = "$apiURi/space/{0}" -f $_space
+        $iwParameters = @{
+            Uri        = ""
+            Method     = 'Delete'
+            Credential = $Credential
+        }
 
-            Write-Verbose "[$($MyInvocation.MyCommand.Name)] Sending delete request to $URI"
+        foreach ($_space in $SpaceKey) {
+            $iwParameters["Uri"] = $resourceApi -f $_space
+
             If ($PSCmdlet.ShouldProcess("Space key $_space")) {
-                $response = Invoke-Method -Uri $URI -Method Delete -Credential $Credential
+                $response = Invoke-Method @iwParameters
 
                 # Successful response provides a "longtask" status link
                 # (add additional code here later to check and/or wait for the status)

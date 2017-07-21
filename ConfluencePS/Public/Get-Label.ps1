@@ -34,6 +34,8 @@
 
     BEGIN {
         Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function started"
+
+        $resourceApi = "$apiURi/content/{0}/label"
     }
 
     PROCESS {
@@ -46,9 +48,19 @@
             Throw $exception
         }
 
+        $iwParameters = @{
+            Uri           = ""
+            Method        = 'Get'
+            GetParameters = @{
+                limit = $PageSize
+            }
+            OutputType    = [ConfluencePS.Label]
+            Credential    = $Credential
+        }
+
         # Paging
         ($PSCmdlet.PagingParameters | Get-Member -MemberType Property).Name | ForEach-Object {
-            $script:PSDefaultParameterValues["Invoke-WikiMethod:$_"] = $PSCmdlet.PagingParameters.$_
+            $iwParameters[$_] = $PSCmdlet.PagingParameters.$_
         }
 
         foreach ($_page in $PageID) {
@@ -58,16 +70,11 @@
             else {
                 $InputObject = Get-Page -PageID $_page -ApiURi $apiURi -Credential $Credential
             }
-
-            $URI = "$apiURi/content/{0}/label" -f $_page
-            If ($PageSize) { $GETparameters = @{limit = $PageSize}
-            }
-
-            $output = New-Object -TypeName ConfluencePS.ContentLabelSet -Property @{
-                Page = $InputObject
-            }
-
-            $output.Labels += (Invoke-Method -Uri $URI -Method Get -Credential $Credential -GetParameters $GETparameters -OutputType ([ConfluencePS.Label]))
+            $iwParameters["Uri"] = $resourceApi -f $_page
+            Write-debug "Hey"
+            $output = New-Object -TypeName ConfluencePS.ContentLabelSet
+            $output.Page = $InputObject
+            $output.Labels += (Invoke-Method @iwParameters)
             $output
         }
     }

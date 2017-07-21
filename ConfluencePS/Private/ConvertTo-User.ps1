@@ -8,17 +8,17 @@ function ConvertTo-User {
     [OutputType( [ConfluencePS.User] )]
     param (
         # object to convert
-        [Parameter( Mandatory = $true, ValueFromPipeline = $true )]
-        $inputObject
+        [Parameter( Position = 0, ValueFromPipeline = $true )]
+        $InputObject
     )
 
     Process {
-        foreach ($object in $inputObject) {
+        foreach ($object in $InputObject) {
             Write-Verbose "[$($MyInvocation.MyCommand.Name)] Converting Object to User"
             ($object | Select-Object `
                 username,
                 userKey,
-                @{Name = "profilePicture"; Expression = {$_.profilePicture | ConvertTo-Icon}},
+                @{Name = "profilePicture"; Expression = { ConvertTo-Icon $_.profilePicture }},
                 displayname
             ) -as [ConfluencePS.User]
         }

@@ -37,6 +37,8 @@
 
     BEGIN {
         Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function started"
+
+        $resourceApi = "$apiURi/content/{0}/label"
     }
 
     PROCESS {
@@ -53,7 +55,7 @@
         # The parameter "Label" has no type declared. Because of this, a piped object of
         # type "ConfluencePS.ContentLabelSet" will be assigned to "Label". Lets fix this:
         if ($_ -and $Label -is [ConfluencePS.ContentLabelSet]) {
-            $Label  = $Label.Labels
+            $Label = $Label.Labels
         }
 
         # Allow only for Label to be a [String[]] or [ConfluencePS.Label[]]
@@ -67,6 +69,14 @@
             $message = "Parameter 'Label' is not a Label or a String. It is $($Label.gettype().FullName)"
             $exception = New-Object -TypeName System.ArgumentException -ArgumentList $message
             Throw $exception
+        }
+
+        $iwParameters = @{
+            Uri        = ""
+            Method     = 'Post'
+            Body       = ""
+            OutputType = [ConfluencePS.Label]
+            Credential = $Credential
         }
 
         # Extract name if an Object is provided
@@ -85,15 +95,13 @@
                 $InputObject = Get-Page -PageID $_page -ApiURi $apiURi -Credential $Credential
             }
 
-            $URI = "$apiURi/content/{0}/label" -f $_page
+            $iwParameters["Uri"] = $resourceApi -f $_page
+            $iwParameters["Body"] = ($Label | Foreach-Object {@{prefix = 'global'; name = $_}}) | ConvertTo-Json
 
-            $Content = $Label | Foreach-Object {@{prefix = 'global'; name = $_}} | ConvertTo-Json
-
-            Write-Debug "[$($MyInvocation.MyCommand.Name)] Content to be sent: $($Content | Out-String)"
+            Write-Debug "[$($MyInvocation.MyCommand.Name)] Content to be sent: $($iwParameters["Body"] | Out-String)"
             If ($PSCmdlet.ShouldProcess("Label $Label, PageID $_page")) {
-                $output = New-Object -TypeName ConfluencePS.ContentLabelSet
-                $output.Page = $InputObject
-                $output.Labels += (Invoke-Method -Uri $URI -Body $Content -Method Post -Credential $Credential -OutputType ([ConfluencePS.Label]))
+                $output = [ConfluencePS.ContentLabelSet]@{ Page = $InputObject }
+                $output.Labels += (Invoke-Method @iwParameters)
                 $output
             }
         }
