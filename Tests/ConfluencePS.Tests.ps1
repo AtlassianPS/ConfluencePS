@@ -81,12 +81,12 @@ Describe "ConfluencePS" {
 
         # $changelogVersion = $null
         It "Changelog includes a valid version number" {
-            # $changelogVersion                | Should Not BeNullOrEmpty
-            # $changelogVersion -as [Version]  | Should Not BeNullOrEmpty
+            $changelogVersion                | Should Not BeNullOrEmpty
+            $changelogVersion -as [Version]  | Should Not BeNullOrEmpty
         }
 
         It "Changelog version matches manifest version" {
-            # $changelogVersion -as [Version] | Should Be ( $script:manifest.ModuleVersion -as [Version] )
+            $changelogVersion -as [Version] | Should Be ( $script:manifest.ModuleVersion -as [Version] )
         }
 
         # Back to me! Pester doesn't use AppVeyor, as far as I know, and I do.
