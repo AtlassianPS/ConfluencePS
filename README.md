@@ -57,7 +57,7 @@ Hopefully this is obvious, but:
 This is an open source project (under the [MIT license]). I am a volunteer, as are any other contributors. All commands are executed at your own risk. Please have good backups before you start, because you can delete a lot of stuff if you're not careful.
 
   [Confluence]: <https://www.atlassian.com/software/confluence>
-  [REST API]: <https://docs.atlassian.com/atlassian-/REST/latest/>
+  [REST API]: <https://docs.atlassian.com/atlassian-confluence/REST/latest/>
   [PowerShell Gallery]: <https://www.powershellgallery.com/>
   [thomykay]: <https://github.com/thomykay>
   [PoshConfluence]: <https://github.com/thomykay/PoshConfluence>
