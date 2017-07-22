@@ -4,7 +4,7 @@ online version:
 schema: 2.0.0
 ---
 
-# ConvertTo-ConfluenceTable
+# ConvertTo-Table
 
 ## SYNOPSIS
 Convert your content to Confluence's wiki markup table format.
@@ -12,7 +12,7 @@ Convert your content to Confluence's wiki markup table format.
 ## SYNTAX
 
 ```
-ConvertTo-ConfluenceTable [-Content] <Object> [-NoHeader]
+ConvertTo-Table [-Content] <Object> [-NoHeader]
 ```
 
 ## DESCRIPTION
@@ -24,14 +24,14 @@ This work is performed locally, and does not perform a REST call.
 
 ### -------------------------- EXAMPLE 1 --------------------------
 ```
-Get-Service | Select Name,DisplayName,Status -First 10 | ConvertTo-ConfluenceTable
+Get-Service | Select Name,DisplayName,Status -First 10 | ConvertTo-Table
 ```
 
 List the first ten services on your computer, and convert to a table in Confluence markup format.
 
 ### -------------------------- EXAMPLE 2 --------------------------
 ```
-$SvcTable = Get-Service | Select Name,Status -First 10 | ConvertTo-ConfluenceTable | ConvertTo-ConfluenceStorageFormat
+$SvcTable = Get-Service | Select Name,Status -First 10 | ConvertTo-Table | ConvertTo-ConfluenceStorageFormat
 ```
 
 Following Example 1, convert the table from wiki markup format into storage format.
@@ -39,7 +39,7 @@ Store the results in variable $SvcTable for a later New-ConfluencePage/Set-Confl
 
 ### -------------------------- EXAMPLE 3 --------------------------
 ```
-Get-Alias | Where {$_.Name.Length -eq 1} | Select CommandType,DisplayName | ConvertTo-ConfluenceTable -NoHeader
+Get-Alias | Where {$_.Name.Length -eq 1} | Select CommandType,DisplayName | ConvertTo-Table -NoHeader
 ```
 
 Make a table of all the one-character PowerShell aliases, and don't include the header row.

@@ -4,7 +4,7 @@ online version:
 schema: 2.0.0
 ---
 
-# Set-ConfluenceInfo
+# Set-Info
 
 ## SYNOPSIS
 Gather URI/auth info for use in this session's REST API requests.
@@ -12,7 +12,7 @@ Gather URI/auth info for use in this session's REST API requests.
 ## SYNTAX
 
 ```
-Set-ConfluenceInfo [[-BaseURi] <Uri>] [[-Credential] <PSCredential>] [[-PageSize] <Int32>] [-PromptCredentials]
+Set-Info [[-BaseURi] <Uri>] [[-Credential] <PSCredential>] [[-PageSize] <Int32>] [-PromptCredentials]
 ```
 
 ## DESCRIPTION
@@ -24,14 +24,14 @@ Confluence REST API supports passing basic authentication in headers.
 
 ### -------------------------- EXAMPLE 1 --------------------------
 ```
-Set-ConfluenceInfo -BaseURI 'https://brianbunke.atlassian.net/wiki' -PromptCredentials
+Set-Info -BaseURI 'https://brianbunke.atlassian.net/wiki' -PromptCredentials
 ```
 
 Declare your base install; be prompted for username and password.
 
 ### -------------------------- EXAMPLE 2 --------------------------
 ```
-Set-ConfluenceInfo -BaseURI $ConfluenceURL -Credential $MyCreds -PageSize 100
+Set-Info -BaseURI $ConfluenceURL -Credential $MyCreds -PageSize 100
 ```
 
 Sets the url, credentials and default page size for the session.

@@ -4,7 +4,7 @@ online version:
 schema: 2.0.0
 ---
 
-# ConvertTo-ConfluenceStorageFormat
+# ConvertTo-StorageFormat
 
 ## SYNOPSIS
 Convert your content to Confluence's storage format.
@@ -12,7 +12,7 @@ Convert your content to Confluence's storage format.
 ## SYNTAX
 
 ```
-ConvertTo-ConfluenceStorageFormat -apiURi <Uri> -Credential <PSCredential> [-Content] <String>
+ConvertTo-StorageFormat -apiURi <Uri> -Credential <PSCredential> [-Content] <String>
 ```
 
 ## DESCRIPTION
@@ -24,14 +24,14 @@ https://confluence.atlassian.com/doc/confluence-storage-format-790796544.html
 
 ### -------------------------- EXAMPLE 1 --------------------------
 ```
-$Body = ConvertTo-ConfluenceStorageFormat -Content 'Hello world!'
+$Body = ConvertTo-StorageFormat -Content 'Hello world!'
 ```
 
 Stores the returned value '\<p\>Hello world!\</p\>' in $Body for use in New-ConfluencePage/Set-ConfluencePage/etc.
 
 ### -------------------------- EXAMPLE 2 --------------------------
 ```
-Get-Date -Format s | ConvertTo-ConfluenceStorageFormat -ApiURi "https://myserver.com/wiki" -Credential $cred
+Get-Date -Format s | ConvertTo-StorageFormat -ApiURi "https://myserver.com/wiki" -Credential $cred
 ```
 
 Returns the current date/time in sortable format, and converts via pipeline input.
@@ -43,7 +43,7 @@ New-ConfluencePage -Title 'Loner Page' -SpaceKey TEST -Body $Body -Convert -Verb
 
 Creates a new page at the root of the specified space (no parent page).
 Verbose flag enabled.
-Need to invoke ConvertTo-ConfluenceStorageFormat on $Body to prep it for page creation.
+Need to invoke ConvertTo-StorageFormat on $Body to prep it for page creation.
 
 ## PARAMETERS
 

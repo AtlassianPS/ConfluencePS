@@ -1,47 +1,48 @@
 ---
 external help file: ConfluencePS-help.xml
-online version: https://github.com/brianbunke/ConfluencePS
+online version:
 schema: 2.0.0
 ---
 
-# Remove-ConfluencePage
+# Add-Label
 
 ## SYNOPSIS
-Trash an existing Confluence page.
+Add a new global label to an existing Confluence page.
 
 ## SYNTAX
 
 ```
-Remove-ConfluencePage -apiURi <Uri> -Credential <PSCredential> [-PageID] <Int32[]> [-WhatIf] [-Confirm]
+Add-Label -apiURi <Uri> -Credential <PSCredential> [[-PageID] <Int32[]>] -Label <Object> [-WhatIf]
+ [-Confirm]
 ```
 
 ## DESCRIPTION
-Delete existing Confluence content by page ID.
-This trashes most content, but will permanently delete "un-trashable" content.
-Untested against non-page content, but probably works anyway.
+Add one or more labels to one or more Confluence pages.
+Label can be brand new.
 
 ## EXAMPLES
 
 ### -------------------------- EXAMPLE 1 --------------------------
 ```
-Get-ConfluencePage -Title Oscar | Remove-ConfluencePage -Confirm
+Add-Label -ApiURi "https://myserver.com/wiki" -Credential $cred -Label alpha,bravo,charlie -PageID 123456 -Verbose
 ```
 
-Send Oscar to the trash.
-Each matching page will ask you to confirm the deletion.
+Apply the labels alpha, bravo, and charlie to the page with ID 123456.
+Verbose output.
 
 ### -------------------------- EXAMPLE 2 --------------------------
 ```
-Remove-ConfluencePage -ApiURi "https://myserver.com/wiki" -Credential $cred -PageID 12345,12346 -Verbose -WhatIf
+Get-Page -SpaceKey SRV | Add-Label -Label servers -WhatIf
 ```
 
-Simulates the removal of two specifc pages.
+Would apply the label "servers" to all pages in the space with key SRV.
+-WhatIf flag supported.
 
 ## PARAMETERS
 
 ### -apiURi
 The URi of the API interface.
-Value can be set persistently with Set-ConfluenceInfo.
+Value can be set persistently with Set-Info.
 
 ```yaml
 Type: Uri
@@ -72,7 +73,7 @@ Accept wildcard characters: False
 ```
 
 ### -PageID
-The page ID to delete.
+The page ID to apply the label to.
 Accepts multiple IDs via pipeline input.
 
 ```yaml
@@ -80,8 +81,24 @@ Type: Int32[]
 Parameter Sets: (All)
 Aliases: ID
 
-Required: True
+Required: False
 Position: 1
+Default value: None
+Accept pipeline input: True (ByPropertyName, ByValue)
+Accept wildcard characters: False
+```
+
+### -Label
+One or more labels to be added.
+Currently supports labels of prefix "global."
+
+```yaml
+Type: Object
+Parameter Sets: (All)
+Aliases: Labels
+
+Required: True
+Position: Named
 Default value: None
 Accept pipeline input: True (ByPropertyName, ByValue)
 Accept wildcard characters: False
@@ -122,7 +139,7 @@ Accept wildcard characters: False
 
 ## OUTPUTS
 
-### System.Boolean
+### ConfluencePS.ContentLabelSet
 
 ## NOTES
 

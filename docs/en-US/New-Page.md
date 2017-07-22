@@ -4,56 +4,52 @@ online version:
 schema: 2.0.0
 ---
 
-# Set-ConfluencePage
+# New-Page
 
 ## SYNOPSIS
-Edit an existing Confluence page.
+Create a new page in your Confluence instance.
 
 ## SYNTAX
 
 ### byParameters (Default)
 ```
-Set-ConfluencePage -apiURi <Uri> -Credential <PSCredential> -PageID <Int32> [-Title <String>] [-Body <String>]
- [-Convert] [-ParentID <Int32>] [-Parent <Page>] [-WhatIf] [-Confirm]
+New-Page -apiURi <Uri> -Credential <PSCredential> -Title <String> [-ParentID <Int32>]
+ [-Parent <Page>] [-SpaceKey <String>] [-Space <Space>] [-Body <String>] [-Convert] [-WhatIf] [-Confirm]
 ```
 
 ### byObject
 ```
-Set-ConfluencePage -apiURi <Uri> -Credential <PSCredential> -InputObject <Page> [-WhatIf] [-Confirm]
+New-Page -apiURi <Uri> -Credential <PSCredential> -InputObject <Page> [-WhatIf] [-Confirm]
 ```
 
 ## DESCRIPTION
-For existing page(s): Edit page content, page title, and/or change parent page.
-Content needs to be in "Confluence storage format." Use -Convert if not preconditioned.
+Create a new page in Confluence.
+Optionally include content in -Body.
+Content needs to be in "Confluence storage format;" see also -Convert.
 
 ## EXAMPLES
 
 ### -------------------------- EXAMPLE 1 --------------------------
 ```
-Get-ConfluencePage -Title 'My First Page' -Expand | Set-ConfluencePage -Body 'Hello World!' -Convert
+New-Page -Title 'Test New Page' -ParentID 123456 -Body 'Hello world' -Convert -WhatIf
 ```
 
-Probably the easiest edit method, overwriting contents with a short sentence.
-Use Get-ConfluencePage -Expand to pipe in PageID & CurrentVersion.
-(See "Get-Help Get-ConfluencePage -Examples" for help with -Expand and \>100 pages.)
--Convert molds the sentence into a format Confluence will accept.
+Creates a new page as a child member of existing page 123456 with one line of page text.
+The Body defined is converted to Storage fromat by the "-Convert" parameter
 
 ### -------------------------- EXAMPLE 2 --------------------------
 ```
-Get-ConfluencePage -Title 'Lew Alcindor' -Limit 100 -Expand | Set-ConfluencePage -Title 'Kareem Abdul-Jabbar' -Verbose
+New-Page -Title "Luke Skywalker" -Parent (Get-Page -title "Darth Vader" -SpaceKey "STARWARS")
 ```
 
-Change the page's name.
-Body remains the same, via piping the existing contents.
-Verbose flag active for additional screen output.
+Creates a new page with an empty body as a child page of the "Parent Page" in the "space" page.
 
 ### -------------------------- EXAMPLE 3 --------------------------
 ```
-Get-ConfluencePage -SpaceKey MATRIX | Set-ConfluencePage -Body 'Agent Smith' -Convert -WhatIf
+[ConfluencePS.Page]@{Title="My Title";Space=[ConfluencePS.Space]@{Key="ABC"}} | New-Page -ApiURi "https://myserver.com/wiki" -Credential $cred
 ```
 
-Overwrites the contents of all pages in the MATRIX space.
-WhatIf flag tells you how many pages would have been affected.
+Creates a new page "My Title" in the space "ABC" with an empty body.
 
 ## PARAMETERS
 
@@ -104,71 +100,24 @@ Accept pipeline input: True (ByValue)
 Accept wildcard characters: False
 ```
 
-### -PageID
-The ID of the page to edit
+### -Title
+Name of your new page.
 
 ```yaml
-Type: Int32
+Type: String
 Parameter Sets: byParameters
-Aliases: ID
+Aliases: Name
 
 Required: True
 Position: Named
-Default value: 0
+Default value: None
 Accept pipeline input: True (ByValue)
 Accept wildcard characters: False
 ```
 
-### -Title
-Name of the page; existing or new value can be used.
-Existing will be automatically supplied via Get-ConfluencePage if not manually included.
-
-```yaml
-Type: String
-Parameter Sets: byParameters
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Body
-The full contents of the updated body (existing contents will be overwritten).
-If not yet in "storage format"--or you don't know what that is--also use -Convert.
-
-```yaml
-Type: String
-Parameter Sets: byParameters
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Convert
-Optional switch flag for calling ConvertTo-ConfluenceStorageFormat against your Body.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: byParameters
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -ParentID
-Optionally define a new parent page.
-If unspecified, no change.
+The ID of the parent page.
+NOTE: This feature is not in the 5.8 REST API documentation, and should be considered experimental.
 
 ```yaml
 Type: Int32
@@ -183,8 +132,7 @@ Accept wildcard characters: False
 ```
 
 ### -Parent
-Optionally define a new parent page.
-If unspecified, no change.
+Page Object of the parent page.
 
 ```yaml
 Type: Page
@@ -194,6 +142,68 @@ Aliases:
 Required: False
 Position: Named
 Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -SpaceKey
+Key of the space where the new page should exist.
+Only needed if you don't utilize ParentID.
+
+```yaml
+Type: String
+Parameter Sets: byParameters
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Space
+Space Object in which to create the new page.
+
+```yaml
+Type: Space
+Parameter Sets: byParameters
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Body
+The contents of your new page.
+Accepts pipeline input by property name.
+
+```yaml
+Type: String
+Parameter Sets: byParameters
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Convert
+Optional flag to call ConvertTo-ConfluenceStorageFormat against your Body.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: byParameters
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -239,7 +249,7 @@ Accept wildcard characters: False
 
 ## RELATED LINKS
 
-[Get-ConfluencePage]()
+[Get-Page]()
 
 [ConvertTo-ConfluenceStorageFormat]()
 

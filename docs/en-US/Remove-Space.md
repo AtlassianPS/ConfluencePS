@@ -4,38 +4,39 @@ online version:
 schema: 2.0.0
 ---
 
-# Get-ConfluenceSpace
+# Remove-Space
 
 ## SYNOPSIS
-Retrieve a listing of spaces in your Confluence instance.
+Remove an existing Confluence space.
 
 ## SYNTAX
 
 ```
-Get-ConfluenceSpace -apiURi <Uri> -Credential <PSCredential> [[-SpaceKey] <String[]>] [-PageSize <Int32>]
- [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
+Remove-Space -apiURi <Uri> -Credential <PSCredential> [-SpaceKey] <String[]> [-Force] [-WhatIf]
+ [-Confirm]
 ```
 
 ## DESCRIPTION
-Fetch all Confluence spaces, optionally filtering by Name/Key/ID.
-Input for all parameters is not case sensitive.
-Piped output into other cmdlets is generally tested and supported.
+Delete an existing Confluence space, including child content.
+"The space is deleted in a long running task, so the space cannot be considered deleted when this resource returns."
 
 ## EXAMPLES
 
 ### -------------------------- EXAMPLE 1 --------------------------
 ```
-Get-ConfluenceSpace -ApiURi "https://myserver.com/wiki" -Credential $cred
+Remove-Space -ApiURi "https://myserver.com/wiki" -Credential $cred -Key ABC,XYZ -Confirm
 ```
 
-Display the info of all spaces on the server.
+Delete the space with key ABC and with key XYZ (note that key != name).
+Confirm will prompt before deletion.
 
 ### -------------------------- EXAMPLE 2 --------------------------
 ```
-Get-ConfluenceSpace -SpaceKey NASA
+Get-Space | Where {$_.Name -like "*old"} | Remove-Space -Verbose -WhatIf
 ```
 
-Display the info of the space with key "NASA".
+Get all spaces ending in 'old' and simulate the deletion of them.
+Would simulate the removal of each space one by one with verbose output; -WhatIf flag active.
 
 ## PARAMETERS
 
@@ -72,41 +73,24 @@ Accept wildcard characters: False
 ```
 
 ### -SpaceKey
-Filter results by key.
-Supports wildcard matching on partial input.
+The key (short code) of the space to delete.
+Accepts multiple keys via pipeline input.
 
 ```yaml
 Type: String[]
 Parameter Sets: (All)
 Aliases: Key
 
-Required: False
+Required: True
 Position: 1
 Default value: None
-Accept pipeline input: False
+Accept pipeline input: True (ByPropertyName, ByValue)
 Accept wildcard characters: False
 ```
 
-### -PageSize
-Maximimum number of results to fetch per call.
-This setting can be tuned to get better performance according to the load on the server.
-Warning: too high of a PageSize can cause a timeout on the request.
-
-```yaml
-Type: Int32
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: 25
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -IncludeTotalCount
-Causes an extra output of the total count at the beginning.
-Note this is actually a uInt64, but with a custom string representation.
+### -Force
+Forces the deletion of the space without prompting for confirmation.
+TODO: Probably an extra param later to loop checking the status & wait for completion?
 
 ```yaml
 Type: SwitchParameter
@@ -115,19 +99,19 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Skip
-Controls how many things will be skipped before starting output.
-Defaults to 0.
+### -WhatIf
+Shows what would happen if the cmdlet runs.
+The cmdlet is not run.
 
 ```yaml
-Type: UInt64
+Type: SwitchParameter
 Parameter Sets: (All)
-Aliases:
+Aliases: wi
 
 Required: False
 Position: Named
@@ -136,15 +120,13 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -First
-Currently not supported.
-Indicates how many items to return.
-Defaults to 100.
+### -Confirm
+Prompts you for confirmation before running the cmdlet.
 
 ```yaml
-Type: UInt64
+Type: SwitchParameter
 Parameter Sets: (All)
-Aliases:
+Aliases: cf
 
 Required: False
 Position: Named
@@ -157,7 +139,7 @@ Accept wildcard characters: False
 
 ## OUTPUTS
 
-### ConfluencePS.Space
+### System.Boolean
 
 ## NOTES
 

@@ -4,39 +4,39 @@ online version:
 schema: 2.0.0
 ---
 
-# Remove-ConfluenceSpace
+# Get-Label
 
 ## SYNOPSIS
-Remove an existing Confluence space.
+Returns the list of labels.
 
 ## SYNTAX
 
 ```
-Remove-ConfluenceSpace -apiURi <Uri> -Credential <PSCredential> [-SpaceKey] <String[]> [-Force] [-WhatIf]
- [-Confirm]
+Get-Label -apiURi <Uri> -Credential <PSCredential> [-PageID] <Int32[]> [-PageSize <Int32>]
+ [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
 ```
 
 ## DESCRIPTION
-Delete an existing Confluence space, including child content.
-"The space is deleted in a long running task, so the space cannot be considered deleted when this resource returns."
+View all labels applied to a content.
 
 ## EXAMPLES
 
 ### -------------------------- EXAMPLE 1 --------------------------
 ```
-Remove-ConfluenceSpace -ApiURi "https://myserver.com/wiki" -Credential $cred -Key ABC,XYZ -Confirm
+Get-Label -PageID 123456 -PageSize 500 -ApiURi "https://myserver.com/wiki" -Credential $cred
 ```
 
-Delete the space with key ABC and with key XYZ (note that key != name).
-Confirm will prompt before deletion.
+Lists the labels applied to page 123456.
+This also increases the size of the result's page from 25 to 500.
 
 ### -------------------------- EXAMPLE 2 --------------------------
 ```
-Get-ConfluenceSpace | Where {$_.Name -like "*old"} | Remove-ConfluenceSpace -Verbose -WhatIf
+Get-ConfluencePage -SpaceKey NASA | Get-Label -Verbose
 ```
 
-Get all spaces ending in 'old' and simulate the deletion of them.
-Would simulate the removal of each space one by one with verbose output; -WhatIf flag active.
+Get all pages that exist in NASA space (literally?).
+Search all of those pages (piped to -PageID) for all of their active labels.
+Verbose flag would be good here to keep track of the request.
 
 ## PARAMETERS
 
@@ -72,14 +72,14 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -SpaceKey
-The key (short code) of the space to delete.
-Accepts multiple keys via pipeline input.
+### -PageID
+List the PageID number to check for labels.
+Accepts piped input.
 
 ```yaml
-Type: String[]
+Type: Int32[]
 Parameter Sets: (All)
-Aliases: Key
+Aliases: ID
 
 Required: True
 Position: 1
@@ -88,9 +88,26 @@ Accept pipeline input: True (ByPropertyName, ByValue)
 Accept wildcard characters: False
 ```
 
-### -Force
-Forces the deletion of the space without prompting for confirmation.
-TODO: Probably an extra param later to loop checking the status & wait for completion?
+### -PageSize
+Maximimum number of results to fetch per call.
+This setting can be tuned to get better performance according to the load on the server.
+Warning: too high of a PageSize can cause a timeout on the request.
+
+```yaml
+Type: Int32
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: 25
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -IncludeTotalCount
+Causes an extra output of the total count at the beginning.
+Note this is actually a uInt64, but with a custom string representation.
 
 ```yaml
 Type: SwitchParameter
@@ -99,19 +116,19 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: False
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -WhatIf
-Shows what would happen if the cmdlet runs.
-The cmdlet is not run.
+### -Skip
+Controls how many things will be skipped before starting output.
+Defaults to 0.
 
 ```yaml
-Type: SwitchParameter
+Type: UInt64
 Parameter Sets: (All)
-Aliases: wi
+Aliases:
 
 Required: False
 Position: Named
@@ -120,13 +137,15 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Confirm
-Prompts you for confirmation before running the cmdlet.
+### -First
+Currently not supported.
+Indicates how many items to return.
+Defaults to 100.
 
 ```yaml
-Type: SwitchParameter
+Type: UInt64
 Parameter Sets: (All)
-Aliases: cf
+Aliases:
 
 Required: False
 Position: Named
@@ -139,7 +158,7 @@ Accept wildcard characters: False
 
 ## OUTPUTS
 
-### System.Boolean
+### ConfluencePS.ContentLabelSet
 
 ## NOTES
 

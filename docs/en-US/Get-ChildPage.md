@@ -4,39 +4,50 @@ online version:
 schema: 2.0.0
 ---
 
-# Get-ConfluenceLabel
+# Get-ChildPage
 
 ## SYNOPSIS
-Returns the list of labels.
+For a given wiki page, list all child wiki pages.
 
 ## SYNTAX
 
 ```
-Get-ConfluenceLabel -apiURi <Uri> -Credential <PSCredential> [-PageID] <Int32[]> [-PageSize <Int32>]
- [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
+Get-ChildPage -apiURi <Uri> -Credential <PSCredential> [-PageID] <Int32> [-Recurse]
+ [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
 ```
 
 ## DESCRIPTION
-View all labels applied to a content.
+Pipeline input of ParentID is accepted.
+
+This API method only returns the immediate children (results are not recursive).
 
 ## EXAMPLES
 
 ### -------------------------- EXAMPLE 1 --------------------------
 ```
-Get-ConfluenceLabel -PageID 123456 -PageSize 500 -ApiURi "https://myserver.com/wiki" -Credential $cred
+Get-ChildPage -ParentID 1234 | Select-Object ID, Title | Sort-Object Title
 ```
 
-Lists the labels applied to page 123456.
-This also increases the size of the result's page from 25 to 500.
+For the wiki page with ID 1234, get all pages immediately beneath it.
+Returns only each page's ID and Title, sorting results alphabetically by Title.
 
 ### -------------------------- EXAMPLE 2 --------------------------
 ```
-Get-ConfluencePage -SpaceKey NASA | Get-ConfluenceLabel -Verbose
+Get-ConfluencePage -Title 'Genghis Khan' | Get-ChildPage -Limit 500
 ```
 
-Get all pages that exist in NASA space (literally?).
-Search all of those pages (piped to -PageID) for all of their active labels.
-Verbose flag would be good here to keep track of the request.
+Find the Genghis Khan wiki page and pipe the results.
+Get only the first 500 children beneath that page.
+
+### -------------------------- EXAMPLE 3 --------------------------
+```
+Get-ChildPage -ParentID 9999 -Expand -Limit 100
+```
+
+For each child page found, expand the results to also include properties
+like Body and Version (Ver).
+Typically, using -Expand will not return
+more than 100 results, even if -Limit is set to a higher value.
 
 ## PARAMETERS
 
@@ -73,25 +84,38 @@ Accept wildcard characters: False
 ```
 
 ### -PageID
-List the PageID number to check for labels.
-Accepts piped input.
+Filter results by page ID.
 
 ```yaml
-Type: Int32[]
+Type: Int32
 Parameter Sets: (All)
 Aliases: ID
 
 Required: True
 Position: 1
-Default value: None
+Default value: 0
 Accept pipeline input: True (ByPropertyName, ByValue)
 Accept wildcard characters: False
 ```
 
+### -Recurse
+Get all child pages recursively
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -PageSize
-Maximimum number of results to fetch per call.
-This setting can be tuned to get better performance according to the load on the server.
-Warning: too high of a PageSize can cause a timeout on the request.
+Defaults to 25 max results; can be modified here.
+Numbers above 100 may not be honored if -Expand is used.
 
 ```yaml
 Type: Int32
@@ -100,7 +124,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: 25
+Default value: 0
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -158,7 +182,7 @@ Accept wildcard characters: False
 
 ## OUTPUTS
 
-### ConfluencePS.ContentLabelSet
+### ConfluencePS.Page
 
 ## NOTES
 

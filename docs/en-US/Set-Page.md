@@ -4,52 +4,56 @@ online version:
 schema: 2.0.0
 ---
 
-# New-ConfluencePage
+# Set-Page
 
 ## SYNOPSIS
-Create a new page in your Confluence instance.
+Edit an existing Confluence page.
 
 ## SYNTAX
 
 ### byParameters (Default)
 ```
-New-ConfluencePage -apiURi <Uri> -Credential <PSCredential> -Title <String> [-ParentID <Int32>]
- [-Parent <Page>] [-SpaceKey <String>] [-Space <Space>] [-Body <String>] [-Convert] [-WhatIf] [-Confirm]
+Set-Page -apiURi <Uri> -Credential <PSCredential> -PageID <Int32> [-Title <String>] [-Body <String>]
+ [-Convert] [-ParentID <Int32>] [-Parent <Page>] [-WhatIf] [-Confirm]
 ```
 
 ### byObject
 ```
-New-ConfluencePage -apiURi <Uri> -Credential <PSCredential> -InputObject <Page> [-WhatIf] [-Confirm]
+Set-Page -apiURi <Uri> -Credential <PSCredential> -InputObject <Page> [-WhatIf] [-Confirm]
 ```
 
 ## DESCRIPTION
-Create a new page in Confluence.
-Optionally include content in -Body.
-Content needs to be in "Confluence storage format;" see also -Convert.
+For existing page(s): Edit page content, page title, and/or change parent page.
+Content needs to be in "Confluence storage format." Use -Convert if not preconditioned.
 
 ## EXAMPLES
 
 ### -------------------------- EXAMPLE 1 --------------------------
 ```
-New-ConfluencePage -Title 'Test New Page' -ParentID 123456 -Body 'Hello world' -Convert -WhatIf
+Get-Page -Title 'My First Page' -Expand | Set-Page -Body 'Hello World!' -Convert
 ```
 
-Creates a new page as a child member of existing page 123456 with one line of page text.
-The Body defined is converted to Storage fromat by the "-Convert" parameter
+Probably the easiest edit method, overwriting contents with a short sentence.
+Use Get-Page -Expand to pipe in PageID & CurrentVersion.
+(See "Get-Help Get-Page -Examples" for help with -Expand and \>100 pages.)
+-Convert molds the sentence into a format Confluence will accept.
 
 ### -------------------------- EXAMPLE 2 --------------------------
 ```
-New-ConfluencePage -Title "Luke Skywalker" -Parent (Get-ConfluencePage -title "Darth Vader" -SpaceKey "STARWARS")
+Get-Page -Title 'Lew Alcindor' -Limit 100 -Expand | Set-Page -Title 'Kareem Abdul-Jabbar' -Verbose
 ```
 
-Creates a new page with an empty body as a child page of the "Parent Page" in the "space" page.
+Change the page's name.
+Body remains the same, via piping the existing contents.
+Verbose flag active for additional screen output.
 
 ### -------------------------- EXAMPLE 3 --------------------------
 ```
-[ConfluencePS.Page]@{Title="My Title";Space=[ConfluencePS.Space]@{Key="ABC"}} | New-ConfluencePage -ApiURi "https://myserver.com/wiki" -Credential $cred
+Get-Page -SpaceKey MATRIX | Set-Page -Body 'Agent Smith' -Convert -WhatIf
 ```
 
-Creates a new page "My Title" in the space "ABC" with an empty body.
+Overwrites the contents of all pages in the MATRIX space.
+WhatIf flag tells you how many pages would have been affected.
 
 ## PARAMETERS
 
@@ -100,73 +104,27 @@ Accept pipeline input: True (ByValue)
 Accept wildcard characters: False
 ```
 
-### -Title
-Name of your new page.
-
-```yaml
-Type: String
-Parameter Sets: byParameters
-Aliases: Name
-
-Required: True
-Position: Named
-Default value: None
-Accept pipeline input: True (ByValue)
-Accept wildcard characters: False
-```
-
-### -ParentID
-The ID of the parent page.
-NOTE: This feature is not in the 5.8 REST API documentation, and should be considered experimental.
+### -PageID
+The ID of the page to edit
 
 ```yaml
 Type: Int32
 Parameter Sets: byParameters
-Aliases:
+Aliases: ID
 
-Required: False
+Required: True
 Position: Named
 Default value: 0
-Accept pipeline input: False
+Accept pipeline input: True (ByValue)
 Accept wildcard characters: False
 ```
 
-### -Parent
-Page Object of the parent page.
-
-```yaml
-Type: Page
-Parameter Sets: byParameters
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -SpaceKey
-Key of the space where the new page should exist.
-Only needed if you don't utilize ParentID.
+### -Title
+Name of the page; existing or new value can be used.
+Existing will be automatically supplied via Get-Page if not manually included.
 
 ```yaml
 Type: String
-Parameter Sets: byParameters
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Space
-Space Object in which to create the new page.
-
-```yaml
-Type: Space
 Parameter Sets: byParameters
 Aliases:
 
@@ -178,8 +136,8 @@ Accept wildcard characters: False
 ```
 
 ### -Body
-The contents of your new page.
-Accepts pipeline input by property name.
+The full contents of the updated body (existing contents will be overwritten).
+If not yet in "storage format"--or you don't know what that is--also use -Convert.
 
 ```yaml
 Type: String
@@ -194,7 +152,7 @@ Accept wildcard characters: False
 ```
 
 ### -Convert
-Optional flag to call ConvertTo-ConfluenceStorageFormat against your Body.
+Optional switch flag for calling ConvertTo-ConfluenceStorageFormat against your Body.
 
 ```yaml
 Type: SwitchParameter
@@ -204,6 +162,38 @@ Aliases:
 Required: False
 Position: Named
 Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ParentID
+Optionally define a new parent page.
+If unspecified, no change.
+
+```yaml
+Type: Int32
+Parameter Sets: byParameters
+Aliases:
+
+Required: False
+Position: Named
+Default value: 0
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Parent
+Optionally define a new parent page.
+If unspecified, no change.
+
+```yaml
+Type: Page
+Parameter Sets: byParameters
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -249,7 +239,7 @@ Accept wildcard characters: False
 
 ## RELATED LINKS
 
-[Get-ConfluencePage]()
+[Get-Page]()
 
 [ConvertTo-ConfluenceStorageFormat]()
 

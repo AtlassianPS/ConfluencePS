@@ -4,46 +4,38 @@ online version:
 schema: 2.0.0
 ---
 
-# Remove-ConfluenceLabel
+# Get-Space
 
 ## SYNOPSIS
-Remove a label from existing Confluence content.
+Retrieve a listing of spaces in your Confluence instance.
 
 ## SYNTAX
 
 ```
-Remove-ConfluenceLabel -apiURi <Uri> -Credential <PSCredential> [-PageID] <Int32[]> [-Label <String[]>]
- [-WhatIf] [-Confirm]
+Get-Space -apiURi <Uri> -Credential <PSCredential> [[-SpaceKey] <String[]>] [-PageSize <Int32>]
+ [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
 ```
 
 ## DESCRIPTION
-Remove a single label from Confluence content.
-Does accept multiple pages piped via Get-ConfluencePage.
-Specifically tested against pages, but should work against all content IDs.
+Fetch all Confluence spaces, optionally filtering by Name/Key/ID.
+Input for all parameters is not case sensitive.
+Piped output into other cmdlets is generally tested and supported.
 
 ## EXAMPLES
 
 ### -------------------------- EXAMPLE 1 --------------------------
 ```
-Remove-ConfluenceLabel -ApiURi "https://myserver.com/wiki" -Credential $cred -Label seven -PageID 123456 -Verbose -Confirm
+Get-Space -ApiURi "https://myserver.com/wiki" -Credential $cred
 ```
 
-Would remove label "seven" from the page with ID 123456.
-Verbose and Confirm flags both active.
+Display the info of all spaces on the server.
 
 ### -------------------------- EXAMPLE 2 --------------------------
 ```
-Get-ConfluencePage -SpaceKey "ABC" | Remove-ConfluenceLabel -Label asdf -WhatIf
+Get-Space -SpaceKey NASA
 ```
 
-Would remove the label "asdf" from all pages in the ABC space.
-
-### -------------------------- EXAMPLE 3 --------------------------
-```
-(Get-ConfluenceSpace "ABC").Homepage | Remove-ConfluenceLabel
-```
-
-Removes all labels from the homepage of the ABC space.
+Display the info of the space with key "NASA".
 
 ## PARAMETERS
 
@@ -79,27 +71,45 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -PageID
-The page ID to remove the label from.
-Accepts multiple IDs via pipeline input.
-
-```yaml
-Type: Int32[]
-Parameter Sets: (All)
-Aliases: ID
-
-Required: True
-Position: 1
-Default value: None
-Accept pipeline input: True (ByPropertyName, ByValue)
-Accept wildcard characters: False
-```
-
-### -Label
-A single content label to remove from one or more pages.
+### -SpaceKey
+Filter results by key.
+Supports wildcard matching on partial input.
 
 ```yaml
 Type: String[]
+Parameter Sets: (All)
+Aliases: Key
+
+Required: False
+Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -PageSize
+Maximimum number of results to fetch per call.
+This setting can be tuned to get better performance according to the load on the server.
+Warning: too high of a PageSize can cause a timeout on the request.
+
+```yaml
+Type: Int32
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: 25
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -IncludeTotalCount
+Causes an extra output of the total count at the beginning.
+Note this is actually a uInt64, but with a custom string representation.
+
+```yaml
+Type: SwitchParameter
 Parameter Sets: (All)
 Aliases:
 
@@ -110,14 +120,14 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -WhatIf
-Shows what would happen if the cmdlet runs.
-The cmdlet is not run.
+### -Skip
+Controls how many things will be skipped before starting output.
+Defaults to 0.
 
 ```yaml
-Type: SwitchParameter
+Type: UInt64
 Parameter Sets: (All)
-Aliases: wi
+Aliases:
 
 Required: False
 Position: Named
@@ -126,13 +136,15 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Confirm
-Prompts you for confirmation before running the cmdlet.
+### -First
+Currently not supported.
+Indicates how many items to return.
+Defaults to 100.
 
 ```yaml
-Type: SwitchParameter
+Type: UInt64
 Parameter Sets: (All)
-Aliases: cf
+Aliases:
 
 Required: False
 Position: Named
@@ -145,7 +157,7 @@ Accept wildcard characters: False
 
 ## OUTPUTS
 
-### System.Boolean
+### ConfluencePS.Space
 
 ## NOTES
 

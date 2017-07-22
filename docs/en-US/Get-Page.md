@@ -4,7 +4,7 @@ online version:
 schema: 2.0.0
 ---
 
-# Get-ConfluencePage
+# Get-Page
 
 ## SYNOPSIS
 Retrieve a listing of pages in your Confluence instance.
@@ -13,31 +13,31 @@ Retrieve a listing of pages in your Confluence instance.
 
 ### byId (Default)
 ```
-Get-ConfluencePage -ApiURi <Uri> -Credential <PSCredential> [-PageID] <Int32[]> [-PageSize <Int32>]
+Get-Page -ApiURi <Uri> -Credential <PSCredential> [-PageID] <Int32[]> [-PageSize <Int32>]
  [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
 ```
 
 ### byTitle
 ```
-Get-ConfluencePage -ApiURi <Uri> -Credential <PSCredential> -Title <String> [-SpaceKey <String>]
+Get-Page -ApiURi <Uri> -Credential <PSCredential> -Title <String> [-SpaceKey <String>]
  [-Space <Space>] [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
 ```
 
 ### byLabel
 ```
-Get-ConfluencePage -ApiURi <Uri> -Credential <PSCredential> [-SpaceKey <String>] [-Space <Space>]
+Get-Page -ApiURi <Uri> -Credential <PSCredential> [-SpaceKey <String>] [-Space <Space>]
  -Label <String[]> [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
 ```
 
 ### bySpace
 ```
-Get-ConfluencePage -ApiURi <Uri> -Credential <PSCredential> -SpaceKey <String> [-PageSize <Int32>]
+Get-Page -ApiURi <Uri> -Credential <PSCredential> -SpaceKey <String> [-PageSize <Int32>]
  [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
 ```
 
 ### bySpaceObject
 ```
-Get-ConfluencePage -ApiURi <Uri> -Credential <PSCredential> -Space <Space> [-PageSize <Int32>]
+Get-Page -ApiURi <Uri> -Credential <PSCredential> -Space <Space> [-PageSize <Int32>]
  [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
 ```
 
@@ -49,7 +49,7 @@ Piped output into other cmdlets is generally tested and supported.
 
 ### -------------------------- EXAMPLE 1 --------------------------
 ```
-Get-ConfluencePage -ApiURi "https://myserver.com/wiki" -Credential $cred | Select-Object ID, Title -first 500 | Sort-Object Title
+Get-Page -ApiURi "https://myserver.com/wiki" -Credential $cred | Select-Object ID, Title -first 500 | Sort-Object Title
 ```
 
 List the first 500 pages found in your Confluence instance.
@@ -57,7 +57,7 @@ Returns only each page's ID and Title, sorting results alphabetically by Title.
 
 ### -------------------------- EXAMPLE 2 --------------------------
 ```
-Get-ConfluencePage -Title Confluence -SpaceKey "ABC" -PageSize 100
+Get-Page -Title Confluence -SpaceKey "ABC" -PageSize 100
 ```
 
 Get all pages with the word Confluence in the title in the 'ABC' sapce.
@@ -66,30 +66,30 @@ to the server are limited to 100 pages per call.
 
 ### -------------------------- EXAMPLE 3 --------------------------
 ```
-Get-ConfluenceSpace -Name Demo | Get-ConfluencePage
+Get-ConfluenceSpace -Name Demo | Get-Page
 ```
 
 Get all spaces with a name like *demo*, and then list pages from each returned space.
 
 ### -------------------------- EXAMPLE 4 --------------------------
 ```
-$FinalCountdown = Get-ConfluencePage -PageID 54321
+$FinalCountdown = Get-Page -PageID 54321
 ```
 
 Store the page's ID, Title, Space Key, Version, and Body for use later in your script.
 
 ### -------------------------- EXAMPLE 5 --------------------------
 ```
-$WhereIsShe = Get-ConfluencePage -Title 'Rachel'
+$WhereIsShe = Get-Page -Title 'Rachel'
 ```
 
 Search Batman's 1000 pages for Rachel in order to find the correct page ID(s).
 Search again, this time piping in the page ID(s), to also capture version and body from the expanded results.
-Store them in a variable for later use (e.g. Set-ConfluencePage).
+Store them in a variable for later use (e.g. Set-Page).
 
 ### -------------------------- EXAMPLE 6 --------------------------
 ```
-$meetingPages = Get-ConfluencePage -Label "meeting-notes" -SpaceKey PROJ1
+$meetingPages = Get-Page -Label "meeting-notes" -SpaceKey PROJ1
 ```
 
 Captures all the meeting note pages in the Proj1 Space.

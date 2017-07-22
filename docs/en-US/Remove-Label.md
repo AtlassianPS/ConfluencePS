@@ -4,38 +4,46 @@ online version:
 schema: 2.0.0
 ---
 
-# Set-ConfluenceLabel
+# Remove-Label
 
 ## SYNOPSIS
-Sets the label for an existing Confluence content.
+Remove a label from existing Confluence content.
 
 ## SYNTAX
 
 ```
-Set-ConfluenceLabel -apiURi <Uri> -Credential <PSCredential> [-PageID] <Int32[]> -Label <String[]> [-WhatIf]
- [-Confirm]
+Remove-Label -apiURi <Uri> -Credential <PSCredential> [-PageID] <Int32[]> [-Label <String[]>]
+ [-WhatIf] [-Confirm]
 ```
 
 ## DESCRIPTION
-Sets the label for Confluence content.
-All previous labels will be removed in the process.
+Remove a single label from Confluence content.
+Does accept multiple pages piped via Get-ConfluencePage.
+Specifically tested against pages, but should work against all content IDs.
 
 ## EXAMPLES
 
 ### -------------------------- EXAMPLE 1 --------------------------
 ```
-Set-ConfluenceLabel -ApiURi "https://myserver.com/wiki" -Credential $cred -Label seven -PageID 123456 -Verbose -Confirm
+Remove-Label -ApiURi "https://myserver.com/wiki" -Credential $cred -Label seven -PageID 123456 -Verbose -Confirm
 ```
 
-Would remove any label previously assigned to the page with ID 123456 and would add the label "seven"
+Would remove label "seven" from the page with ID 123456.
 Verbose and Confirm flags both active.
 
 ### -------------------------- EXAMPLE 2 --------------------------
 ```
-Get-ConfluencePage -SpaceKey "ABC" | Set-ConfluenceLabel -Label "asdf","qwer" -WhatIf
+Get-ConfluencePage -SpaceKey "ABC" | Remove-Label -Label asdf -WhatIf
 ```
 
-Would remove all labels and adds "asdf" and "qwer" to all pages in the ABC space.
+Would remove the label "asdf" from all pages in the ABC space.
+
+### -------------------------- EXAMPLE 3 --------------------------
+```
+(Get-ConfluenceSpace "ABC").Homepage | Remove-Label
+```
+
+Removes all labels from the homepage of the ABC space.
 
 ## PARAMETERS
 
@@ -88,14 +96,14 @@ Accept wildcard characters: False
 ```
 
 ### -Label
-Label names to add to the content.
+A single content label to remove from one or more pages.
 
 ```yaml
 Type: String[]
 Parameter Sets: (All)
 Aliases:
 
-Required: True
+Required: False
 Position: Named
 Default value: None
 Accept pipeline input: False
@@ -137,7 +145,7 @@ Accept wildcard characters: False
 
 ## OUTPUTS
 
-### ConfluencePS.ContentLabelSet
+### System.Boolean
 
 ## NOTES
 

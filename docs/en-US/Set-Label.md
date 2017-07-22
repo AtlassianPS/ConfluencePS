@@ -4,44 +4,38 @@ online version:
 schema: 2.0.0
 ---
 
-# New-ConfluenceSpace
+# Set-Label
 
 ## SYNOPSIS
-Create a new blank space in your Confluence instance.
+Sets the label for an existing Confluence content.
 
 ## SYNTAX
 
-### byObject (Default)
 ```
-New-ConfluenceSpace -apiURi <Uri> -Credential <PSCredential> -InputObject <Space> [-WhatIf] [-Confirm]
-```
-
-### byProperties
-```
-New-ConfluenceSpace -apiURi <Uri> -Credential <PSCredential> -SpaceKey <String> -Name <String>
- [-Description <String>] [-WhatIf] [-Confirm]
+Set-Label -apiURi <Uri> -Credential <PSCredential> [-PageID] <Int32[]> -Label <String[]> [-WhatIf]
+ [-Confirm]
 ```
 
 ## DESCRIPTION
-Create a new blank space.
-Key and Name mandatory, Description recommended.
+Sets the label for Confluence content.
+All previous labels will be removed in the process.
 
 ## EXAMPLES
 
 ### -------------------------- EXAMPLE 1 --------------------------
 ```
-[ConfluencePS.Space]@{key="TEST";Name="Test Space"} | New-ConfluenceSpace -ApiURi "https://myserver.com/wiki" -Credential $cred
+Set-Label -ApiURi "https://myserver.com/wiki" -Credential $cred -Label seven -PageID 123456 -Verbose -Confirm
 ```
 
-Create the new blank space.
-Runs Set-ConfluenceInfo first if instance info unknown.
+Would remove any label previously assigned to the page with ID 123456 and would add the label "seven"
+Verbose and Confirm flags both active.
 
 ### -------------------------- EXAMPLE 2 --------------------------
 ```
-New-ConfluenceSpace -Key 'TEST' -Name 'Test Space' -Description 'New blank space via REST API' -Verbose
+Get-ConfluencePage -SpaceKey "ABC" | Set-Label -Label "asdf","qwer" -WhatIf
 ```
 
-Create the new blank space with the optional description and verbose output.
+Would remove all labels and adds "asdf" and "qwer" to all pages in the ABC space.
 
 ## PARAMETERS
 
@@ -77,60 +71,31 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -InputObject
-Space Object
+### -PageID
+The page ID to remove the label from.
+Accepts multiple IDs via pipeline input.
 
 ```yaml
-Type: Space
-Parameter Sets: byObject
-Aliases:
+Type: Int32[]
+Parameter Sets: (All)
+Aliases: ID
 
 Required: True
-Position: Named
+Position: 1
 Default value: None
-Accept pipeline input: True (ByValue)
+Accept pipeline input: True (ByPropertyName, ByValue)
 Accept wildcard characters: False
 ```
 
-### -SpaceKey
-Specify the short key to be used in the space URI.
+### -Label
+Label names to add to the content.
 
 ```yaml
-Type: String
-Parameter Sets: byProperties
-Aliases: Key
-
-Required: True
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Name
-Specify the space's name.
-
-```yaml
-Type: String
-Parameter Sets: byProperties
+Type: String[]
+Parameter Sets: (All)
 Aliases:
 
 Required: True
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Description
-A short description of the new space.
-
-```yaml
-Type: String
-Parameter Sets: byProperties
-Aliases:
-
-Required: False
 Position: Named
 Default value: None
 Accept pipeline input: False
@@ -172,7 +137,7 @@ Accept wildcard characters: False
 
 ## OUTPUTS
 
-### ConfluencePS.Space
+### ConfluencePS.ContentLabelSet
 
 ## NOTES
 
