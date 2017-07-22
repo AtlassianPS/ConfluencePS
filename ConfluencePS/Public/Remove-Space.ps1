@@ -3,7 +3,8 @@
         ConfirmImpact = 'High',
         SupportsShouldProcess = $true
     )]
-    [OutputType([Bool])]
+    [OutputType()]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage('PSUseDeclaredVarsMoreThanAssignments', '')]
     param (
         # The URi of the API interface.
         # Value can be set persistently with Set-ConfluenceInfo.

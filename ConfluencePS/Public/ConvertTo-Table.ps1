@@ -1,5 +1,6 @@
 ﻿function ConvertTo-Table {
     [CmdletBinding()]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage('PSUseDeclaredVarsMoreThanAssignments', '')]
     param (
         # Object array you would like to see displayed as a table on a wiki page.
         [Parameter(

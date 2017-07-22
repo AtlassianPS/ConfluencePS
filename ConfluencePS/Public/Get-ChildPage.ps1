@@ -1,8 +1,5 @@
 ﻿function Get-ChildPage {
-    [CmdletBinding(
-        SupportsPaging = $true,
-        DefaultParameterSetName = "byID"
-    )]
+    [CmdletBinding( SupportsPaging = $true )]
     [OutputType([ConfluencePS.Page])]
     param (
         # The URi of the API interface.
@@ -20,8 +17,7 @@
             Position = 0,
             Mandatory = $true,
             ValueFromPipeline = $true,
-            ValueFromPipelineByPropertyName = $true,
-            ParameterSetName = "byID"
+            ValueFromPipelineByPropertyName = $true
         )]
         [ValidateRange(1, [int]::MaxValue)]
         [Alias('ID')]

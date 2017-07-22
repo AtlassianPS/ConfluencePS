@@ -1,5 +1,6 @@
 ﻿function Set-Info {
     [CmdletBinding()]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage('PSUseShouldProcessForStateChangingFunctions', '')]
     param (
         # Address of your base Confluence install. For Atlassian Cloud instances, include /wiki.
         [Parameter(

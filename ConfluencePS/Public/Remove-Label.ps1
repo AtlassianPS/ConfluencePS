@@ -59,7 +59,7 @@
                 Write-Verbose "[$($MyInvocation.MyCommand.Name)] Collecting all Labels for page $_page"
                 $allLabels = Get-Label -PageID $_page -ApiURi $apiURi -Credential $Credential
                 if ($allLabels.Labels) {
-                    $_labels = $allLabels.Labels | Select -ExpandProperty Name
+                    $_labels = $allLabels.Labels | Select-Object -ExpandProperty Name
                 }
             }
             Write-Debug "[$($MyInvocation.MyCommand.Name)] Labels to remove: `$_labels"

@@ -81,7 +81,7 @@
 
         # Extract name if an Object is provided
         if (($Label -is [ConfluencePS.Label]) -or $Label -is [ConfluencePS.Label[]]) {
-            $Label = $Label | Select -ExpandProperty Name
+            $Label = $Label | Select-Object -ExpandProperty Name
         }
 
         foreach ($_page in $PageID) {
