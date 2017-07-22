@@ -71,7 +71,6 @@ deploy:
     description: ''
     auth_token:
         secure: GPFmkrGf5ufcdQZiGVbfdBefIjcgVRJFutY8xf5+98B/jf18ZiiRZclAps3jFFLd
-    # artifact: /.*\.nupkg/            # upload all NuGet packages to release assets
     draft: false
     prerelease: false
     on:
