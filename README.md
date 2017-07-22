@@ -67,5 +67,5 @@ This is an open source project (under the [MIT license]). I am a volunteer, as a
   [Check this out]: <https://github.com/juneb/PowerShellHelpDeepDive>
   [MIT license]: <https://github.com/brianbunke/ConfluencePS/blob/master/LICENSE>
 
-[//]: # (Sweet online markdown editor at http://dillinger.io)
-[//]: # ("GitHub Flavored Markdown" https://help.github.com/articles/github-flavored-markdown/)
+<!-- [//]: # (Sweet online markdown editor at http://dillinger.io) -->
+<!-- [//]: # ("GitHub Flavored Markdown" https://help.github.com/articles/github-flavored-markdown/) -->
