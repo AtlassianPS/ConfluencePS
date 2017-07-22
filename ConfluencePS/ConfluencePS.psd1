@@ -12,16 +12,16 @@
     RootModule        = 'ConfluencePS.psm1'
 
     # Version number of this module.
-    ModuleVersion     = '1.0'
+    ModuleVersion     = '1.0.0'
 
     # ID used to uniquely identify this module
     GUID              = '20d32089-48ef-464d-ba73-6ada240e26b3'
 
     # Author of this module
-    Author            = 'Brian Bunke'
+    Author            = 'AtlassianPS'
 
     # Company or vendor of this module
-    CompanyName       = 'Community'
+    CompanyName       = 'AtlassianPS'
 
     # Copyright statement for this module
     Copyright         = 'MIT License'
@@ -60,28 +60,28 @@
     # TypesToProcess = @()
 
     # Format files (.ps1xml) to be loaded when importing this module
-    # FormatsToProcess = @()
+    FormatsToProcess = @("ConfluencePS.format.ps1xml")
 
     # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
     # NestedModules = @()
 
     # Functions to export from this module
     FunctionsToExport = @(
-        'ConvertTo-WikiStorageFormat',
-        'ConvertTo-WikiTable',
-        'Get-WikiChildPage',
-        'Get-WikiLabelApplied',
-        'Get-WikiPage',
-        'Get-WikiPageLabel',
-        'Get-WikiSpace',
-        'New-WikiLabel',
-        'New-WikiPage',
-        'New-WikiSpace',
-        'Remove-WikiLabel',
-        'Remove-WikiPage',
-        'Remove-WikiSpace',
-        'Set-WikiInfo',
-        'Set-WikiPage'
+        'Add-Label',
+        'ConvertTo-StorageFormat',
+        'ConvertTo-Table',
+        'Get-ChildPage',
+        'Get-Label',
+        'Get-Page',
+        'Get-Space',
+        'New-Page',
+        'New-Space',
+        'Remove-Label',
+        'Remove-Page',
+        'Remove-Space',
+        'Set-Info',
+        'Set-Label',
+        'Set-Page'
     )
 
     # Cmdlets to export from this module
@@ -111,10 +111,10 @@
             Tags       = @('confluence', 'wiki', 'atlassian')
 
             # A URL to the license for this module.
-            LicenseUri = 'https://github.com/brianbunke/ConfluencePS/blob/master/LICENSE'
+            LicenseUri = 'https://github.com/AtlassianPS/ConfluencePS/blob/master/LICENSE'
 
             # A URL to the main website for this project.
-            ProjectUri = 'https://github.com/brianbunke/ConfluencePS'
+            ProjectUri = 'https://github.com/AtlassianPS/ConfluencePS'
 
             # A URL to an icon representing this module.
             # IconUri = ''
@@ -130,6 +130,6 @@
     # HelpInfoURI = ''
 
     # Default prefix for commands exported from this module. Override the default prefix using Import-Module -Prefix.
-    # DefaultCommandPrefix = ''
+    DefaultCommandPrefix = 'Confluence'
 
 }
