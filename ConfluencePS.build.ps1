@@ -25,7 +25,9 @@ Set-StrictMode -Version Latest
 
 # region debug information
 task ShowDebug {
-    Write-Build Gray
+    Write-Build Green
+    Write-Build Green ('Env:                       {0}' -f $env:WikiURI)
+    Write-Build Green
     Write-Build Gray ('Project name:               {0}' -f $env:APPVEYOR_PROJECT_NAME)
     Write-Build Gray ('Project root:               {0}' -f $env:APPVEYOR_BUILD_FOLDER)
     Write-Build Gray ('Repo name:                  {0}' -f $env:APPVEYOR_REPO_NAME)
@@ -125,7 +127,7 @@ task CreateHelp {
 }
 
 # Synopsis: Generate .\Release structure
-task GenerateRelease {
+task GenerateRelease CreateHelp, {
     # Setup
     if (-not (Test-Path "$releasePath\ConfluencePS")) {
         $null = New-Item -Path "$releasePath\ConfluencePS" -ItemType Directory
@@ -180,7 +182,6 @@ $ConvertMarkdown = @{
 }
 # Synopsis: Converts *.md and *.markdown files to *.htm
 task ConvertMarkdown -Partial @ConvertMarkdown InstallPandoc, {process {
-        Write-Build Green "Converting File: $_"
         exec { Tools\pandoc.exe $_ --standalone --from=markdown_github "--output=$2" }
     }
 }, RemoveMarkdownFiles
