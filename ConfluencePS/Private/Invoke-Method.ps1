@@ -146,7 +146,7 @@ function Invoke-Method {
                     # API returned a Content: lets work wit it
                     $response = ConvertFrom-Json -InputObject $webResponse.Content
 
-                    if ($response.errors -ne $null) {
+                    if ($null -ne $response.errors) {
                         Write-Verbose "[$($MyInvocation.MyCommand.Name)] An error response was received from; resolving"
                         # This could be handled nicely in an function such as:
                         # ResolveError $response -WriteError

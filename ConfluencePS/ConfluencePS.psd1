@@ -9,25 +9,25 @@
 @{
 
     # Script module or binary module file associated with this manifest.
-    RootModule = 'ConfluencePS.psm1'
+    RootModule        = 'ConfluencePS.psm1'
 
     # Version number of this module.
-    ModuleVersion = '1.0'
+    ModuleVersion     = '1.0.0'
 
     # ID used to uniquely identify this module
-    GUID = '20d32089-48ef-464d-ba73-6ada240e26b3'
+    GUID              = '20d32089-48ef-464d-ba73-6ada240e26b3'
 
     # Author of this module
-    Author = 'Brian Bunke'
+    Author            = 'AtlassianPS'
 
     # Company or vendor of this module
-    CompanyName = 'Community'
+    CompanyName       = 'AtlassianPS'
 
     # Copyright statement for this module
-    Copyright = 'MIT License'
+    Copyright         = 'MIT License'
 
     # Description of the functionality provided by this module
-    Description = 'PowerShell module to interact with the Atlassian Confluence REST API'
+    Description       = 'PowerShell module to interact with the Atlassian Confluence REST API'
 
     # Minimum version of the Windows PowerShell engine required by this module
     PowerShellVersion = '3.0'
@@ -103,18 +103,18 @@
     # FileList = @()
 
     # Private data to pass to the module specified in RootModule/ModuleToProcess. This may also contain a PSData hashtable with additional module metadata used by PowerShell.
-    PrivateData = @{
+    PrivateData       = @{
 
         PSData = @{
 
             # Tags applied to this module. These help with module discovery in online galleries.
-            Tags = @('confluence', 'wiki', 'atlassian')
+            Tags       = @('confluence', 'wiki', 'atlassian')
 
             # A URL to the license for this module.
-            LicenseUri = 'https://github.com/brianbunke/ConfluencePS/blob/master/LICENSE'
+            LicenseUri = 'https://github.com/AtlassianPS/ConfluencePS/blob/master/LICENSE'
 
             # A URL to the main website for this project.
-            ProjectUri = 'https://github.com/brianbunke/ConfluencePS'
+            ProjectUri = 'https://github.com/AtlassianPS/ConfluencePS'
 
             # A URL to an icon representing this module.
             # IconUri = ''
