@@ -25,9 +25,7 @@ Set-StrictMode -Version Latest
 
 # region debug information
 task ShowDebug {
-    Write-Build Green
-    Write-Build Green ('Env:                       {0}' -f $env:WikiURI)
-    Write-Build Green
+    Write-Build Grey
     Write-Build Gray ('Project name:               {0}' -f $env:APPVEYOR_PROJECT_NAME)
     Write-Build Gray ('Project root:               {0}' -f $env:APPVEYOR_BUILD_FOLDER)
     Write-Build Gray ('Repo name:                  {0}' -f $env:APPVEYOR_REPO_NAME)
