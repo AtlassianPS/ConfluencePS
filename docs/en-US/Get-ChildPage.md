@@ -1,53 +1,59 @@
 ---
 external help file: ConfluencePS-help.xml
-online version:
+online version: https://github.com/AtlassianPS/ConfluencePS/blob/master/docs/en-US/Get-ChildPage.md
+locale: en-US
 schema: 2.0.0
 ---
 
 # Get-ChildPage
 
 ## SYNOPSIS
-For a given wiki page, list all child wiki pages.
+List all child pages of a specific wiki page.
 
 ## SYNTAX
 
-```
-Get-ChildPage -apiURi <Uri> -Credential <PSCredential> [-PageID] <Int32> [-Recurse]
- [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
+```powershell
+Get-ChildPage -apiURi <Uri> -Credential <PSCredential> [-PageID] <Int32> [-Recurse] [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
 ```
 
 ## DESCRIPTION
-Pipeline input of ParentID is accepted.
-
-This API method only returns the immediate children (results are not recursive).
+Get all pages that are descendants of a given page.
 
 ## EXAMPLES
 
 ### -------------------------- EXAMPLE 1 --------------------------
-```
+```powershell
 Get-ChildPage -ParentID 1234 | Select-Object ID, Title | Sort-Object Title
 ```
+
+Description
+
+-----------
 
 For the wiki page with ID 1234, get all pages immediately beneath it.
 Returns only each page's ID and Title, sorting results alphabetically by Title.
 
 ### -------------------------- EXAMPLE 2 --------------------------
+```powershell
+Get-Page -Title 'Genghis Khan' | Get-ChildPage | Select -First 500
 ```
-Get-ConfluencePage -Title 'Genghis Khan' | Get-ChildPage -Limit 500
-```
+
+Description
+
+-----------
 
 Find the Genghis Khan wiki page and pipe the results.
 Get only the first 500 children beneath that page.
 
 ### -------------------------- EXAMPLE 3 --------------------------
-```
-Get-ChildPage -ParentID 9999 -Expand -Limit 100
+```powershell
+Get-ChildPage -ParentID 9999 -Recurse
 ```
 
-For each child page found, expand the results to also include properties
-like Body and Version (Ver).
-Typically, using -Expand will not return
-more than 100 results, even if -Limit is set to a higher value.
+Description
+
+-----------
+Fetch all child pages of page 9999 recursively.
 
 ## PARAMETERS
 
@@ -114,8 +120,9 @@ Accept wildcard characters: False
 ```
 
 ### -PageSize
-Defaults to 25 max results; can be modified here.
-Numbers above 100 may not be honored if -Expand is used.
+Maximum number of results to fetch per call.
+This setting can be tuned to get better performance according to the load on the server.
+Warning: too high of a PageSize can cause a timeout on the request.
 
 ```yaml
 Type: Int32
@@ -124,7 +131,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: 0
+Default value: 25
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -156,15 +163,14 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: 0
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
 ### -First
-Currently not supported.
 Indicates how many items to return.
-Defaults to 100.
+Currently not supported.
 
 ```yaml
 Type: UInt64
@@ -173,7 +179,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: 18446744073709551615
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -187,6 +193,8 @@ Accept wildcard characters: False
 ## NOTES
 
 ## RELATED LINKS
+
+[Get-Page]()
 
 [https://github.com/AtlassianPS/ConfluencePS](https://github.com/AtlassianPS/ConfluencePS)
 

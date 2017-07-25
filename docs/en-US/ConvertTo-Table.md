@@ -1,6 +1,7 @@
 ---
 external help file: ConfluencePS-help.xml
-online version:
+online version: https://github.com/AtlassianPS/ConfluencePS/blob/master/docs/en-US/ConvertTo-Table.md
+locale: en-US
 schema: 2.0.0
 ---
 
@@ -11,7 +12,7 @@ Convert your content to Confluence's wiki markup table format.
 
 ## SYNTAX
 
-```
+```powershell
 ConvertTo-Table [-Content] <Object> [-NoHeader]
 ```
 
@@ -23,24 +24,36 @@ This work is performed locally, and does not perform a REST call.
 ## EXAMPLES
 
 ### -------------------------- EXAMPLE 1 --------------------------
-```
+```powershell
 Get-Service | Select Name,DisplayName,Status -First 10 | ConvertTo-Table
 ```
+
+Description
+
+-----------
 
 List the first ten services on your computer, and convert to a table in Confluence markup format.
 
 ### -------------------------- EXAMPLE 2 --------------------------
-```
+```powershell
 $SvcTable = Get-Service | Select Name,Status -First 10 | ConvertTo-Table | ConvertTo-ConfluenceStorageFormat
 ```
+
+Description
+
+-----------
 
 Following Example 1, convert the table from wiki markup format into storage format.
 Store the results in variable $SvcTable for a later New-ConfluencePage/Set-ConfluencePage command.
 
 ### -------------------------- EXAMPLE 3 --------------------------
-```
+```powershell
 Get-Alias | Where {$_.Name.Length -eq 1} | Select CommandType,DisplayName | ConvertTo-Table -NoHeader
 ```
+
+Description
+
+-----------
 
 Make a table of all the one-character PowerShell aliases, and don't include the header row.
 

@@ -1,6 +1,7 @@
 ---
 external help file: ConfluencePS-help.xml
-online version:
+online version: https://github.com/AtlassianPS/ConfluencePS/blob/master/docs/en-US/Remove-Label.md
+locale: en-US
 schema: 2.0.0
 ---
 
@@ -11,37 +12,48 @@ Remove a label from existing Confluence content.
 
 ## SYNTAX
 
-```
-Remove-Label -apiURi <Uri> -Credential <PSCredential> [-PageID] <Int32[]> [-Label <String[]>]
- [-WhatIf] [-Confirm]
+```powershell
+Remove-Label -apiURi <Uri> -Credential <PSCredential> [-PageID] <Int32[]> [-Label <String[]>] [-WhatIf] [-Confirm]
 ```
 
 ## DESCRIPTION
-Remove a single label from Confluence content.
+Remove labels from Confluence content.
 Does accept multiple pages piped via Get-ConfluencePage.
 Specifically tested against pages, but should work against all content IDs.
 
 ## EXAMPLES
 
 ### -------------------------- EXAMPLE 1 --------------------------
-```
+```powershell
 Remove-Label -ApiURi "https://myserver.com/wiki" -Credential $cred -Label seven -PageID 123456 -Verbose -Confirm
 ```
+
+Description
+
+-----------
 
 Would remove label "seven" from the page with ID 123456.
 Verbose and Confirm flags both active.
 
 ### -------------------------- EXAMPLE 2 --------------------------
-```
+```powershell
 Get-ConfluencePage -SpaceKey "ABC" | Remove-Label -Label asdf -WhatIf
 ```
+
+Description
+
+-----------
 
 Would remove the label "asdf" from all pages in the ABC space.
 
 ### -------------------------- EXAMPLE 3 --------------------------
-```
+```powershell
 (Get-ConfluenceSpace "ABC").Homepage | Remove-Label
 ```
+
+Description
+
+-----------
 
 Removes all labels from the homepage of the ABC space.
 
@@ -150,6 +162,10 @@ Accept wildcard characters: False
 ## NOTES
 
 ## RELATED LINKS
+
+[Add-Label]()
+[Get-Label]()
+[Set-Label]()
 
 [https://github.com/AtlassianPS/ConfluencePS](https://github.com/AtlassianPS/ConfluencePS)
 

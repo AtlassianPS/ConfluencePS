@@ -1,23 +1,24 @@
 ---
 external help file: ConfluencePS-help.xml
-online version:
+online version: https://github.com/AtlassianPS/ConfluencePS/blob/master/docs/en-US/New-Space.md
+locale: en-US
 schema: 2.0.0
 ---
 
 # New-Space
 
 ## SYNOPSIS
-Create a new blank space in your Confluence instance.
+Create a new blank space on your Confluence instance.
 
 ## SYNTAX
 
 ### byObject (Default)
-```
+```powershell
 New-Space -apiURi <Uri> -Credential <PSCredential> -InputObject <Space> [-WhatIf] [-Confirm]
 ```
 
 ### byProperties
-```
+```powershell
 New-Space -apiURi <Uri> -Credential <PSCredential> -SpaceKey <String> -Name <String>
  [-Description <String>] [-WhatIf] [-Confirm]
 ```
@@ -29,17 +30,24 @@ Key and Name mandatory, Description recommended.
 ## EXAMPLES
 
 ### -------------------------- EXAMPLE 1 --------------------------
-```
+```powershell
 [ConfluencePS.Space]@{key="TEST";Name="Test Space"} | New-Space -ApiURi "https://myserver.com/wiki" -Credential $cred
 ```
 
+Description
+
+-----------
+
 Create the new blank space.
-Runs Set-ConfluenceInfo first if instance info unknown.
 
 ### -------------------------- EXAMPLE 2 --------------------------
-```
+```powershell
 New-Space -Key 'TEST' -Name 'Test Space' -Description 'New blank space via REST API' -Verbose
 ```
+
+Description
+
+-----------
 
 Create the new blank space with the optional description and verbose output.
 
@@ -78,7 +86,7 @@ Accept wildcard characters: False
 ```
 
 ### -InputObject
-Space Object
+Space Object from which to create the new space.
 
 ```yaml
 Type: Space
@@ -177,6 +185,9 @@ Accept wildcard characters: False
 ## NOTES
 
 ## RELATED LINKS
+
+[Get-Space]()
+[Remove-Space]()
 
 [https://github.com/AtlassianPS/ConfluencePS](https://github.com/AtlassianPS/ConfluencePS)
 

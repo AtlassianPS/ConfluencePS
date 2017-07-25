@@ -1,6 +1,7 @@
 ---
 external help file: ConfluencePS-help.xml
-online version:
+online version: https://github.com/AtlassianPS/ConfluencePS/blob/master/docs/en-US/Set-Page.md
+locale: en-US
 schema: 2.0.0
 ---
 
@@ -12,13 +13,12 @@ Edit an existing Confluence page.
 ## SYNTAX
 
 ### byParameters (Default)
-```
-Set-Page -apiURi <Uri> -Credential <PSCredential> -PageID <Int32> [-Title <String>] [-Body <String>]
- [-Convert] [-ParentID <Int32>] [-Parent <Page>] [-WhatIf] [-Confirm]
+```powershell
+Set-Page -apiURi <Uri> -Credential <PSCredential> -PageID <Int32> [-Title <String>] [-Body <String>] [-Convert] [-ParentID <Int32>] [-Parent <Page>] [-WhatIf] [-Confirm]
 ```
 
 ### byObject
-```
+```powershell
 Set-Page -apiURi <Uri> -Credential <PSCredential> -InputObject <Page> [-WhatIf] [-Confirm]
 ```
 
@@ -29,28 +29,40 @@ Content needs to be in "Confluence storage format." Use -Convert if not precondi
 ## EXAMPLES
 
 ### -------------------------- EXAMPLE 1 --------------------------
-```
+```powershell
 Get-Page -Title 'My First Page' -Expand | Set-Page -Body 'Hello World!' -Convert
 ```
 
+Description
+
+-----------
+
 Probably the easiest edit method, overwriting contents with a short sentence.
-Use Get-Page -Expand to pipe in PageID & CurrentVersion.
-(See "Get-Help Get-Page -Examples" for help with -Expand and \>100 pages.)
+Use Get-Page to pipe in PageID & CurrentVersion.
+(See "Get-Help Get-Page -Examples" for help)
 -Convert molds the sentence into a format Confluence will accept.
 
 ### -------------------------- EXAMPLE 2 --------------------------
-```
+```powershell
 Get-Page -Title 'Lew Alcindor' -Limit 100 -Expand | Set-Page -Title 'Kareem Abdul-Jabbar' -Verbose
 ```
+
+Description
+
+-----------
 
 Change the page's name.
 Body remains the same, via piping the existing contents.
 Verbose flag active for additional screen output.
 
 ### -------------------------- EXAMPLE 3 --------------------------
-```
+```powershell
 Get-Page -SpaceKey MATRIX | Set-Page -Body 'Agent Smith' -Convert -WhatIf
 ```
+
+Description
+
+-----------
 
 Overwrites the contents of all pages in the MATRIX space.
 WhatIf flag tells you how many pages would have been affected.
@@ -90,7 +102,7 @@ Accept wildcard characters: False
 ```
 
 ### -InputObject
-Page Object
+Page Object which will be used to replace the current content.
 
 ```yaml
 Type: Page
@@ -105,7 +117,7 @@ Accept wildcard characters: False
 ```
 
 ### -PageID
-The ID of the page to edit
+The ID of the page to edit.
 
 ```yaml
 Type: Int32
@@ -240,6 +252,8 @@ Accept wildcard characters: False
 ## RELATED LINKS
 
 [Get-Page]()
+[New-Page]()
+[Remove-Page]()
 
 [ConvertTo-ConfluenceStorageFormat]()
 

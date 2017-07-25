@@ -1,9 +1,9 @@
 ---
 external help file: ConfluencePS-help.xml
-online version:
+online version: https://github.com/AtlassianPS/ConfluencePS/blob/master/docs/en-US/Get-Space.md
+locale: en-US
 schema: 2.0.0
 ---
-
 # Get-Space
 
 ## SYNOPSIS
@@ -11,9 +11,8 @@ Retrieve a listing of spaces in your Confluence instance.
 
 ## SYNTAX
 
-```
-Get-Space -apiURi <Uri> -Credential <PSCredential> [[-SpaceKey] <String[]>] [-PageSize <Int32>]
- [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
+```powershell
+Get-Space -apiURi <Uri> -Credential <PSCredential> [[-SpaceKey] <String[]>] [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
 ```
 
 ## DESCRIPTION
@@ -24,16 +23,24 @@ Piped output into other cmdlets is generally tested and supported.
 ## EXAMPLES
 
 ### -------------------------- EXAMPLE 1 --------------------------
-```
+```powershell
 Get-Space -ApiURi "https://myserver.com/wiki" -Credential $cred
 ```
+
+Description
+
+-----------
 
 Display the info of all spaces on the server.
 
 ### -------------------------- EXAMPLE 2 --------------------------
-```
+```powershell
 Get-Space -SpaceKey NASA
 ```
+
+Description
+
+-----------
 
 Display the info of the space with key "NASA".
 
@@ -88,7 +95,7 @@ Accept wildcard characters: False
 ```
 
 ### -PageSize
-Maximimum number of results to fetch per call.
+Maximum number of results to fetch per call.
 This setting can be tuned to get better performance according to the load on the server.
 Warning: too high of a PageSize can cause a timeout on the request.
 
@@ -131,7 +138,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: 0
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -139,7 +146,6 @@ Accept wildcard characters: False
 ### -First
 Currently not supported.
 Indicates how many items to return.
-Defaults to 100.
 
 ```yaml
 Type: UInt64
@@ -148,7 +154,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: 18446744073709551615
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -162,6 +168,9 @@ Accept wildcard characters: False
 ## NOTES
 
 ## RELATED LINKS
+
+[New-Space]()
+[Remove-Space]()
 
 [https://github.com/AtlassianPS/ConfluencePS](https://github.com/AtlassianPS/ConfluencePS)
 

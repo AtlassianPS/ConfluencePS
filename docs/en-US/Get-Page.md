@@ -1,6 +1,7 @@
 ---
 external help file: ConfluencePS-help.xml
-online version:
+online version: https://github.com/AtlassianPS/ConfluencePS/blob/master/docs/en-US/Get-Page.md
+locale: en-US
 schema: 2.0.0
 ---
 
@@ -12,33 +13,28 @@ Retrieve a listing of pages in your Confluence instance.
 ## SYNTAX
 
 ### byId (Default)
-```
-Get-Page -ApiURi <Uri> -Credential <PSCredential> [-PageID] <Int32[]> [-PageSize <Int32>]
- [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
+```powershell
+Get-Page -ApiURi <Uri> -Credential <PSCredential> [-PageID] <Int32[]> [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
 ```
 
 ### byTitle
-```
-Get-Page -ApiURi <Uri> -Credential <PSCredential> -Title <String> [-SpaceKey <String>]
- [-Space <Space>] [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
+```powershell
+Get-Page -ApiURi <Uri> -Credential <PSCredential> -Title <String> [-SpaceKey <String>] [-Space <Space>] [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
 ```
 
 ### byLabel
-```
-Get-Page -ApiURi <Uri> -Credential <PSCredential> [-SpaceKey <String>] [-Space <Space>]
- -Label <String[]> [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
+```powershell
+Get-Page -ApiURi <Uri> -Credential <PSCredential> [-SpaceKey <String>] [-Space <Space>] -Label <String[]> [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
 ```
 
 ### bySpace
-```
-Get-Page -ApiURi <Uri> -Credential <PSCredential> -SpaceKey <String> [-PageSize <Int32>]
- [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
+```powershell
+Get-Page -ApiURi <Uri> -Credential <PSCredential> -SpaceKey <String> [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
 ```
 
 ### bySpaceObject
-```
-Get-Page -ApiURi <Uri> -Credential <PSCredential> -Space <Space> [-PageSize <Int32>]
- [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
+```powershell
+Get-Page -ApiURi <Uri> -Credential <PSCredential> -Space <Space> [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
 ```
 
 ## DESCRIPTION
@@ -48,49 +44,70 @@ Piped output into other cmdlets is generally tested and supported.
 ## EXAMPLES
 
 ### -------------------------- EXAMPLE 1 --------------------------
-```
+```powershell
 Get-Page -ApiURi "https://myserver.com/wiki" -Credential $cred | Select-Object ID, Title -first 500 | Sort-Object Title
 ```
+
+Description
+
+-----------
 
 List the first 500 pages found in your Confluence instance.
 Returns only each page's ID and Title, sorting results alphabetically by Title.
 
 ### -------------------------- EXAMPLE 2 --------------------------
-```
+```powershell
 Get-Page -Title Confluence -SpaceKey "ABC" -PageSize 100
 ```
 
+Description
+
+-----------
+
 Get all pages with the word Confluence in the title in the 'ABC' sapce.
-The calls
-to the server are limited to 100 pages per call.
+Each call to the server is limited to 100 pages.
 
 ### -------------------------- EXAMPLE 3 --------------------------
-```
+```powershell
 Get-ConfluenceSpace -Name Demo | Get-Page
 ```
+
+Description
+
+-----------
 
 Get all spaces with a name like *demo*, and then list pages from each returned space.
 
 ### -------------------------- EXAMPLE 4 --------------------------
-```
+```powershell
 $FinalCountdown = Get-Page -PageID 54321
 ```
+
+Description
+
+-----------
 
 Store the page's ID, Title, Space Key, Version, and Body for use later in your script.
 
 ### -------------------------- EXAMPLE 5 --------------------------
-```
+```powershell
 $WhereIsShe = Get-Page -Title 'Rachel'
 ```
 
-Search Batman's 1000 pages for Rachel in order to find the correct page ID(s).
-Search again, this time piping in the page ID(s), to also capture version and body from the expanded results.
-Store them in a variable for later use (e.g. Set-Page).
+Description
+
+-----------
+
+Search for Rachel in order to find the correct page ID(s).
 
 ### -------------------------- EXAMPLE 6 --------------------------
-```
+```powershell
 $meetingPages = Get-Page -Label "meeting-notes" -SpaceKey PROJ1
 ```
+
+Description
+
+-----------
 
 Captures all the meeting note pages in the Proj1 Space.
 
@@ -130,7 +147,7 @@ Accept wildcard characters: False
 
 ### -PageID
 Filter results by page ID.
-Best option if you already know the ID, as it bypasses result limit problems.
+Best option if you already know the ID.
 
 ```yaml
 Type: Int32[]
@@ -160,7 +177,7 @@ Accept wildcard characters: False
 ```
 
 ### -SpaceKey
-Filter results by key.
+Filter results by space key.
 Currently, this parameter is case sensitive.
 
 ```yaml
@@ -230,7 +247,7 @@ Accept wildcard characters: False
 ```
 
 ### -PageSize
-Maximimum number of results to fetch per call.
+Maximum number of results to fetch per call.
 This setting can be tuned to get better performance according to the load on the server.
 Warning: too high of a PageSize can cause a timeout on the request.
 
@@ -273,7 +290,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: 0
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -290,7 +307,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: 18446744073709551615
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -304,6 +321,10 @@ Accept wildcard characters: False
 ## NOTES
 
 ## RELATED LINKS
+
+[New-Page]()
+[Remove-Page]()
+[Set-Page]()
 
 [https://github.com/AtlassianPS/ConfluencePS](https://github.com/AtlassianPS/ConfluencePS)
 

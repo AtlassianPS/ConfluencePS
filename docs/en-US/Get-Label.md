@@ -1,41 +1,41 @@
 ---
 external help file: ConfluencePS-help.xml
-online version:
+online version: https://github.com/AtlassianPS/ConfluencePS/blob/master/docs/en-US/Get-Label.md
+locale: en-US
 schema: 2.0.0
 ---
 
 # Get-Label
 
 ## SYNOPSIS
-Returns the list of labels.
+Returns a list of labels.
 
 ## SYNTAX
 
-```
+```powershell
 Get-Label -apiURi <Uri> -Credential <PSCredential> [-PageID] <Int32[]> [-PageSize <Int32>]
  [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
 ```
 
 ## DESCRIPTION
-View all labels applied to a content.
+Get all labels applied to a specific content.
 
 ## EXAMPLES
 
 ### -------------------------- EXAMPLE 1 --------------------------
-```
+```powershell
 Get-Label -PageID 123456 -PageSize 500 -ApiURi "https://myserver.com/wiki" -Credential $cred
 ```
-
 Lists the labels applied to page 123456.
-This also increases the size of the result's page from 25 to 500.
+This also increases the size of results per page from 25 to 500.
 
 ### -------------------------- EXAMPLE 2 --------------------------
+```powershell
+Get-Page -SpaceKey NASA | Get-Label -Verbose
 ```
-Get-ConfluencePage -SpaceKey NASA | Get-Label -Verbose
-```
-
 Get all pages that exist in NASA space (literally?).
-Search all of those pages (piped to -PageID) for all of their active labels.
+Search all of those pages (PageID will be provided over the pipe) for all of
+their active labels.
 Verbose flag would be good here to keep track of the request.
 
 ## PARAMETERS
@@ -89,7 +89,7 @@ Accept wildcard characters: False
 ```
 
 ### -PageSize
-Maximimum number of results to fetch per call.
+Maximum number of results to fetch per call.
 This setting can be tuned to get better performance according to the load on the server.
 Warning: too high of a PageSize can cause a timeout on the request.
 
@@ -132,15 +132,14 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: 0
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
 ### -First
-Currently not supported.
 Indicates how many items to return.
-Defaults to 100.
+Currently not supported.
 
 ```yaml
 Type: UInt64
@@ -149,7 +148,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: 18446744073709551615
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -163,6 +162,11 @@ Accept wildcard characters: False
 ## NOTES
 
 ## RELATED LINKS
+
+[Add-Label]()
+[Get-Page]()
+[Remove-Label]()
+[Set-Page]()
 
 [https://github.com/AtlassianPS/ConfluencePS](https://github.com/AtlassianPS/ConfluencePS)
 

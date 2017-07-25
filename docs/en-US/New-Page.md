@@ -1,53 +1,65 @@
 ---
 external help file: ConfluencePS-help.xml
-online version:
+online version: https://github.com/AtlassianPS/ConfluencePS/blob/master/docs/en-US/New-Page.md
+locale: en-US
 schema: 2.0.0
 ---
 
 # New-Page
 
 ## SYNOPSIS
-Create a new page in your Confluence instance.
+Create a new page on your Confluence instance.
 
 ## SYNTAX
 
 ### byParameters (Default)
-```
-New-Page -apiURi <Uri> -Credential <PSCredential> -Title <String> [-ParentID <Int32>]
- [-Parent <Page>] [-SpaceKey <String>] [-Space <Space>] [-Body <String>] [-Convert] [-WhatIf] [-Confirm]
+```powershell
+New-Page -apiURi <Uri> -Credential <PSCredential> -Title <String> [-ParentID <Int32>] [-Parent <Page>] [-SpaceKey <String>] [-Space <Space>] [-Body <String>] [-Convert] [-WhatIf] [-Confirm]
 ```
 
 ### byObject
-```
+```powershell
 New-Page -apiURi <Uri> -Credential <PSCredential> -InputObject <Page> [-WhatIf] [-Confirm]
 ```
 
 ## DESCRIPTION
-Create a new page in Confluence.
+Create a new page on Confluence.
 Optionally include content in -Body.
 Content needs to be in "Confluence storage format;" see also -Convert.
 
 ## EXAMPLES
 
 ### -------------------------- EXAMPLE 1 --------------------------
-```
+```powershell
 New-Page -Title 'Test New Page' -ParentID 123456 -Body 'Hello world' -Convert -WhatIf
 ```
 
+Description
+
+-----------
+
 Creates a new page as a child member of existing page 123456 with one line of page text.
-The Body defined is converted to Storage fromat by the "-Convert" parameter
+The Body defined is converted to Storage format by the "-Convert" parameter
 
 ### -------------------------- EXAMPLE 2 --------------------------
-```
+```powershell
 New-Page -Title "Luke Skywalker" -Parent (Get-Page -title "Darth Vader" -SpaceKey "STARWARS")
 ```
 
-Creates a new page with an empty body as a child page of the "Parent Page" in the "space" page.
+Description
+
+-----------
+
+Creates a new page with an empty body as a child page of the "Darth Vader" page in Space "STARWARS".
 
 ### -------------------------- EXAMPLE 3 --------------------------
-```
+```powershell
 [ConfluencePS.Page]@{Title="My Title";Space=[ConfluencePS.Space]@{Key="ABC"}} | New-Page -ApiURi "https://myserver.com/wiki" -Credential $cred
 ```
+
+Description
+
+-----------
 
 Creates a new page "My Title" in the space "ABC" with an empty body.
 
@@ -86,7 +98,7 @@ Accept wildcard characters: False
 ```
 
 ### -InputObject
-Page Object
+A Page Object from which to create a new page.
 
 ```yaml
 Type: Page
@@ -132,7 +144,7 @@ Accept wildcard characters: False
 ```
 
 ### -Parent
-Page Object of the parent page.
+Parent page as Page Object.
 
 ```yaml
 Type: Page
@@ -179,7 +191,6 @@ Accept wildcard characters: False
 
 ### -Body
 The contents of your new page.
-Accepts pipeline input by property name.
 
 ```yaml
 Type: String
@@ -194,7 +205,9 @@ Accept wildcard characters: False
 ```
 
 ### -Convert
-Optional flag to call ConvertTo-ConfluenceStorageFormat against your Body.
+Convert the provided body to Confluence's storage format.
+Optional flag.
+Has the same effect as calling ConvertTo-ConfluenceStorageFormat against your Body.
 
 ```yaml
 Type: SwitchParameter
@@ -250,6 +263,8 @@ Accept wildcard characters: False
 ## RELATED LINKS
 
 [Get-Page]()
+[Remove-Page]()
+[Set-Page]()
 
 [ConvertTo-ConfluenceStorageFormat]()
 

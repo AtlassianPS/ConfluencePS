@@ -1,12 +1,19 @@
-﻿# ConfluencePS
-## ConfluencePS
+﻿---
+external help file: ConfluencePS-help.xml
+online version: https://github.com/AtlassianPS/ConfluencePS/blob/master/docs/en-US/about_ConfluencePS.md
+locale: en-US
+schema: 2.0.0
+---
+
+# About ConfluencePS
+## about_ConfluencePS
 
 # SHORT DESCRIPTION
 Interact with your Confluence wiki environments from PowerShell.
 Create, get, edit, and delete many pages at once.
 
 Extensive Help is available for all cmdlets:
-```
+```powershell
 Get-Help Get-ConfluencePage -Full
 ```
 
@@ -19,7 +26,7 @@ ConfluencePS was introduced to solve two problems:
 2) Automating documentation updates
 
 ## GETTING STARTED
-```
+```powershell
 Import-Module ConfluencePS
 Set-ConfluenceInfo -BaseURI 'https://mywiki.company.com'
 ```
@@ -31,12 +38,12 @@ Set-ConfluenceInfo needs to be run at the beginning of each PowerShell session.
 
 ## DISCOVERING YOUR ENVIRONMENT
 To view all spaces, run the following command:
-```
+```powershell
 Get-ConfluenceSpace
 ```
 
 To view all pages in a specific space, you can use the pipeline:
-```
+```powershell
 Get-ConfluenceSpace -Key Demo | Get-Page -PageSize 1000
 ```
 
@@ -51,12 +58,12 @@ Select-Object -First.
 # EXAMPLES
 1) Making it easy to perform the same change on many wiki pages
 To apply a new label to all pages matching specified criteria:
-```
+```powershell
 Get-ConfluencePage -Title 'Azure' -PageSize 1000 | Add-ConfluenceLabel -Label azure
 ```
 
 To delete pages with the label "test":
-```
+```powershell
 Get-ConfluencePage -Label test -PageSize 1000 | Remove-ConfluencePage -WhatIf
 ```
 
@@ -70,7 +77,7 @@ environment.
 
 To accomplish this, assume there is a nightly script that pulls the following
 VM info and stores it in a CSV (or database/whatever):
-```
+```powershell
 Name, IP, Dept, Purpose
 ```
 
@@ -80,7 +87,7 @@ changed in the last 24 hours.
 With this info, you can have another nightly script connect to the wiki
 instance, see if anything has changed, and update pages accordingly with
 something like the following:
-```
+```powershell
 $CSV = Import-Csv .\vmlist.csv
 ForEach ($VM in (Get-Content .\changes.txt)) {
     $Table = $CSV | Where Name -eq $VM | ConvertTo-ConfluenceTable | Out-String

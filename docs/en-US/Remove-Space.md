@@ -1,6 +1,7 @@
 ---
 external help file: ConfluencePS-help.xml
-online version:
+online version: https://github.com/AtlassianPS/ConfluencePS/blob/master/docs/en-US/Remove-Space.md
+locale: en-US
 schema: 2.0.0
 ---
 
@@ -11,9 +12,8 @@ Remove an existing Confluence space.
 
 ## SYNTAX
 
-```
-Remove-Space -apiURi <Uri> -Credential <PSCredential> [-SpaceKey] <String[]> [-Force] [-WhatIf]
- [-Confirm]
+```powershell
+Remove-Space -apiURi <Uri> -Credential <PSCredential> [-SpaceKey] <String[]> [-Force] [-WhatIf] [-Confirm]
 ```
 
 ## DESCRIPTION
@@ -23,17 +23,25 @@ Delete an existing Confluence space, including child content.
 ## EXAMPLES
 
 ### -------------------------- EXAMPLE 1 --------------------------
-```
+```powershell
 Remove-Space -ApiURi "https://myserver.com/wiki" -Credential $cred -Key ABC,XYZ -Confirm
 ```
+
+Description
+
+-----------
 
 Delete the space with key ABC and with key XYZ (note that key != name).
 Confirm will prompt before deletion.
 
 ### -------------------------- EXAMPLE 2 --------------------------
-```
+```powershell
 Get-Space | Where {$_.Name -like "*old"} | Remove-Space -Verbose -WhatIf
 ```
+
+Description
+
+-----------
 
 Get all spaces ending in 'old' and simulate the deletion of them.
 Would simulate the removal of each space one by one with verbose output; -WhatIf flag active.
@@ -90,7 +98,6 @@ Accept wildcard characters: False
 
 ### -Force
 Forces the deletion of the space without prompting for confirmation.
-TODO: Probably an extra param later to loop checking the status & wait for completion?
 
 ```yaml
 Type: SwitchParameter
@@ -144,6 +151,9 @@ Accept wildcard characters: False
 ## NOTES
 
 ## RELATED LINKS
+
+[Get-Space]()
+[New-Space]()
 
 [https://github.com/AtlassianPS/ConfluencePS](https://github.com/AtlassianPS/ConfluencePS)
 

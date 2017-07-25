@@ -1,6 +1,7 @@
 ---
 external help file: ConfluencePS-help.xml
-online version: https://github.com/brianbunke/ConfluencePS
+online version: https://github.com/AtlassianPS/ConfluencePS/blob/master/docs/en-US/Remove-Page.md
+locale: en-US
 schema: 2.0.0
 ---
 
@@ -11,7 +12,7 @@ Trash an existing Confluence page.
 
 ## SYNTAX
 
-```
+```powershell
 Remove-Page -apiURi <Uri> -Credential <PSCredential> [-PageID] <Int32[]> [-WhatIf] [-Confirm]
 ```
 
@@ -23,19 +24,27 @@ Untested against non-page content, but probably works anyway.
 ## EXAMPLES
 
 ### -------------------------- EXAMPLE 1 --------------------------
-```
+```powershell
 Get-Page -Title Oscar | Remove-Page -Confirm
 ```
+
+Description
+
+-----------
 
 Send Oscar to the trash.
 Each matching page will ask you to confirm the deletion.
 
 ### -------------------------- EXAMPLE 2 --------------------------
-```
+```powershell
 Remove-Page -ApiURi "https://myserver.com/wiki" -Credential $cred -PageID 12345,12346 -Verbose -WhatIf
 ```
 
-Simulates the removal of two specifc pages.
+Description
+
+-----------
+
+Simulates the removal of two specific pages.
 
 ## PARAMETERS
 
@@ -127,6 +136,10 @@ Accept wildcard characters: False
 ## NOTES
 
 ## RELATED LINKS
+
+[Get-Page]()
+[New-Page]()
+[Set-Page]()
 
 [https://github.com/AtlassianPS/ConfluencePS](https://github.com/AtlassianPS/ConfluencePS)
 

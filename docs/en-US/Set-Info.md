@@ -1,6 +1,7 @@
 ---
 external help file: ConfluencePS-help.xml
-online version:
+online version: https://github.com/AtlassianPS/ConfluencePS/blob/master/docs/en-US/Set-Info.md
+locale: en-US
 schema: 2.0.0
 ---
 
@@ -11,7 +12,7 @@ Gather URI/auth info for use in this session's REST API requests.
 
 ## SYNTAX
 
-```
+```powershell
 Set-Info [[-BaseURi] <Uri>] [[-Credential] <PSCredential>] [[-PageSize] <Int32>] [-PromptCredentials]
 ```
 
@@ -23,16 +24,24 @@ Confluence REST API supports passing basic authentication in headers.
 ## EXAMPLES
 
 ### -------------------------- EXAMPLE 1 --------------------------
-```
+```powershell
 Set-Info -BaseURI 'https://brianbunke.atlassian.net/wiki' -PromptCredentials
 ```
+
+Description
+
+-----------
 
 Declare your base install; be prompted for username and password.
 
 ### -------------------------- EXAMPLE 2 --------------------------
-```
+```powershell
 Set-Info -BaseURI $ConfluenceURL -Credential $MyCreds -PageSize 100
 ```
+
+Description
+
+-----------
 
 Sets the url, credentials and default page size for the session.
 
@@ -108,8 +117,3 @@ Accept wildcard characters: False
 ## RELATED LINKS
 
 [https://github.com/AtlassianPS/ConfluencePS](https://github.com/AtlassianPS/ConfluencePS)
-
-[http://stackoverflow.com/questions/27951561/use-invoke-webrequest-with-a-username-and-password-for-basic-authentication-on-t](http://stackoverflow.com/questions/27951561/use-invoke-webrequest-with-a-username-and-password-for-basic-authentication-on-t)
-
-[http://www.dexterposh.com/2015/01/powershell-rest-api-basic-cms-cmsurl.html](http://www.dexterposh.com/2015/01/powershell-rest-api-basic-cms-cmsurl.html)
-
