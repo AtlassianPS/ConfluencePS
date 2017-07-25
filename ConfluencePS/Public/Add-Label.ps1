@@ -5,17 +5,12 @@
     )]
     [OutputType([ConfluencePS.ContentLabelSet])]
     param (
-        # The URi of the API interface.
-        # Value can be set persistently with Set-Info.
         [Parameter( Mandatory = $true )]
         [URi]$apiURi,
 
-        # Confluence's credentials for authentication.
-        # Value can be set persistently with Set-Info.
         [Parameter( Mandatory = $true )]
         [PSCredential]$Credential,
 
-        # The page ID to apply the label to. Accepts multiple IDs via pipeline input.
         [Parameter(
             Position = 0,
             ValueFromPipeline = $true,
@@ -25,7 +20,6 @@
         [Alias('ID')]
         [int[]]$PageID,
 
-        # One or more labels to be added. Currently supports labels of prefix "global."
         [Parameter(
             Mandatory = $true,
             ValueFromPipeline = $true,

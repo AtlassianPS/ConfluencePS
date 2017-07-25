@@ -5,17 +5,12 @@
     )]
     [OutputType([Bool])]
     param (
-        # The URi of the API interface.
-        # Value can be set persistently with Set-ConfluenceInfo.
         [Parameter( Mandatory = $true )]
         [URi]$apiURi,
 
-        # Confluence's credentials for authentication.
-        # Value can be set persistently with Set-ConfluenceInfo.
         [Parameter( Mandatory = $true )]
         [PSCredential]$Credential,
 
-        # The page ID to remove the label from. Accepts multiple IDs via pipeline input.
         [Parameter(
             Position = 0,
             Mandatory = $true,
@@ -26,7 +21,6 @@
         [Alias('ID')]
         [int[]]$PageID,
 
-        # A single content label to remove from one or more pages.
         [Parameter()]
         [string[]]$Label
     )

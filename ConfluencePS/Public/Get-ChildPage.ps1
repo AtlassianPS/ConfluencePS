@@ -2,17 +2,12 @@
     [CmdletBinding( SupportsPaging = $true )]
     [OutputType([ConfluencePS.Page])]
     param (
-        # The URi of the API interface.
-        # Value can be set persistently with Set-ConfluenceInfo.
         [Parameter( Mandatory = $true )]
         [URi]$apiURi,
 
-        # Confluence's credentials for authentication.
-        # Value can be set persistently with Set-ConfluenceInfo.
         [Parameter( Mandatory = $true )]
         [PSCredential]$Credential,
 
-        # Filter results by page ID.
         [Parameter(
             Position = 0,
             Mandatory = $true,
@@ -23,12 +18,8 @@
         [Alias('ID')]
         [int]$PageID,
 
-        # Get all child pages recursively
         [switch]$Recurse,
 
-        # Maximimum number of results to fetch per call.
-        # This setting can be tuned to get better performance according to the load on the server.
-        # Warning: too high of a PageSize can cause a timeout on the request.
         [ValidateRange(1, [int]::MaxValue)]
         [int]$PageSize = 25
     )

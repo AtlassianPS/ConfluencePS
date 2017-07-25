@@ -2,19 +2,15 @@
     [CmdletBinding()]
     [System.Diagnostics.CodeAnalysis.SuppressMessage('PSUseShouldProcessForStateChangingFunctions', '')]
     param (
-        # Address of your base Confluence install. For Atlassian Cloud instances, include /wiki.
         [Parameter(
             HelpMessage = 'Example = https://brianbunke.atlassian.net/wiki (/wiki for Cloud instances)'
         )]
         [Uri]$BaseURi,
 
-        # The username/password combo you use to log in to Confluence.
         [PSCredential]$Credential,
 
-        # Default PageSize for the invocations.
         [int]$PageSize,
 
-        # Prompt the user for credentials
         [switch]$PromptCredentials
     )
 

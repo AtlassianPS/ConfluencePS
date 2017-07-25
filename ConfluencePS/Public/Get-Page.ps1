@@ -5,18 +5,12 @@
     )]
     [OutputType([ConfluencePS.Page])]
     param (
-        # The URi of the API interface.
-        # Value can be set persistently with Set-ConfluenceInfo.
         [Parameter( Mandatory = $true )]
         [URi]$ApiURi,
 
-        # Confluence's credentials for authentication.
-        # Value can be set persistently with Set-ConfluenceInfo.
         [Parameter( Mandatory = $true )]
         [PSCredential]$Credential,
 
-        # Filter results by page ID.
-        # Best option if you already know the ID, as it bypasses result limit problems.
         [Parameter(
             Position = 0,
             Mandatory = $true,
@@ -28,7 +22,6 @@
         [Alias('ID')]
         [int[]]$PageID,
 
-        # Filter results by name.
         [Parameter(
             Mandatory = $true,
             ParameterSetName = "byTitle"
@@ -36,7 +29,6 @@
         [Alias('Name')]
         [string]$Title,
 
-        # Filter results by key. Currently, this parameter is case sensitive.
         [Parameter(
             Mandatory = $true,
             ParameterSetName = "bySpace"
@@ -50,7 +42,6 @@
         [Alias('Key')]
         [string]$SpaceKey,
 
-        # Filter results by space object(s), typically from the pipeline
         [Parameter(
             Mandatory = $true,
             ValueFromPipeline = $true,
@@ -66,16 +57,12 @@
         )]
         [ConfluencePS.Space]$Space,
 
-        # Label(s) to use as search criteria to find pages
         [Parameter(
             Mandatory = $true,
             ParameterSetName = "byLabel"
         )]
         [string[]]$Label,
 
-        # Maximimum number of results to fetch per call.
-        # This setting can be tuned to get better performance according to the load on the server.
-        # Warning: too high of a PageSize can cause a timeout on the request.
         [ValidateRange(1, [int]::MaxValue)]
         [int]$PageSize = 25
     )

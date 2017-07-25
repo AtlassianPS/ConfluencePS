@@ -2,17 +2,12 @@
     [CmdletBinding()]
     [OutputType([String])]
     param (
-        # The URi of the API interface.
-        # Value can be set persistently with Set-ConfluenceInfo.
         [Parameter( Mandatory = $true )]
         [URi]$apiURi,
 
-        # Confluence's credentials for authentication.
-        # Value can be set persistently with Set-ConfluenceInfo.
         [Parameter( Mandatory = $true )]
         [PSCredential]$Credential,
 
-        # A string (in plain text and/or wiki markup) to be converted to storage format.
         [Parameter(
             Position = 0,
             Mandatory = $true,

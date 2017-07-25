@@ -2,14 +2,12 @@
     [CmdletBinding()]
     [System.Diagnostics.CodeAnalysis.SuppressMessage('PSUseDeclaredVarsMoreThanAssignments', '')]
     param (
-        # Object array you would like to see displayed as a table on a wiki page.
         [Parameter(
             Mandatory = $true,
             ValueFromPipeline = $true
         )]
         $Content,
 
-        # Ignore the property names, and just have a table of values with no header row highlighting.
         [switch]$NoHeader
     )
 

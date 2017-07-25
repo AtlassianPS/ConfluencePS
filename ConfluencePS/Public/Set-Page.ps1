@@ -6,17 +6,12 @@
     )]
     [OutputType([ConfluencePS.Page])]
     param (
-        # The URi of the API interface.
-        # Value can be set persistently with Set-ConfluenceInfo.
         [Parameter( Mandatory = $true )]
         [URi]$apiURi,
 
-        # Confluence's credentials for authentication.
-        # Value can be set persistently with Set-ConfluenceInfo.
         [Parameter( Mandatory = $true )]
         [PSCredential]$Credential,
 
-        # Page Object
         [Parameter(
             Mandatory = $true,
             ValueFromPipeline = $true,
@@ -24,7 +19,6 @@
         )]
         [ConfluencePS.Page]$InputObject,
 
-        # The ID of the page to edit
         [Parameter(
             Mandatory = $true,
             ValueFromPipeline = $true,
@@ -34,26 +28,20 @@
         [Alias('ID')]
         [int]$PageID,
 
-        # Name of the page; existing or new value can be used.
-        # Existing will be automatically supplied via Get-ConfluencePage if not manually included.
         [Parameter(ParameterSetName = 'byParameters')]
         [ValidateNotNullOrEmpty()]
         [string]$Title,
 
-        # The full contents of the updated body (existing contents will be overwritten).
-        # If not yet in "storage format"--or you don't know what that is--also use -Convert.
         [Parameter(ParameterSetName = 'byParameters')]
         [string]$Body,
 
-        # Optional switch flag for calling ConvertTo-ConfluenceStorageFormat against your Body.
         [Parameter(ParameterSetName = 'byParameters')]
         [switch]$Convert,
 
-        # Optionally define a new parent page. If unspecified, no change.
         [Parameter(ParameterSetName = 'byParameters')]
         [ValidateRange(1, [int]::MaxValue)]
         [int]$ParentID,
-        # Optionally define a new parent page. If unspecified, no change.
+
         [Parameter(ParameterSetName = 'byParameters')]
         [ConfluencePS.Page]$Parent
     )

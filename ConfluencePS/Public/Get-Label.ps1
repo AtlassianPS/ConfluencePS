@@ -4,17 +4,12 @@
     )]
     [OutputType([ConfluencePS.ContentLabelSet])]
     param (
-        # The URi of the API interface.
-        # Value can be set persistently with Set-ConfluenceInfo.
         [Parameter( Mandatory = $true )]
         [URi]$apiURi,
 
-        # Confluence's credentials for authentication.
-        # Value can be set persistently with Set-ConfluenceInfo.
         [Parameter( Mandatory = $true )]
         [PSCredential]$Credential,
 
-        # List the PageID number to check for labels. Accepts piped input.
         [Parameter(
             Position = 0,
             Mandatory = $true,
@@ -25,9 +20,6 @@
         [Alias('ID')]
         [int[]]$PageID,
 
-        # Maximimum number of results to fetch per call.
-        # This setting can be tuned to get better performance according to the load on the server.
-        # Warning: too high of a PageSize can cause a timeout on the request.
         [ValidateRange(1, [int]::MaxValue)]
         [int]$PageSize = 25
     )

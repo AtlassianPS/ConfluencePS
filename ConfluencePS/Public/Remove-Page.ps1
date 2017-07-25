@@ -5,17 +5,12 @@
     )]
     [OutputType([Bool])]
     param (
-        # The URi of the API interface.
-        # Value can be set persistently with Set-ConfluenceInfo.
         [Parameter( Mandatory = $true )]
         [URi]$apiURi,
 
-        # Confluence's credentials for authentication.
-        # Value can be set persistently with Set-ConfluenceInfo.
         [Parameter( Mandatory = $true )]
         [PSCredential]$Credential,
 
-        # The page ID to delete. Accepts multiple IDs via pipeline input.
         [Parameter(
             Position = 0,
             Mandatory = $true,

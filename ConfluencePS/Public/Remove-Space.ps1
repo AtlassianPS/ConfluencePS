@@ -6,17 +6,12 @@
     [OutputType()]
     [System.Diagnostics.CodeAnalysis.SuppressMessage('PSUseDeclaredVarsMoreThanAssignments', '')]
     param (
-        # The URi of the API interface.
-        # Value can be set persistently with Set-ConfluenceInfo.
         [Parameter( Mandatory = $true )]
         [URi]$apiURi,
 
-        # Confluence's credentials for authentication.
-        # Value can be set persistently with Set-ConfluenceInfo.
         [Parameter( Mandatory = $true )]
         [PSCredential]$Credential,
 
-        # The key (short code) of the space to delete. Accepts multiple keys via pipeline input.
         [Parameter(
             Position = 0,
             Mandatory = $true,
@@ -26,7 +21,6 @@
         [Alias('Key')]
         [string[]]$SpaceKey,
 
-        # Forces the deletion of the space without prompting for confirmation.
         [switch]$Force
 
         # TODO: Probably an extra param later to loop checking the status & wait for completion?

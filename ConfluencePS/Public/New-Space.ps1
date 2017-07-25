@@ -6,17 +6,12 @@
     )]
     [OutputType([ConfluencePS.Space])]
     param (
-        # The URi of the API interface.
-        # Value can be set persistently with Set-ConfluenceInfo.
         [Parameter( Mandatory = $true )]
         [URi]$apiURi,
 
-        # Confluence's credentials for authentication.
-        # Value can be set persistently with Set-ConfluenceInfo.
         [Parameter( Mandatory = $true )]
         [PSCredential]$Credential,
 
-        # Space Object
         [Parameter(
             Mandatory = $true,
             ParameterSetName = "byObject",
@@ -24,7 +19,6 @@
         )]
         [ConfluencePS.Space]$InputObject,
 
-        # Specify the short key to be used in the space URI.
         [Parameter(
             Mandatory = $true,
             ParameterSetName = "byProperties"
@@ -32,14 +26,12 @@
         [Alias('Key')]
         [string]$SpaceKey,
 
-        # Specify the space's name.
         [Parameter(
             Mandatory = $true,
             ParameterSetName = "byProperties"
         )]
         [string]$Name,
 
-        # A short description of the new space.
         [Parameter(
             ParameterSetName = "byProperties"
         )]
