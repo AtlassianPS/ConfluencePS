@@ -319,7 +319,7 @@ InModuleScope ConfluencePS {
 
         # ACT
         $GetTitle1 = Get-ConfluencePage -Title $Title1.ToLower() -PageSize 200 -ErrorAction SilentlyContinue
-        $GetTitle2 = Get-ConfluencePage -Title $Title2 -SpaceKey $SpaceKey -PageSize 200 -ErrorAction SilentlyContinue
+        $GetTitle2 = Get-ConfluencePage -Title $Title2 -SpaceKey $SpaceKey -ErrorAction SilentlyContinue
         $GetID1 = Get-ConfluencePage -PageID $GetTitle1.ID -ErrorAction SilentlyContinue
         $GetID2 = Get-ConfluencePage -PageID $GetTitle2.ID -ErrorAction SilentlyContinue
         $GetKeys = Get-ConfluencePage -SpaceKey $SpaceKey | Sort ID -ErrorAction SilentlyContinue
