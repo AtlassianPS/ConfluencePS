@@ -96,7 +96,7 @@ Accept wildcard characters: False
 A string (in plain text and/or wiki markup) to be converted to storage format.
 
 ```yaml
-Type: String
+Type: String[]
 Parameter Sets: (All)
 Aliases:
 

@@ -13,7 +13,7 @@
             Mandatory = $true,
             ValueFromPipeline = $true
         )]
-        [string]$Content
+        [string[]]$Content
     )
 
     BEGIN {
@@ -24,18 +24,20 @@
         Write-Debug "[$($MyInvocation.MyCommand.Name)] ParameterSetName: $($PsCmdlet.ParameterSetName)"
         Write-Debug "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
 
-        $iwParameters = @{
-            Uri        = "$apiURi/contentbody/convert/storage"
-            Method     = 'Post'
-            Body       = @{
-                value          = "$Content"
-                representation = 'wiki'
-            } | ConvertTo-Json
-            Credential = $Credential
-        }
+        foreach ($_content in $Content) {
+            $iwParameters = @{
+                Uri        = "$apiURi/contentbody/convert/storage"
+                Method     = 'Post'
+                Body       = @{
+                    value          = "$_content"
+                    representation = 'wiki'
+                } | ConvertTo-Json
+                Credential = $Credential
+            }
 
-        Write-Debug "[$($MyInvocation.MyCommand.Name)] Content to be sent: $($Content | Out-String)"
-        (Invoke-Method @iwParameters).value
+            Write-Debug "[$($MyInvocation.MyCommand.Name)] Content to be sent: $($_content | Out-String)"
+            (Invoke-Method @iwParameters).value
+        }
     }
 
     END {

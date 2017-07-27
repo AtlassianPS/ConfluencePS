@@ -203,15 +203,18 @@ InModuleScope ConfluencePS {
         # ACT
         $result1 = $inputString | ConvertTo-ConfluenceStorageFormat
         $result2 = ConvertTo-ConfluenceStorageFormat -Content $inputString
+        $result3 = ConvertTo-ConfluenceStorageFormat -Content $inputString, $inputString
 
         # ASSERT
         It 'returns a string' {
             $result1 | Should BeOfType [String]
             $result2 | Should BeOfType [String]
+            $result3 | Should BeOfType [String]
         }
         It 'output matches the expected string' {
             $result1 | Should BeExactly $outputString
             $result2 | Should BeExactly $outputString
+            $result3 | Should BeExactly @($outputString, $outputString)
         }
     }
 
