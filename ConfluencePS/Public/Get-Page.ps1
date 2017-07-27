@@ -109,10 +109,14 @@
             "(bySpace|byTitle)" {
                 $iwParameters["Uri"] = $resourceApi -f ''
                 $iwParameters["GetParameters"]["type"] = "page"
-                if ($Title) { $iwParameters["GetParameters"]["title"] = $Title }
                 if ($SpaceKey) { $iwParameters["GetParameters"]["spaceKey"] = $SpaceKey }
 
-                Invoke-Method @iwParameters
+                if ($PsCmdlet.ParameterSetName -eq 'byTitle') {
+                    Invoke-Method @iwParameters | Where-Object {$_.Title -like "*$Title*"}
+                }
+                else {
+                    Invoke-Method @iwParameters
+                }
                 break
             }
             "byLabel" {

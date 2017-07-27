@@ -226,7 +226,7 @@ InModuleScope ConfluencePS {
 
         # ARRANGE
         $SpaceKey = "PESTER"
-        $parentPage = Get-ConfluencePage -Title "Pester Test Space Home" -ErrorAction Stop
+        $parentPage = Get-ConfluencePage -Title "Pester Test Space Home" -SpaceKey "PESTER" -ErrorAction Stop
         $Title1 = "Pester New Page Piped"
         $Title2 = "Pester New Page Orphan"
         $Title3 = "Pester New Page from Object"
@@ -321,8 +321,8 @@ InModuleScope ConfluencePS {
         Start-Sleep -Seconds 20 # Delay to allow DB index to update
 
         # ACT
-        $GetTitle1 = Get-ConfluencePage -Title $Title1 -PageSize 200 -ErrorAction SilentlyContinue
-        $GetTitle2 = Get-ConfluencePage -Title $Title2 -SpaceKey $SpaceKey -PageSize 200 -ErrorAction SilentlyContinue
+        $GetTitle1 = Get-ConfluencePage -Title $Title1.ToLower() -PageSize 200 -ErrorAction SilentlyContinue
+        $GetTitle2 = Get-ConfluencePage -Title $Title2 -SpaceKey $SpaceKey -ErrorAction SilentlyContinue
         $GetID1 = Get-ConfluencePage -PageID $GetTitle1.ID -ErrorAction SilentlyContinue
         $GetID2 = Get-ConfluencePage -PageID $GetTitle2.ID -ErrorAction SilentlyContinue
         $GetKeys = Get-ConfluencePage -SpaceKey $SpaceKey | Sort ID -ErrorAction SilentlyContinue
