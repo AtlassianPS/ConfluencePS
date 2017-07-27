@@ -162,7 +162,7 @@ Accept wildcard characters: False
 ```
 
 ### -Title
-Filter results by name.
+Filter results by name. This can contain wildcard and is case insensitive.
 
 ```yaml
 Type: String
