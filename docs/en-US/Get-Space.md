@@ -4,6 +4,7 @@ online version: https://github.com/AtlassianPS/ConfluencePS/blob/master/docs/en-
 locale: en-US
 schema: 2.0.0
 ---
+
 # Get-Space
 
 ## SYNOPSIS
@@ -12,19 +13,18 @@ Retrieve a listing of spaces in your Confluence instance.
 ## SYNTAX
 
 ```powershell
-Get-Space -apiURi <Uri> -Credential <PSCredential> [[-SpaceKey] <String[]>] [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
+Get-ConfluenceSpace -apiURi <Uri> -Credential <PSCredential> [[-SpaceKey] <String[]>] [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
 ```
 
 ## DESCRIPTION
-Fetch all Confluence spaces, optionally filtering by Name/Key/ID.
-Input for all parameters is not case sensitive.
+Return all Confluence spaces, optionally filtering by Key.
 Piped output into other cmdlets is generally tested and supported.
 
 ## EXAMPLES
 
 ### -------------------------- EXAMPLE 1 --------------------------
 ```powershell
-Get-Space -ApiURi "https://myserver.com/wiki" -Credential $cred
+Get-ConfluenceSpace
 ```
 
 Description
@@ -35,14 +35,28 @@ Display the info of all spaces on the server.
 
 ### -------------------------- EXAMPLE 2 --------------------------
 ```powershell
-Get-Space -SpaceKey NASA
+Get-ConfluenceSpace -SpaceKey HOTH | Format-List *
 ```
 
 Description
 
 -----------
 
-Display the info of the space with key "NASA".
+Return only the space with key "HOTH" (case-insensitive).
+`Format-List *` displays all of the object's properties.
+
+### -------------------------- EXAMPLE 3 --------------------------
+```powershell
+Get-ConfluenceSpace -ApiURi "https://myserver.com/wiki" -Credential $cred
+```
+
+Description
+
+-----------
+
+Manually specifying a server and authentication credentials, list all
+spaces found on the instance. `Set-ConfluenceInfo` usually makes this
+unnecessary, unless you are actively maintaining multiple instances.
 
 ## PARAMETERS
 
@@ -112,6 +126,7 @@ Accept wildcard characters: False
 ```
 
 ### -IncludeTotalCount
+NOTE: Not yet implemented.
 Causes an extra output of the total count at the beginning.
 Note this is actually a uInt64, but with a custom string representation.
 
@@ -128,7 +143,7 @@ Accept wildcard characters: False
 ```
 
 ### -Skip
-Controls how many things will be skipped before starting output.
+Controls how many objects will be skipped before starting output.
 Defaults to 0.
 
 ```yaml
@@ -144,7 +159,7 @@ Accept wildcard characters: False
 ```
 
 ### -First
-Currently not supported.
+NOTE: Not yet implemented.
 Indicates how many items to return.
 
 ```yaml
@@ -169,8 +184,4 @@ Accept wildcard characters: False
 
 ## RELATED LINKS
 
-[New-Space]()
-[Remove-Space]()
-
 [https://github.com/AtlassianPS/ConfluencePS](https://github.com/AtlassianPS/ConfluencePS)
-

@@ -8,35 +8,33 @@ schema: 2.0.0
 # Get-Label
 
 ## SYNOPSIS
-Returns a list of labels.
+Retrieve all labels applied to the given object(s).
 
 ## SYNTAX
 
 ```powershell
-Get-Label -apiURi <Uri> -Credential <PSCredential> [-PageID] <Int32[]> [-PageSize <Int32>]
+Get-ConfluenceLabel -apiURi <Uri> -Credential <PSCredential> [-PageID] <Int32[]> [-PageSize <Int32>]
  [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
 ```
 
 ## DESCRIPTION
-Get all labels applied to a specific content.
+Currently, this command only returns a label list from wiki pages.
+It is intended to eventually support other content types as well.
 
 ## EXAMPLES
 
 ### -------------------------- EXAMPLE 1 --------------------------
 ```powershell
-Get-Label -PageID 123456 -PageSize 500 -ApiURi "https://myserver.com/wiki" -Credential $cred
+Get-ConfluenceLabel -PageID 123456
 ```
-Lists the labels applied to page 123456.
-This also increases the size of results per page from 25 to 500.
+Returns all labels applied to wiki page 123456.
 
 ### -------------------------- EXAMPLE 2 --------------------------
 ```powershell
-Get-Page -SpaceKey NASA | Get-Label -Verbose
+Get-ConfluencePage -SpaceKey HOTH -Label skywalker | Get-ConfluenceLabel
 ```
-Get all pages that exist in NASA space (literally?).
-Search all of those pages (PageID will be provided over the pipe) for all of
-their active labels.
-Verbose flag would be good here to keep track of the request.
+For all pages in HOTH with the "skywalker" label applied,
+return the full list of labels found on each page.
 
 ## PARAMETERS
 
@@ -106,6 +104,7 @@ Accept wildcard characters: False
 ```
 
 ### -IncludeTotalCount
+NOTE: Not yet implemented.
 Causes an extra output of the total count at the beginning.
 Note this is actually a uInt64, but with a custom string representation.
 
@@ -138,8 +137,8 @@ Accept wildcard characters: False
 ```
 
 ### -First
+NOTE: Not yet implemented.
 Indicates how many items to return.
-Currently not supported.
 
 ```yaml
 Type: UInt64
@@ -163,10 +162,4 @@ Accept wildcard characters: False
 
 ## RELATED LINKS
 
-[Add-Label]()
-[Get-Page]()
-[Remove-Label]()
-[Set-Page]()
-
 [https://github.com/AtlassianPS/ConfluencePS](https://github.com/AtlassianPS/ConfluencePS)
-
