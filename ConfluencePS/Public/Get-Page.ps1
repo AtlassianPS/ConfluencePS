@@ -113,7 +113,7 @@
                 if ($SpaceKey) { $iwParameters["GetParameters"]["spaceKey"] = $SpaceKey }
 
                 if ($PsCmdlet.ParameterSetName -eq 'byTitle') {
-                    Invoke-Method @iwParameters | Where-Object {$_.Title -like "*$Title*"}
+                    Invoke-Method @iwParameters | Where-Object {$_.Title -like "$Title"}
                 }
                 else {
                     Invoke-Method @iwParameters

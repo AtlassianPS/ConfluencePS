@@ -316,13 +316,17 @@ InModuleScope ConfluencePS {
         $Title1 = "Pester New Page from Object"
         $Title2 = "Pester New Page Orphan"
         $Title3 = "Pester Test Space Home"
+        $Title4 = "orphan"
+        $Title5 = "*orphan"
         $Content = "<p>Hi Pester!</p>"
         (Get-ConfluenceSpace -SpaceKey $SpaceKey).Homepage | Add-ConfluenceLabel -Label "important" -ErrorAction Stop
         Start-Sleep -Seconds 20 # Delay to allow DB index to update
 
         # ACT
-        $GetTitle1 = Get-ConfluencePage -Title $Title1.ToLower() -PageSize 200 -ErrorAction SilentlyContinue
-        $GetTitle2 = Get-ConfluencePage -Title $Title2 -SpaceKey $SpaceKey -ErrorAction SilentlyContinue
+        $GetTitle1   = Get-ConfluencePage -Title $Title1.ToLower() -PageSize 200 -ErrorAction SilentlyContinue
+        $GetTitle2   = Get-ConfluencePage -Title $Title2 -SpaceKey $SpaceKey -ErrorAction SilentlyContinue
+        $GetPartial  = Get-ConfluencePage -Title $Title4 -SpaceKey $SpaceKey -ErrorAction SilentlyContinue
+        $GetWildcard = Get-ConfluencePage -Title $Title5 -SpaceKey $SpaceKey -ErrorAction SilentlyContinue
         $GetID1 = Get-ConfluencePage -PageID $GetTitle1.ID -ErrorAction SilentlyContinue
         $GetID2 = Get-ConfluencePage -PageID $GetTitle2.ID -ErrorAction SilentlyContinue
         $GetKeys = Get-ConfluencePage -SpaceKey $SpaceKey | Sort ID -ErrorAction SilentlyContinue
@@ -334,6 +338,8 @@ InModuleScope ConfluencePS {
         It 'returns the correct amount of results' {
             $GetTitle1.Count | Should Be 1
             $GetTitle2.Count | Should Be 1
+            $GetPartial.Count | Should BeNullOrEmpty
+            $GetWildcard.Count | Should Be 1
             $GetID1.Count | Should Be 1
             $GetID2.Count | Should Be 1
             $GetKeys.Count | Should Be 5
