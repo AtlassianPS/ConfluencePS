@@ -328,6 +328,7 @@ InModuleScope ConfluencePS {
         $GetKeys = Get-ConfluencePage -SpaceKey $SpaceKey | Sort ID -ErrorAction SilentlyContinue
         $GetByLabel = Get-ConfluencePage -Label "important" -ErrorAction SilentlyContinue
         $GetSpacePage = Get-ConfluencePage -Space (Get-ConfluenceSpace -SpaceKey $SpaceKey) -ErrorAction SilentlyContinue
+        $GetSpacePiped = Get-ConfluenceSpace -SpaceKey $SpaceKey | Get-ConfluencePage -ErrorAction SilentlyContinue
 
         # ASSERT
         It 'returns the correct amount of results' {
@@ -338,6 +339,7 @@ InModuleScope ConfluencePS {
             $GetKeys.Count | Should Be 5
             $GetByLabel.Count | Should Be 1
             $GetSpacePage.Count | Should Be 5
+            $GetSpacePiped.Count | Should Be 5
         }
         It 'returns an object with specific properties' {
             $GetTitle1 | Should BeOfType [ConfluencePS.Page]

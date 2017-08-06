@@ -45,6 +45,7 @@
         [Parameter(
             Mandatory = $true,
             ValueFromPipeline = $true,
+            ValueFromPipelineByPropertyName = $true,
             ParameterSetName = "bySpaceObject"
         )]
         [Parameter(
