@@ -13,19 +13,21 @@ Convert your content to Confluence's wiki markup table format.
 ## SYNTAX
 
 ```powershell
-ConvertTo-Table [-Content] <Object> [-NoHeader]
+ConvertTo-ConfluenceTable [-Content] <Object> [-NoHeader]
 ```
 
 ## DESCRIPTION
 Formats input as a table with a horizontal header row.
-This wiki formatting is an intermediate step, and would still need ConvertTo-ConfluenceStorageFormat called against it.
+This wiki formatting is an intermediate step, and would still need
+ConvertTo-ConfluenceStorageFormat called against it.
+
 This work is performed locally, and does not perform a REST call.
 
 ## EXAMPLES
 
 ### -------------------------- EXAMPLE 1 --------------------------
 ```powershell
-Get-Service | Select Name,DisplayName,Status -First 10 | ConvertTo-Table
+Get-Service | Select Name,DisplayName,Status -First 10 | ConvertTo-ConfluenceTable
 ```
 
 Description
@@ -36,7 +38,8 @@ List the first ten services on your computer, and convert to a table in Confluen
 
 ### -------------------------- EXAMPLE 2 --------------------------
 ```powershell
-$SvcTable = Get-Service | Select Name,Status -First 10 | ConvertTo-Table | ConvertTo-ConfluenceStorageFormat
+$SvcTable = Get-Service | Select Name,Status -First 10 |
+    ConvertTo-ConfluenceTable | ConvertTo-ConfluenceStorageFormat
 ```
 
 Description
@@ -44,23 +47,24 @@ Description
 -----------
 
 Following Example 1, convert the table from wiki markup format into storage format.
-Store the results in variable $SvcTable for a later New-ConfluencePage/Set-ConfluencePage command.
+Store the results in $SvcTable for a later New-ConfluencePage/etc. command.
 
 ### -------------------------- EXAMPLE 3 --------------------------
 ```powershell
-Get-Alias | Where {$_.Name.Length -eq 1} | Select CommandType,DisplayName | ConvertTo-Table -NoHeader
+Get-Alias | Where {$_.Name.Length -eq 1} | Select CommandType,DisplayName |
+    ConvertTo-ConfluenceTable -NoHeader
 ```
 
 Description
 
 -----------
 
-Make a table of all the one-character PowerShell aliases, and don't include the header row.
+Make a table of all one-character PowerShell aliases, and don't include the header row.
 
 ## PARAMETERS
 
 ### -Content
-Object array you would like to see displayed as a table on a wiki page.
+The object array you would like to see displayed as a table on a wiki page.
 
 ```yaml
 Type: Object
@@ -75,7 +79,7 @@ Accept wildcard characters: False
 ```
 
 ### -NoHeader
-Ignore the property names, and just have a table of values with no header row highlighting.
+Ignore the property names, keeping a table of values with no header row highlighting.
 
 ```yaml
 Type: SwitchParameter
@@ -97,11 +101,10 @@ Accept wildcard characters: False
 
 ## NOTES
 Basically stolen verbatim from thomykay's PoshConfluence SOAP API module.
-See link below.
+See links section.
 
 ## RELATED LINKS
 
 [https://github.com/AtlassianPS/ConfluencePS](https://github.com/AtlassianPS/ConfluencePS)
 
-[https://github.com/thomykay/PoshConfluence](https://github.com/thomykay/PoshConfluence)
-
+[thomykay PoshConfluence](https://github.com/thomykay/PoshConfluence)
