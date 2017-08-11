@@ -14,12 +14,12 @@ Edit an existing Confluence page.
 
 ### byParameters (Default)
 ```powershell
-Set-Page -apiURi <Uri> -Credential <PSCredential> -PageID <Int32> [-Title <String>] [-Body <String>] [-Convert] [-ParentID <Int32>] [-Parent <Page>] [-WhatIf] [-Confirm]
+Set-ConfluencePage -apiURi <Uri> -Credential <PSCredential> -PageID <Int32> [-Title <String>] [-Body <String>] [-Convert] [-ParentID <Int32>] [-Parent <Page>] [-WhatIf] [-Confirm]
 ```
 
 ### byObject
 ```powershell
-Set-Page -apiURi <Uri> -Credential <PSCredential> -InputObject <Page> [-WhatIf] [-Confirm]
+Set-ConfluencePage -apiURi <Uri> -Credential <PSCredential> -InputObject <Page> [-WhatIf] [-Confirm]
 ```
 
 ## DESCRIPTION
@@ -30,42 +30,39 @@ Content needs to be in "Confluence storage format." Use -Convert if not precondi
 
 ### -------------------------- EXAMPLE 1 --------------------------
 ```powershell
-Get-Page -Title 'My First Page' -Expand | Set-Page -Body 'Hello World!' -Convert
+Set-ConfluencePage -PageID 123456 -Title 'Counting'
 ```
 
 Description
 
 -----------
 
-Probably the easiest edit method, overwriting contents with a short sentence.
-Use Get-Page to pipe in PageID & CurrentVersion.
-(See "Get-Help Get-Page -Examples" for help)
--Convert molds the sentence into a format Confluence will accept.
+For existing wiki page 123456, change its name to "Counting".
 
 ### -------------------------- EXAMPLE 2 --------------------------
 ```powershell
-Get-Page -Title 'Lew Alcindor' -Limit 100 -Expand | Set-Page -Title 'Kareem Abdul-Jabbar' -Verbose
+Set-ConfluencePage -PageID 123456 -Body 'Hello World!' -Convert
 ```
 
 Description
 
 -----------
 
-Change the page's name.
-Body remains the same, via piping the existing contents.
-Verbose flag active for additional screen output.
+For existing wiki page 123456, update its page contents to "Hello World!"
+-Convert applies the "Confluence storage format" to your given string.
 
 ### -------------------------- EXAMPLE 3 --------------------------
 ```powershell
-Get-Page -SpaceKey MATRIX | Set-Page -Body 'Agent Smith' -Convert -WhatIf
+Set-ConfluencePage -PageID 123456 -ParentID 654321
+Set-ConfluencePage -PageID 123456 -Parent (Get-ConfluencePage -PageID 654321)
 ```
 
 Description
 
 -----------
 
-Overwrites the contents of all pages in the MATRIX space.
-WhatIf flag tells you how many pages would have been affected.
+Two different methods to set a new parent page.
+Parent page 654321 will now have child page 123456.
 
 ## PARAMETERS
 
@@ -251,11 +248,4 @@ Accept wildcard characters: False
 
 ## RELATED LINKS
 
-[Get-Page]()
-[New-Page]()
-[Remove-Page]()
-
-[ConvertTo-ConfluenceStorageFormat]()
-
 [https://github.com/AtlassianPS/ConfluencePS](https://github.com/AtlassianPS/ConfluencePS)
-
