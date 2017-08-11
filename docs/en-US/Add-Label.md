@@ -4,6 +4,7 @@ online version: https://github.com/AtlassianPS/ConfluencePS/blob/master/docs/en-
 locale: en-US
 schema: 2.0.0
 ---
+
 # Add-Label
 
 ## SYNOPSIS
@@ -16,8 +17,9 @@ Add-ConfluenceLabel -apiURi <Uri> -Credential <PSCredential> [[-PageID] <Int32[]
 ```
 
 ## DESCRIPTION
-This allows the assignment of labels (one or more) to one Confluence pages (one or more).
-If the label did not exist previously, it will be created. (Be aware of typos)
+Assign labels (one or more) to Confluence pages (one or more).
+If the label did not exist previously, it will be created.
+Preexisting labels are not affected.
 
 ## EXAMPLES
 
