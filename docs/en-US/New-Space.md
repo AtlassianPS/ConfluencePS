@@ -14,12 +14,12 @@ Create a new blank space on your Confluence instance.
 
 ### byObject (Default)
 ```powershell
-New-Space -apiURi <Uri> -Credential <PSCredential> -InputObject <Space> [-WhatIf] [-Confirm]
+New-ConfluenceSpace -apiURi <Uri> -Credential <PSCredential> -InputObject <Space> [-WhatIf] [-Confirm]
 ```
 
 ### byProperties
 ```powershell
-New-Space -apiURi <Uri> -Credential <PSCredential> -SpaceKey <String> -Name <String>
+New-ConfluenceSpace -apiURi <Uri> -Credential <PSCredential> -SpaceKey <String> -Name <String>
  [-Description <String>] [-WhatIf] [-Confirm]
 ```
 
@@ -31,25 +31,14 @@ Key and Name mandatory, Description recommended.
 
 ### -------------------------- EXAMPLE 1 --------------------------
 ```powershell
-[ConfluencePS.Space]@{key="TEST";Name="Test Space"} | New-Space -ApiURi "https://myserver.com/wiki" -Credential $cred
+New-ConfluenceSpace -Key 'HOTH' -Name 'Planet Hoth' -Description "It's really cold" -Verbose
 ```
 
 Description
 
 -----------
 
-Create the new blank space.
-
-### -------------------------- EXAMPLE 2 --------------------------
-```powershell
-New-Space -Key 'TEST' -Name 'Test Space' -Description 'New blank space via REST API' -Verbose
-```
-
-Description
-
------------
-
-Create the new blank space with the optional description and verbose output.
+Create a new blank space with an optional description and verbose output.
 
 ## PARAMETERS
 
@@ -186,8 +175,4 @@ Accept wildcard characters: False
 
 ## RELATED LINKS
 
-[Get-Space]()
-[Remove-Space]()
-
 [https://github.com/AtlassianPS/ConfluencePS](https://github.com/AtlassianPS/ConfluencePS)
-
