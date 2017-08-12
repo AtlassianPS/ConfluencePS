@@ -65,6 +65,20 @@ Description
 Declare the URI of your Confluence instance; be prompted for username and password.
 Set the default "page size" for all your commands in this session to 50 (see Notes).
 
+
+### -------------------------- EXAMPLE 4 --------------------------
+```powershell
+$Cred = Get-Credential
+Set-ConfluenceInfo -BaseURI 'https://wiki.yourcompany.com' -Credential $Cred
+```
+
+Description
+
+-----------
+
+Declare the URI of your Confluence instance and the credentials (username and
+password).
+
 ## PARAMETERS
 
 ### -BaseURi
