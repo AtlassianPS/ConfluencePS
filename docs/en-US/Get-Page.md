@@ -139,7 +139,7 @@ Accept wildcard characters: False
 
 ### -Title
 Filter results by page name (case-insensitive).
-Wildcards (*) are applied to each end to support partial matching.
+This supports wildcards (*) to allow for partial matching.
 
 ```yaml
 Type: String
