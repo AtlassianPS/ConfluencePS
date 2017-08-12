@@ -23,8 +23,10 @@
         [int[]]$PageID,
 
         [Parameter(
-            Mandatory = $true,
-            ParameterSetName = "byTitle"
+            ParameterSetName = "bySpace"
+        )]
+        [Parameter(
+            ParameterSetName = "bySpaceObject"
         )]
         [Alias('Name')]
         [string]$Title,
@@ -32,9 +34,6 @@
         [Parameter(
             Mandatory = $true,
             ParameterSetName = "bySpace"
-        )]
-        [Parameter(
-            ParameterSetName = "byTitle"
         )]
         [Parameter(
             ParameterSetName = "byLabel"
@@ -47,10 +46,6 @@
             ValueFromPipeline = $true,
             ValueFromPipelineByPropertyName = $true,
             ParameterSetName = "bySpaceObject"
-        )]
-        [Parameter(
-            ValueFromPipeline = $true,
-            ParameterSetName = "byTitle"
         )]
         [Parameter(
             ValueFromPipeline = $true,
@@ -107,12 +102,12 @@
                 }
                 break
             }
-            "(bySpace|byTitle)" {
+            "bySpace" { # This includes 'bySpaceObject'
                 $iwParameters["Uri"] = $resourceApi -f ''
                 $iwParameters["GetParameters"]["type"] = "page"
                 if ($SpaceKey) { $iwParameters["GetParameters"]["spaceKey"] = $SpaceKey }
 
-                if ($PsCmdlet.ParameterSetName -eq 'byTitle') {
+                if ($Title) {
                     Invoke-Method @iwParameters | Where-Object {$_.Title -like "$Title"}
                 }
                 else {

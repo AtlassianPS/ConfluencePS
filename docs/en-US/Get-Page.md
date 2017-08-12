@@ -17,11 +17,6 @@ Retrieve a listing of pages in your Confluence instance.
 Get-ConfluencePage -ApiURi <Uri> -Credential <PSCredential> [-PageID] <Int32[]> [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
 ```
 
-### byTitle
-```powershell
-Get-ConfluencePage -ApiURi <Uri> -Credential <PSCredential> -Title <String> [-SpaceKey <String>] [-Space <Space>] [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
-```
-
 ### byLabel
 ```powershell
 Get-ConfluencePage -ApiURi <Uri> -Credential <PSCredential> [-SpaceKey <String>] [-Space <Space>] -Label <String[]> [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
@@ -29,12 +24,12 @@ Get-ConfluencePage -ApiURi <Uri> -Credential <PSCredential> [-SpaceKey <String>]
 
 ### bySpace
 ```powershell
-Get-ConfluencePage -ApiURi <Uri> -Credential <PSCredential> -SpaceKey <String> [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
+Get-ConfluencePage -ApiURi <Uri> -Credential <PSCredential> -SpaceKey <String> [-Title <String>] [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
 ```
 
 ### bySpaceObject
 ```powershell
-Get-ConfluencePage -ApiURi <Uri> -Credential <PSCredential> -Space <Space> [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
+Get-ConfluencePage -ApiURi <Uri> -Credential <PSCredential> -Space <Space> [-Title <String>] [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
 ```
 
 ## DESCRIPTION
@@ -148,14 +143,14 @@ Wildcards (*) are applied to each end to support partial matching.
 
 ```yaml
 Type: String
-Parameter Sets: byTitle
+Parameter Sets: bySpace, bySpaceObject
 Aliases: Name
 
-Required: True
+Required: False
 Position: Named
 Default value: None
 Accept pipeline input: False
-Accept wildcard characters: False
+Accept wildcard characters: True
 ```
 
 ### -SpaceKey
@@ -163,10 +158,10 @@ Filter results by space key (case-insensitive).
 
 ```yaml
 Type: String
-Parameter Sets: byTitle, byLabel
+Parameter Sets: bySpaceObject, byLabel
 Aliases: Key
 
-Required: False
+Required: True
 Position: Named
 Default value: None
 Accept pipeline input: False
@@ -190,10 +185,10 @@ Filter results by space object(s), typically from the pipeline.
 
 ```yaml
 Type: Space
-Parameter Sets: byTitle, byLabel
+Parameter Sets: bySpaceObject, byLabel
 Aliases:
 
-Required: False
+Required: True
 Position: Named
 Default value: None
 Accept pipeline input: True (ByValue)
