@@ -89,6 +89,27 @@ Create a new wiki page named 'foo' at the root of space 'bar'.
 The wiki page will contain the text "Testing 123".
 -Convert will condition the -Body parameter's string into storage format.
 
+
+### -------------------------- EXAMPLE 5 --------------------------
+```powershell
+$pageObject = [ConfluencePS.Page]@{
+    Title = "My Title"
+    Space = [ConfluencePS.Space]@{
+        Key="ABC"
+    }
+}
+
+New-ConfluencePage -InputObject $pageObject
+$pageObject | New-ConfluencePage
+```
+
+Description
+
+-----------
+
+Two different methods of creating a new page from an object `ConfluencePS.Page`.
+Both examples should return identical results.
+
 ## PARAMETERS
 
 ### -apiURi
