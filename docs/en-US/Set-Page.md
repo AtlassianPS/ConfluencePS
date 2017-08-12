@@ -64,6 +64,23 @@ Description
 Two different methods to set a new parent page.
 Parent page 654321 will now have child page 123456.
 
+
+### -------------------------- EXAMPLE 4 --------------------------
+```powershell
+$page = Get-ConfluencePage -PageID 123456
+$page.Title = "New Title"
+
+Set-ConfluencePage -InputObject $page
+$page | Set-ConfluencePage
+```
+
+Description
+
+-----------
+
+Two different methods to set a new parent page using a `ConfluencePS.Page`
+object.
+
 ## PARAMETERS
 
 ### -apiURi
