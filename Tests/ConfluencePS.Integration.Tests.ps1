@@ -338,7 +338,7 @@ InModuleScope ConfluencePS {
         It 'returns the correct amount of results' {
             $GetTitle1.Count | Should Be 1
             $GetTitle2.Count | Should Be 1
-            $GetPartial.Count | Should BeNullOrEmpty
+            $GetPartial.Count | Should Be 0
             $GetWildcard.Count | Should Be 1
             $GetID1.Count | Should Be 1
             $GetID2.Count | Should Be 1
