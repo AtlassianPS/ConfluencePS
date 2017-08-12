@@ -40,6 +40,26 @@ Description
 
 Create a new blank space with an optional description and verbose output.
 
+
+### -------------------------- EXAMPLE 1 --------------------------
+```powershell
+$spaceObject = [ConfluencePS.Space]@{
+    Key         = "HOTH"
+    Name        = "Planet Hoth"
+    Description = "It's really cold"
+}
+
+New-ConfluenceSpace -InputObject $spaceObject
+$spaceObject | New-ConfluenceSpace
+```
+
+Description
+
+-----------
+
+Two different methods of creating a new space from an object `ConfluencePS.Space`.
+Both examples should return identical results.
+
 ## PARAMETERS
 
 ### -apiURi
