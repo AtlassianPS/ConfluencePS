@@ -41,7 +41,7 @@ Description
 Create a new blank space with an optional description and verbose output.
 
 
-### -------------------------- EXAMPLE 1 --------------------------
+### -------------------------- EXAMPLE 2 --------------------------
 ```powershell
 $spaceObject = [ConfluencePS.Space]@{
     Key         = "HOTH"

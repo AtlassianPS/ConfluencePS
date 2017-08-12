@@ -90,7 +90,7 @@ The wiki page will contain the text "Testing 123".
 -Convert will condition the -Body parameter's string into storage format.
 
 
-### -------------------------- EXAMPLE 5 --------------------------
+### -------------------------- EXAMPLE 6 --------------------------
 ```powershell
 $pageObject = [ConfluencePS.Page]@{
     Title = "My Title"
