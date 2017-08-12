@@ -13,49 +13,50 @@ Remove a label from existing Confluence content.
 ## SYNTAX
 
 ```powershell
-Remove-Label -apiURi <Uri> -Credential <PSCredential> [-PageID] <Int32[]> [-Label <String[]>] [-WhatIf] [-Confirm]
+Remove-ConfluenceLabel -apiURi <Uri> -Credential <PSCredential> [-PageID] <Int32[]> [-Label <String[]>] [-WhatIf] [-Confirm]
 ```
 
 ## DESCRIPTION
 Remove labels from Confluence content.
 Does accept multiple pages piped via Get-ConfluencePage.
-Specifically tested against pages, but should work against all content IDs.
+Untested against non-page content.
 
 ## EXAMPLES
 
 ### -------------------------- EXAMPLE 1 --------------------------
 ```powershell
-Remove-Label -ApiURi "https://myserver.com/wiki" -Credential $cred -Label seven -PageID 123456 -Verbose -Confirm
+Remove-ConfluenceLabel -PageID 123456 -Label 'seven' -Verbose -Confirm
 ```
 
 Description
 
 -----------
 
-Would remove label "seven" from the page with ID 123456.
-Verbose and Confirm flags both active.
+Remove label "seven" from the wiki page with ID 123456.
+Verbose and Confirm flags both active; you will be prompted before deletion.
 
 ### -------------------------- EXAMPLE 2 --------------------------
 ```powershell
-Get-ConfluencePage -SpaceKey "ABC" | Remove-Label -Label asdf -WhatIf
+Get-ConfluencePage -SpaceKey 'ABC' -Label 'asdf' | Remove-ConfluenceLabel -Label 'asdf' -WhatIf
 ```
 
 Description
 
 -----------
 
-Would remove the label "asdf" from all pages in the ABC space.
+For all wiki pages in the ABC space, the label "asdf" would be removed.
+WhatIf parameter prevents any modifications.
 
 ### -------------------------- EXAMPLE 3 --------------------------
 ```powershell
-(Get-ConfluenceSpace "ABC").Homepage | Remove-Label
+Get-ConfluenceChildPage -PageID 123456 | Remove-ConfluenceLabel
 ```
 
 Description
 
 -----------
 
-Removes all labels from the homepage of the ABC space.
+For all wiki pages immediately below page 123456, remove all labels from each page.
 
 ## PARAMETERS
 
@@ -163,9 +164,4 @@ Accept wildcard characters: False
 
 ## RELATED LINKS
 
-[Add-Label]()
-[Get-Label]()
-[Set-Label]()
-
 [https://github.com/AtlassianPS/ConfluencePS](https://github.com/AtlassianPS/ConfluencePS)
-

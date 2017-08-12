@@ -13,7 +13,7 @@ Remove an existing Confluence space.
 ## SYNTAX
 
 ```powershell
-Remove-Space -apiURi <Uri> -Credential <PSCredential> [-SpaceKey] <String[]> [-Force] [-WhatIf] [-Confirm]
+Remove-ConfluenceSpace -apiURi <Uri> -Credential <PSCredential> [-SpaceKey] <String[]> [-Force] [-WhatIf] [-Confirm]
 ```
 
 ## DESCRIPTION
@@ -24,27 +24,28 @@ Delete an existing Confluence space, including child content.
 
 ### -------------------------- EXAMPLE 1 --------------------------
 ```powershell
-Remove-Space -ApiURi "https://myserver.com/wiki" -Credential $cred -Key ABC,XYZ -Confirm
+Remove-ConfluenceSpace -SpaceKey ABC -WhatIf
 ```
 
 Description
 
 -----------
 
-Delete the space with key ABC and with key XYZ (note that key != name).
-Confirm will prompt before deletion.
+Simulates the deletion of wiki space ABC and all child content.
+-WhatIf parameter prevents removal of content.
 
 ### -------------------------- EXAMPLE 2 --------------------------
 ```powershell
-Get-Space | Where {$_.Name -like "*old"} | Remove-Space -Verbose -WhatIf
+Remove-ConfluenceSpace -SpaceKey XYZ -Force
 ```
 
 Description
 
 -----------
 
-Get all spaces ending in 'old' and simulate the deletion of them.
-Would simulate the removal of each space one by one with verbose output; -WhatIf flag active.
+Delete wiki space XYZ and all child content below it.
+By default, you will be prompted to confirm removal. ("Are you sure? Y/N")
+-Force suppresses all confirmation prompts and carries out the deletion.
 
 ## PARAMETERS
 
@@ -152,8 +153,4 @@ Accept wildcard characters: False
 
 ## RELATED LINKS
 
-[Get-Space]()
-[New-Space]()
-
 [https://github.com/AtlassianPS/ConfluencePS](https://github.com/AtlassianPS/ConfluencePS)
-
