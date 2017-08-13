@@ -8,42 +8,76 @@ schema: 2.0.0
 # Set-Info
 
 ## SYNOPSIS
-Gather URI/auth info for use in this session's REST API requests.
+Specify wiki location and authorization for use in this session's REST API requests.
 
 ## SYNTAX
 
 ```powershell
-Set-Info [[-BaseURi] <Uri>] [[-Credential] <PSCredential>] [[-PageSize] <Int32>] [-PromptCredentials]
+Set-ConfluenceInfo [[-BaseURi] <Uri>] [[-Credential] <PSCredential>] [[-PageSize] <Int32>] [-PromptCredentials]
 ```
 
 ## DESCRIPTION
+Set-ConfluenceInfo uses scoped variables and PSDefaultParameterValues to supply
+URI/auth info to all other functions in the module (e.g. Get-ConfluenceSpace).
+These session defaults can be overwritten on any single command, but using
+Set-ConfluenceInfo avoids repetitively specifying -ApiUri and -Credential parameters.
+
+Confluence's REST API supports passing basic authentication in headers.
+(If you have a better suggestion for how to handle auth, please reach out on GitHub!)
+
 Unless allowing anonymous access to your instance, credentials are needed.
-Confluence REST API supports passing basic authentication in headers.
-(If you have a better suggestion for how to handle this, please reach out on GitHub!)
 
 ## EXAMPLES
 
 ### -------------------------- EXAMPLE 1 --------------------------
 ```powershell
-Set-Info -BaseURI 'https://brianbunke.atlassian.net/wiki' -PromptCredentials
+Set-ConfluenceInfo -BaseURI 'https://yournamehere.atlassian.net/wiki' -PromptCredentials
 ```
 
 Description
 
 -----------
 
-Declare your base install; be prompted for username and password.
+Declare the URI of your Confluence instance; be prompted for username and password.
+Note that Atlassian Cloud Confluence instances typically use the /wiki subdirectory.
 
 ### -------------------------- EXAMPLE 2 --------------------------
 ```powershell
-Set-Info -BaseURI $ConfluenceURL -Credential $MyCreds -PageSize 100
+Set-ConfluenceInfo -BaseURI 'https://wiki.yourcompany.com'
 ```
 
 Description
 
 -----------
 
-Sets the url, credentials and default page size for the session.
+Declare the URI of your Confluence instance. You will not be prompted for credentials,
+and other commands would attempt to connect anonymously with read-only permissions.
+
+### -------------------------- EXAMPLE 3 --------------------------
+```powershell
+Set-ConfluenceInfo -BaseURI 'https://wiki.contoso.com' -PromptCredentials -PageSize 50
+```
+
+Description
+
+-----------
+
+Declare the URI of your Confluence instance; be prompted for username and password.
+Set the default "page size" for all your commands in this session to 50 (see Notes).
+
+
+### -------------------------- EXAMPLE 4 --------------------------
+```powershell
+$Cred = Get-Credential
+Set-ConfluenceInfo -BaseURI 'https://wiki.yourcompany.com' -Credential $Cred
+```
+
+Description
+
+-----------
+
+Declare the URI of your Confluence instance and the credentials (username and
+password).
 
 ## PARAMETERS
 
@@ -80,6 +114,7 @@ Accept wildcard characters: False
 
 ### -PageSize
 Default PageSize for the invocations.
+More info in the Notes field of this help file.
 
 ```yaml
 Type: Int32
@@ -114,6 +149,16 @@ Accept wildcard characters: False
 
 ## NOTES
 
+The default page size for all commands is 25.
+Using the -PageSize parameter changes the default for all commands in your current session.
+
+Tweaking PageSize can help improve pipeline performance when returning many objects.
+See related links for implementation discussion and details.
+
+(If you don't know exactly what this means, feel free to ignore it.)
+
 ## RELATED LINKS
 
 [https://github.com/AtlassianPS/ConfluencePS](https://github.com/AtlassianPS/ConfluencePS)
+[https://github.com/AtlassianPS/ConfluencePS/issues/50](https://github.com/AtlassianPS/ConfluencePS/issues/50)
+[https://github.com/AtlassianPS/ConfluencePS/pull/59](https://github.com/AtlassianPS/ConfluencePS/pull/59)

@@ -8,7 +8,7 @@ schema: 2.0.0
 # Set-Label
 
 ## SYNOPSIS
-Set the label for an existing Confluence content.
+Set the labels applied to existing Confluence content.
 
 ## SYNTAX
 
@@ -17,33 +17,34 @@ Set-Label -apiURi <Uri> -Credential <PSCredential> [-PageID] <Int32[]> -Label <S
 ```
 
 ## DESCRIPTION
-Sets the label for Confluence content.
-All preexisting labels will be removed in the process.
+Sets desired labels for Confluence content.
+(Currently, Set-ConfluenceLabel only supports interacting with wiki pages.)
+All preexisting labels will be *removed* in the process.
 
 ## EXAMPLES
 
 ### -------------------------- EXAMPLE 1 --------------------------
 ```powershell
-Set-Label -ApiURi "https://myserver.com/wiki" -Credential $cred -Label seven -PageID 123456 -Verbose -Confirm
+Set-ConfluenceLabel -PageID 123456 -Label 'a','b','c'
 ```
 
 Description
 
 -----------
 
-Would remove any label previously assigned to the page with ID 123456 and would add the label "seven"
-Verbose and Confirm flags both active.
+For existing wiki page with ID 123456, remove all labels, then add the three specified.
 
 ### -------------------------- EXAMPLE 2 --------------------------
 ```powershell
-Get-ConfluencePage -SpaceKey "ABC" | Set-Label -Label "asdf","qwer" -WhatIf
+Get-ConfluencePage -SpaceKey 'ABC' | Set-Label -Label '123' -WhatIf
 ```
 
 Description
 
 -----------
 
-Would remove all labels and adds "asdf" and "qwer" to all pages in the ABC space.
+Would remove all labels and apply only the label "123" to all pages in the ABC space.
+-WhatIf reports on simulated changes, but does not modifying anything.
 
 ## PARAMETERS
 
@@ -151,9 +152,4 @@ Accept wildcard characters: False
 
 ## RELATED LINKS
 
-[Add-Label]()
-[Get-Label]()
-[Remove-Label]()
-
 [https://github.com/AtlassianPS/ConfluencePS](https://github.com/AtlassianPS/ConfluencePS)
-

@@ -14,102 +14,78 @@ Retrieve a listing of pages in your Confluence instance.
 
 ### byId (Default)
 ```powershell
-Get-Page -ApiURi <Uri> -Credential <PSCredential> [-PageID] <Int32[]> [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
-```
-
-### byTitle
-```powershell
-Get-Page -ApiURi <Uri> -Credential <PSCredential> -Title <String> [-SpaceKey <String>] [-Space <Space>] [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
+Get-ConfluencePage -ApiURi <Uri> -Credential <PSCredential> [-PageID] <Int32[]> [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
 ```
 
 ### byLabel
 ```powershell
-Get-Page -ApiURi <Uri> -Credential <PSCredential> [-SpaceKey <String>] [-Space <Space>] -Label <String[]> [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
+Get-ConfluencePage -ApiURi <Uri> -Credential <PSCredential> [-SpaceKey <String>] [-Space <Space>] -Label <String[]> [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
 ```
 
 ### bySpace
 ```powershell
-Get-Page -ApiURi <Uri> -Credential <PSCredential> -SpaceKey <String> [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
+Get-ConfluencePage -ApiURi <Uri> -Credential <PSCredential> -SpaceKey <String> [-Title <String>] [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
 ```
 
 ### bySpaceObject
 ```powershell
-Get-Page -ApiURi <Uri> -Credential <PSCredential> -Space <Space> [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
+Get-ConfluencePage -ApiURi <Uri> -Credential <PSCredential> -Space <Space> [-Title <String>] [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
 ```
 
 ## DESCRIPTION
-Fetch Confluence pages, optionally filtering by Name/Space/ID.
+Return Confluence pages, filtered by ID, Name, or Space.
 Piped output into other cmdlets is generally tested and supported.
 
 ## EXAMPLES
 
 ### -------------------------- EXAMPLE 1 --------------------------
 ```powershell
-Get-Page -ApiURi "https://myserver.com/wiki" -Credential $cred | Select-Object ID, Title -first 500 | Sort-Object Title
+Get-ConfluencePage -SpaceKey HOTH
+Get-ConfluenceSpace -SpaceKey HOTH | Get-ConfluencePage
 ```
 
 Description
 
 -----------
 
-List the first 500 pages found in your Confluence instance.
-Returns only each page's ID and Title, sorting results alphabetically by Title.
+Two different methods to return all wiki pages in space "HOTH".
+Both examples should return identical results.
 
 ### -------------------------- EXAMPLE 2 --------------------------
 ```powershell
-Get-Page -Title Confluence -SpaceKey "ABC" -PageSize 100
+Get-ConfluencePage -PageID 123456 | Format-List *
 ```
 
 Description
 
 -----------
 
-Get all pages with the word Confluence in the title in the 'ABC' sapce.
-Each call to the server is limited to 100 pages.
+Returns the wiki page with ID 123456.
+`Format-List *` displays all of the object's properties, including the full page body.
 
 ### -------------------------- EXAMPLE 3 --------------------------
 ```powershell
-Get-ConfluenceSpace -Name Demo | Get-Page
+Get-ConfluencePage -Title 'luke*' -SpaceKey HOTH
 ```
 
 Description
 
 -----------
 
-Get all spaces with a name like *demo*, and then list pages from each returned space.
+Return all pages in HOTH whose names start with "luke" (case-insensitive).
+Wildcards (*) can be inserted to support partial matching.
 
 ### -------------------------- EXAMPLE 4 --------------------------
 ```powershell
-$FinalCountdown = Get-Page -PageID 54321
+Get-ConfluencePage -Label 'skywalker'
 ```
 
 Description
 
 -----------
 
-Store the page's ID, Title, Space Key, Version, and Body for use later in your script.
-
-### -------------------------- EXAMPLE 5 --------------------------
-```powershell
-$WhereIsShe = Get-Page -Title 'Rachel'
-```
-
-Description
-
------------
-
-Search for Rachel in order to find the correct page ID(s).
-
-### -------------------------- EXAMPLE 6 --------------------------
-```powershell
-$meetingPages = Get-Page -Label "meeting-notes" -SpaceKey PROJ1
-```
-
-Description
-
------------
-
-Captures all the meeting note pages in the Proj1 Space.
+Return all pages containing the label "skywalker" (case-insensitive).
+Label text must match exactly; no wildcards are applied.
 
 ## PARAMETERS
 
@@ -162,30 +138,30 @@ Accept wildcard characters: False
 ```
 
 ### -Title
-Filter results by name. This can contain wildcard and is case insensitive.
+Filter results by page name (case-insensitive).
+This supports wildcards (*) to allow for partial matching.
 
 ```yaml
 Type: String
-Parameter Sets: byTitle
+Parameter Sets: bySpace, bySpaceObject
 Aliases: Name
 
-Required: True
+Required: False
 Position: Named
 Default value: None
 Accept pipeline input: False
-Accept wildcard characters: False
+Accept wildcard characters: True
 ```
 
 ### -SpaceKey
-Filter results by space key.
-Currently, this parameter is case sensitive.
+Filter results by space key (case-insensitive).
 
 ```yaml
 Type: String
-Parameter Sets: byTitle, byLabel
+Parameter Sets: bySpaceObject, byLabel
 Aliases: Key
 
-Required: False
+Required: True
 Position: Named
 Default value: None
 Accept pipeline input: False
@@ -205,14 +181,14 @@ Accept wildcard characters: False
 ```
 
 ### -Space
-Filter results by space object(s), typically from the pipeline
+Filter results by space object(s), typically from the pipeline.
 
 ```yaml
 Type: Space
-Parameter Sets: byTitle, byLabel
+Parameter Sets: bySpaceObject, byLabel
 Aliases:
 
-Required: False
+Required: True
 Position: Named
 Default value: None
 Accept pipeline input: True (ByValue)
@@ -227,12 +203,12 @@ Aliases:
 Required: True
 Position: Named
 Default value: None
-Accept pipeline input: True (ByValue)
+Accept pipeline input: True (ByPropertyName, ByValue)
 Accept wildcard characters: False
 ```
 
 ### -Label
-Label(s) to use as search criteria to find pages
+Filter results to only pages with the specified label(s).
 
 ```yaml
 Type: String[]
@@ -264,6 +240,7 @@ Accept wildcard characters: False
 ```
 
 ### -IncludeTotalCount
+NOTE: Not yet implemented.
 Causes an extra output of the total count at the beginning.
 Note this is actually a uInt64, but with a custom string representation.
 
@@ -296,9 +273,8 @@ Accept wildcard characters: False
 ```
 
 ### -First
-Currently not supported.
+NOTE: Not yet implemented.
 Indicates how many items to return.
-Defaults to 100.
 
 ```yaml
 Type: UInt64
@@ -322,9 +298,4 @@ Accept wildcard characters: False
 
 ## RELATED LINKS
 
-[New-Page]()
-[Remove-Page]()
-[Set-Page]()
-
 [https://github.com/AtlassianPS/ConfluencePS](https://github.com/AtlassianPS/ConfluencePS)
-

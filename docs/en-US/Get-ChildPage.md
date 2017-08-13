@@ -8,52 +8,44 @@ schema: 2.0.0
 # Get-ChildPage
 
 ## SYNOPSIS
-List all child pages of a specific wiki page.
+Retrieve the child pages of a given wiki page or pages.
 
 ## SYNTAX
 
 ```powershell
-Get-ChildPage -apiURi <Uri> -Credential <PSCredential> [-PageID] <Int32> [-Recurse] [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
+Get-ConfluenceChildPage -apiURi <Uri> -Credential <PSCredential> [-PageID] <Int32> [-Recurse] [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
 ```
 
 ## DESCRIPTION
-Get all pages that are descendants of a given page.
+Return all pages directly below the given page(s). Optionally,
+the -Recurse parameter will return all child pages, no matter how nested.
 
 ## EXAMPLES
 
 ### -------------------------- EXAMPLE 1 --------------------------
 ```powershell
-Get-ChildPage -ParentID 1234 | Select-Object ID, Title | Sort-Object Title
+Get-ConfluenceChildPage -PageID 123456
+Get-ConfluencePage -PageID 123456 | Get-ConfluenceChildPage
 ```
 
 Description
 
 -----------
 
-For the wiki page with ID 1234, get all pages immediately beneath it.
-Returns only each page's ID and Title, sorting results alphabetically by Title.
+Two different methods to return all pages directly below page 123456.
+Both examples should return identical results.
 
 ### -------------------------- EXAMPLE 2 --------------------------
 ```powershell
-Get-Page -Title 'Genghis Khan' | Get-ChildPage | Select -First 500
+Get-ConfluenceChildPage -PageID 123456 -Recurse
 ```
 
 Description
 
 -----------
 
-Find the Genghis Khan wiki page and pipe the results.
-Get only the first 500 children beneath that page.
-
-### -------------------------- EXAMPLE 3 --------------------------
-```powershell
-Get-ChildPage -ParentID 9999 -Recurse
-```
-
-Description
-
------------
-Fetch all child pages of page 9999 recursively.
+Instead of returning only 123456's child pages,
+return grandchildren, great-grandchildren, and so on.
 
 ## PARAMETERS
 
@@ -137,6 +129,7 @@ Accept wildcard characters: False
 ```
 
 ### -IncludeTotalCount
+NOTE: Not yet implemented.
 Causes an extra output of the total count at the beginning.
 Note this is actually a uInt64, but with a custom string representation.
 
@@ -169,8 +162,8 @@ Accept wildcard characters: False
 ```
 
 ### -First
+NOTE: Not yet implemented.
 Indicates how many items to return.
-Currently not supported.
 
 ```yaml
 Type: UInt64
@@ -191,10 +184,9 @@ Accept wildcard characters: False
 ### ConfluencePS.Page
 
 ## NOTES
+Confluence uses hierarchy to help organize content.
+This command is meant to help provide the intended context from the command line.
 
 ## RELATED LINKS
 
-[Get-Page]()
-
 [https://github.com/AtlassianPS/ConfluencePS](https://github.com/AtlassianPS/ConfluencePS)
-

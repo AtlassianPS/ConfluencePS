@@ -4,6 +4,7 @@ online version: https://github.com/AtlassianPS/ConfluencePS/blob/master/docs/en-
 locale: en-US
 schema: 2.0.0
 ---
+
 # Add-Label
 
 ## SYNOPSIS
@@ -12,39 +13,53 @@ Add a new global label to an existing Confluence page.
 ## SYNTAX
 
 ```powershell
-Add-Label -apiURi <Uri> -Credential <PSCredential> [[-PageID] <Int32[]>] -Label <Object> [-WhatIf] [-Confirm]
+Add-ConfluenceLabel -apiURi <Uri> -Credential <PSCredential> [[-PageID] <Int32[]>] -Label <Object> [-WhatIf] [-Confirm]
 ```
 
 ## DESCRIPTION
-This allows the assignment of labels (one or more) to one Confluence pages (one or more).
-If the label did not exist previously, it will be created. (Be aware of typos)
+Assign labels (one or more) to Confluence pages (one or more).
+If the label did not exist previously, it will be created.
+Preexisting labels are not affected.
 
 ## EXAMPLES
 
 ### -------------------------- EXAMPLE 1 --------------------------
 ```powershell
-Add-Label -ApiURi "https://myserver.com/wiki" -Credential $cred -Label alpha,bravo,charlie -PageID 123456 -Verbose
+Add-ConfluenceLabel -PageID 123456 -Label alpha -Verbose
 ```
 
 Description
 
 -----------
 
-Apply the labels alpha, bravo, and charlie to the page with ID 123456.
-(including verbose output)
+Apply the label alpha to the wiki page with ID 123456.
+-Verbose output provides extra technical details, if interested.
 
 ### -------------------------- EXAMPLE 2 --------------------------
 
 ```powershell
-Get-Page -SpaceKey SRV | Add-Label -Label servers -WhatIf
+Get-ConfluencePage -SpaceKey SRV | Add-ConfluenceLabel -Label servers -WhatIf
 ```
 
 Description
 
 -----------
 
-Simulate apply the label "servers" to all pages in the space with key SRV.
-(Simulated because of the -WhatIf flag)
+Simulates applying the label "servers" to all pages in the space with key SRV.
+-WhatIf provides PageIDs of pages that would have been affected.
+
+### -------------------------- EXAMPLE 3 --------------------------
+
+```powershell
+Get-ConfluencePage -SpaceKey DEMO | Add-ConfluenceLabel -Label abc -Confirm
+```
+
+Description
+
+-----------
+
+Applies the label "abc" to all pages in the space with key DEMO.
+-Confirm prompts Yes/No for each page that would be affected.
 
 ## PARAMETERS
 
@@ -153,9 +168,4 @@ Accept wildcard characters: False
 
 ## RELATED LINKS
 
-[Get-Label]()
-[Remove-Label]()
-[Set-Label]()
-
 [https://github.com/AtlassianPS/ConfluencePS](https://github.com/AtlassianPS/ConfluencePS)
-

@@ -13,38 +13,50 @@ Trash an existing Confluence page.
 ## SYNTAX
 
 ```powershell
-Remove-Page -apiURi <Uri> -Credential <PSCredential> [-PageID] <Int32[]> [-WhatIf] [-Confirm]
+Remove-ConfluencePage -apiURi <Uri> -Credential <PSCredential> [-PageID] <Int32[]> [-WhatIf] [-Confirm]
 ```
 
 ## DESCRIPTION
 Delete existing Confluence content by page ID.
 This trashes most content, but will permanently delete "un-trashable" content.
-Untested against non-page content, but probably works anyway.
+Untested against non-page content.
 
 ## EXAMPLES
 
 ### -------------------------- EXAMPLE 1 --------------------------
 ```powershell
-Get-Page -Title Oscar | Remove-Page -Confirm
+Remove-ConfluencePage -PageID 123456 -Verbose -Confirm
 ```
 
 Description
 
 -----------
 
-Send Oscar to the trash.
-Each matching page will ask you to confirm the deletion.
+Trash the wiki page with ID 123456.
+Verbose and Confirm flags both active; you will be prompted before removal.
 
 ### -------------------------- EXAMPLE 2 --------------------------
 ```powershell
-Remove-Page -ApiURi "https://myserver.com/wiki" -Credential $cred -PageID 12345,12346 -Verbose -WhatIf
+Get-ConfluencePage -SpaceKey ABC -Title '*test*' | Remove-ConfluencePage -WhatIf
 ```
 
 Description
 
 -----------
 
-Simulates the removal of two specific pages.
+For all wiki pages in space ABC with "test" somewhere in the name,
+simulate the each page being trashed. -WhatIf prevents any removals.
+
+### -------------------------- EXAMPLE 3 --------------------------
+```powershell
+Get-ConfluencePage -Label 'deleteme' | Remove-ConfluencePage
+```
+
+Description
+
+-----------
+
+For all wiki pages with the label "deleteme" applied, trash each page.
 
 ## PARAMETERS
 
@@ -137,9 +149,4 @@ Accept wildcard characters: False
 
 ## RELATED LINKS
 
-[Get-Page]()
-[New-Page]()
-[Set-Page]()
-
 [https://github.com/AtlassianPS/ConfluencePS](https://github.com/AtlassianPS/ConfluencePS)
-

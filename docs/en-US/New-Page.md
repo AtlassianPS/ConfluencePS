@@ -14,54 +14,101 @@ Create a new page on your Confluence instance.
 
 ### byParameters (Default)
 ```powershell
-New-Page -apiURi <Uri> -Credential <PSCredential> -Title <String> [-ParentID <Int32>] [-Parent <Page>] [-SpaceKey <String>] [-Space <Space>] [-Body <String>] [-Convert] [-WhatIf] [-Confirm]
+New-ConfluencePage -apiURi <Uri> -Credential <PSCredential> -Title <String> [-ParentID <Int32>] [-Parent <Page>] [-SpaceKey <String>] [-Space <Space>] [-Body <String>] [-Convert] [-WhatIf] [-Confirm]
 ```
 
 ### byObject
 ```powershell
-New-Page -apiURi <Uri> -Credential <PSCredential> -InputObject <Page> [-WhatIf] [-Confirm]
+New-ConfluencePage -apiURi <Uri> -Credential <PSCredential> -InputObject <Page> [-WhatIf] [-Confirm]
 ```
 
 ## DESCRIPTION
 Create a new page on Confluence.
+
 Optionally include content in -Body.
-Content needs to be in "Confluence storage format;" see also -Convert.
+Body content needs to be in "Confluence storage format" -- see also -Convert.
 
 ## EXAMPLES
 
 ### -------------------------- EXAMPLE 1 --------------------------
 ```powershell
-New-Page -Title 'Test New Page' -ParentID 123456 -Body 'Hello world' -Convert -WhatIf
+New-ConfluencePage -Title 'Test New Page' -SpaceKey asdf
 ```
 
 Description
 
 -----------
 
-Creates a new page as a child member of existing page 123456 with one line of page text.
-The Body defined is converted to Storage format by the "-Convert" parameter
+Create a new blank wiki page at the root of space "asdf".
 
 ### -------------------------- EXAMPLE 2 --------------------------
 ```powershell
-New-Page -Title "Luke Skywalker" -Parent (Get-Page -title "Darth Vader" -SpaceKey "STARWARS")
+New-ConfluencePage -Title 'Luke Skywalker' -Parent (Get-ConfluencePage -Title 'Darth Vader' -SpaceKey 'STARWARS')
 ```
 
 Description
 
 -----------
 
-Creates a new page with an empty body as a child page of the "Darth Vader" page in Space "STARWARS".
+Creates a new blank wiki page as a child page below "Darth Vader" in the specified space.
 
 ### -------------------------- EXAMPLE 3 --------------------------
 ```powershell
-[ConfluencePS.Page]@{Title="My Title";Space=[ConfluencePS.Space]@{Key="ABC"}} | New-Page -ApiURi "https://myserver.com/wiki" -Credential $cred
+New-ConfluencePage -Title 'Luke Skywalker' -ParentID 123456 -Verbose
 ```
 
 Description
 
 -----------
 
-Creates a new page "My Title" in the space "ABC" with an empty body.
+Creates a new blank wiki page as a child page below the wiki page with ID 123456.
+-Verbose provides extra technical details, if interested.
+
+### -------------------------- EXAMPLE 4 --------------------------
+```powershell
+New-ConfluencePage -Title 'foo' -SpaceKey 'bar' -Body $PageContents
+```
+
+Description
+
+-----------
+
+Create a new wiki page named 'foo' at the root of space 'bar'.
+The wiki page will contain the data stored in $PageContents.
+
+### -------------------------- EXAMPLE 5 --------------------------
+```powershell
+New-ConfluencePage -Title 'foo' -SpaceKey 'bar' -Body 'Testing 123' -Convert
+```
+
+Description
+
+-----------
+
+Create a new wiki page named 'foo' at the root of space 'bar'.
+The wiki page will contain the text "Testing 123".
+-Convert will condition the -Body parameter's string into storage format.
+
+
+### -------------------------- EXAMPLE 6 --------------------------
+```powershell
+$pageObject = [ConfluencePS.Page]@{
+    Title = "My Title"
+    Space = [ConfluencePS.Space]@{
+        Key="ABC"
+    }
+}
+
+New-ConfluencePage -InputObject $pageObject
+$pageObject | New-ConfluencePage
+```
+
+Description
+
+-----------
+
+Two different methods of creating a new page from an object `ConfluencePS.Page`.
+Both examples should return identical results.
 
 ## PARAMETERS
 
@@ -98,7 +145,7 @@ Accept wildcard characters: False
 ```
 
 ### -InputObject
-A Page Object from which to create a new page.
+A ConfluencePS.Page object from which to create a new page.
 
 ```yaml
 Type: Page
@@ -144,7 +191,7 @@ Accept wildcard characters: False
 ```
 
 ### -Parent
-Parent page as Page Object.
+Supply a ConfluencePS.Page object to use as the parent page.
 
 ```yaml
 Type: Page
@@ -160,7 +207,7 @@ Accept wildcard characters: False
 
 ### -SpaceKey
 Key of the space where the new page should exist.
-Only needed if you don't utilize ParentID.
+Only needed if you don't specify a parent page.
 
 ```yaml
 Type: String
@@ -176,6 +223,7 @@ Accept wildcard characters: False
 
 ### -Space
 Space Object in which to create the new page.
+Only needed if you don't specify a parent page.
 
 ```yaml
 Type: Space
@@ -205,8 +253,7 @@ Accept wildcard characters: False
 ```
 
 ### -Convert
-Convert the provided body to Confluence's storage format.
-Optional flag.
+Optionally, convert the provided body to Confluence's storage format.
 Has the same effect as calling ConvertTo-ConfluenceStorageFormat against your Body.
 
 ```yaml
@@ -262,11 +309,4 @@ Accept wildcard characters: False
 
 ## RELATED LINKS
 
-[Get-Page]()
-[Remove-Page]()
-[Set-Page]()
-
-[ConvertTo-ConfluenceStorageFormat]()
-
 [https://github.com/AtlassianPS/ConfluencePS](https://github.com/AtlassianPS/ConfluencePS)
-
