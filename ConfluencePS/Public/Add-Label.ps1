@@ -52,6 +52,12 @@
             $Label = $Label.Labels
         }
 
+        # Test if Label is String[]
+        [String[]]$_label = $Label
+        $_label = $_label | Where-Object {$_ -ne "ConfluencePS.Label"}
+        if ($_label) {
+            [String[]]$Label = $_label
+        }
         # Allow only for Label to be a [String[]] or [ConfluencePS.Label[]]
         $allowedLabelTypes = @(
             "System.String"
