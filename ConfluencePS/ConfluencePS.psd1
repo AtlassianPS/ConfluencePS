@@ -120,7 +120,7 @@
             # IconUri = ''
 
             # ReleaseNotes of this module
-            ReleaseNotes = 'https://github.com/AtlassianPS/ConfluencePS/CHANGELOG.md'
+            ReleaseNotes = 'https://github.com/AtlassianPS/ConfluencePS/blob/master/CHANGELOG.md'
 
         } # End of PSData hashtable
 
