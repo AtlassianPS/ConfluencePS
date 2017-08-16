@@ -186,7 +186,15 @@ task ConvertMarkdown -Partial @ConvertMarkdown InstallPandoc, {process {
 # endregion
 
 # region publish
-task Deploy -If ($env:APPVEYOR_REPO_BRANCH -eq 'master' -and (-not($env:APPVEYOR_PULL_REQUEST_NUMBER))) {
+task Deploy -If (
+    # Only deploy if the master branch changes
+    $env:APPVEYOR_REPO_BRANCH -eq 'master' -and
+    # Do not deploy if this is a pull request (because it hasn't been approved yet)
+    (-not ($env:APPVEYOR_PULL_REQUEST_NUMBER)) -and
+    # Do not deploy if the commit contains the string "skip-deploy"
+    # Meant for major/minor version publishes with a .0 build/patch version (like 2.1.0)
+    $env:APPVEYOR_REPO_COMMIT_MESSAGE -notlike '*skip-deploy*'
+) {
     Remove-Module ConfluencePS -ErrorAction SilentlyContinue
 }, PublishToGallery
 
