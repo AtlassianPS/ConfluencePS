@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [2.0.0] - 2017-08-16
+## [2.0.0] - 2017-08-17
 A new major version! ConfluencePS has been totally refactored to introduce new features and greatly improve efficiency.
 
 "A new major version" means limited older functionality was intentionally broken. In addition, there are a ton of good changes, so some big picture notes first:
@@ -103,4 +103,4 @@ No changelog available for version `1.0` of ConfluencePS. `1.0` was created in l
 
 
 
-[everything we closed for 2.0]: https://github.com/AtlassianPS/ConfluencePS/issues?utf8=%E2%9C%93&q=closed%3A2017-04-01..2017-08-16
+[everything we closed for 2.0]: https://github.com/AtlassianPS/ConfluencePS/issues?utf8=%E2%9C%93&q=closed%3A2017-04-01..2017-08-17
