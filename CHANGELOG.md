@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [2.0.0] - 2017-08-17
+## [2.0] - 2017-08-17
 A new major version! ConfluencePS has been totally refactored to introduce new features and greatly improve efficiency.
 
 "A new major version" means limited older functionality was intentionally broken. In addition, there are a ton of good changes, so some big picture notes first:
