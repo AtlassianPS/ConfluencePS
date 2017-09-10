@@ -1,62 +1,52 @@
 ---
 external help file: ConfluencePS-help.xml
-online version: https://github.com/AtlassianPS/ConfluencePS/blob/master/docs/en-US/Remove-Label.md
+online version: https://github.com/AtlassianPS/ConfluencePS/blob/master/docs/commands/Set-Label.md
 locale: en-US
 schema: 2.0.0
+layout: documentation
+permalink: /docs/ConfluencePS/commands/Set-Label/
 ---
 
-# Remove-Label
+# Set-Label
 
 ## SYNOPSIS
-Remove a label from existing Confluence content.
+Set the labels applied to existing Confluence content.
 
 ## SYNTAX
 
 ```powershell
-Remove-ConfluenceLabel -apiURi <Uri> -Credential <PSCredential> [-PageID] <Int32[]> [-Label <String[]>] [-WhatIf] [-Confirm]
+Set-Label -apiURi <Uri> -Credential <PSCredential> [-PageID] <Int32[]> -Label <String[]> [-WhatIf] [-Confirm]
 ```
 
 ## DESCRIPTION
-Remove labels from Confluence content.
-Does accept multiple pages piped via Get-ConfluencePage.
-Untested against non-page content.
+Sets desired labels for Confluence content.
+(Currently, Set-ConfluenceLabel only supports interacting with wiki pages.)
+All preexisting labels will be *removed* in the process.
 
 ## EXAMPLES
 
 ### -------------------------- EXAMPLE 1 --------------------------
 ```powershell
-Remove-ConfluenceLabel -PageID 123456 -Label 'seven' -Verbose -Confirm
+Set-ConfluenceLabel -PageID 123456 -Label 'a','b','c'
 ```
 
 Description
 
 -----------
 
-Remove label "seven" from the wiki page with ID 123456.
-Verbose and Confirm flags both active; you will be prompted before deletion.
+For existing wiki page with ID 123456, remove all labels, then add the three specified.
 
 ### -------------------------- EXAMPLE 2 --------------------------
 ```powershell
-Get-ConfluencePage -SpaceKey 'ABC' -Label 'asdf' | Remove-ConfluenceLabel -Label 'asdf' -WhatIf
+Get-ConfluencePage -SpaceKey 'ABC' | Set-Label -Label '123' -WhatIf
 ```
 
 Description
 
 -----------
 
-For all wiki pages in the ABC space, the label "asdf" would be removed.
-WhatIf parameter prevents any modifications.
-
-### -------------------------- EXAMPLE 3 --------------------------
-```powershell
-Get-ConfluenceChildPage -PageID 123456 | Remove-ConfluenceLabel
-```
-
-Description
-
------------
-
-For all wiki pages immediately below page 123456, remove all labels from each page.
+Would remove all labels and apply only the label "123" to all pages in the ABC space.
+-WhatIf reports on simulated changes, but does not modifying anything.
 
 ## PARAMETERS
 
@@ -109,14 +99,14 @@ Accept wildcard characters: False
 ```
 
 ### -Label
-A single content label to remove from one or more pages.
+Label names to add to the content.
 
 ```yaml
 Type: String[]
 Parameter Sets: (All)
 Aliases:
 
-Required: False
+Required: True
 Position: Named
 Default value: None
 Accept pipeline input: False
@@ -158,7 +148,7 @@ Accept wildcard characters: False
 
 ## OUTPUTS
 
-### System.Boolean
+### ConfluencePS.ContentLabelSet
 
 ## NOTES
 

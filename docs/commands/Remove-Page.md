@@ -1,50 +1,64 @@
 ---
 external help file: ConfluencePS-help.xml
-online version: https://github.com/AtlassianPS/ConfluencePS/blob/master/docs/en-US/Set-Label.md
+online version: https://github.com/AtlassianPS/ConfluencePS/blob/master/docs/commands/Remove-Page.md
 locale: en-US
 schema: 2.0.0
+layout: documentation
+permalink: /docs/ConfluencePS/commands/Remove-Page/
 ---
 
-# Set-Label
+# Remove-Page
 
 ## SYNOPSIS
-Set the labels applied to existing Confluence content.
+Trash an existing Confluence page.
 
 ## SYNTAX
 
 ```powershell
-Set-Label -apiURi <Uri> -Credential <PSCredential> [-PageID] <Int32[]> -Label <String[]> [-WhatIf] [-Confirm]
+Remove-ConfluencePage -apiURi <Uri> -Credential <PSCredential> [-PageID] <Int32[]> [-WhatIf] [-Confirm]
 ```
 
 ## DESCRIPTION
-Sets desired labels for Confluence content.
-(Currently, Set-ConfluenceLabel only supports interacting with wiki pages.)
-All preexisting labels will be *removed* in the process.
+Delete existing Confluence content by page ID.
+This trashes most content, but will permanently delete "un-trashable" content.
+Untested against non-page content.
 
 ## EXAMPLES
 
 ### -------------------------- EXAMPLE 1 --------------------------
 ```powershell
-Set-ConfluenceLabel -PageID 123456 -Label 'a','b','c'
+Remove-ConfluencePage -PageID 123456 -Verbose -Confirm
 ```
 
 Description
 
 -----------
 
-For existing wiki page with ID 123456, remove all labels, then add the three specified.
+Trash the wiki page with ID 123456.
+Verbose and Confirm flags both active; you will be prompted before removal.
 
 ### -------------------------- EXAMPLE 2 --------------------------
 ```powershell
-Get-ConfluencePage -SpaceKey 'ABC' | Set-Label -Label '123' -WhatIf
+Get-ConfluencePage -SpaceKey ABC -Title '*test*' | Remove-ConfluencePage -WhatIf
 ```
 
 Description
 
 -----------
 
-Would remove all labels and apply only the label "123" to all pages in the ABC space.
--WhatIf reports on simulated changes, but does not modifying anything.
+For all wiki pages in space ABC with "test" somewhere in the name,
+simulate the each page being trashed. -WhatIf prevents any removals.
+
+### -------------------------- EXAMPLE 3 --------------------------
+```powershell
+Get-ConfluencePage -Label 'deleteme' | Remove-ConfluencePage
+```
+
+Description
+
+-----------
+
+For all wiki pages with the label "deleteme" applied, trash each page.
 
 ## PARAMETERS
 
@@ -81,7 +95,7 @@ Accept wildcard characters: False
 ```
 
 ### -PageID
-The page ID to remove the label from.
+The page ID to delete.
 Accepts multiple IDs via pipeline input.
 
 ```yaml
@@ -93,21 +107,6 @@ Required: True
 Position: 1
 Default value: None
 Accept pipeline input: True (ByPropertyName, ByValue)
-Accept wildcard characters: False
-```
-
-### -Label
-Label names to add to the content.
-
-```yaml
-Type: String[]
-Parameter Sets: (All)
-Aliases:
-
-Required: True
-Position: Named
-Default value: None
-Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
@@ -146,7 +145,7 @@ Accept wildcard characters: False
 
 ## OUTPUTS
 
-### ConfluencePS.ContentLabelSet
+### System.Boolean
 
 ## NOTES
 

@@ -1,62 +1,53 @@
 ---
 external help file: ConfluencePS-help.xml
-online version: https://github.com/AtlassianPS/ConfluencePS/blob/master/docs/en-US/Get-Space.md
+online version: https://github.com/AtlassianPS/ConfluencePS/blob/master/docs/commands/Get-ChildPage.md
 locale: en-US
 schema: 2.0.0
+layout: documentation
+permalink: /docs/ConfluencePS/commands/Get-ChildPage/
 ---
 
-# Get-Space
+# Get-ChildPage
 
 ## SYNOPSIS
-Retrieve a listing of spaces in your Confluence instance.
+Retrieve the child pages of a given wiki page or pages.
 
 ## SYNTAX
 
 ```powershell
-Get-ConfluenceSpace -apiURi <Uri> -Credential <PSCredential> [[-SpaceKey] <String[]>] [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
+Get-ConfluenceChildPage -apiURi <Uri> -Credential <PSCredential> [-PageID] <Int32> [-Recurse] [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
 ```
 
 ## DESCRIPTION
-Return all Confluence spaces, optionally filtering by Key.
-Piped output into other cmdlets is generally tested and supported.
+Return all pages directly below the given page(s). Optionally,
+the -Recurse parameter will return all child pages, no matter how nested.
 
 ## EXAMPLES
 
 ### -------------------------- EXAMPLE 1 --------------------------
 ```powershell
-Get-ConfluenceSpace
+Get-ConfluenceChildPage -PageID 123456
+Get-ConfluencePage -PageID 123456 | Get-ConfluenceChildPage
 ```
 
 Description
 
 -----------
 
-Display the info of all spaces on the server.
+Two different methods to return all pages directly below page 123456.
+Both examples should return identical results.
 
 ### -------------------------- EXAMPLE 2 --------------------------
 ```powershell
-Get-ConfluenceSpace -SpaceKey HOTH | Format-List *
+Get-ConfluenceChildPage -PageID 123456 -Recurse
 ```
 
 Description
 
 -----------
 
-Return only the space with key "HOTH" (case-insensitive).
-`Format-List *` displays all of the object's properties.
-
-### -------------------------- EXAMPLE 3 --------------------------
-```powershell
-Get-ConfluenceSpace -ApiURi "https://myserver.com/wiki" -Credential $cred
-```
-
-Description
-
------------
-
-Manually specifying a server and authentication credentials, list all
-spaces found on the instance. `Set-ConfluenceInfo` usually makes this
-unnecessary, unless you are actively maintaining multiple instances.
+Instead of returning only 123456's child pages,
+return grandchildren, great-grandchildren, and so on.
 
 ## PARAMETERS
 
@@ -92,18 +83,32 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -SpaceKey
-Filter results by key.
-Supports wildcard matching on partial input.
+### -PageID
+Filter results by page ID.
 
 ```yaml
-Type: String[]
+Type: Int32
 Parameter Sets: (All)
-Aliases: Key
+Aliases: ID
+
+Required: True
+Position: 1
+Default value: 0
+Accept pipeline input: True (ByPropertyName, ByValue)
+Accept wildcard characters: False
+```
+
+### -Recurse
+Get all child pages recursively
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
 
 Required: False
-Position: 1
-Default value: None
+Position: Named
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -143,7 +148,7 @@ Accept wildcard characters: False
 ```
 
 ### -Skip
-Controls how many objects will be skipped before starting output.
+Controls how many things will be skipped before starting output.
 Defaults to 0.
 
 ```yaml
@@ -178,9 +183,11 @@ Accept wildcard characters: False
 
 ## OUTPUTS
 
-### ConfluencePS.Space
+### ConfluencePS.Page
 
 ## NOTES
+Confluence uses hierarchy to help organize content.
+This command is meant to help provide the intended context from the command line.
 
 ## RELATED LINKS
 

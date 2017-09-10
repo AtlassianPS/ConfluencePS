@@ -1,8 +1,10 @@
 ---
 external help file: ConfluencePS-help.xml
-online version: https://github.com/AtlassianPS/ConfluencePS/blob/master/docs/en-US/Add-Label.md
+online version: https://github.com/AtlassianPS/ConfluencePS/blob/master/docs/commands/Add-Label.md
 locale: en-US
 schema: 2.0.0
+layout: documentation
+permalink: /docs/ConfluencePS/commands/Add-Label/
 ---
 
 # Add-Label

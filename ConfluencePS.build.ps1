@@ -120,7 +120,7 @@ task Build GenerateRelease, ConvertMarkdown, UpdateManifest
 
 task CreateHelp {
     Import-Module platyPS -Force
-    New-ExternalHelp -Path "$BuildRoot\docs\en-US" -OutputPath "$BuildRoot\ConfluencePS\en-US" -Force
+    New-ExternalHelp -Path "$BuildRoot\docs\commands" -OutputPath "$BuildRoot\ConfluencePS\en-US" -Force
     Remove-Module ConfluencePS, platyPS
 }
 
