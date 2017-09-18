@@ -1,4 +1,4 @@
-﻿function Remove-Label {
+function Remove-Label {
     [CmdletBinding(
         ConfirmImpact = 'Low',
         SupportsShouldProcess = $true

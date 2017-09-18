@@ -1,4 +1,4 @@
-﻿function Get-Label {
+function Get-Label {
     [CmdletBinding(
         SupportsPaging = $true
     )]

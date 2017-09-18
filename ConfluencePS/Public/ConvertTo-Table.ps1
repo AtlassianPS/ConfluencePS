@@ -1,4 +1,4 @@
-﻿function ConvertTo-Table {
+function ConvertTo-Table {
     [CmdletBinding()]
     [System.Diagnostics.CodeAnalysis.SuppressMessage('PSUseDeclaredVarsMoreThanAssignments', '')]
     param (

@@ -1,4 +1,4 @@
-﻿function Get-ChildPage {
+function Get-ChildPage {
     [CmdletBinding( SupportsPaging = $true )]
     [OutputType([ConfluencePS.Page])]
     param (

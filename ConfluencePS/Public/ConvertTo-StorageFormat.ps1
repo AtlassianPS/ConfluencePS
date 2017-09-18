@@ -1,4 +1,4 @@
-﻿function ConvertTo-StorageFormat {
+function ConvertTo-StorageFormat {
     [CmdletBinding()]
     [OutputType([String])]
     param (

@@ -1,4 +1,4 @@
-﻿function Set-Page {
+function Set-Page {
     [CmdletBinding(
         ConfirmImpact = 'Medium',
         SupportsShouldProcess = $true,
