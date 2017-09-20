@@ -1,8 +1,10 @@
 ---
 external help file: ConfluencePS-help.xml
-online version: https://github.com/AtlassianPS/ConfluencePS/blob/master/docs/en-US/ConvertTo-Table.md
+online version: https://github.com/AtlassianPS/ConfluencePS/blob/master/docs/Commands/ConvertTo-Table.md
 locale: en-US
 schema: 2.0.0
+layout: documentation
+permalink: /docs/ConfluencePS/commands/ConvertTo-Table/
 ---
 
 # ConvertTo-Table

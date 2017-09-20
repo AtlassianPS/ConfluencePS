@@ -101,7 +101,7 @@ task TestPS5 {
 # Synopsis: Invoke Pester Tests
 task PesterTests CreateHelp, {
     try {
-        $result = Invoke-Pester -PassThru -OutputFile $BuildRoot\TestResult.xml
+        $result = Invoke-Pester -PassThru -OutputFile "$BuildRoot\TestResult.xml" -OutputFormat "NUnitXml"
         if ($env:APPVEYOR_PROJECT_NAME) {
             Add-TestResultToAppveyor -TestFile "$BuildRoot\TestResult.xml"
             Remove-Item "$BuildRoot\TestResult.xml" -Force
@@ -120,7 +120,7 @@ task Build GenerateRelease, ConvertMarkdown, UpdateManifest
 
 task CreateHelp {
     Import-Module platyPS -Force
-    New-ExternalHelp -Path "$BuildRoot\docs\en-US" -OutputPath "$BuildRoot\ConfluencePS\en-US" -Force
+    New-ExternalHelp -Path "$BuildRoot\docs\commands" -OutputPath "$BuildRoot\ConfluencePS\en-US" -Force
     Remove-Module ConfluencePS, platyPS
 }
 

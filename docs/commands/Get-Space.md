@@ -1,40 +1,64 @@
 ---
 external help file: ConfluencePS-help.xml
-online version: https://github.com/AtlassianPS/ConfluencePS/blob/master/docs/en-US/Get-Label.md
+online version: https://github.com/AtlassianPS/ConfluencePS/blob/master/docs/commands/Get-Space.md
 locale: en-US
 schema: 2.0.0
+layout: documentation
+permalink: /docs/ConfluencePS/commands/Get-Space/
 ---
 
-# Get-Label
+# Get-Space
 
 ## SYNOPSIS
-Retrieve all labels applied to the given object(s).
+Retrieve a listing of spaces in your Confluence instance.
 
 ## SYNTAX
 
 ```powershell
-Get-ConfluenceLabel -apiURi <Uri> -Credential <PSCredential> [-PageID] <Int32[]> [-PageSize <Int32>]
- [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
+Get-ConfluenceSpace -apiURi <Uri> -Credential <PSCredential> [[-SpaceKey] <String[]>] [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
 ```
 
 ## DESCRIPTION
-Currently, this command only returns a label list from wiki pages.
-It is intended to eventually support other content types as well.
+Return all Confluence spaces, optionally filtering by Key.
+Piped output into other cmdlets is generally tested and supported.
 
 ## EXAMPLES
 
 ### -------------------------- EXAMPLE 1 --------------------------
 ```powershell
-Get-ConfluenceLabel -PageID 123456
+Get-ConfluenceSpace
 ```
-Returns all labels applied to wiki page 123456.
+
+Description
+
+-----------
+
+Display the info of all spaces on the server.
 
 ### -------------------------- EXAMPLE 2 --------------------------
 ```powershell
-Get-ConfluencePage -SpaceKey HOTH -Label skywalker | Get-ConfluenceLabel
+Get-ConfluenceSpace -SpaceKey HOTH | Format-List *
 ```
-For all pages in HOTH with the "skywalker" label applied,
-return the full list of labels found on each page.
+
+Description
+
+-----------
+
+Return only the space with key "HOTH" (case-insensitive).
+`Format-List *` displays all of the object's properties.
+
+### -------------------------- EXAMPLE 3 --------------------------
+```powershell
+Get-ConfluenceSpace -ApiURi "https://myserver.com/wiki" -Credential $cred
+```
+
+Description
+
+-----------
+
+Manually specifying a server and authentication credentials, list all
+spaces found on the instance. `Set-ConfluenceInfo` usually makes this
+unnecessary, unless you are actively maintaining multiple instances.
 
 ## PARAMETERS
 
@@ -70,19 +94,19 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -PageID
-List the PageID number to check for labels.
-Accepts piped input.
+### -SpaceKey
+Filter results by key.
+Supports wildcard matching on partial input.
 
 ```yaml
-Type: Int32[]
+Type: String[]
 Parameter Sets: (All)
-Aliases: ID
+Aliases: Key
 
-Required: True
+Required: False
 Position: 1
 Default value: None
-Accept pipeline input: True (ByPropertyName, ByValue)
+Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
@@ -121,7 +145,7 @@ Accept wildcard characters: False
 ```
 
 ### -Skip
-Controls how many things will be skipped before starting output.
+Controls how many objects will be skipped before starting output.
 Defaults to 0.
 
 ```yaml
@@ -156,7 +180,7 @@ Accept wildcard characters: False
 
 ## OUTPUTS
 
-### ConfluencePS.ContentLabelSet
+### ConfluencePS.Space
 
 ## NOTES
 

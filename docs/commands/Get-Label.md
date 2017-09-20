@@ -1,51 +1,42 @@
 ---
 external help file: ConfluencePS-help.xml
-online version: https://github.com/AtlassianPS/ConfluencePS/blob/master/docs/en-US/Get-ChildPage.md
+online version: https://github.com/AtlassianPS/ConfluencePS/blob/master/docs/commands/Get-Label.md
 locale: en-US
 schema: 2.0.0
+layout: documentation
+permalink: /docs/ConfluencePS/commands/Get-Label/
 ---
 
-# Get-ChildPage
+# Get-Label
 
 ## SYNOPSIS
-Retrieve the child pages of a given wiki page or pages.
+Retrieve all labels applied to the given object(s).
 
 ## SYNTAX
 
 ```powershell
-Get-ConfluenceChildPage -apiURi <Uri> -Credential <PSCredential> [-PageID] <Int32> [-Recurse] [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
+Get-ConfluenceLabel -apiURi <Uri> -Credential <PSCredential> [-PageID] <Int32[]> [-PageSize <Int32>]
+ [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
 ```
 
 ## DESCRIPTION
-Return all pages directly below the given page(s). Optionally,
-the -Recurse parameter will return all child pages, no matter how nested.
+Currently, this command only returns a label list from wiki pages.
+It is intended to eventually support other content types as well.
 
 ## EXAMPLES
 
 ### -------------------------- EXAMPLE 1 --------------------------
 ```powershell
-Get-ConfluenceChildPage -PageID 123456
-Get-ConfluencePage -PageID 123456 | Get-ConfluenceChildPage
+Get-ConfluenceLabel -PageID 123456
 ```
-
-Description
-
------------
-
-Two different methods to return all pages directly below page 123456.
-Both examples should return identical results.
+Returns all labels applied to wiki page 123456.
 
 ### -------------------------- EXAMPLE 2 --------------------------
 ```powershell
-Get-ConfluenceChildPage -PageID 123456 -Recurse
+Get-ConfluencePage -SpaceKey HOTH -Label skywalker | Get-ConfluenceLabel
 ```
-
-Description
-
------------
-
-Instead of returning only 123456's child pages,
-return grandchildren, great-grandchildren, and so on.
+For all pages in HOTH with the "skywalker" label applied,
+return the full list of labels found on each page.
 
 ## PARAMETERS
 
@@ -82,32 +73,18 @@ Accept wildcard characters: False
 ```
 
 ### -PageID
-Filter results by page ID.
+List the PageID number to check for labels.
+Accepts piped input.
 
 ```yaml
-Type: Int32
+Type: Int32[]
 Parameter Sets: (All)
 Aliases: ID
 
 Required: True
 Position: 1
-Default value: 0
+Default value: None
 Accept pipeline input: True (ByPropertyName, ByValue)
-Accept wildcard characters: False
-```
-
-### -Recurse
-Get all child pages recursively
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
@@ -181,11 +158,9 @@ Accept wildcard characters: False
 
 ## OUTPUTS
 
-### ConfluencePS.Page
+### ConfluencePS.ContentLabelSet
 
 ## NOTES
-Confluence uses hierarchy to help organize content.
-This command is meant to help provide the intended context from the command line.
 
 ## RELATED LINKS
 

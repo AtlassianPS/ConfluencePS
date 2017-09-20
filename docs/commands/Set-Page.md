@@ -1,8 +1,10 @@
 ---
 external help file: ConfluencePS-help.xml
-online version: https://github.com/AtlassianPS/ConfluencePS/blob/master/docs/en-US/Set-Page.md
+online version: https://github.com/AtlassianPS/ConfluencePS/blob/master/docs/commands/Set-Page.md
 locale: en-US
 schema: 2.0.0
+layout: documentation
+permalink: /docs/ConfluencePS/commands/Set-Page/
 ---
 
 # Set-Page
