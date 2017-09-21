@@ -1,4 +1,4 @@
-﻿function Get-Page {
+function Get-Page {
     [CmdletBinding(
         SupportsPaging = $true,
         DefaultParameterSetName = "byId"

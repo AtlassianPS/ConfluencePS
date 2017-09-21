@@ -1,4 +1,4 @@
-﻿---
+---
 locale: en-US
 layout: documentation
 permalink: /docs/ConfluencePS/
