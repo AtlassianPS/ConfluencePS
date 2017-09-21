@@ -1,7 +1,7 @@
 ﻿---
 locale: en-US
 layout: documentation
-permalink: /docs/ConfluencePS/About_ConfluencePS/
+permalink: /docs/ConfluencePS/
 ---
 
 # About ConfluencePS
