@@ -2,6 +2,7 @@
 locale: en-US
 layout: documentation
 permalink: /docs/ConfluencePS/
+hide: true
 ---
 
 # About ConfluencePS
