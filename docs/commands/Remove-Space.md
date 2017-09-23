@@ -4,7 +4,7 @@ online version: https://github.com/AtlassianPS/ConfluencePS/blob/master/docs/com
 locale: en-US
 schema: 2.0.0
 layout: documentation
-permalink: /docs/ConfluencePS/commands/v/
+permalink: /docs/ConfluencePS/commands/Remove-Space/
 ---
 
 # Remove-Space
