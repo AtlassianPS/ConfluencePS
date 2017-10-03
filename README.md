@@ -13,9 +13,9 @@ Need to add 100 new pages based on some dumb CSV file? Are you trying to figure 
 
 ConfluencePS communicates with Atlassian's actively supported [REST API] via basic authentication. The REST implementation is the only way to interact with their cloud-hosted instances via API, and will eventually be the only way to interact with server installations.
 
-Join the conversation on [![SlackLogo][] AtlassianPS.Slack.com](http://atlassianps.org/slack)
+Join the conversation on [![SlackLogo][] AtlassianPS.Slack.com](https://atlassianps.org/slack)
 
-[SlackLogo]: http://atlassianps.org/assets/img/Slack_Mark_Web_28x28.png
+[SlackLogo]: https://atlassianps.org/assets/img/Slack_Mark_Web_28x28.png
 <!--more-->
 
 ---
@@ -40,7 +40,7 @@ Set-ConfluenceInfo -BaseURI 'https://YourCloudWiki.atlassian.net/wiki' -PromptCr
 
 ### Usage
 
-You can find the full documentation on our [homepage](http://atlassianps.org/docs/ConfluencePS) and in the console.
+You can find the full documentation on our [homepage](https://atlassianps.org/docs/ConfluencePS) and in the console.
 ```powershell
 # Review the help at any time!
 Get-Help about_ConfluencePS
@@ -48,20 +48,20 @@ Get-Command -Module ConfluencePS
 Get-Help Get-ConfluencePage -Full   # or any other command
 ```
 
-For first steps to get up and running, check out the [Getting Started](http://atlassianps.org/docs/ConfluencePS/Getting_Started.html) page.
+For first steps to get up and running, check out the [Getting Started](https://atlassianps.org/docs/ConfluencePS/Getting_Started.html) page.
 
 ### Contribute
 
 Want to contribute to AtlassianPS? Great!
-We appreciate [everyone](http://atlassianps.org/#people) who invests their time to make our modules the best they can be.
+We appreciate [everyone](https://atlassianps.org/#people) who invests their time to make our modules the best they can be.
 
-Check out our guidelines on [Contributing](http://atlassianps.org/docs/ConfluencePS/Contributing.html) to our modules and documentation.
+Check out our guidelines on [Contributing](https://atlassianps.org/docs/Contributing.html) to our modules and documentation.
 
 ## Acknowledgments
 
 * Thanks to [brianbunke] for getting this module on it's feet
 * Thanks to [thomykay] for his [PoshConfluence] SOAP API module, which provided enough of a starting point to feel comfortable undertaking this project.
-* Thanks to everyone ([Our Contributors](http://atlassianps.org/#people)) that helped with this module
+* Thanks to everyone ([Our Contributors](https://atlassianps.org/#people)) that helped with this module
 
 ## Useful links
 
