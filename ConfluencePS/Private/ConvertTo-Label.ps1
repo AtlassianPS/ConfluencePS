@@ -15,11 +15,11 @@ function ConvertTo-Label {
     Process {
         foreach ($object in $InputObject) {
             Write-Verbose "[$($MyInvocation.MyCommand.Name)] Converting Object to Label"
-            ($object | Select-Object `
+            ConvertTo-CustomType -InputObject ($object | Select-Object `
                 id,
                 name,
                 prefix
-            ) -as [ConfluencePS.Label]
+            ) -as ([ConfluencePS.Label])
         }
     }
 }

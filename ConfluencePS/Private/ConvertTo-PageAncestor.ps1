@@ -15,11 +15,11 @@ function ConvertTo-PageAncestor {
     Process {
         foreach ($object in $InputObject) {
             Write-Verbose "[$($MyInvocation.MyCommand.Name)] Converting Object to Page (Ancestor)"
-            ($object | Select-Object `
+            ConvertTo-CustomType -InputObject ($object | Select-Object `
                 id,
                 status,
                 title
-            ) -as [ConfluencePS.Page]
+            ) -as ([ConfluencePS.Page])
         }
     }
 }

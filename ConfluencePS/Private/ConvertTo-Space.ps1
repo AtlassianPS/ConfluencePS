@@ -15,7 +15,7 @@ function ConvertTo-Space {
     Process {
         foreach ($object in $InputObject) {
             Write-Verbose "[$($MyInvocation.MyCommand.Name)] Converting Object to Space"
-            ($object | Select-Object `
+            ConvertTo-CustomType -InputObject ($object | Select-Object `
                 id,
                 key,
                 name,
@@ -27,7 +27,7 @@ function ConvertTo-Space {
                             ConvertTo-Page $_.homepage
                     } else {$null} # homepage might be a string
                 }}
-            ) -as [ConfluencePS.Space]
+            ) -as ([ConfluencePS.Space])
         }
     }
 }

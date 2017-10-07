@@ -15,12 +15,12 @@ function ConvertTo-User {
     Process {
         foreach ($object in $InputObject) {
             Write-Verbose "[$($MyInvocation.MyCommand.Name)] Converting Object to User"
-            ($object | Select-Object `
+            ConvertTo-CustomType -InputObject ($object | Select-Object `
                 username,
                 userKey,
                 @{Name = "profilePicture"; Expression = { ConvertTo-Icon $_.profilePicture }},
                 displayname
-            ) -as [ConfluencePS.User]
+            ) -as ([ConfluencePS.User])
         }
     }
 }
