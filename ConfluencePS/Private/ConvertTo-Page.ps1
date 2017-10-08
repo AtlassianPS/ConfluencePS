@@ -15,7 +15,7 @@ function ConvertTo-Page {
     Process {
         foreach ($object in $InputObject) {
             Write-Verbose "[$($MyInvocation.MyCommand.Name)] Converting Object to Page"
-            ConvertTo-CustomType -InputObject ($object | Select-Object `
+            [ConfluencePS.Page](ConvertTo-Hashtable -InputObject ($object | Select-Object `
                 id,
                 status,
                 title,
@@ -55,7 +55,7 @@ function ConvertTo-Page {
                         else {$null}
                     }
                 }
-            ) -as ([ConfluencePS.Page])
+            ))
         }
     }
 }
