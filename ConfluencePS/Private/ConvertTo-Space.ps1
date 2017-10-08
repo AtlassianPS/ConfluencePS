@@ -20,7 +20,13 @@ function ConvertTo-Space {
                 key,
                 name,
                 @{Name = "description"; Expression = {$_.description.plain.value}},
-                icon,
+                @{Name = "Icon"; Expression = {
+                        if ($_.icon) {
+                            ConvertTo-Icon $_.icon
+                        }
+                        else {$null}
+                    }
+                },
                 type,
                 @{Name = "Homepage"; Expression = {
                     if ($_.homepage -is [PSCustomObject]) {
