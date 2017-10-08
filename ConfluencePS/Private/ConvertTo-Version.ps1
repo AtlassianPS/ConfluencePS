@@ -15,14 +15,14 @@ function ConvertTo-Version {
     Process {
         foreach ($object in $InputObject) {
             Write-Verbose "[$($MyInvocation.MyCommand.Name)] Converting Object to Version"
-            ($object | Select-Object `
+            [ConfluencePS.Version](ConvertTo-Hashtable -InputObject ($object | Select-Object `
                 @{Name = "by"; Expression = { ConvertTo-User $_.by }},
                 when,
                 friendlyWhen,
                 number,
                 message,
                 minoredit
-            ) -as [ConfluencePS.Version]
+            ))
         }
     }
 }

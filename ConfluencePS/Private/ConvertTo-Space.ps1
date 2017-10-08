@@ -15,19 +15,25 @@ function ConvertTo-Space {
     Process {
         foreach ($object in $InputObject) {
             Write-Verbose "[$($MyInvocation.MyCommand.Name)] Converting Object to Space"
-            ($object | Select-Object `
+            [ConfluencePS.Space](ConvertTo-Hashtable -InputObject ($object | Select-Object `
                 id,
                 key,
                 name,
                 @{Name = "description"; Expression = {$_.description.plain.value}},
-                icon,
+                @{Name = "Icon"; Expression = {
+                        if ($_.icon) {
+                            ConvertTo-Icon $_.icon
+                        }
+                        else {$null}
+                    }
+                },
                 type,
                 @{Name = "Homepage"; Expression = {
                     if ($_.homepage -is [PSCustomObject]) {
                             ConvertTo-Page $_.homepage
                     } else {$null} # homepage might be a string
                 }}
-            ) -as [ConfluencePS.Space]
+            ))
         }
     }
 }

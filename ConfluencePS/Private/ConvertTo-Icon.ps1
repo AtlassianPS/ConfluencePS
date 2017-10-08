@@ -15,12 +15,12 @@ function ConvertTo-Icon {
     Process {
         foreach ($object in $InputObject) {
             Write-Verbose "[$($MyInvocation.MyCommand.Name)] Converting Object to Icon"
-            ($object | Select-Object `
+            [ConfluencePS.Icon](ConvertTo-Hashtable -InputObject ($object | Select-Object `
                 Path,
                 Width,
                 Height,
                 IsDefault
-            ) -as [ConfluencePS.Icon]
+            ))
         }
     }
 }
