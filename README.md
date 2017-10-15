@@ -5,7 +5,7 @@ permalink: /module/ConfluencePS/
 
 # ConfluencePS
 
-[![Build status](https://ci.appveyor.com/api/projects/status/viulo95g362l6vym/branch/master?svg=true)](https://ci.appveyor.com/project/AtlassianPS/confluenceps/branch/master)
+[![GitHub release](https://img.shields.io/github/release/AtlassianPS/ConfluencePS.svg)](https://github.com/AtlassianPS/ConfluencePS/releases/latest) [![Build status](https://ci.appveyor.com/api/projects/status/viulo95g362l6vym/branch/master?svg=true)](https://ci.appveyor.com/project/AtlassianPS/confluenceps/branch/master) [![PowerShell Gallery](https://img.shields.io/powershellgallery/dt/ConfluencePS.svg)](https://www.powershellgallery.com/packages/ConfluencePS) [![License](https://img.shields.io/badge/license-MIT-blue.svg)]
 
 Automate your documentation! ConfluencePS is a PowerShell module that interacts with Atlassian's [Confluence] wiki product.
 
