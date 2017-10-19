@@ -34,7 +34,7 @@ namespace ConfluencePS
 		public String Message { get; set; }
 		public Boolean MinorEdit { get; set; }
 		public override string ToString() {
-			return Number;
+			return Number.ToString();
 		}
 	}
 

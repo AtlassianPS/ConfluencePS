@@ -431,6 +431,12 @@ InModuleScope ConfluencePS {
             $GetByLabel.ShortURL | Should BeOfType [String]
             $GetByLabel.ShortURL | Should Not BeNullOrEmpty
         }
+        It 'has a meaningful string value' {
+            $GetTitle1.Version.ToString() | Should Be $GetTitle1.Version.Number.ToString()
+            $GetTitle1.Version.By.ToString() | Should Be $GetTitle1.Version.By.UserName
+            $GetTitle1.Space.ToString() | Should Be "[{0}] {1}" -f $GetTitle1.Space.Key, $GetTitle1.Space.Name
+            $GetTitle1.Space.Icon.ToString() | Should Be $GetTitle1.Space.Icon.Path
+        }
     }
 
     Describe 'Add-ConfluenceLabel' {
