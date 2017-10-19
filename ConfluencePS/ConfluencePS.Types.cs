@@ -11,6 +11,9 @@ namespace ConfluencePS
 		public Int32 Width { get; set; }
 		public Int32 Height { get; set; }
 		public Boolean IsDefault { get; set; }
+		public override string ToString() {
+			return Path;
+		}
 	}
 
 	public class User {
@@ -18,6 +21,9 @@ namespace ConfluencePS
 		public String DisplayName { get; set; }
 		public String UserKey { get; set; }
 		public Icon ProfilePicture { get; set; }
+		public override string ToString() {
+			return UserName;
+		}
 	}
 
 	public class Version {
@@ -27,6 +33,9 @@ namespace ConfluencePS
 		public Int32 Number { get; set; }
 		public String Message { get; set; }
 		public Boolean MinorEdit { get; set; }
+		public override string ToString() {
+			return Number;
+		}
 	}
 
 	public class Space {
@@ -37,6 +46,9 @@ namespace ConfluencePS
 		public String Type { get; set; }
 		public String Description { get; set; }
 		public Page Homepage { get; set; }
+		public override string ToString() {
+			return "[" + Key + "] " + Name;
+		}
 	}
 
 	public class Page {
@@ -49,12 +61,18 @@ namespace ConfluencePS
 		public Page[] Ancestors { get; set; }
 		public String URL { get; set; }
 		public String ShortURL { get; set; }
+		public override string ToString() {
+			return "[" + ID + "] " + Title;
+		}
 	}
 
 	public class Label {
 		public Int32 ID { get; set; }
 		public String Prefix { get; set; }
 		public String Name { get; set; }
+		public override string ToString() {
+			return Name;
+		}
 	}
 
 	public class ContentLabelSet {
