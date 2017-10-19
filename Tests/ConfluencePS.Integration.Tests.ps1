@@ -52,8 +52,10 @@ InModuleScope ConfluencePS {
         $WarningPreference = 'SilentlyContinue'
 
         # Set up test values:
-        $Key = "PESTER"
-        $Name = "Pester Test Space"
+        $Key1 = "PESTER"
+        $Key2 = "PESTER1"
+        $Name1 = "Pester Test Space"
+        $Name2 = "Second Pester Space"
         $Description = "<p>A nice description</p>"
         $Icon = [ConfluencePS.Icon] @{
             path = "/images/logo/default-space-logo-256.png"
@@ -61,18 +63,18 @@ InModuleScope ConfluencePS {
             height = 48
             isDefault = $False
         }
-        $Space2 = [ConfluencePS.Space]@{
-            Key = "PESTER1"
-            Name = "Second Pester Space"
+        $Space1 = [ConfluencePS.Space]@{
+            Key = $Key1
+            Name = $Name1
+            Description = $Description
         }
         # $Space3
         # Ensure the space doesn't already exist
-        Get-ConfluenceSpace -Key $Key -ErrorAction SilentlyContinue #TODO
-
+        Get-ConfluenceSpace -Key $Key1 -ErrorAction SilentlyContinue #TODO
 
         # ACT
-        $NewSpace1 = New-ConfluenceSpace -Key $Key -Name $Name -Description $Description -ErrorAction Stop
-        $NewSpace2 = $Space2 | New-ConfluenceSpace -ErrorAction Stop
+        $NewSpace1 = $Space1 | New-ConfluenceSpace -ErrorAction Stop
+        $NewSpace2 = New-ConfluenceSpace -Key $Key2 -Name $Name2 -Description $Description -ErrorAction Stop
 
         # ASSERT
         It 'returns an object with specific properties' {
@@ -87,23 +89,23 @@ InModuleScope ConfluencePS {
         }
         It 'key matches the specified value' {
             $NewSpace1.Key | Should BeOfType [String]
-            $NewSpace1.Key | Should BeExactly $Key
+            $NewSpace1.Key | Should BeExactly $Key1
             $NewSpace2.Key | Should BeOfType [String]
-            $NewSpace2.Key | Should BeExactly $Space2.Key
+            $NewSpace2.Key | Should BeExactly $Key2
         }
         It 'name matches the specified value' {
             $NewSpace1.Name | Should BeOfType [String]
-            $NewSpace1.Name | Should BeExactly $Name
+            $NewSpace1.Name | Should BeExactly $Name1
             $NewSpace2.Name | Should BeOfType [String]
-            $NewSpace2.Name | Should BeExactly $Space2.Name
+            $NewSpace2.Name | Should BeExactly $Name2
         }
         It 'homepage is ConfluencePS.Page' {
             $NewSpace1.Homepage | Should BeOfType [ConfluencePS.Page]
             $NewSpace2.Homepage | Should BeOfType [ConfluencePS.Page]
         }
         It 'homepage matches the specified value' {
-            $NewSpace1.Homepage.Title | Should BeExactly "$Name Home"
-            $NewSpace2.Homepage.Title | Should BeExactly "$($Space2.Name) Home"
+            $NewSpace1.Homepage.Title | Should BeExactly "$Name1 Home"
+            $NewSpace2.Homepage.Title | Should BeExactly "$Name2 Home"
         }
     }
 
@@ -192,6 +194,9 @@ InModuleScope ConfluencePS {
             $GetSpace1.Homepage.Title | Should BeExactly "$($GetSpace1.Name) Home"
             $GetSpace2.Homepage.Title | Should BeExactly "$($GetSpace2.Name) Home"
             $GetSpace3.Homepage.Title | Should BeExactly @("$Name1 Home", "$Name2 Home")
+        }
+        It 'has a meaningful string value' {
+            $GetSpace1.Icon.ToString() | Should Be $GetSpace1.Icon.Path
         }
     }
 
@@ -434,8 +439,7 @@ InModuleScope ConfluencePS {
         It 'has a meaningful string value' {
             $GetTitle1.Version.ToString() | Should Be $GetTitle1.Version.Number.ToString()
             $GetTitle1.Version.By.ToString() | Should Be $GetTitle1.Version.By.UserName
-            $GetTitle1.Space.ToString() | Should Be "[{0}] {1}" -f $GetTitle1.Space.Key, $GetTitle1.Space.Name
-            $GetTitle1.Space.Icon.ToString() | Should Be $GetTitle1.Space.Icon.Path
+            $GetTitle1.Space.ToString() | Should Be ("[{0}] {1}" -f $GetTitle1.Space.Key, $GetTitle1.Space.Name)
         }
     }
 
