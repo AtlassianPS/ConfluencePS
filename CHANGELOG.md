@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.1] - 2017-11-01
+
+IMPROVEMENTS:
+  - Shows a warning when the server requires a CAPTCHA for the authentication (#91, [@lipkau][])
+  - Custom classes now print relevant data in `ToString()` (#92, [@lipkau][])
+
 ## [2.0] - 2017-08-17
 A new major version! ConfluencePS has been totally refactored to introduce new features and greatly improve efficiency.
 

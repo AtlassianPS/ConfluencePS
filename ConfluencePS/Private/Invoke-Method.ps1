@@ -114,6 +114,16 @@ function Invoke-Method {
             # This shall be fixed with PoSh v6: https://github.com/PowerShell/PowerShell/issues/2193
             Write-Verbose "[$($MyInvocation.MyCommand.Name)] Failed to get an answer from the server"
             $webResponse = $_.Exception.Response
+
+            # Test HEADERS if Confluence requires a CAPTCHA
+            $tokenRequiresCaptcha = "AUTHENTICATION_DENIED"
+            $headerRequiresCaptcha = "X-Seraph-LoginReason"
+            if (
+                $webResponse.Headers[$headerRequiresCaptcha] -and
+                ($webResponse.Headers[$headerRequiresCaptcha] -split ",") -contains $tokenRequiresCaptcha
+            ) {
+                Write-Warning "Confluence requires you to log on to the website before continuing for security reasons."
+            }
         }
 
         Write-Debug "[$($MyInvocation.MyCommand.Name)] Executed WebRequest. Access `$webResponse to see details"
