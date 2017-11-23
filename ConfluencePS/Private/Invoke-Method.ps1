@@ -58,18 +58,21 @@ function Invoke-Method {
             Throw $exception
         }
 
-        # pass input to local variable
-        # this allows to use the PSBoundParameters for recursion
-        $_headers = $Headers
-
         # Add Basic Authentication to Header
         $SecureCreds = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes(
                 $('{0}:{1}' -f $Credential.UserName, $Credential.GetNetworkCredential().Password)
             ))
-        $_headers += @{
-            "Authorization" = "Basic $($SecureCreds)"
-            'Content-Type'  = 'application/json; charset=utf-8'
+        $_headers = @{
+            "Accept"         = "application/json"
+            "Accept-Charset" = "utf-8"
+            "Authorization"  = "Basic $($SecureCreds)"
+            "Content-Type"   = "application/json; charset=utf-8"
         }
+
+        # Append the Headers passed into the local variable _headers
+        # the variable used for the headers must be different from the parameter to allow
+        # the use of PSBoundParameters for recursion
+        $Headers.Keys.foreach( {$_headers[$_] = $Headers[$_]})
     }
 
     Process {
@@ -84,6 +87,10 @@ function Invoke-Method {
             $GetParameters = $null
         }
 
+        # load DefaultParameters for Invoke-WebRequest
+        # as the global PSDefaultParameterValues is not used
+        $PSDefaultParameterValues = $global:PSDefaultParameterValues
+
         # set mandatory parameters
         $splatParameters = @{
             Uri             = $URi
@@ -96,11 +103,6 @@ function Invoke-Method {
         # set optional parameters
         # http://stackoverflow.com/questions/15290185/invoke-webrequest-issue-with-special-characters-in-json
         if ($Body) {$splatParameters["Body"] = [System.Text.Encoding]::UTF8.GetBytes($Body)}
-
-        # load DefaultParameters for Invoke-WebRequest
-        # as the global PSDefaultParameterValues is not used
-        # TODO: find out why PSJira doesn't need this
-        $script:PSDefaultParameterValues = $global:PSDefaultParameterValues
 
         # Invoke the API
         try {
@@ -118,11 +120,13 @@ function Invoke-Method {
             # Test HEADERS if Confluence requires a CAPTCHA
             $tokenRequiresCaptcha = "AUTHENTICATION_DENIED"
             $headerRequiresCaptcha = "X-Seraph-LoginReason"
-            if (
-                $webResponse.Headers[$headerRequiresCaptcha] -and
-                ($webResponse.Headers[$headerRequiresCaptcha] -split ",") -contains $tokenRequiresCaptcha
-            ) {
-                Write-Warning "Confluence requires you to log on to the website before continuing for security reasons."
+            If ($webResponse.Headers) {
+                if (
+                    $webResponse.Headers[$headerRequiresCaptcha] -and
+                    ($webResponse.Headers[$headerRequiresCaptcha] -split ",") -contains $tokenRequiresCaptcha
+                ) {
+                    Write-Warning "Confluence requires you to log on to the website before continuing for security reasons."
+                }
             }
         }
 
@@ -154,7 +158,7 @@ function Invoke-Method {
             else {
                 if ($webResponse.Content) {
                     # API returned a Content: lets work wit it
-                    $response = ConvertFrom-Json -InputObject $webResponse.Content
+                    $response = ConvertFrom-Json ([Text.Encoding]::UTF8.GetString($webResponse.RawContentStream.ToArray()))
 
                     if ($null -ne $response.errors) {
                         Write-Verbose "[$($MyInvocation.MyCommand.Name)] An error response was received from; resolving"
@@ -192,8 +196,8 @@ function Invoke-Method {
 
                             # Self-Invoke function for recursion
                             $parameters = @{
-                                URi    = "{0}{1}" -f $response._links.base, $response._links.next
-                                Method = $Method
+                                URi        = "{0}{1}" -f $response._links.base, $response._links.next
+                                Method     = $Method
                                 Credential = $Credential
                             }
                             if ($Body) {$parameters["Body"] = $Body}
