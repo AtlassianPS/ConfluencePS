@@ -335,7 +335,7 @@ InModuleScope ConfluencePS {
         $GetWildcard = Get-ConfluencePage -Title $Title5 -SpaceKey $SpaceKey -ErrorAction SilentlyContinue
         $GetID1 = Get-ConfluencePage -PageID $GetTitle1.ID -ErrorAction SilentlyContinue
         $GetID2 = Get-ConfluencePage -PageID $GetTitle2.ID -ErrorAction SilentlyContinue
-        $GetKeys = Get-ConfluencePage -SpaceKey $SpaceKey | Sort ID -ErrorAction SilentlyContinue
+        $GetKeys = Get-ConfluencePage -SpaceKey $SpaceKey -ErrorAction SilentlyContinue | Sort-Object ID
         $GetByLabel = Get-ConfluencePage -Label "important" -ErrorAction SilentlyContinue
         $GetByQuery = Get-ConfluencePage -Query $query -ErrorAction SilentlyContinue
         $GetSpacePage = Get-ConfluencePage -Space (Get-ConfluenceSpace -SpaceKey $SpaceKey) -ErrorAction SilentlyContinue
@@ -489,7 +489,7 @@ InModuleScope ConfluencePS {
         It 'label matches the specified value' {
             $NewLabel1.Labels.Name | Should BeExactly $Label1
             $NewLabel2.Labels.Name -contains $Label2 | Should Be $true
-            ($NewLabel3.Labels.Name -match $PartialLabel | Sort) | Should Be (($Label1 + $Label2) | Sort )
+            ($NewLabel3.Labels.Name -match $PartialLabel | Sort-Object) | Should Be (($Label1 + $Label2) | Sort-Object )
         }
         It 'labelid is not null or empty' {
             $NewLabel1.Labels.ID | Should Not BeNullOrEmpty
