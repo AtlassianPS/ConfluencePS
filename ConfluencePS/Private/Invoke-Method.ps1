@@ -168,9 +168,9 @@ function Invoke-Method {
                         'ParameterProperties.IncorrectType',
                         [System.Management.Automation.ErrorCategory]::InvalidArgument,
                         $Method
-                    )
+                        )
                     $errorItem.ErrorDetails = $responseObject.message
-                    $Caller.ThrowTerminatingError($errorItem)
+                    $Caller.WriteError($errorItem)
                 # }
                 # catch {
                     # $errorItem = [System.Management.Automation.ErrorRecord]::new(
