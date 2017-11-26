@@ -133,10 +133,11 @@ function Invoke-Method {
         catch {
             Write-Verbose "[$($MyInvocation.MyCommand.Name)] Failed to get an answer from the server"
             $webResponse = $_
-            if (-not ($webResponse.ErrorDetails)) {
-                # For Windows PowerShell (v5.1-)
-                $webResponse = $webResponse.Exception.Response
+            if ($webResponse.ErrorDetails) {
+                # In PowerShellCore (v6+), the response body is available as string
+                $responseBody = $webResponse.ErrorDetails.Message
             }
+            $webResponse = $webResponse.Exception.Response
         }
 
         # Test response Headers if Confluence requires a CAPTCHA
@@ -150,11 +151,7 @@ function Invoke-Method {
             if ($webResponse.StatusCode.value__ -ge 400) {
                 Write-Warning "Confluence returned HTTP error $($webResponse.StatusCode.value__) - $($webResponse.StatusCode)"
 
-                if ($webResponse.ErrorDetails) {
-                    # In PowerShellCore (v6+), the response body is available as string
-                    $responseBody = $webResponse.ErrorDetails.Message
-                }
-                elseif ($webResponse | Get-Member -Name "GetResponseStream") {
+                if ((!($responseBody)) -and ($webResponse | Get-Member -Name "GetResponseStream")) {
                     # Retrieve body of HTTP response - this contains more useful information about exactly why the error occurred
                     $readStream = New-Object -TypeName System.IO.StreamReader -ArgumentList ($webResponse.GetResponseStream())
                     $responseBody = $readStream.ReadToEnd()
@@ -163,7 +160,7 @@ function Invoke-Method {
 
                 Write-Verbose "[$($MyInvocation.MyCommand.Name)] Retrieved body of HTTP response for more information about the error (`$responseBody)"
                 Write-Debug "[$($MyInvocation.MyCommand.Name)] Got the following error as `$responseBody"
-                try {
+                # try {
                     $responseObject = ConvertFrom-Json -InputObject $responseBody -ErrorAction Stop
 
                     $errorItem = [System.Management.Automation.ErrorRecord]::new(
@@ -173,18 +170,18 @@ function Invoke-Method {
                         $Method
                     )
                     $errorItem.ErrorDetails = $responseObject.message
-                    $Caller.WriteError($errorItem)
-                }
-                catch {
-                    $errorItem = [System.Management.Automation.ErrorRecord]::new(
-                        ([System.ArgumentException]"Invalid Parameter"),
-                        'ParameterProperties.IncorrectType',
-                        [System.Management.Automation.ErrorCategory]::InvalidArgument,
-                        $Method
-                    )
-                    $errorItem.ErrorDetails = $responseBody.message
-                    $Caller.WriteError($errorItem)
-                }
+                    $Caller.ThrowTerminatingError($errorItem)
+                # }
+                # catch {
+                    # $errorItem = [System.Management.Automation.ErrorRecord]::new(
+                    #     ([System.ArgumentException]"Invalid Parameter"),
+                    #     'ParameterProperties.IncorrectType',
+                    #     [System.Management.Automation.ErrorCategory]::InvalidArgument,
+                    #     $Method
+                    # )
+                    # $errorItem.ErrorDetails = $responseBody.message
+                    # $Caller.WriteError($errorItem)
+                # }
             }
             else {
                 if ($webResponse.Content) {
