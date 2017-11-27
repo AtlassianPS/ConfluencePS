@@ -59,6 +59,13 @@ function Get-Page {
         )]
         [string[]]$Label,
 
+        [Parameter(
+            Position = 0,
+            Mandatory = $true,
+            ParameterSetName = "byQuery"
+        )]
+        [string]$Query,
+
         [ValidateRange(1, [int]::MaxValue)]
         [int]$PageSize = 25
     )
@@ -106,13 +113,9 @@ function Get-Page {
                 $iwParameters["Uri"] = $resourceApi -f ''
                 $iwParameters["GetParameters"]["type"] = "page"
                 if ($SpaceKey) { $iwParameters["GetParameters"]["spaceKey"] = $SpaceKey }
+                if ($Title) { $iwParameters["GetParameters"]["title"] = $Title }
 
-                if ($Title) {
-                    Invoke-Method @iwParameters | Where-Object {$_.Title -like "$Title"}
-                }
-                else {
-                    Invoke-Method @iwParameters
-                }
+                Invoke-Method @iwParameters
                 break
             }
             "byLabel" {
@@ -126,6 +129,14 @@ function Get-Page {
 
                 Invoke-Method @iwParameters
                 break
+            }
+            "byQuery" {
+                $iwParameters["Uri"] = $resourceApi -f "/search"
+
+                $cqlQuery = ConvertTo-URLEncoded $Query
+                $iwParameters["GetParameters"]["cql"] = "type=page AND $cqlQuery"
+
+                Invoke-Method @iwParameters
             }
         }
     }
