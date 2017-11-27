@@ -29,6 +29,11 @@ Get-ConfluencePage -ApiURi <Uri> -Credential <PSCredential> [-SpaceKey <String>]
 Get-ConfluencePage -ApiURi <Uri> -Credential <PSCredential> -SpaceKey <String> [-Title <String>] [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
 ```
 
+### byQuery
+```powershell
+Get-ConfluencePage -ApiURi <Uri> -Credential <PSCredential> [-Query <String>] [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
+```
+
 ### bySpaceObject
 ```powershell
 Get-ConfluencePage -ApiURi <Uri> -Credential <PSCredential> -Space <Space> [-Title <String>] [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
@@ -89,6 +94,18 @@ Description
 Return all pages containing the label "skywalker" (case-insensitive).
 Label text must match exactly; no wildcards are applied.
 
+### -------------------------- EXAMPLE 5 --------------------------
+```powershell
+Get-ConfluencePage -Query "mention = jsmith and creator != jsmith"
+```
+
+Description
+
+-----------
+
+Return all pages matching the query.
+
+
 ## PARAMETERS
 
 ### -ApiURi
@@ -141,7 +158,9 @@ Accept wildcard characters: False
 
 ### -Title
 Filter results by page name (case-insensitive).
-This supports wildcards (*) to allow for partial matching.
+
+This does not support wildcards (*).
+In order to use wildcards, use `-Query 'title~"*term*"'`.
 
 ```yaml
 Type: String
@@ -219,6 +238,23 @@ Aliases:
 
 Required: True
 Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Query
+Use Confluences advanced search: [CQL](https://developer.atlassian.com/cloud/confluence/advanced-searching-using-cql/).
+
+This cmdlet will always append a filter to only look for pages (`type=page`).
+
+```yaml
+Type: String
+Parameter Sets: byQuery
+Aliases:
+
+Required: True
+Position: 1
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
