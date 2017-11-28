@@ -160,28 +160,22 @@ function Invoke-Method {
 
                 Write-Verbose "[$($MyInvocation.MyCommand.Name)] Retrieved body of HTTP response for more information about the error (`$responseBody)"
                 Write-Debug "[$($MyInvocation.MyCommand.Name)] Got the following error as `$responseBody"
-                # try {
-                    $responseObject = ConvertFrom-Json -InputObject $responseBody -ErrorAction Stop
 
-                    $errorItem = [System.Management.Automation.ErrorRecord]::new(
-                        ([System.ArgumentException]"Invalid Parameter"),
-                        'ParameterProperties.IncorrectType',
-                        [System.Management.Automation.ErrorCategory]::InvalidArgument,
-                        $Method
-                        )
+                $responseObject = ConvertFrom-Json -InputObject $responseBody -ErrorAction SilentlyContinue
+
+                $errorItem = [System.Management.Automation.ErrorRecord]::new(
+                    ([System.ArgumentException]"Invalid Server Response"),
+                    "InvalidResponse.Status$($webResponse.StatusCode.value__)",
+                    [System.Management.Automation.ErrorCategory]::InvalidResult,
+                    $responseBody
+                )
+                if ($responseObject) {
                     $errorItem.ErrorDetails = $responseObject.message
-                    $Caller.WriteError($errorItem)
-                # }
-                # catch {
-                    # $errorItem = [System.Management.Automation.ErrorRecord]::new(
-                    #     ([System.ArgumentException]"Invalid Parameter"),
-                    #     'ParameterProperties.IncorrectType',
-                    #     [System.Management.Automation.ErrorCategory]::InvalidArgument,
-                    #     $Method
-                    # )
-                    # $errorItem.ErrorDetails = $responseBody.message
-                    # $Caller.WriteError($errorItem)
-                # }
+                }
+                else {
+                    $errorItem.ErrorDetails = "An unknown error ocurred."
+                }
+                $Caller.WriteError($errorItem)
             }
             else {
                 if ($webResponse.Content) {
