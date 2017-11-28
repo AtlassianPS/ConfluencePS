@@ -237,7 +237,7 @@ InModuleScope ConfluencePS {
         $Title3 = "Pester New Page from Object"
         $Title4 = "Pester New Page with Parent Object"
         $RawContent = "Hi Pester!"
-        $FormattedContent = "<p>Hi Pester!</p>"
+        $FormattedContent = "<p>Hi Pester!</p><p>👋</p>"
         $pageObject = New-Object -TypeName ConfluencePS.Page -Property @{
             Title = $Title3
             Body = $FormattedContent
@@ -323,7 +323,7 @@ InModuleScope ConfluencePS {
         $Title3 = "Pester Test Space Home"
         $Title4 = "orphan"
         $Title5 = "*orphan"
-        $Content = "<p>Hi Pester!</p>"
+        $Content = "<p>Hi Pester!</p><p>&eth;&Yuml;&lsquo;&lsaquo;</p>"
         (Get-ConfluenceSpace -SpaceKey $SpaceKey).Homepage | Add-ConfluenceLabel -Label "important" -ErrorAction Stop
         Start-Sleep -Seconds 20 # Delay to allow DB index to update
 
