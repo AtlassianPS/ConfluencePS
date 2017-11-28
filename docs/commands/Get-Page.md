@@ -158,9 +158,7 @@ Accept wildcard characters: False
 
 ### -Title
 Filter results by page name (case-insensitive).
-
-This does not support wildcards (*).
-In order to use wildcards, use `-Query 'title~"*term*"'`.
+This supports wildcards (*) to allow for partial matching.
 
 ```yaml
 Type: String

@@ -329,7 +329,7 @@ InModuleScope ConfluencePS {
         Start-Sleep -Seconds 20 # Delay to allow DB index to update
 
         # ACT
-        $GetTitle1   = Get-ConfluencePage -Title $Title1 -SpaceKey $SpaceKey -PageSize 200 -ErrorAction SilentlyContinue
+        $GetTitle1   = Get-ConfluencePage -Title $Title1.ToLower() -SpaceKey $SpaceKey -PageSize 200 -ErrorAction SilentlyContinue
         $GetTitle2   = Get-ConfluencePage -Title $Title2 -SpaceKey $SpaceKey -ErrorAction SilentlyContinue
         $GetPartial  = Get-ConfluencePage -Title $Title4 -SpaceKey $SpaceKey -ErrorAction SilentlyContinue
         $GetWildcard = Get-ConfluencePage -Title $Title5 -SpaceKey $SpaceKey -ErrorAction SilentlyContinue
@@ -346,7 +346,7 @@ InModuleScope ConfluencePS {
             $GetTitle1.Count | Should Be 1
             $GetTitle2.Count | Should Be 1
             $GetPartial.Count | Should Be 0
-            $GetWildcard.Count | Should Be 0
+            $GetWildcard.Count | Should Be 1
             $GetID1.Count | Should Be 1
             $GetID2.Count | Should Be 1
             $GetKeys.Count | Should Be 5
@@ -426,8 +426,8 @@ InModuleScope ConfluencePS {
             $GetKeys.URL | Should BeOfType [String]
             $GetKeys.URL | Should Not BeNullOrEmpty
             $GetByLabel.URL | Should BeOfType [String]
-            $GetByLabel.URL | Should BeOfType [String]
-            $GetByQuery.URL | Should Not BeNullOrEmpty
+            $GetByLabel.URL | Should Not BeNullOrEmpty
+            $GetByQuery.URL | Should BeOfType [String]
             $GetByQuery.URL | Should Not BeNullOrEmpty
         }
         It 'shorturl is string' {
@@ -442,8 +442,8 @@ InModuleScope ConfluencePS {
             $GetKeys.ShortURL | Should BeOfType [String]
             $GetKeys.ShortURL | Should Not BeNullOrEmpty
             $GetByLabel.ShortURL | Should BeOfType [String]
-            $GetByLabel.ShortURL | Should BeOfType [String]
-            $GetByQuery.ShortURL | Should Not BeNullOrEmpty
+            $GetByLabel.ShortURL | Should Not BeNullOrEmpty
+            $GetByQuery.ShortURL | Should BeOfType [String]
             $GetByQuery.ShortURL | Should Not BeNullOrEmpty
         }
         It 'has a meaningful string value' {
