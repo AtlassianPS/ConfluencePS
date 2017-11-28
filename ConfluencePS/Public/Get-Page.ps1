@@ -113,9 +113,13 @@ function Get-Page {
                 $iwParameters["Uri"] = $resourceApi -f ''
                 $iwParameters["GetParameters"]["type"] = "page"
                 if ($SpaceKey) { $iwParameters["GetParameters"]["spaceKey"] = $SpaceKey }
-                if ($Title) { $iwParameters["GetParameters"]["title"] = $Title }
 
-                Invoke-Method @iwParameters
+                if ($Title) {
+                    Invoke-Method @iwParameters | Where-Object {$_.Title -like "$Title"}
+                }
+                else {
+                    Invoke-Method @iwParameters
+                }
                 break
             }
             "byLabel" {
