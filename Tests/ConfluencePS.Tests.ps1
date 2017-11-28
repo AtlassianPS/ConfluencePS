@@ -1,4 +1,6 @@
 #Requires -Modules PSScriptAnalyzer
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssigments', '', Scope = '*')]
+param()
 
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $projectRoot = Split-Path -Parent $here
@@ -183,14 +185,14 @@ Describe "ConfluencePS" {
     }
 
     Context 'PSScriptAnalyzer Rules' {
-        $analysis = Invoke-ScriptAnalyzer -Path "$moduleRoot" -Recurse -Settings "$projectRoot\PSScriptAnalyzerSettings.psd1"
+        $analysis = Invoke-ScriptAnalyzer -Path "$moduleRoot" -Recurse -Settings "$projectRoot/PSScriptAnalyzerSettings.psd1"
         $scriptAnalyzerRules = Get-ScriptAnalyzerRule
 
         forEach ($rule in $scriptAnalyzerRules) {
             It "Should pass $rule" {
                 If (($analysis) -and ($analysis.RuleName -contains $rule)) {
                     $analysis |
-                        Where RuleName -EQ $rule -OutVariable failures |
+                        Where-Object RuleName -EQ $rule -OutVariable failures |
                         Out-Default
                     $failures.Count | Should Be 0
                 }

@@ -108,7 +108,6 @@ function Invoke-WebRequest {
             $steppablePipeline.Begin($PSCmdlet)
         }
         catch {
-            Microsoft.PowerShell.Utility\Write-Host "hi"
             throw
         }
     }
@@ -127,7 +126,6 @@ function Invoke-WebRequest {
             $steppablePipeline.End()
         }
         catch {
-            Microsoft.PowerShell.Utility\Write-Host "wer"
             throw
         }
     }

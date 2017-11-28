@@ -1,3 +1,14 @@
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute(
+    "PSUseDeclaredVarsMoreThanAssigments",
+    "",
+    Justification = "aa"
+)]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute(
+    "PSAvoidUsingConvertToSecureStringWithPlainText",
+    "",
+    Justification = "Converting received plaintext token to SecureString"
+)]
+param()
 # Pester integration/acceptance tests to use during module development. Dave Wyatt's five-part series:
 # http://blogs.technet.com/b/heyscriptingguy/archive/2015/12/14/what-is-pester-and-why-should-i-care.aspx
 
@@ -58,14 +69,14 @@ InModuleScope ConfluencePS {
         $Name2 = "Second Pester Space"
         $Description = "<p>A nice description</p>"
         $Icon = [ConfluencePS.Icon] @{
-            path = "/images/logo/default-space-logo-256.png"
-            width = 48
-            height = 48
+            path      = "/images/logo/default-space-logo-256.png"
+            width     = 48
+            height    = 48
             isDefault = $False
         }
         $Space1 = [ConfluencePS.Space]@{
-            Key = $Key1
-            Name = $Name1
+            Key         = $Key1
+            Name        = $Name1
             Description = $Description
         }
         # $Space3
@@ -239,10 +250,10 @@ InModuleScope ConfluencePS {
         $RawContent = "Hi Pester!"
         $FormattedContent = "<p>Hi Pester!</p><p>👋</p>"
         $pageObject = New-Object -TypeName ConfluencePS.Page -Property @{
-            Title = $Title3
-            Body = $FormattedContent
+            Title     = $Title3
+            Body      = $FormattedContent
             Ancestors = @($parentPage)
-            Space = New-Object -TypeName ConfluencePS.Space -Property @{key = $SpaceKey}
+            Space     = New-Object -TypeName ConfluencePS.Space -Property @{key = $SpaceKey}
         }
 
         # ACT
@@ -329,9 +340,9 @@ InModuleScope ConfluencePS {
         Start-Sleep -Seconds 20 # Delay to allow DB index to update
 
         # ACT
-        $GetTitle1   = Get-ConfluencePage -Title $Title1.ToLower() -SpaceKey $SpaceKey -PageSize 200 -ErrorAction SilentlyContinue
-        $GetTitle2   = Get-ConfluencePage -Title $Title2 -SpaceKey $SpaceKey -ErrorAction SilentlyContinue
-        $GetPartial  = Get-ConfluencePage -Title $Title4 -SpaceKey $SpaceKey -ErrorAction SilentlyContinue
+        $GetTitle1 = Get-ConfluencePage -Title $Title1.ToLower() -SpaceKey $SpaceKey -PageSize 200 -ErrorAction SilentlyContinue
+        $GetTitle2 = Get-ConfluencePage -Title $Title2 -SpaceKey $SpaceKey -ErrorAction SilentlyContinue
+        $GetPartial = Get-ConfluencePage -Title $Title4 -SpaceKey $SpaceKey -ErrorAction SilentlyContinue
         $GetWildcard = Get-ConfluencePage -Title $Title5 -SpaceKey $SpaceKey -ErrorAction SilentlyContinue
         $GetID1 = Get-ConfluencePage -PageID $GetTitle1.ID -ErrorAction SilentlyContinue
         $GetID2 = Get-ConfluencePage -PageID $GetTitle2.ID -ErrorAction SilentlyContinue
@@ -553,7 +564,7 @@ InModuleScope ConfluencePS {
         It 'returns the correct amount of results' {
             ($GetPageLabel1.Labels).Count | Should Be 5
             ($GetPageLabel2.Labels).Count | Should Be 10
-            ($GetPageLabel2.Labels | Where {$_.Name -match $patternLabel1}).Count | Should Be 3
+            ($GetPageLabel2.Labels | Where-Object {$_.Name -match $patternLabel1}).Count | Should Be 3
         }
         It 'returns an object with specific properties' {
             $GetPageLabel1 | Should BeOfType [ConfluencePS.ContentLabelSet]
@@ -586,7 +597,12 @@ InModuleScope ConfluencePS {
         #>
 
         # ARRANGE
-        function dummy-Function {
+        function Set-PageContent {
+            [Diagnostics.CodeAnalysis.SuppressMessageAttribute(
+                'PSUseShouldProcessForStateChangingFunctions',
+                '',
+                Scope = '*'
+            )]
             [CmdletBinding()]
             param (
                 [Parameter(
@@ -629,7 +645,7 @@ InModuleScope ConfluencePS {
 
         # ACT
         # change the body of all pages - all pages should have version 2
-        $AllChangedPages = $AllPages | dummy-Function -Body $NewContent1 | Set-ConfluencePage -ErrorAction Stop
+        $AllChangedPages = $AllPages | Set-PageContent -Body $NewContent1 | Set-ConfluencePage -ErrorAction Stop
         # set the body of a page to the same value as it already had - should remain on verion 2
         $SetPage1 = $Page1.ID | Set-ConfluencePage -Body $NewContent1 -ErrorAction Stop
         # change the body of a page by property - this page should have version 3
@@ -644,7 +660,7 @@ InModuleScope ConfluencePS {
         $SetPage5 = Set-ConfluencePage -PageID $Page5.ID -ParentID $Page4.ID
         # change the title of a page
         $SetPage6 = $Page6.ID | Set-ConfluencePage -Title $NewTitle6
-        $SetPage7 = $AllChangedPages | Where {$_.ID -eq $Page7.ID} | dummy-Function -Title $NewTitle7 | Set-ConfluencePage
+        $SetPage7 = $AllChangedPages | Where-Object {$_.ID -eq $Page7.ID} | Set-PageContent -Title $NewTitle7 | Set-ConfluencePage
         # clear the body of a page
         $SetPage8 = Set-ConfluencePage -PageID $Page8.ID -Body ""
 
@@ -698,7 +714,7 @@ InModuleScope ConfluencePS {
             $SetPage6.Space.Key | Should BeExactly $SpaceKey
             $SetPage7.Space.Key | Should BeExactly $SpaceKey
             $SetPage8.Space.Key | Should BeExactly $SpaceKey
-            $AllChangedPages.Space.Key | Should BeExactly (1..9 | % {$SpaceKey})
+            $AllChangedPages.Space.Key | Should BeExactly (1..9 | ForEach-Object {$SpaceKey})
         }
         It 'title has the specified value' {
             $SetPage1.Title | Should BeExactly $Page1.Title
