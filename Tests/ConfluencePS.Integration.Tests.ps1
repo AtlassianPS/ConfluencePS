@@ -323,12 +323,13 @@ InModuleScope ConfluencePS {
         $Title3 = "Pester Test Space Home"
         $Title4 = "orphan"
         $Title5 = "*orphan"
+        $Query = "space=PESTER and title~`"*Object`""
         $Content = "<p>Hi Pester!</p><p>&eth;&Yuml;&lsquo;&lsaquo;</p>"
         (Get-ConfluenceSpace -SpaceKey $SpaceKey).Homepage | Add-ConfluenceLabel -Label "important" -ErrorAction Stop
         Start-Sleep -Seconds 20 # Delay to allow DB index to update
 
         # ACT
-        $GetTitle1   = Get-ConfluencePage -Title $Title1.ToLower() -SpaceKey $SpaceKey -PageSize 200 -ErrorAction SilentlyContinue
+        $GetTitle1   = Get-ConfluencePage -Title $Title1 -SpaceKey $SpaceKey -PageSize 200 -ErrorAction SilentlyContinue
         $GetTitle2   = Get-ConfluencePage -Title $Title2 -SpaceKey $SpaceKey -ErrorAction SilentlyContinue
         $GetPartial  = Get-ConfluencePage -Title $Title4 -SpaceKey $SpaceKey -ErrorAction SilentlyContinue
         $GetWildcard = Get-ConfluencePage -Title $Title5 -SpaceKey $SpaceKey -ErrorAction SilentlyContinue
@@ -336,6 +337,7 @@ InModuleScope ConfluencePS {
         $GetID2 = Get-ConfluencePage -PageID $GetTitle2.ID -ErrorAction SilentlyContinue
         $GetKeys = Get-ConfluencePage -SpaceKey $SpaceKey | Sort ID -ErrorAction SilentlyContinue
         $GetByLabel = Get-ConfluencePage -Label "important" -ErrorAction SilentlyContinue
+        $GetByQuery = Get-ConfluencePage -Query $query -ErrorAction SilentlyContinue
         $GetSpacePage = Get-ConfluencePage -Space (Get-ConfluenceSpace -SpaceKey $SpaceKey) -ErrorAction SilentlyContinue
         $GetSpacePiped = Get-ConfluenceSpace -SpaceKey $SpaceKey | Get-ConfluencePage -ErrorAction SilentlyContinue
 
@@ -344,12 +346,13 @@ InModuleScope ConfluencePS {
             $GetTitle1.Count | Should Be 1
             $GetTitle2.Count | Should Be 1
             $GetPartial.Count | Should Be 0
-            $GetWildcard.Count | Should Be 1
+            $GetWildcard.Count | Should Be 0
             $GetID1.Count | Should Be 1
             $GetID2.Count | Should Be 1
             $GetKeys.Count | Should Be 5
             $GetByLabel.Count | Should Be 1
             $GetSpacePage.Count | Should Be 5
+            $GetByQuery.Count | Should Be 2
             $GetSpacePiped.Count | Should Be 5
         }
         It 'returns an object with specific properties' {
@@ -359,12 +362,14 @@ InModuleScope ConfluencePS {
             $GetID2 | Should BeOfType [ConfluencePS.Page]
             $GetKeys | Should BeOfType [ConfluencePS.Page]
             $GetByLabel | Should BeOfType [ConfluencePS.Page]
+            $GetByQuery | Should BeOfType [ConfluencePS.Page]
             ($GetTitle1 | Get-Member -MemberType Property).Count | Should Be 9
             ($GetTitle2 | Get-Member -MemberType Property).Count | Should Be 9
             ($GetID1 | Get-Member -MemberType Property).Count | Should Be 9
             ($GetID2 | Get-Member -MemberType Property).Count | Should Be 9
             ($GetKeys | Get-Member -MemberType Property).Count | Should Be 9
             ($GetByLabel | Get-Member -MemberType Property).Count | Should Be 9
+            ($GetByQuery | Get-Member -MemberType Property).Count | Should Be 9
         }
         It 'id is integer' {
             $GetTitle1.ID | Should BeOfType [Int]
@@ -373,6 +378,7 @@ InModuleScope ConfluencePS {
             $GetID2.ID | Should BeOfType [Int]
             $GetKeys.ID | Should BeOfType [Int]
             $GetByLabel.ID | Should BeOfType [Int]
+            $GetByQuery.ID | Should BeOfType [Int]
         }
         It 'id matches the specified value' {
             $GetID1.ID | Should Be $GetTitle1.ID
@@ -421,6 +427,8 @@ InModuleScope ConfluencePS {
             $GetKeys.URL | Should Not BeNullOrEmpty
             $GetByLabel.URL | Should BeOfType [String]
             $GetByLabel.URL | Should Not BeNullOrEmpty
+            $GetByQuery.URL | Should BeOfType [String]
+            $GetByQuery.URL | Should Not BeNullOrEmpty
         }
         It 'shorturl is string' {
             $GetTitle1.ShortURL | Should BeOfType [String]
@@ -435,6 +443,8 @@ InModuleScope ConfluencePS {
             $GetKeys.ShortURL | Should Not BeNullOrEmpty
             $GetByLabel.ShortURL | Should BeOfType [String]
             $GetByLabel.ShortURL | Should Not BeNullOrEmpty
+            $GetByQuery.ShortURL | Should BeOfType [String]
+            $GetByQuery.ShortURL | Should Not BeNullOrEmpty
         }
         It 'has a meaningful string value' {
             $GetTitle1.Version.ToString() | Should Be $GetTitle1.Version.Number.ToString()
