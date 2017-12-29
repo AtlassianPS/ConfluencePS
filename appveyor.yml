@@ -7,13 +7,16 @@
 #
 ############################################################
 
-# This tells AppVeyor that we need WMF 5 and PowerShell 5.0
-os: WMF 5
 
 environment:
     # To encrypt a value in AppVeyor, go to the Account menu and choose "Encrypt data"
     PSGalleryAPIKey:
         secure: Kffca6TRgAQESKLBk5ghCDMFbMmH2+8DzLyu1M6a7EBRJCwfxaiJeaIXs9SmQz0i
+    fast_finish: true
+    matrix:
+        - image: WMF 5
+        - image: Visual Studio 2015
+        - image: Visual Studio 2017
 
 version: 2.1.{build}
 
@@ -77,5 +80,5 @@ deploy:
         branch: master                 # release from master branch only
         appveyor_repo_tag: false        # deploy on tag push only
 
-# on_failure:
-    # - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+on_failure:
+    - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
