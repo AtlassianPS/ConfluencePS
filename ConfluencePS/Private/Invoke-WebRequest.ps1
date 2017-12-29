@@ -88,7 +88,7 @@ function Invoke-WebRequest {
         ${PassThru})
 
     begin {
-
+        Write-Verbose "ha1"
         if ($Credential) {
             $SecureCreds = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes(
                     $('{0}:{1}' -f $Credential.UserName, $Credential.GetNetworkCredential().Password)
@@ -264,6 +264,7 @@ if ($PSVersionTable.PSVersion.Major -ge 6) {
             ${SkipHeaderValidation})
 
         begin {
+            Write-Verbose "ha2"
             if ($Credential -and (-not ($Authentication))) {
                 $PSBoundParameters["Authentication"] = "Basic"
             }
