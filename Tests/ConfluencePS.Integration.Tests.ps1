@@ -247,7 +247,7 @@ InModuleScope ConfluencePS {
         $Title2 = "Pester New Page Orphan"
         $Title3 = "Pester New Page from Object"
         $Title4 = "Pester New Page with Parent Object"
-        $RawContent = "Hi Pester!"
+        $RawContent = "Hi Pester!👋"
         $FormattedContent = "<p>Hi Pester!</p><p>👋</p>"
         $pageObject = New-Object -TypeName ConfluencePS.Page -Property @{
             Title     = $Title3
@@ -335,7 +335,8 @@ InModuleScope ConfluencePS {
         $Title4 = "orphan"
         $Title5 = "*orphan"
         $Query = "space=PESTER and title~`"*Object`""
-        $Content = "<p>Hi Pester!</p><p>&eth;&Yuml;&lsquo;&lsaquo;</p>"
+        $ContentRaw = "<p>Hi Pester!👋</p>"
+        $ContentFormatted = "<p>Hi Pester!</p><p>👋</p>"
         (Get-ConfluenceSpace -SpaceKey $SpaceKey).Homepage | Add-ConfluenceLabel -Label "important" -ErrorAction Stop
         Start-Sleep -Seconds 20 # Delay to allow DB index to update
 
@@ -421,9 +422,9 @@ InModuleScope ConfluencePS {
             $GetByLabel.Version.Number | Should Be 1
         }
         It 'body matches the specified value' {
-            $GetTitle1.Body | Should BeExactly $Content
-            $GetID1.Body | Should BeExactly $Content
-            $GetKeys.Body -contains $Content | Should Be $true
+            (ConvertFrom-HTMLEncoded $GetTitle1.Body) | Should BeExactly $ContentFormatted
+            (ConvertFrom-HTMLEncoded $GetTitle2.Body) | Should BeExactly $ContentRaw
+            (ConvertFrom-HTMLEncoded $GetID1.Body) | Should BeExactly $ContentFormatted
         }
         It 'url is string' {
             $GetTitle1.URL | Should BeOfType [String]
