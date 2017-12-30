@@ -34,7 +34,7 @@ function Invoke-WebRequest {
         ${CertificateThumbprint},
 
         [ValidateNotNull()]
-        [X509Certificate]
+        [System.Security.Cryptography.X509Certificates.X509Certificate]
         ${Certificate},
 
         [string]

@@ -30,11 +30,10 @@ skip_commits:
   files:
     - .github/
     - .vscode/
-    - assets/
-    - Tools/
     - README.md
     - .gitattributes
     - .gitignore
+    - .env*
 
 # PRs, by definition, don't change anything and therefore should not increment the version
 # To be fair, this is not important, and is really just AppVeyor enabling my pedantry
@@ -80,5 +79,5 @@ deploy:
         branch: master                 # release from master branch only
         appveyor_repo_tag: false        # deploy on tag push only
 
-on_failure:
-    - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+# on_failure:
+    # - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))

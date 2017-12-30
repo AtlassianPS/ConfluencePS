@@ -81,11 +81,11 @@ InModuleScope ConfluencePS {
         }
         # $Space3
         # Ensure the space doesn't already exist
-        Get-ConfluenceSpace -Key $Key1 -ErrorAction SilentlyContinue -Verbose #TODO
+        Get-ConfluenceSpace -Key $Key1 -ErrorAction SilentlyContinue #TODO
 
         # ACT
-        $NewSpace1 = $Space1 | New-ConfluenceSpace -ErrorAction Stop -Verbose
-        $NewSpace2 = New-ConfluenceSpace -Key $Key2 -Name $Name2 -Description $Description -ErrorAction Stop -Verbose
+        $NewSpace1 = $Space1 | New-ConfluenceSpace -ErrorAction Stop
+        $NewSpace2 = New-ConfluenceSpace -Key $Key2 -Name $Name2 -Description $Description -ErrorAction Stop
 
         # ASSERT
         It 'returns an object with specific properties' {

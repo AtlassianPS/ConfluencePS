@@ -71,9 +71,8 @@ function Invoke-Method {
         # pass input to local variable
         # this allows to use the PSBoundParameters for recursion
         $_headers = @{   # Set any default headers
-            # "Accept"         = "application/json"
-            # "Accept-Charset" = "utf-8"
-            "Content-Type"   = "application/json; charset=utf-8"
+            "Accept"         = "application/json"
+            "Accept-Charset" = "utf-8"
         }
         $Headers.Keys.foreach( { $_headers[$_] = $Headers[$_] })
     }
@@ -102,18 +101,18 @@ function Invoke-Method {
             Uri             = $URi
             Method          = $Method
             Headers         = $_headers
-            # ContentType     = "application/json; charset=utf-8"
+            ContentType     = "application/json; charset=utf-8"
             UseBasicParsing = $true
             Credential      = $Credential
             ErrorAction     = "Stop"
-            # Verbose         = $false     # Overwrites verbose output
+            Verbose         = $false     # Overwrites verbose output
         }
 
-        # if ($_headers.ContainsKey("Content-Type")) {
-        #     $splatParameters["ContentType"] = $_headers["Content-Type"]
-        #     $_headers.Remove("Content-Type")
-        #     $splatParameters["Headers"] = $_headers
-        # }
+        if ($_headers.ContainsKey("Content-Type")) {
+            $splatParameters["ContentType"] = $_headers["Content-Type"]
+            $_headers.Remove("Content-Type")
+            $splatParameters["Headers"] = $_headers
+        }
 
         if ($Body) {
             if ($RawBody) {
@@ -135,17 +134,11 @@ function Invoke-Method {
         catch {
             Write-Verbose "[$($MyInvocation.MyCommand.Name)] Failed to get an answer from the server"
             $webResponse = $_
-            Write-Verbose ($webResponse)
-            Write-Verbose ($webResponse | Out-String)
-            Write-Verbose ($webResponse | gm | Out-String)
-            Write-Verbose ($webResponse.gettype())
             if ($webResponse.ErrorDetails) {
-                Write-Verbose "1"
                 # In PowerShellCore (v6+), the response body is available as string
                 $responseBody = $webResponse.ErrorDetails.Message
             }
             else {
-                Write-Verbose "2"
                 $webResponse = $webResponse.Exception.Response
             }
         }
