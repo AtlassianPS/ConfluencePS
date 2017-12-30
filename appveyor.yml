@@ -14,8 +14,7 @@ environment:
         secure: Kffca6TRgAQESKLBk5ghCDMFbMmH2+8DzLyu1M6a7EBRJCwfxaiJeaIXs9SmQz0i
     fast_finish: true
     matrix:
-        - image: WMF 5
-        - image: Visual Studio 2015
+        - image: Visual Studio 2013
         - image: Visual Studio 2017
 
 version: 2.1.{build}
