@@ -80,10 +80,7 @@ deploy:
         branch: master                 # release from master branch only
         appveyor_repo_tag: false        # deploy on tag push only
 
-# on_failure:
-    # - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
-
-on_success:
+after_deploy:
     - git config --global credential.helper store
     - ps: Add-Content "$env:USERPROFILE\.git-credentials" "https://$($env:access_token):x-oauth-basic@github.com`n"
     - git config --global user.email "support@atlassianps.org"
@@ -94,3 +91,6 @@ on_success:
     - git add modules/ConfluencePS
     - git commit -m "Update module ConfluencePS"
     - git push
+
+# on_failure:
+# - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
