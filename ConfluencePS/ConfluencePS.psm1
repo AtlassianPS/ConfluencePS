@@ -1,5 +1,12 @@
+# Load the ConfluencePS namespace from C#
 if (!("ConfluencePS.Space" -as [Type])) {
     Add-Type -Path (Join-Path $PSScriptRoot ConfluencePS.Types.cs) -ReferencedAssemblies Microsoft.CSharp
+}
+
+# Load Web assembly when needed
+# PowerShell Core has the assembly preloaded
+if (!("System.Web.HttpUtility" -as [Type])) {
+    Add-Type -Assembly System.Web
 }
 
 # Gather all files
