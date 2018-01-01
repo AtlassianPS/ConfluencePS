@@ -195,13 +195,22 @@ task Deploy -If (
     $env:APPVEYOR_REPO_COMMIT_MESSAGE -notlike '*skip-deploy*'
 ) {
     Remove-Module ConfluencePS -ErrorAction SilentlyContinue
-}, PublishToGallery
+}, PublishToGallery, UpdateHomepage
 
 task PublishToGallery {
     assert ($env:PSGalleryAPIKey) "No key for the PSGallery"
 
     Import-Module $releasePath\ConfluencePS\ConfluencePS.psd1 -ErrorAction Stop
     Publish-Module -Name ConfluencePS -NuGetApiKey $env:PSGalleryAPIKey
+}
+
+task UpdateHomepage {
+    exec { git clone https://github.com/AtlassianPS/AtlassianPS.github.io }
+    Set-Location AtlassianPS.github.io
+    exec { git submodule foreach git pull origin master }
+    exec { git add modules/ConfluencePS }
+    exec { git commit -m "Update module ConfluencePS" }
+    exec { git push }
 }
 
 # Synopsis: Push with a version tag.
