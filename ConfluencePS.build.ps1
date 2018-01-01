@@ -181,7 +181,7 @@ task PublishToGallery {
 task UpdateHomepage {
     try {
         # Get the repo of the homepage
-        exec { git clone https://github.com/AtlassianPS/AtlassianPS.github.io } -ErrorAction SilentlyContinue
+        exec { git clone https://github.com/AtlassianPS/AtlassianPS.github.io --recursive } -ErrorAction SilentlyContinue
         Set-Location "AtlassianPS.github.io/"
 
         # Update all submodules
