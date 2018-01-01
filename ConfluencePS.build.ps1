@@ -180,8 +180,8 @@ task PublishToGallery {
 }
 
 task UpdateHomepage {
-    exec { git clone https://github.com/AtlassianPS/AtlassianPS.github.io } -ErrorVariable null
-    Set-Location AtlassianPS.github.io
+    exec { git clone https://github.com/AtlassianPS/AtlassianPS.github.io } -ErrorAction SilentlyContinue
+    Set-Location "AtlassianPS.github.io/"
     exec { git submodule foreach git pull origin master }
     exec { git add modules/ConfluencePS }
     exec { git commit -m "Update module ConfluencePS" }
