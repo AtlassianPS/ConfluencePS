@@ -160,7 +160,7 @@ task ConvertMarkdown -Partial @ConvertMarkdown InstallPandoc, {process {
 # endregion
 
 # region publish
-task Deploy <# -If (
+task Deploy -If (
     # Only deploy if the master branch changes
     $env:APPVEYOR_REPO_BRANCH -eq 'master' -and
     # Do not deploy if this is a pull request (because it hasn't been approved yet)
@@ -168,14 +168,14 @@ task Deploy <# -If (
     # Do not deploy if the commit contains the string "skip-deploy"
     # Meant for major/minor version publishes with a .0 build/patch version (like 2.1.0)
     $env:APPVEYOR_REPO_COMMIT_MESSAGE -notlike '*skip-deploy*'
-) #> PublishToGallery, UpdateHomepage
+) PublishToGallery, UpdateHomepage
 
 task PublishToGallery {
-    # assert ($env:PSGalleryAPIKey) "No key for the PSGallery"
+    assert ($env:PSGalleryAPIKey) "No key for the PSGallery"
 
-    # Remove-Module ConfluencePS -ErrorAction SilentlyContinue
-    # Import-Module $releasePath\ConfluencePS\ConfluencePS.psd1 -ErrorAction Stop
-    # Publish-Module -Name ConfluencePS -NuGetApiKey $env:PSGalleryAPIKey
+    Remove-Module ConfluencePS -ErrorAction SilentlyContinue
+    Import-Module $releasePath\ConfluencePS\ConfluencePS.psd1 -ErrorAction Stop
+    Publish-Module -Name ConfluencePS -NuGetApiKey $env:PSGalleryAPIKey
 }
 
 task UpdateHomepage {
