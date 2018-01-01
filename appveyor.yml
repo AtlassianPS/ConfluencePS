@@ -12,6 +12,8 @@ environment:
     # To encrypt a value in AppVeyor, go to the Account menu and choose "Encrypt data"
     PSGalleryAPIKey:
         secure: Kffca6TRgAQESKLBk5ghCDMFbMmH2+8DzLyu1M6a7EBRJCwfxaiJeaIXs9SmQz0i
+    access_token:
+        secure: PX1R0Ds6r3TTm+wxVbx8MRAgjCRV/juO3cYSEz1MedB/OXvZ3YkqpQGE+X47bcFT
     fast_finish: true
     matrix:
         - image: Visual Studio 2013
@@ -38,6 +40,12 @@ skip_commits:
 # To be fair, this is not important, and is really just AppVeyor enabling my pedantry
 pull_requests:
   do_not_increment_build_number: true
+
+init:
+    - git config --global credential.helper store
+    - ps: Add-Content "$env:USERPROFILE\.git-credentials" "https://$($env:access_token):x-oauth-basic@github.com`n"
+    - git config --global user.email "support@atlassianps.org"
+    - git config --global user.name "AtlassianPS automation"
 
 install:
     - cmd: git config --global core.autocrlf true
@@ -79,4 +87,4 @@ deploy:
         appveyor_repo_tag: false        # deploy on tag push only
 
 # on_failure:
-    # - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+# - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
