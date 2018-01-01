@@ -182,18 +182,24 @@ task UpdateHomepage {
     try {
         # Get the repo of the homepage
         exec { git clone https://github.com/AtlassianPS/AtlassianPS.github.io --recursive } -ErrorAction SilentlyContinue
+        Write-Host "Cloned"
         Set-Location "AtlassianPS.github.io/"
 
         # Update all submodules
         exec { git submodule foreach git pull origin master }
+        Write-Host "Fetched"
 
         # Check if this repo was changed
         $status = exec { git status -s }
         if ($status -contains " M modules/ConfluencePS") {
+            Write-Host "Has changes"
             # Update the repo in the homepage repo
             exec { git add modules/ConfluencePS }
+            Write-Host "Added"
             exec { git commit -m "Update module ConfluencePS" } -ErrorAction SilentlyContinue
+            Write-Host "Commited"
             exec { git push }
+            Write-Host "Pushed"
         }
     }
     catch {
