@@ -184,6 +184,10 @@ task UpdateHomepage {
     Set-Location "AtlassianPS.github.io/"
     exec { git submodule foreach git pull origin master }
     exec { git add modules/ConfluencePS }
+    $status = exec { git status -s }
+    if ($status) {
+        Write-Warning "Git status: $($status -join ', ')"
+    }
     exec { git commit -m "Update module ConfluencePS" } -ErrorAction SilentlyContinue
     exec { git push }
 }
