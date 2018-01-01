@@ -5,11 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.2] - 2018-01-01
+
+### Added
+- Automatic deployment of documentation to website (#120, [@lipkau][])
+- New parameter `-Query` to `Get-Page` for complex searches (#106, [@lipkau][])
+- Documentation for the custom classes of the module (#107, [@lipkau][])
+
+### Changed
+- Added full support for PowerShell Core (`pwsh`) (#119, [@lipkau][])
+- Fixed encoding of Unicode chars (#101, [@lipkau][])
+- Require necessary Assembly for HttpUtility (#102, [@lipkau][])
+
+### Removed
+
+
 ## [2.1] - 2017-11-01
 
-IMPROVEMENTS:
-  - Shows a warning when the server requires a CAPTCHA for the authentication (#91, [@lipkau][])
-  - Custom classes now print relevant data in `ToString()` (#92, [@lipkau][])
+### Changed
+- Shows a warning when the server requires a CAPTCHA for the authentication (#91, [@lipkau][])
+- Custom classes now print relevant data in `ToString()` (#92, [@lipkau][])
 
 ## [2.0] - 2017-08-17
 A new major version! ConfluencePS has been totally refactored to introduce new features and greatly improve efficiency.
