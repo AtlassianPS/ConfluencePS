@@ -160,7 +160,7 @@ task ConvertMarkdown -Partial @ConvertMarkdown InstallPandoc, {process {
 # endregion
 
 # region publish
-task Deploy -If (
+task Deploy <# -If (
     # Only deploy if the master branch changes
     $env:APPVEYOR_REPO_BRANCH -eq 'master' -and
     # Do not deploy if this is a pull request (because it hasn't been approved yet)
@@ -168,28 +168,37 @@ task Deploy -If (
     # Do not deploy if the commit contains the string "skip-deploy"
     # Meant for major/minor version publishes with a .0 build/patch version (like 2.1.0)
     $env:APPVEYOR_REPO_COMMIT_MESSAGE -notlike '*skip-deploy*'
-) {
-    Remove-Module ConfluencePS -ErrorAction SilentlyContinue
-}, PublishToGallery, UpdateHomepage
+) #> PublishToGallery, UpdateHomepage
 
 task PublishToGallery {
-    assert ($env:PSGalleryAPIKey) "No key for the PSGallery"
+    # assert ($env:PSGalleryAPIKey) "No key for the PSGallery"
 
-    Import-Module $releasePath\ConfluencePS\ConfluencePS.psd1 -ErrorAction Stop
-    Publish-Module -Name ConfluencePS -NuGetApiKey $env:PSGalleryAPIKey
+    # Remove-Module ConfluencePS -ErrorAction SilentlyContinue
+    # Import-Module $releasePath\ConfluencePS\ConfluencePS.psd1 -ErrorAction Stop
+    # Publish-Module -Name ConfluencePS -NuGetApiKey $env:PSGalleryAPIKey
 }
 
 task UpdateHomepage {
-    exec { git clone https://github.com/AtlassianPS/AtlassianPS.github.io } -ErrorAction SilentlyContinue
-    Set-Location "AtlassianPS.github.io/"
-    exec { git submodule foreach git pull origin master }
-    exec { git add modules/ConfluencePS }
-    $status = exec { git status -s }
-    if ($status) {
-        Write-Warning "Git status: $($status -join ', ')"
+    try {
+        # Get the repo of the homepage
+        exec { git clone https://github.com/AtlassianPS/AtlassianPS.github.io } -ErrorAction SilentlyContinue
+        Set-Location "AtlassianPS.github.io/"
+
+        # Update all submodules
+        exec { git submodule foreach git pull origin master }
+
+        # Check if this repo was changed
+        $status = exec { git status -s }
+        if ($status -contains " M modules/ConfluencePS") {
+            # Update the repo in the homepage repo
+            exec { git add modules/ConfluencePS }
+            exec { git commit -m "Update module ConfluencePS" } -ErrorAction SilentlyContinue
+            exec { git push }
+        }
     }
-    exec { git commit -m "Update module ConfluencePS" } -ErrorAction SilentlyContinue
-    exec { git push }
+    catch {
+        throw "Failed to updated the website"
+    }
 }
 # endregion
 
