@@ -7,13 +7,15 @@
 #
 ############################################################
 
-# This tells AppVeyor that we need WMF 5 and PowerShell 5.0
-os: WMF 5
 
 environment:
     # To encrypt a value in AppVeyor, go to the Account menu and choose "Encrypt data"
     PSGalleryAPIKey:
         secure: Kffca6TRgAQESKLBk5ghCDMFbMmH2+8DzLyu1M6a7EBRJCwfxaiJeaIXs9SmQz0i
+    fast_finish: true
+    matrix:
+        - image: Visual Studio 2013
+        - image: Visual Studio 2017
 
 version: 2.1.{build}
 
@@ -27,11 +29,10 @@ skip_commits:
   files:
     - .github/
     - .vscode/
-    - assets/
-    - Tools/
     - README.md
     - .gitattributes
     - .gitignore
+    - .env*
 
 # PRs, by definition, don't change anything and therefore should not increment the version
 # To be fair, this is not important, and is really just AppVeyor enabling my pedantry
