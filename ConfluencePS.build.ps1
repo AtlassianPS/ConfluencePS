@@ -186,7 +186,7 @@ task UpdateHomepage {
         Set-Location "AtlassianPS.github.io/"
 
         # Update all submodules
-        exec { git submodule foreach git pull origin master }
+        exec { git submodule foreach git pull origin master } -ErrorAction SilentlyContinue
         Write-Host "Fetched"
 
         # Check if this repo was changed
