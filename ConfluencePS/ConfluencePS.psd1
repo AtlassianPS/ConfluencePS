@@ -12,7 +12,7 @@
     RootModule        = 'ConfluencePS.psm1'
 
     # Version number of this module.
-    ModuleVersion     = '2.1'
+    ModuleVersion     = '2.2'
 
     # ID used to uniquely identify this module
     GUID              = '20d32089-48ef-464d-ba73-6ada240e26b3'
@@ -51,7 +51,7 @@
     # RequiredModules = @()
 
     # Assemblies that must be loaded prior to importing this module
-    RequiredAssemblies   = @('System.Web')
+    # RequiredAssemblies   = @()
 
     # Script files (.ps1) that are run in the caller's environment prior to importing this module.
     # ScriptsToProcess = @()
