@@ -72,34 +72,9 @@ task InstallPandoc -If (-not (Test-Path Tools\pandoc.exe)) {
 # endregion
 
 # region test
-task Test RapidTest
+task Test {
+    assert { Test-Path "Release/" -PathType Container }
 
-# Synopsis: Using the "Fast" Test Suit
-task RapidTest PesterTests
-# Synopsis: Using the complete Test Suit, which includes all supported Powershell versions
-task FullTest TestVersions
-
-# Synopsis: Warn about not empty git status if .git exists.
-task GitStatus -If (Test-Path .git) {
-    $status = exec { git status -s }
-    if ($status) {
-        Write-Warning "Git status: $($status -join ', ')"
-    }
-}
-
-task TestVersions TestPS3, TestPS4, TestPS4, TestPS5
-task TestPS3 {
-    exec {powershell.exe -Version 3 -NoProfile Invoke-Build PesterTests}
-}
-task TestPS4 {
-    exec {powershell.exe -Version 4 -NoProfile Invoke-Build PesterTests}
-}
-task TestPS5 {
-    exec {powershell.exe -Version 5 -NoProfile Invoke-Build PesterTests}
-}
-
-# Synopsis: Invoke Pester Tests
-task PesterTests CreateHelp, {
     try {
         $result = Invoke-Pester -PassThru -OutputFile "$BuildRoot\TestResult.xml" -OutputFormat "NUnitXml"
         if ($env:APPVEYOR_PROJECT_NAME) {
@@ -205,25 +180,12 @@ task PublishToGallery {
 }
 
 task UpdateHomepage {
-    exec { git clone https://github.com/AtlassianPS/AtlassianPS.github.io }
+    exec { git clone https://github.com/AtlassianPS/AtlassianPS.github.io } -ErrorVariable null
     Set-Location AtlassianPS.github.io
     exec { git submodule foreach git pull origin master }
     exec { git add modules/ConfluencePS }
     exec { git commit -m "Update module ConfluencePS" }
     exec { git push }
-}
-
-# Synopsis: Push with a version tag.
-task PushRelease GitStatus, GetVersion, {
-    # Done in appveyor.yml with deploy provider.
-    # This is needed, as I don't know how to athenticate (2-factor) in here.
-    exec { git checkout master }
-    $changes = exec { git status --short }
-    assert (!$changes) "Please, commit changes."
-
-    exec { git push }
-    exec { git tag -a "v$Version" -m "v$Version" }
-    exec { git push origin "v$Version" }
 }
 # endregion
 
@@ -246,4 +208,4 @@ task RemoveMarkdownFiles {
 }
 # endregion
 
-task . ShowDebug, Clean, Test, Build, Deploy
+task . ShowDebug, Clean, Build, Test, Deploy
