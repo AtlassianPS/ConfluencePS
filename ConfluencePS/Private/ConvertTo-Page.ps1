@@ -16,46 +16,50 @@ function ConvertTo-Page {
         foreach ($object in $InputObject) {
             Write-Verbose "[$($MyInvocation.MyCommand.Name)] Converting Object to Page"
             [ConfluencePS.Page](ConvertTo-Hashtable -InputObject ($object | Select-Object `
-                id,
-                status,
-                title,
-                @{Name = "space"; Expression = {
-                        if ($_.space) {
-                            ConvertTo-Space $_.space
+                        id,
+                    status,
+                    title,
+                    @{Name = "space"; Expression = {
+                            if ($_.space) {
+                                ConvertTo-Space $_.space
+                            }
+                            else {$null}
                         }
-                        else {$null}
-                    }
-                },
-                @{Name = "version"; Expression = {
-                        if ($_.version) {
-                            ConvertTo-Version $_.version
+                    },
+                    @{Name = "version"; Expression = {
+                            if ($_.version) {
+                                ConvertTo-Version $_.version
+                            }
+                            else {$null}
                         }
-                        else {$null}
-                    }
-                },
-                @{Name = "body"; Expression = {$_.body.storage.value}},
-                @{Name = "ancestors"; Expression = {
-                        if ($_.ancestors) {
-                            ConvertTo-PageAncestor $_.ancestors
+                    },
+                    @{Name = "body"; Expression = {$_.body.storage.value}},
+                    @{Name = "ancestors"; Expression = {
+                            if ($_.ancestors) {
+                                ConvertTo-PageAncestor $_.ancestors
+                            }
+                            else {$null}
                         }
-                        else {$null}
-                    }
-                },
-                @{Name = "URL"; Expression = {
-                        if ($_._links.webui) {
-                            "{0}{1}" -f $_._links.base, $_._links.webui
+                    },
+                    @{Name = "URL"; Expression = {
+                            $base = $_._links.base
+                            if (!($base)) { $base = $_._links.self -replace '\/rest.*', '' }
+                            if ($_._links.webui) {
+                                "{0}{1}" -f $base, $_._links.webui
+                            }
+                            else {$null}
                         }
-                        else {$null}
-                    }
-                },
-                @{Name = "ShortURL"; Expression = {
-                        if ($_._links.tinyui) {
-                            "{0}{1}" -f $_._links.base, $_._links.tinyui
+                    },
+                    @{Name = "ShortURL"; Expression = {
+                            $base = $_._links.base
+                            if (!($base)) { $base = $_._links.self -replace '\/rest.*', '' }
+                            if ($_._links.tinyui) {
+                                "{0}{1}" -f $base, $_._links.tinyui
+                            }
+                            else {$null}
                         }
-                        else {$null}
                     }
-                }
-            ))
+                ))
         }
     }
 }

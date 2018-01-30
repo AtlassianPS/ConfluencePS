@@ -14,18 +14,21 @@ function Invoke-Method {
         [ConfluencePS.User],
         [ConfluencePS.Attachment]
     )]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute( "PSAvoidUsingEmptyCatchBlock", "" )]
     param (
         # REST API to invoke
         [Parameter(Mandatory = $true)]
         [Uri]$URi,
 
         # Method of the invokation
-        [ValidateSet("GET", "POST", "PUT", "DELETE")]
-        [string]$Method = "GET",
+        [Microsoft.PowerShell.Commands.WebRequestMethod]$Method = "GET",
 
         # Body of the request
         [ValidateNotNullOrEmpty()]
-        [string]$Body,
+        [String]$Body,
+
+        # Do not encode the body
+        [Switch]$RawBody,
 
         # Additional headers
         [Hashtable]$Headers,
@@ -47,7 +50,9 @@ function Invoke-Method {
 
         # Authentication credentials
         [Parameter(Mandatory = $true)]
-        [PSCredential]$Credential
+        [PSCredential]$Credential,
+
+        $Caller = $PSCmdlet
     )
 
     BEGIN {
@@ -55,33 +60,40 @@ function Invoke-Method {
 
         # Validation of parameters
         if (($Method -in ("POST", "PUT")) -and (!($Body))) {
-            $message = "The following parameters are required when using the ${Method} parameter: Body."
-            $exception = New-Object -TypeName System.ArgumentException -ArgumentList $message
-            Throw $exception
+            $errorItem = [System.Management.Automation.ErrorRecord]::new(
+                ([System.ArgumentException]"Invalid Parameter"),
+                'ParameterProperties.IncorrectType',
+                [System.Management.Automation.ErrorCategory]::InvalidArgument,
+                $Method
+            )
+            $errorItem.ErrorDetails = "The following parameters are required when using the $Method parameter: Body."
+            $Caller.ThrowTerminatingError($errorItem)
         }
 
         # pass input to local variable
         # this allows to use the PSBoundParameters for recursion
-        $_headers = $Headers
-
-        # Add Basic Authentication to Header
-        $SecureCreds = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes(
-                $('{0}:{1}' -f $Credential.UserName, $Credential.GetNetworkCredential().Password)
-            ))
-        $_headers += @{
-            "Authorization" = "Basic $($SecureCreds)"
-            'Content-Type'  = 'application/json; charset=utf-8'
+        $_headers = @{   # Set any default headers
+            "Accept"         = "application/json"
+            "Accept-Charset" = "utf-8"
         }
+        $Headers.Keys.foreach( { $_headers[$_] = $Headers[$_] })
     }
 
     Process {
+        Write-DebugMessage "[$($MyInvocation.MyCommand.Name)] ParameterSetName: $($PsCmdlet.ParameterSetName)"
+        Write-DebugMessage "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
+
+        # load DefaultParameters for Invoke-WebRequest
+        # as the global PSDefaultParameterValues is not used
+        $PSDefaultParameterValues = $global:PSDefaultParameterValues
+
         # Append GET parameters to URi
         if (($PSCmdlet.PagingParameters) -and ($PSCmdlet.PagingParameters.Skip)) {
             $GetParameters["start"] = $PSCmdlet.PagingParameters.Skip
         }
         if ($GetParameters -and ($URi -notlike "*\?*")) {
-            Write-Debug "Using `$GetParameters: $($GetParameters | Out-String)"
-            [string]$URI += (ConvertTo-GetParameter $GetParameters)
+            Write-Debug "[$($MyInvocation.MyCommand.Name)] Using `$GetParameters: $($GetParameters | Out-String)"
+            [Uri]$URI = "$Uri$(ConvertTo-GetParameter $GetParameters)"
             # Prevent recursive appends
             $GetParameters = $null
         }
@@ -91,32 +103,50 @@ function Invoke-Method {
             Uri             = $URi
             Method          = $Method
             Headers         = $_headers
+            ContentType     = "application/json; charset=utf-8"
             UseBasicParsing = $true
-            ErrorAction     = 'SilentlyContinue'
+            Credential      = $Credential
+            ErrorAction     = "Stop"
+            Verbose         = $false     # Overwrites verbose output
         }
 
-        # set optional parameters
-        # http://stackoverflow.com/questions/15290185/invoke-webrequest-issue-with-special-characters-in-json
-        if ($Body) {$splatParameters["Body"] = [System.Text.Encoding]::UTF8.GetBytes($Body)}
+        if ($_headers.ContainsKey("Content-Type")) {
+            $splatParameters["ContentType"] = $_headers["Content-Type"]
+            $_headers.Remove("Content-Type")
+            $splatParameters["Headers"] = $_headers
+        }
 
-        # load DefaultParameters for Invoke-WebRequest
-        # as the global PSDefaultParameterValues is not used
-        # TODO: find out why PSJira doesn't need this
-        $script:PSDefaultParameterValues = $global:PSDefaultParameterValues
+        if ($Body) {
+            if ($RawBody) {
+                $splatParameters["Body"] = $Body
+            }
+            else {
+                # Encode Body to preserve special chars
+                # http://stackoverflow.com/questions/15290185/invoke-webrequest-issue-with-special-characters-in-json
+                $splatParameters["Body"] = [System.Text.Encoding]::UTF8.GetBytes($Body)
+            }
+        }
 
         # Invoke the API
+        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Invoking method $Method to URI $URi"
+        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Invoke-WebRequest with: $(([PSCustomObject]$splatParameters) | Out-String)"
         try {
-            Write-Verbose "[$($MyInvocation.MyCommand.Name)] Invoking method $Method to URI $URi"
-            Write-Debug "[$($MyInvocation.MyCommand.Name)] Invoke-WebRequest with: $($splatParameters | Out-String)"
             $webResponse = Invoke-WebRequest @splatParameters
         }
         catch {
-            # Invoke-WebRequest is hard-coded to throw an exception if the Web request returns a 4xx or 5xx error.
-            # This is the best workaround I can find to retrieve the actual results of the request.
-            # This shall be fixed with PoSh v6: https://github.com/PowerShell/PowerShell/issues/2193
             Write-Verbose "[$($MyInvocation.MyCommand.Name)] Failed to get an answer from the server"
-            $webResponse = $_.Exception.Response
+            $webResponse = $_
+            if ($webResponse.ErrorDetails) {
+                # In PowerShellCore (v6+), the response body is available as string
+                $responseBody = $webResponse.ErrorDetails.Message
+            }
+            else {
+                $webResponse = $webResponse.Exception.Response
+            }
         }
+
+        # Test response Headers if Confluence requires a CAPTCHA
+        Test-Captcha -InputObject $webResponse
 
         Write-Debug "[$($MyInvocation.MyCommand.Name)] Executed WebRequest. Access `$webResponse to see details"
 
@@ -126,76 +156,97 @@ function Invoke-Method {
             if ($webResponse.StatusCode.value__ -ge 400) {
                 Write-Warning "Confluence returned HTTP error $($webResponse.StatusCode.value__) - $($webResponse.StatusCode)"
 
-                # Retrieve body of HTTP response - this contains more useful information about exactly why the error occurred
-                $readStream = New-Object -TypeName System.IO.StreamReader -ArgumentList ($webResponse.GetResponseStream())
-                $responseBody = $readStream.ReadToEnd()
-                $readStream.Close()
+                if ((!($responseBody)) -and ($webResponse | Get-Member -Name "GetResponseStream")) {
+                    # Retrieve body of HTTP response - this contains more useful information about exactly why the error occurred
+                    $readStream = New-Object -TypeName System.IO.StreamReader -ArgumentList ($webResponse.GetResponseStream())
+                    $responseBody = $readStream.ReadToEnd()
+                    $readStream.Close()
+                }
 
                 Write-Verbose "[$($MyInvocation.MyCommand.Name)] Retrieved body of HTTP response for more information about the error (`$responseBody)"
+                Write-Debug "[$($MyInvocation.MyCommand.Name)] Got the following error as `$responseBody"
+
+                $errorItem = [System.Management.Automation.ErrorRecord]::new(
+                    ([System.ArgumentException]"Invalid Server Response"),
+                    "InvalidResponse.Status$($webResponse.StatusCode.value__)",
+                    [System.Management.Automation.ErrorCategory]::InvalidResult,
+                    $responseBody
+                )
+
                 try {
                     $responseObject = ConvertFrom-Json -InputObject $responseBody -ErrorAction Stop
                     if ($responseObject.message) {
-                        Write-Error $responseObject.message
+                        $errorItem.ErrorDetails = $responseObject.message
                     }
-                    else {throw}
+                    else {
+                        $errorItem.ErrorDetails = "An unknown error ocurred."
+                    }
+
                 }
                 catch {
-                    Write-Error $responseBody
+                    $errorItem.ErrorDetails = "An unknown error ocurred."
                 }
+
+                $Caller.WriteError($errorItem)
             }
             else {
                 if ($webResponse.Content) {
-                    # API returned a Content: lets work wit it
-                    $response = ConvertFrom-Json -InputObject $webResponse.Content
+                    try {
+                        # API returned a Content: lets work with it
+                        $response = ConvertFrom-Json ([Text.Encoding]::UTF8.GetString($webResponse.RawContentStream.ToArray()))
 
-                    if ($null -ne $response.errors) {
-                        Write-Verbose "[$($MyInvocation.MyCommand.Name)] An error response was received from; resolving"
-                        # This could be handled nicely in an function such as:
-                        # ResolveError $response -WriteError
-                        Write-Error $($response.errors | Out-String)
-                    }
-                    else {
-                        if ($PSCmdlet.PagingParameters.IncludeTotalCount) {
-                            [double]$Accuracy = 0.0
-                            $PSCmdlet.PagingParameters.NewTotalCount($response.size, $Accuracy)
-                        }
-                        # None paginated results / first page of pagination
-                        $result = $response
-                        if (($response) -and ($response | Get-Member -Name results)) {
-                            $result = $response.results
-                        }
-                        if ($OutputType) {
-                            # Results shall be casted to custom objects (see ValidateSet)
-                            Write-Verbose "[$($MyInvocation.MyCommand.Name)] Outputting results as $($OutputType.FullName)"
-                            $converter = "ConvertTo-$($OutputType.Name)"
-                            $result | & $converter
+                        if ($null -ne $response.errors) {
+                            Write-Verbose "[$($MyInvocation.MyCommand.Name)] An error response was received from; resolving"
+                            # This could be handled nicely in an function such as:
+                            # ResolveError $response -WriteError
+                            Write-Error $($response.errors | Out-String)
                         }
                         else {
-                            $result
-                        }
-
-                        # Detect if result is paginated
-                        if ($response._links.next) {
-                            Write-Verbose "[$($MyInvocation.MyCommand.Name)] Invoking pagination"
-
-                            # Remove Parameters that don't need propagation
-                            $script:PSDefaultParameterValues.Remove("$($MyInvocation.MyCommand.Name):GetParameters")
-                            $script:PSDefaultParameterValues.Remove("$($MyInvocation.MyCommand.Name):IncludeTotalCount")
-
-                            # Self-Invoke function for recursion
-                            $parameters = @{
-                                URi    = "{0}{1}" -f $response._links.base, $response._links.next
-                                Method = $Method
-                                Credential = $Credential
+                            if ($PSCmdlet.PagingParameters.IncludeTotalCount) {
+                                [double]$Accuracy = 0.0
+                                $PSCmdlet.PagingParameters.NewTotalCount($response.size, $Accuracy)
                             }
-                            if ($Body) {$parameters["Body"] = $Body}
-                            if ($Headers) {$parameters["Headers"] = $Headers}
-                            if ($OutputType) {$parameters["OutputType"] = $OutputType}
+                            # None paginated results / first page of pagination
+                            $result = $response
+                            if (($response) -and ($response | Get-Member -Name results)) {
+                                $result = $response.results
+                            }
+                            if ($OutputType) {
+                                # Results shall be casted to custom objects (see ValidateSet)
+                                Write-Verbose "[$($MyInvocation.MyCommand.Name)] Outputting results as $($OutputType.FullName)"
+                                $converter = "ConvertTo-$($OutputType.Name)"
+                                $result | & $converter
+                            }
+                            else {
+                                $result
+                            }
 
-                            Write-Verbose "NEXT PAGE: $($parameters["URi"])"
+                            # Detect if result is paginated
+                            if ($response._links.next) {
+                                Write-Verbose "[$($MyInvocation.MyCommand.Name)] Invoking pagination"
 
-                            Invoke-Method @parameters
+                                # Remove Parameters that don't need propagation
+                                $script:PSDefaultParameterValues.Remove("$($MyInvocation.MyCommand.Name):GetParameters")
+                                $script:PSDefaultParameterValues.Remove("$($MyInvocation.MyCommand.Name):IncludeTotalCount")
+
+                                # Self-Invoke function for recursion
+                                $parameters = @{
+                                    URi        = "{0}{1}" -f $response._links.base, $response._links.next
+                                    Method     = $Method
+                                    Credential = $Credential
+                                }
+                                if ($Body) {$parameters["Body"] = $Body}
+                                if ($Headers) {$parameters["Headers"] = $Headers}
+                                if ($OutputType) {$parameters["OutputType"] = $OutputType}
+
+                                Write-Verbose "NEXT PAGE: $($parameters["URi"])"
+
+                                Invoke-Method @parameters
+                            }
                         }
+                    }
+                    catch {
+                        throw $_
                     }
                 }
                 else {

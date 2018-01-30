@@ -1,3 +1,14 @@
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute(
+    "PSUseDeclaredVarsMoreThanAssigments",
+    "",
+    Justification = "aa"
+)]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute(
+    "PSAvoidUsingConvertToSecureStringWithPlainText",
+    "",
+    Justification = "Converting received plaintext token to SecureString"
+)]
+param()
 # Pester integration/acceptance tests to use during module development. Dave Wyatt's five-part series:
 # http://blogs.technet.com/b/heyscriptingguy/archive/2015/12/14/what-is-pester-and-why-should-i-care.aspx
 
@@ -52,27 +63,29 @@ InModuleScope ConfluencePS {
         $WarningPreference = 'SilentlyContinue'
 
         # Set up test values:
-        $Key = "PESTER"
-        $Name = "Pester Test Space"
+        $Key1 = "PESTER"
+        $Key2 = "PESTER1"
+        $Name1 = "Pester Test Space"
+        $Name2 = "Second Pester Space"
         $Description = "<p>A nice description</p>"
         $Icon = [ConfluencePS.Icon] @{
-            path = "/images/logo/default-space-logo-256.png"
-            width = 48
-            height = 48
+            path      = "/images/logo/default-space-logo-256.png"
+            width     = 48
+            height    = 48
             isDefault = $False
         }
-        $Space2 = [ConfluencePS.Space]@{
-            Key = "PESTER1"
-            Name = "Second Pester Space"
+        $Space1 = [ConfluencePS.Space]@{
+            Key         = $Key1
+            Name        = $Name1
+            Description = $Description
         }
         # $Space3
         # Ensure the space doesn't already exist
-        Get-ConfluenceSpace -Key $Key -ErrorAction SilentlyContinue #TODO
-
+        Get-ConfluenceSpace -Key $Key1 -ErrorAction SilentlyContinue #TODO
 
         # ACT
-        $NewSpace1 = New-ConfluenceSpace -Key $Key -Name $Name -Description $Description -ErrorAction Stop
-        $NewSpace2 = $Space2 | New-ConfluenceSpace -ErrorAction Stop
+        $NewSpace1 = $Space1 | New-ConfluenceSpace -ErrorAction Stop
+        $NewSpace2 = New-ConfluenceSpace -Key $Key2 -Name $Name2 -Description $Description -ErrorAction Stop
 
         # ASSERT
         It 'returns an object with specific properties' {
@@ -87,23 +100,23 @@ InModuleScope ConfluencePS {
         }
         It 'key matches the specified value' {
             $NewSpace1.Key | Should BeOfType [String]
-            $NewSpace1.Key | Should BeExactly $Key
+            $NewSpace1.Key | Should BeExactly $Key1
             $NewSpace2.Key | Should BeOfType [String]
-            $NewSpace2.Key | Should BeExactly $Space2.Key
+            $NewSpace2.Key | Should BeExactly $Key2
         }
         It 'name matches the specified value' {
             $NewSpace1.Name | Should BeOfType [String]
-            $NewSpace1.Name | Should BeExactly $Name
+            $NewSpace1.Name | Should BeExactly $Name1
             $NewSpace2.Name | Should BeOfType [String]
-            $NewSpace2.Name | Should BeExactly $Space2.Name
+            $NewSpace2.Name | Should BeExactly $Name2
         }
         It 'homepage is ConfluencePS.Page' {
             $NewSpace1.Homepage | Should BeOfType [ConfluencePS.Page]
             $NewSpace2.Homepage | Should BeOfType [ConfluencePS.Page]
         }
         It 'homepage matches the specified value' {
-            $NewSpace1.Homepage.Title | Should BeExactly "$Name Home"
-            $NewSpace2.Homepage.Title | Should BeExactly "$($Space2.Name) Home"
+            $NewSpace1.Homepage.Title | Should BeExactly "$Name1 Home"
+            $NewSpace2.Homepage.Title | Should BeExactly "$Name2 Home"
         }
     }
 
@@ -193,6 +206,9 @@ InModuleScope ConfluencePS {
             $GetSpace2.Homepage.Title | Should BeExactly "$($GetSpace2.Name) Home"
             $GetSpace3.Homepage.Title | Should BeExactly @("$Name1 Home", "$Name2 Home")
         }
+        It 'has a meaningful string value' {
+            $GetSpace1.Icon.ToString() | Should Be $GetSpace1.Icon.Path
+        }
     }
 
     Describe 'ConvertTo-ConfluenceStorageFormat' {
@@ -231,13 +247,13 @@ InModuleScope ConfluencePS {
         $Title2 = "Pester New Page Orphan"
         $Title3 = "Pester New Page from Object"
         $Title4 = "Pester New Page with Parent Object"
-        $RawContent = "Hi Pester!"
-        $FormattedContent = "<p>Hi Pester!</p>"
+        $RawContent = "Hi Pester!👋"
+        $FormattedContent = "<p>Hi Pester!</p><p>👋</p>"
         $pageObject = New-Object -TypeName ConfluencePS.Page -Property @{
-            Title = $Title3
-            Body = $FormattedContent
+            Title     = $Title3
+            Body      = $FormattedContent
             Ancestors = @($parentPage)
-            Space = New-Object -TypeName ConfluencePS.Space -Property @{key = $SpaceKey}
+            Space     = New-Object -TypeName ConfluencePS.Space -Property @{key = $SpaceKey}
         }
 
         # ACT
@@ -318,19 +334,22 @@ InModuleScope ConfluencePS {
         $Title3 = "Pester Test Space Home"
         $Title4 = "orphan"
         $Title5 = "*orphan"
-        $Content = "<p>Hi Pester!</p>"
+        $Query = "space=PESTER and title~`"*Object`""
+        $ContentRaw = "<p>Hi Pester!👋</p>"
+        $ContentFormatted = "<p>Hi Pester!</p><p>👋</p>"
         (Get-ConfluenceSpace -SpaceKey $SpaceKey).Homepage | Add-ConfluenceLabel -Label "important" -ErrorAction Stop
         Start-Sleep -Seconds 20 # Delay to allow DB index to update
 
         # ACT
-        $GetTitle1   = Get-ConfluencePage -Title $Title1.ToLower() -SpaceKey $SpaceKey -PageSize 200 -ErrorAction SilentlyContinue
-        $GetTitle2   = Get-ConfluencePage -Title $Title2 -SpaceKey $SpaceKey -ErrorAction SilentlyContinue
-        $GetPartial  = Get-ConfluencePage -Title $Title4 -SpaceKey $SpaceKey -ErrorAction SilentlyContinue
+        $GetTitle1 = Get-ConfluencePage -Title $Title1.ToLower() -SpaceKey $SpaceKey -PageSize 200 -ErrorAction SilentlyContinue
+        $GetTitle2 = Get-ConfluencePage -Title $Title2 -SpaceKey $SpaceKey -ErrorAction SilentlyContinue
+        $GetPartial = Get-ConfluencePage -Title $Title4 -SpaceKey $SpaceKey -ErrorAction SilentlyContinue
         $GetWildcard = Get-ConfluencePage -Title $Title5 -SpaceKey $SpaceKey -ErrorAction SilentlyContinue
         $GetID1 = Get-ConfluencePage -PageID $GetTitle1.ID -ErrorAction SilentlyContinue
         $GetID2 = Get-ConfluencePage -PageID $GetTitle2.ID -ErrorAction SilentlyContinue
-        $GetKeys = Get-ConfluencePage -SpaceKey $SpaceKey | Sort ID -ErrorAction SilentlyContinue
+        $GetKeys = Get-ConfluencePage -SpaceKey $SpaceKey -ErrorAction SilentlyContinue | Sort-Object ID
         $GetByLabel = Get-ConfluencePage -Label "important" -ErrorAction SilentlyContinue
+        $GetByQuery = Get-ConfluencePage -Query $query -ErrorAction SilentlyContinue
         $GetSpacePage = Get-ConfluencePage -Space (Get-ConfluenceSpace -SpaceKey $SpaceKey) -ErrorAction SilentlyContinue
         $GetSpacePiped = Get-ConfluenceSpace -SpaceKey $SpaceKey | Get-ConfluencePage -ErrorAction SilentlyContinue
 
@@ -345,6 +364,7 @@ InModuleScope ConfluencePS {
             $GetKeys.Count | Should Be 5
             $GetByLabel.Count | Should Be 1
             $GetSpacePage.Count | Should Be 5
+            $GetByQuery.Count | Should Be 2
             $GetSpacePiped.Count | Should Be 5
         }
         It 'returns an object with specific properties' {
@@ -354,12 +374,14 @@ InModuleScope ConfluencePS {
             $GetID2 | Should BeOfType [ConfluencePS.Page]
             $GetKeys | Should BeOfType [ConfluencePS.Page]
             $GetByLabel | Should BeOfType [ConfluencePS.Page]
+            $GetByQuery | Should BeOfType [ConfluencePS.Page]
             ($GetTitle1 | Get-Member -MemberType Property).Count | Should Be 9
             ($GetTitle2 | Get-Member -MemberType Property).Count | Should Be 9
             ($GetID1 | Get-Member -MemberType Property).Count | Should Be 9
             ($GetID2 | Get-Member -MemberType Property).Count | Should Be 9
             ($GetKeys | Get-Member -MemberType Property).Count | Should Be 9
             ($GetByLabel | Get-Member -MemberType Property).Count | Should Be 9
+            ($GetByQuery | Get-Member -MemberType Property).Count | Should Be 9
         }
         It 'id is integer' {
             $GetTitle1.ID | Should BeOfType [Int]
@@ -368,6 +390,7 @@ InModuleScope ConfluencePS {
             $GetID2.ID | Should BeOfType [Int]
             $GetKeys.ID | Should BeOfType [Int]
             $GetByLabel.ID | Should BeOfType [Int]
+            $GetByQuery.ID | Should BeOfType [Int]
         }
         It 'id matches the specified value' {
             $GetID1.ID | Should Be $GetTitle1.ID
@@ -399,9 +422,9 @@ InModuleScope ConfluencePS {
             $GetByLabel.Version.Number | Should Be 1
         }
         It 'body matches the specified value' {
-            $GetTitle1.Body | Should BeExactly $Content
-            $GetID1.Body | Should BeExactly $Content
-            $GetKeys.Body -contains $Content | Should Be $true
+            (ConvertFrom-HTMLEncoded $GetTitle1.Body) | Should BeExactly $ContentFormatted
+            (ConvertFrom-HTMLEncoded $GetTitle2.Body) | Should BeExactly $ContentRaw
+            (ConvertFrom-HTMLEncoded $GetID1.Body) | Should BeExactly $ContentFormatted
         }
         It 'url is string' {
             $GetTitle1.URL | Should BeOfType [String]
@@ -416,6 +439,8 @@ InModuleScope ConfluencePS {
             $GetKeys.URL | Should Not BeNullOrEmpty
             $GetByLabel.URL | Should BeOfType [String]
             $GetByLabel.URL | Should Not BeNullOrEmpty
+            $GetByQuery.URL | Should BeOfType [String]
+            $GetByQuery.URL | Should Not BeNullOrEmpty
         }
         It 'shorturl is string' {
             $GetTitle1.ShortURL | Should BeOfType [String]
@@ -430,6 +455,13 @@ InModuleScope ConfluencePS {
             $GetKeys.ShortURL | Should Not BeNullOrEmpty
             $GetByLabel.ShortURL | Should BeOfType [String]
             $GetByLabel.ShortURL | Should Not BeNullOrEmpty
+            $GetByQuery.ShortURL | Should BeOfType [String]
+            $GetByQuery.ShortURL | Should Not BeNullOrEmpty
+        }
+        It 'has a meaningful string value' {
+            $GetTitle1.Version.ToString() | Should Be $GetTitle1.Version.Number.ToString()
+            $GetTitle1.Version.By.ToString() | Should Be $GetTitle1.Version.By.UserName
+            $GetTitle1.Space.ToString() | Should Be ("[{0}] {1}" -f $GetTitle1.Space.Key, $GetTitle1.Space.Name)
         }
     }
 
@@ -469,7 +501,7 @@ InModuleScope ConfluencePS {
         It 'label matches the specified value' {
             $NewLabel1.Labels.Name | Should BeExactly $Label1
             $NewLabel2.Labels.Name -contains $Label2 | Should Be $true
-            ($NewLabel3.Labels.Name -match $PartialLabel | Sort) | Should Be (($Label1 + $Label2) | Sort )
+            ($NewLabel3.Labels.Name -match $PartialLabel | Sort-Object) | Should Be (($Label1 + $Label2) | Sort-Object )
         }
         It 'labelid is not null or empty' {
             $NewLabel1.Labels.ID | Should Not BeNullOrEmpty
@@ -533,7 +565,7 @@ InModuleScope ConfluencePS {
         It 'returns the correct amount of results' {
             ($GetPageLabel1.Labels).Count | Should Be 5
             ($GetPageLabel2.Labels).Count | Should Be 10
-            ($GetPageLabel2.Labels | Where {$_.Name -match $patternLabel1}).Count | Should Be 3
+            ($GetPageLabel2.Labels | Where-Object {$_.Name -match $patternLabel1}).Count | Should Be 3
         }
         It 'returns an object with specific properties' {
             $GetPageLabel1 | Should BeOfType [ConfluencePS.ContentLabelSet]
@@ -566,7 +598,12 @@ InModuleScope ConfluencePS {
         #>
 
         # ARRANGE
-        function dummy-Function {
+        function Set-PageContent {
+            [Diagnostics.CodeAnalysis.SuppressMessageAttribute(
+                'PSUseShouldProcessForStateChangingFunctions',
+                '',
+                Scope = '*'
+            )]
             [CmdletBinding()]
             param (
                 [Parameter(
@@ -609,7 +646,7 @@ InModuleScope ConfluencePS {
 
         # ACT
         # change the body of all pages - all pages should have version 2
-        $AllChangedPages = $AllPages | dummy-Function -Body $NewContent1 | Set-ConfluencePage -ErrorAction Stop
+        $AllChangedPages = $AllPages | Set-PageContent -Body $NewContent1 | Set-ConfluencePage -ErrorAction Stop
         # set the body of a page to the same value as it already had - should remain on verion 2
         $SetPage1 = $Page1.ID | Set-ConfluencePage -Body $NewContent1 -ErrorAction Stop
         # change the body of a page by property - this page should have version 3
@@ -624,7 +661,7 @@ InModuleScope ConfluencePS {
         $SetPage5 = Set-ConfluencePage -PageID $Page5.ID -ParentID $Page4.ID
         # change the title of a page
         $SetPage6 = $Page6.ID | Set-ConfluencePage -Title $NewTitle6
-        $SetPage7 = $AllChangedPages | Where {$_.ID -eq $Page7.ID} | dummy-Function -Title $NewTitle7 | Set-ConfluencePage
+        $SetPage7 = $AllChangedPages | Where-Object {$_.ID -eq $Page7.ID} | Set-PageContent -Title $NewTitle7 | Set-ConfluencePage
         # clear the body of a page
         $SetPage8 = Set-ConfluencePage -PageID $Page8.ID -Body ""
 
@@ -678,7 +715,7 @@ InModuleScope ConfluencePS {
             $SetPage6.Space.Key | Should BeExactly $SpaceKey
             $SetPage7.Space.Key | Should BeExactly $SpaceKey
             $SetPage8.Space.Key | Should BeExactly $SpaceKey
-            $AllChangedPages.Space.Key | Should BeExactly (1..9 | % {$SpaceKey})
+            $AllChangedPages.Space.Key | Should BeExactly (1..9 | ForEach-Object {$SpaceKey})
         }
         It 'title has the specified value' {
             $SetPage1.Title | Should BeExactly $Page1.Title
