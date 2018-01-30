@@ -81,7 +81,9 @@
         'Remove-Space',
         'Set-Info',
         'Set-Label',
-        'Set-Page'
+        'Set-Page',
+        'Get-Attachment',
+        'Get-AttachmentFile'
     )
 
     # Cmdlets to export from this module

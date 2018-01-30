@@ -11,7 +11,8 @@ function Invoke-Method {
         [ConfluencePS.Label],
         [ConfluencePS.Icon],
         [ConfluencePS.Version],
-        [ConfluencePS.User]
+        [ConfluencePS.User],
+        [ConfluencePS.Attachment]
     )]
     param (
         # REST API to invoke
@@ -39,7 +40,8 @@ function Invoke-Method {
             [ConfluencePS.Label],
             [ConfluencePS.Icon],
             [ConfluencePS.Version],
-            [ConfluencePS.User]
+            [ConfluencePS.User],
+            [ConfluencePS.Attachment]
         )]
         [System.Type]$OutputType,
 
