@@ -59,6 +59,13 @@ function Get-Page {
         )]
         [string[]]$Label,
 
+        [Parameter(
+            Position = 0,
+            Mandatory = $true,
+            ParameterSetName = "byQuery"
+        )]
+        [string]$Query,
+
         [ValidateRange(1, [int]::MaxValue)]
         [int]$PageSize = 25
     )
@@ -126,6 +133,14 @@ function Get-Page {
 
                 Invoke-Method @iwParameters
                 break
+            }
+            "byQuery" {
+                $iwParameters["Uri"] = $resourceApi -f "/search"
+
+                $cqlQuery = ConvertTo-URLEncoded $Query
+                $iwParameters["GetParameters"]["cql"] = "type=page AND $cqlQuery"
+
+                Invoke-Method @iwParameters
             }
         }
     }
