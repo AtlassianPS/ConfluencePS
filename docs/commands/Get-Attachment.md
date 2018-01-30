@@ -15,7 +15,7 @@ Retrieve the child Attachments of a given wiki Page.
 ## SYNTAX
 
 ```powershell
-Get-ConfluenceAttachment -apiURi <Uri> -Credential <PSCredential> [-PageID] <Int32> [-FileNameFilter <string>] [-MediaTypeFilter <string>] [-Skip <UInt64>] [-First <UInt64>] [-PageSize <UInt64>]
+Get-ConfluenceAttachment -apiURi <Uri> -Credential <PSCredential> [-PageID] <Int32> [-FileNameFilter <string>] [-MediaTypeFilter <string>] [-Skip <UInt64>] [-First <UInt64>] [-PageSize <UInt64>] [-IncludeTotalCount]
 ```
 
 ## DESCRIPTION
@@ -161,6 +161,20 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -IncludeTotalCount
+NOTE: Not yet implemented.
+Causes an extra output of the total count at the beginning.
+Note this is actually a uInt64, but with a custom string representation.
+
+```yaml
+Type: SwitchParameter
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
 ## INPUTS
 
 ## OUTPUTS

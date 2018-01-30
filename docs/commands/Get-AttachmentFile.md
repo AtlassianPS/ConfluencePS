@@ -15,7 +15,7 @@ Retrieves the binary Attachment for a given Attachment object.
 ## SYNTAX
 
 ```powershell
-Get-ConfluenceAttachmentFile -apiURi <Uri> -Credential <PSCredential> [-Attachment] <Object> [-OutFile <string>]
+Get-ConfluenceAttachmentFile -apiURi <Uri> -Credential <PSCredential> [-Attachment] <Attachment> [-OutFile <string>]
 ```
 
 ## DESCRIPTION
@@ -84,7 +84,7 @@ Accept wildcard characters: False
 Attachment object to download.
 
 ```yaml
-Type: Attachment[]
+Type: Attachment
 
 Required: True
 Position: 1

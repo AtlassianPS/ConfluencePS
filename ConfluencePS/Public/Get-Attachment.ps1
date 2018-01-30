@@ -50,7 +50,7 @@ function Get-Attachment {
                 OutputType    = [ConfluencePS.Attachment]
                 Credential    = $Credential
             }
-            
+
             if ($FileNameFilter) {
                 $iwParameters["GetParameters"]["filename"] = $FileNameFilter
             }

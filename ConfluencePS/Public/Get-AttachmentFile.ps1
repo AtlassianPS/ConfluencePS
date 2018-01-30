@@ -34,15 +34,15 @@ function Get-AttachmentFile {
         if (-not($OutFile)) {
             $OutFile = "{0}"
         }
-        
+
         # Basic Authentication hash
         $SecureCreds = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes(
                 $('{0}:{1}' -f $Credential.UserName, $Credential.GetNetworkCredential().Password)
             ))
-            
+
         foreach ($_Attachment in $Attachment) {
             $_OutFile = [string]::Format($OutFile, $_Attachment.Title, $_Attachment.ID, $_Attachment.SpaceKey, $_Attachment.PageID, $_Attachment.Version.Number)
-            
+
             # set mandatory parameters
             $splatParameters = @{
                 Uri             = $_Attachment.URL
