@@ -9,7 +9,6 @@ function Get-AttachmentFile {
         [PSCredential]$Credential,
 
         [Parameter(
-            Position = 0,
             Mandatory = $true,
             ValueFromPipeline = $true
         )]

@@ -9,7 +9,6 @@ function Get-Attachment {
         [PSCredential]$Credential,
 
         [Parameter(
-            Position = 0,
             Mandatory = $true,
             ValueFromPipeline = $true,
             ValueFromPipelineByPropertyName = $true

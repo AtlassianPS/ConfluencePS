@@ -8,7 +8,7 @@ function ConvertTo-Attachment {
     [OutputType( [ConfluencePS.Attachment] )]
     param (
         # object to convert
-        [Parameter( Position = 0, ValueFromPipeline = $true )]
+        [Parameter( ValueFromPipeline = $true )]
         $InputObject
     )
 
