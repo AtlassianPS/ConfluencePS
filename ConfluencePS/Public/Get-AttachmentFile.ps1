@@ -12,7 +12,7 @@ function Get-AttachmentFile {
             Mandatory = $true,
             ValueFromPipeline = $true
         )]
-        $Attachment,
+        [ConfluencePS.Attachment]$Attachment,
 
         [String]$OutFile
     )
