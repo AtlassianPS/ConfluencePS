@@ -67,6 +67,7 @@
 
     # Functions to export from this module
     FunctionsToExport = @(
+        'Add-Attachment',
         'Add-Label',
         'ConvertTo-StorageFormat',
         'ConvertTo-Table',
