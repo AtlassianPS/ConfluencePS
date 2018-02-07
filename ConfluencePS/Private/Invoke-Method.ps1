@@ -47,6 +47,8 @@ function Invoke-Method {
             [ConfluencePS.Attachment]
         )]
         [System.Type]$OutputType,
+        
+        [String]$OutFile,
 
         # Authentication credentials
         [Parameter(Mandatory = $true)]
@@ -127,6 +129,10 @@ function Invoke-Method {
             }
         }
 
+        if($OutFile) {
+                $splatParameters["OutFile"] = $OutFile
+        }
+        
         # Invoke the API
         Write-Verbose "[$($MyInvocation.MyCommand.Name)] Invoking method $Method to URI $URi"
         Write-Verbose "[$($MyInvocation.MyCommand.Name)] Invoke-WebRequest with: $(([PSCustomObject]$splatParameters) | Out-String)"
