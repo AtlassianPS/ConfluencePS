@@ -109,6 +109,7 @@ function Invoke-Method {
             UseBasicParsing = $true
             Credential      = $Credential
             ErrorAction     = "Stop"
+            OutFile         = $OutFile
             Verbose         = $false     # Overwrites verbose output
         }
 
@@ -129,10 +130,6 @@ function Invoke-Method {
             }
         }
 
-        if($OutFile) {
-                $splatParameters["OutFile"] = $OutFile
-        }
-        
         # Invoke the API
         Write-Verbose "[$($MyInvocation.MyCommand.Name)] Invoking method $Method to URI $URi"
         Write-Verbose "[$($MyInvocation.MyCommand.Name)] Invoke-WebRequest with: $(([PSCustomObject]$splatParameters) | Out-String)"
