@@ -35,7 +35,9 @@ function Get-AttachmentFile {
         }
 
         foreach ($_Attachment in $Attachment) {
-            $_OutFile = [string]::Format($OutFile, $_Attachment.Title, $_Attachment.ID, $_Attachment.SpaceKey, $_Attachment.PageID, $_Attachment.Version.Number)
+            # resolve any use of format elements in the file name
+            # {0} is file_name, {1} is the ID, {2} is space key, {3} is page id, {4} is version
+            $_OutFile = $OutFile -f $_Attachment.Title, $_Attachment.ID, $_Attachment.SpaceKey, $_Attachment.PageID, $_Attachment.Version.Number
 
             if (-not(Test-Path $_OutFile -IsValid)) {
               $message = "Invalid file name generated : $($_OutFile)"
