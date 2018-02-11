@@ -81,7 +81,7 @@ namespace ConfluencePS
 	}
 
 	public class Attachment {
-		public String ID { get; set; }
+		public Int32 ID { get; set; }
 		public String Status { get; set; }
 		public String Title { get; set; }
 		public String MediaType { get; set; }
@@ -92,7 +92,7 @@ namespace ConfluencePS
 		public Version Version { get; set; }
 		public String URL { get; set; }
 		public override string ToString() {
-			return "[" + ID + "] " + Title;
+			return "[att$ID] $Title";
 		}
 	}
 }
