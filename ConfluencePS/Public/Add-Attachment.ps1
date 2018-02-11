@@ -1,5 +1,8 @@
 function Add-Attachment {
-    [CmdletBinding( SupportsShouldProcess )]
+    [CmdletBinding(         
+        ConfirmImpact = 'Low',
+        SupportsShouldProcess = $true 
+    )]
     [OutputType([ConfluencePS.Attachment])]
     param(
         [Parameter( Mandatory = $true )]
@@ -20,6 +23,7 @@ function Add-Attachment {
         # Path of the file to upload and attach
         [Parameter( Mandatory, ValueFromPipeline, ValueFromPipelineByPropertyName )]
         [ValidateScript(
+
             {
                 if (-not (Test-Path $_ -PathType Leaf)) {
                     $errorItem = [System.Management.Automation.ErrorRecord]::new(
@@ -51,47 +55,41 @@ function Add-Attachment {
         Write-DebugMessage "[$($MyInvocation.MyCommand.Name)] ParameterSetName: $($PsCmdlet.ParameterSetName)"
         Write-DebugMessage "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
 
-        foreach ($file in $FilePath) {
-            $fileName = Split-Path -Path $file -Leaf
-            $readFile = [System.IO.File]::ReadAllBytes($file)
-            $enc = [System.Text.Encoding]::GetEncoding("iso-8859-1")
-            $fileEnc = $enc.GetString($readFile)
-            $boundary = [System.Guid]::NewGuid().ToString()
-            $mimeType = [System.Web.MimeMapping]::GetMimeMapping($file)
-            if ($mimeType) { $ContentType = $mimeType }
-            else { $ContentType = "application/octet-stream" }
-
-            $bodyLines = @'
+        foreach ($_page in $PageID) {
+            foreach ($file in $FilePath) {
+                $fileName = Split-Path -Path $file -Leaf
+                $readFile = Get-Content -Path $file -Encoding Byte
+                $enc = [System.Text.Encoding]::GetEncoding("iso-8859-1")
+                $fileEnc = $enc.GetString($readFile)
+                $boundary = [System.Guid]::NewGuid().ToString()
+                $bodyLines = @'
 --{0}
 Content-Disposition: form-data; name="file"; filename="{1}"
-Content-Type: {2}
+Content-Type: application/octet-stream
 
-{3}
+{2}
 --{0}--
 
-'@ -f $boundary, $fileName, $mimeType, $fileEnc
+'@ -f $boundary, $fileName, $fileEnc
 
-            $headers = @{
-                'X-Atlassian-Token' = 'nocheck'
-                'Content-Type'      = "multipart/form-data; boundary=`"$boundary`""
-            }
+                $headers = @{
+                    'X-Atlassian-Token' = 'nocheck'
+                    'Content-Type'      = "multipart/form-data; boundary=$boundary"
+                }
 
-            $parameter = @{
-                URI        = $resourceApi -f $PageID
-                Method     = "PUT"
-                Body       = $bodyLines
-                Headers    = $headers
-                RawBody    = $true
-                Credential = $Credential
-                OutputType = [ConfluencePS.Attachment]
-                Verbose    = $false
-            }
-            Write-Debug "[$($MyInvocation.MyCommand.Name)] Invoking JiraMethod with `$parameter"
-            if ($PSCmdlet.ShouldProcess($PageID, "Adding attachment '$($fileName)'.")) {
-                Invoke-Method @parameter
-
-                if ($PassThru) {
-                    Write-Output (ConvertTo-Attachment -InputObject $rawResult)
+                $parameter = @{
+                    URI        = $resourceApi -f $_page
+                    Method     = "POST"
+                    Body       = $bodyLines
+                    Headers    = $headers
+                    RawBody    = $true
+                    Credential = $Credential
+                    OutputType = [ConfluencePS.Attachment]
+                    Verbose    = $false
+                }
+                Write-Debug "[$($MyInvocation.MyCommand.Name)] Invoking Add Attachment Method with `$parameter"
+                if ($PSCmdlet.ShouldProcess($_page, "Adding attachment '$($fileName)'.")) {
+                    Invoke-Method @parameter
                 }
             }
         }
