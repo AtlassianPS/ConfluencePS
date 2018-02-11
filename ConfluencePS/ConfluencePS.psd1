@@ -80,6 +80,7 @@
         'Remove-Label',
         'Remove-Page',
         'Remove-Space',
+        'Remove-Attachment',
         'Set-Info',
         'Set-Label',
         'Set-Page',
