@@ -16,7 +16,11 @@ function ConvertTo-Attachment {
         foreach ($object in $InputObject) {
             Write-Verbose "[$($MyInvocation.MyCommand.Name)] Converting Object to Attachment"
             [ConfluencePS.Attachment](ConvertTo-Hashtable -InputObject ($object | Select-Object `
-                        id,
+                    @{Name = "id"; Expression = {
+                            $ID = $_.id -replace 'att', ''
+                            [convert]::ToInt32($ID, 10)
+                        }
+                    },
                     status,
                     title,
                     @{Name = "mediatype";  Expression = {
