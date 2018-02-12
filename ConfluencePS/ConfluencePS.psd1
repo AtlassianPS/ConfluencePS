@@ -71,21 +71,22 @@
         'Add-Label',
         'ConvertTo-StorageFormat',
         'ConvertTo-Table',
+        'Get-Attachment',
+        'Get-AttachmentFile',
         'Get-ChildPage',
         'Get-Label',
         'Get-Page',
         'Get-Space',
         'New-Page',
         'New-Space',
+        'Remove-Attachment',
         'Remove-Label',
         'Remove-Page',
         'Remove-Space',
-        'Remove-Attachment',
+        'Set-Attachment',
         'Set-Info',
         'Set-Label',
-        'Set-Page',
-        'Get-Attachment',
-        'Get-AttachmentFile'
+        'Set-Page'
     )
 
     # Cmdlets to export from this module
