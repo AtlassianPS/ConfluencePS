@@ -40,7 +40,13 @@ function ConvertTo-Attachment {
                         }
                     },
                     @{Name = "pageid"; Expression = {
-                            $_.container.id
+                            if($_.container.id) {
+                                $_.container.id
+                            }
+                            else {
+                                $PageID = $_._expandable.container -replace '^.*\/content\/', ''
+                                [convert]::ToInt32($PageID, 10)
+                            }
                         }
                     },
                     @{Name = "version"; Expression = {
