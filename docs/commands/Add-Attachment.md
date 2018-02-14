@@ -15,7 +15,7 @@ Add a new attachment to an existing Confluence page.
 ## SYNTAX
 
 ```powershell
-Add-ConfluenceAttachment -apiURi <Uri> -Credential <PSCredential> [[-PageID] <Int32[]>] -FilePath <String[]> [-WhatIf] [-Confirm]
+Add-ConfluenceAttachment -apiURi <Uri> -Credential <PSCredential> [[-PageID] <Int32>] -FilePath <String[]> [-WhatIf] [-Confirm]
 ```
 
 ## DESCRIPTION
@@ -88,7 +88,7 @@ The ID of the page to which apply the Attachment to.
 Accepts multiple IDs, including via pipeline input.
 
 ```yaml
-Type: Int32[]
+Type: Int32
 Parameter Sets: (All)
 Aliases: ID
 

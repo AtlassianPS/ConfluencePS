@@ -85,7 +85,7 @@ Accept wildcard characters: False
 Attachment names to add to the content.
 
 ```yaml
-Type: Atachment
+Type: Attachment
 Parameter Sets: (All)
 Aliases:
 
@@ -93,6 +93,18 @@ Required: True
 Position: Named
 Default value: None
 Accept pipeline input: True
+Accept wildcard characters: False
+```
+
+### -FilePath
+File to be updated.
+
+```yaml
+Type: String
+
+Required: True
+Position: Named
+Default value: None
 Accept wildcard characters: False
 ```
 
