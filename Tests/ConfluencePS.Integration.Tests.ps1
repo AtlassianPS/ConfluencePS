@@ -838,7 +838,7 @@ InModuleScope ConfluencePS {
         "PESTER1" | Remove-ConfluenceSpace -Force -ErrorAction Stop
 
         # ASSERT
-        Start-Sleep -Seconds 1
+        Start-Sleep -Seconds 20
         It 'space is no longer available' {
             { Get-ConfluenceSpace -Key PESTER -ErrorAction Stop } | Should Throw
             { Get-ConfluenceSpace -Key PESTER1 -ErrorAction Stop } | Should Throw
