@@ -1,7 +1,7 @@
 function Add-Attachment {
-    [CmdletBinding(         
+    [CmdletBinding(
         ConfirmImpact = 'Low',
-        SupportsShouldProcess = $true 
+        SupportsShouldProcess = $true
     )]
     [OutputType([ConfluencePS.Attachment])]
     param(

@@ -50,14 +50,6 @@ function Set-Attachment {
         Write-Debug "[$($MyInvocation.MyCommand.Name)] ParameterSetName: $($PsCmdlet.ParameterSetName)"
         Write-Debug "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
 
-        $iwParameters = @{
-            Uri        = ""
-            Method     = 'Post'
-            Body       = ""
-            OutputType = [ConfluencePS.Attachment]
-            Credential = $Credential
-        }
-
         foreach ($_attachment in $Attachment) {
             $readFile = Get-Content -Path $FilePath -Encoding Byte
             $enc = [System.Text.Encoding]::GetEncoding("iso-8859-1")
@@ -92,7 +84,6 @@ Content-Type: application/octet-stream
             if ($PSCmdlet.ShouldProcess($_page, "Updating attachment '$($_attachment.Title)'.")) {
                 Invoke-Method @parameter
             }
-            
         }
     }
 
