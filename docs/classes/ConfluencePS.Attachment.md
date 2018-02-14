@@ -94,8 +94,6 @@ Default value: None
 ### Version
 Contains the information about the latest version of the `Attachment`.
 
-Values can be `global` or `personal`.
-
 ```yaml
 Type: ConfluencePS.Version
 Required: True
