@@ -19,6 +19,10 @@ New-Object -TypeName ConfluencePS.Attachment [-Property @{}]
 ## DESCRIPTION
 **fix**The `Attachment` is an object that describes Attachments in Confluence.
 
+## REFERENCES
+The following classes use `Attachment` for their properties:
+- [`ConfluencePS.Attachment`](/docs/ConfluencePS/classes/ConfluencePS.Attachment/)
+
 ## CONSTRUCTORS
 _This class does not have a constructor._
 
