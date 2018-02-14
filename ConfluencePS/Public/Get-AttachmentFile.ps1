@@ -22,7 +22,8 @@ function Get-AttachmentFile {
     }
 
     PROCESS {
-        Write-Debug "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
+        Write-DebugMessage "[$($MyInvocation.MyCommand.Name)] ParameterSetName: $($PsCmdlet.ParameterSetName)"
+        Write-DebugMessage "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
 
         if (($_) -and -not($_ -is [ConfluencePS.Attachment])) {
             $message = "The Object in the pipe is not an Attachment."
