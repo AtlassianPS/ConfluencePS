@@ -81,7 +81,7 @@ Content-Type: application/octet-stream
                 Verbose    = $false
             }
             Write-Debug "[$($MyInvocation.MyCommand.Name)] Invoking Set Attachment Method with `$parameter"
-            if ($PSCmdlet.ShouldProcess($_page, "Updating attachment '$($_attachment.Title)'.")) {
+            if ($PSCmdlet.ShouldProcess($_attachment.PageID, "Updating attachment '$($_attachment.Title)'.")) {
                 Invoke-Method @parameter
             }
         }
