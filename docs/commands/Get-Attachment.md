@@ -36,6 +36,28 @@ Description
 Two different methods to return all Attachments directly below Page 123456.
 Both examples should return identical results.
 
+### -------------------------- EXAMPLE 2 --------------------------
+```powershell
+Get-ConfluenceAttachment -PageID 123456 -FileNameFilter test.png
+```
+
+Description
+
+-----------
+
+Returns the Attachment called test.png from Page 123456 if it exists.
+
+### -------------------------- EXAMPLE 3 --------------------------
+```powershell
+Get-ConfluenceAttachment -PageID 123456 -MediaTypeFilter image/png
+```
+
+Description
+
+-----------
+
+Returns any attachments of mime type image/png from Page 123456.
+
 ## PARAMETERS
 
 ### -apiURi
