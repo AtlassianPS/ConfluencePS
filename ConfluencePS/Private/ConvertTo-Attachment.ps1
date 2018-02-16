@@ -15,6 +15,16 @@ function ConvertTo-Attachment {
     Process {
         foreach ($object in $InputObject) {
             Write-Verbose "[$($MyInvocation.MyCommand.Name)] Converting Object to Attachment"
+
+            if($_.container.id) {
+                $PageId = $_.container.id
+            }
+            else {
+                $PageID = $_._expandable.container -replace '^.*\/content\/', ''
+                $PageID = [convert]::ToInt32($PageID, 10)
+            }
+
+            
             [ConfluencePS.Attachment](ConvertTo-Hashtable -InputObject ($object | Select-Object `
                     @{Name = "id"; Expression = {
                             $ID = $_.id -replace 'att', ''
@@ -23,6 +33,10 @@ function ConvertTo-Attachment {
                     },
                     status,
                     title,
+                    @{Name = "filename";  Expression = {
+                            '{0}_{1}' -f $PageID,  $_.title | Remove-InvalidFileCharacters
+                        }
+                    },
                     @{Name = "mediatype";  Expression = {
                             $_.extensions.mediaType
                         }
@@ -40,13 +54,7 @@ function ConvertTo-Attachment {
                         }
                     },
                     @{Name = "pageid"; Expression = {
-                            if($_.container.id) {
-                                $_.container.id
-                            }
-                            else {
-                                $PageID = $_._expandable.container -replace '^.*\/content\/', ''
-                                [convert]::ToInt32($PageID, 10)
-                            }
+                            $PageID
                         }
                     },
                     @{Name = "version"; Expression = {

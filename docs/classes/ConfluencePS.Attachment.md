@@ -47,7 +47,9 @@ Default value: current
 ```
 
 ### Title
-The filename / Title of the `Attachment`.
+The filename / Title of the `Attachment` as stored by the server.
+
+Note that this name is not unique between pages and can contain invalid characters for windows files.
 
 ```yaml
 Type: String
@@ -55,6 +57,16 @@ Required: True
 Default value: None
 ```
 
+### Filename
+The filename that will be used by Get-AttachmentFile.
+
+Note that this is designed to be unique as the page id is prepended to the name and invalid characters removed.
+
+```yaml
+Type: String
+Required: True
+Default value: None
+```
 ### MediaType
 The MIME media type of the `Attachment`.
 
