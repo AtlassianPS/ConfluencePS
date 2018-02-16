@@ -20,7 +20,6 @@ function Add-Attachment {
         [Alias('ID')]
         [int]$PageID,
 
-        # Path of the file to upload and attach
         [Parameter( Mandatory, ValueFromPipeline, ValueFromPipelineByPropertyName )]
         [ValidateScript(
 
