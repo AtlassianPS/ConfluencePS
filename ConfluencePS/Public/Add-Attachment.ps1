@@ -40,7 +40,7 @@ function Add-Attachment {
                 }
             }
         )]
-        [Alias('InFile', 'FullName', 'Path')]
+        [Alias('InFile', 'FullName', 'Path', "PSPath')]
         [String[]]
         $FilePath
     )
