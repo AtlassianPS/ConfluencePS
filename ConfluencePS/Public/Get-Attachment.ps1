@@ -27,6 +27,7 @@ function Get-Attachment {
 
     BEGIN {
         Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function started"
+        $resourceApi = "$apiURi/content/{0}/child/attachment"
     }
 
     PROCESS {
@@ -41,7 +42,7 @@ function Get-Attachment {
 
         foreach ($_PageID in $PageID) {
             $iwParameters = @{
-                Uri           = "$apiURi/content/{0}/child/attachment" -f $_PageID
+                Uri           = $resourceApi -f $_PageID
                 Method        = 'Get'
                 GetParameters = @{
                     expand = "version"
