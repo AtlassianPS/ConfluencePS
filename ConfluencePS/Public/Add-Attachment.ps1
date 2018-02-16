@@ -55,41 +55,41 @@ function Add-Attachment {
         Write-DebugMessage "[$($MyInvocation.MyCommand.Name)] ParameterSetName: $($PsCmdlet.ParameterSetName)"
         Write-DebugMessage "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
 
+        $boundary = [System.Guid]::NewGuid().ToString()
+        $enc = [System.Text.Encoding]::GetEncoding("iso-8859-1")
         foreach ($file in $FilePath) {
             $fileName = Split-Path -Path $file -Leaf
             $readFile = Get-Content -Path $file -Encoding Byte
-            $enc = [System.Text.Encoding]::GetEncoding("iso-8859-1")
             $fileEnc = $enc.GetString($readFile)
-            $boundary = [System.Guid]::NewGuid().ToString()
-            $bodyLines = @'
+            $bodyLines += @'
 --{0}
 Content-Disposition: form-data; name="file"; filename="{1}"
 Content-Type: application/octet-stream
 
 {2}
---{0}--
 
 '@ -f $boundary, $fileName, $fileEnc
+        }
+        $bodyLines += "--{0}--`n`n" -f $boundary
 
-            $headers = @{
-                'X-Atlassian-Token' = 'nocheck'
-                'Content-Type'      = "multipart/form-data; boundary=$boundary"
-            }
+        $headers = @{
+            'X-Atlassian-Token' = 'nocheck'
+            'Content-Type'      = "multipart/form-data; boundary=$boundary"
+        }
 
-            $parameter = @{
-                URI        = $resourceApi -f $_page
-                Method     = "POST"
-                Body       = $bodyLines
-                Headers    = $headers
-                RawBody    = $true
-                Credential = $Credential
-                OutputType = [ConfluencePS.Attachment]
-                Verbose    = $false
-            }
-            Write-Debug "[$($MyInvocation.MyCommand.Name)] Invoking Add Attachment Method with `$parameter"
-            if ($PSCmdlet.ShouldProcess($_page, "Adding attachment '$($fileName)'.")) {
-                Invoke-Method @parameter
-            }
+        $parameter = @{
+            URI        = $resourceApi -f $PageID
+            Method     = "POST"
+            Body       = $bodyLines
+            Headers    = $headers
+            RawBody    = $true
+            Credential = $Credential
+            OutputType = [ConfluencePS.Attachment]
+            Verbose    = $false
+        }
+        Write-Debug "[$($MyInvocation.MyCommand.Name)] Invoking Add Attachment Method with `$parameter"
+        if ($PSCmdlet.ShouldProcess($PageID, "Adding attachment(s) '$($FilePath)'.")) {
+            Invoke-Method @parameter
         }
     }
 
