@@ -14,7 +14,24 @@ function Get-AttachmentFile {
         )]
         [ConfluencePS.Attachment]$Attachment,
 
-        [String]$OutFile
+        [ValidateScript(
+            {
+                if (-not (Test-Path $_)) {
+                    $errorItem = [System.Management.Automation.ErrorRecord]::new(
+                        ([System.ArgumentException]"Path not found"),
+                        'ParameterValue.FileNotFound',
+                        [System.Management.Automation.ErrorCategory]::ObjectNotFound,
+                        $_
+                    )
+                    $errorItem.ErrorDetails = "Invalid path '$_'."
+                    $PSCmdlet.ThrowTerminatingError($errorItem)
+                }
+                else {
+                    return $true
+                }
+            }
+        )]
+        [String]$Path
     )
 
     BEGIN {
@@ -31,30 +48,23 @@ function Get-AttachmentFile {
             Throw $exception
         }
 
-        if (-not($OutFile)) {
-            $OutFile = "{0}"
-        }
-
         foreach ($_Attachment in $Attachment) {
-            # resolve any use of format elements in the file name
-            # {0} is file_name, {1} is the ID, {2} is space key, {3} is page id, {4} is version
-            $_OutFile = $OutFile -f $_Attachment.Title, $_Attachment.ID, $_Attachment.SpaceKey, $_Attachment.PageID, $_Attachment.Version.Number
-
-            if (-not(Test-Path $_OutFile -IsValid)) {
-              $message = "Invalid file name generated : $($_OutFile)"
-              $exception = New-Object -TypeName System.ArgumentException -ArgumentList $message
-              Throw $exception
+            if($Path) {
+                $filename = Join-Path $Path $_Attachment.Filename
+            } else {
+                $filename = $_Attachment.Filename
             }
 
             $iwParameters = @{
                 Uri           = $_Attachment.URL
                 Method        = 'Get'
                 Headers       = @{"Accept" = $_Attachment.MediaType}
-                OutFile       = $_OutFile
+                OutFile       = $filename
                 Credential    = $Credential
             }
 
-            Invoke-Method @iwParameters
+            $result = Invoke-Method @iwParameters
+            (-not $result)
        }
     }
 

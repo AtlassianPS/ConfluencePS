@@ -84,6 +84,7 @@ namespace ConfluencePS
 		public Int32 ID { get; set; }
 		public String Status { get; set; }
 		public String Title { get; set; }
+		public String Filename { get; set; }
 		public String MediaType { get; set; }
 		public Int32 FileSize { get; set; }
 		public String Comment { get; set; }

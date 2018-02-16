@@ -15,7 +15,7 @@ Retrieves the binary Attachment for a given Attachment object.
 ## SYNTAX
 
 ```powershell
-Get-ConfluenceAttachmentFile -apiURi <Uri> -Credential <PSCredential> [-Attachment] <Attachment> [-OutFile <string>]
+Get-ConfluenceAttachmentFile -apiURi <Uri> -Credential <PSCredential> [-Attachment] <Attachment> [-Path <string>]
 ```
 
 ## DESCRIPTION
@@ -32,19 +32,20 @@ Description
 
 -----------
 
-Save any attachments of page 123456 to the current directory with the filename stored in confluence for each attachment.
+Save any attachments of page 123456 to the current directory with each filename constructed 
+with the page ID and the attachement filename.
 
 ### -------------------------- EXAMPLE 2 --------------------------
 ```powershell
-Get-ConfluenceAttachment -PageID 123456 | Get-ConfluenceAttachmentFile -OutFile "c:\temp_dir\{1}_{0}"
+Get-ConfluenceAttachment -PageID 123456 | Get-ConfluenceAttachmentFile -Path "c:\temp_dir"
 ```
 
 Description
 
 -----------
 
-Save any attachments of page 123456 to the temp_dir directory with a filename generated for each attachment 
-using a combination of the Confluence attachment ID and the filename stored in Confluence.
+Save any attachments of page 123456 to the c:\temp_dir directory with each filename constructed 
+with the page ID and the attachement filename.
 
 ## PARAMETERS
 
@@ -93,24 +94,15 @@ Accept pipeline input: True
 Accept wildcard characters: False
 ```
 
-### -OutFile
-Override the naming scheme for the output files. The filename is generated using a format string with default of using 
-the Confluence filename which is equivialent to an OutFile value of {0}.
-
-
-Available values in the format string are:
-  -  {0} the filename as stored in Confluence
-  -  {1} the unique Confluence attachment ID 
-  -  {2} the space key
-  -  {3} the parent Page ID
-  -  {4} the version number
+### -Path
+Override the path used to save the files. 
 
 ```yaml
 Type: String
 
 Required: False
 Position: Named
-Default value: Use Confluence filename
+Default value: Use current directory
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
