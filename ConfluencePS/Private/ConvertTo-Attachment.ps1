@@ -34,7 +34,7 @@ function ConvertTo-Attachment {
                     status,
                     title,
                     @{Name = "filename";  Expression = {
-                            '{0}_{1}' -f $PageID,  $_.title | Remove-InvalidFileCharacters
+                            '{0}_{1}' -f $PageID,  $_.title | Remove-InvalidFileCharacter
                         }
                     },
                     @{Name = "mediatype";  Expression = {

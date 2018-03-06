@@ -1,9 +1,12 @@
-function Remove-InvalidFileCharacters {
+function Remove-InvalidFileCharacter {
     <#
     .SYNOPSIS
     Replace any invalid filename characters from a string with underscores
     #>
-    [CmdletBinding()]
+    [CmdletBinding(
+        ConfirmImpact = 'Low',
+        SupportsShouldProcess = $true
+    )]
     [OutputType( [String] )]
     param (
         # string to process
