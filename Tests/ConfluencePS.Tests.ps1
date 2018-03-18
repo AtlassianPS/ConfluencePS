@@ -1,5 +1,4 @@
 #Requires -Modules PSScriptAnalyzer
-[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssigments', '', Scope = '*')]
 param()
 
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -112,32 +111,6 @@ Describe "ConfluencePS" {
     # exported function names.
     # Leaving the code here for the moment while I can ensure those
     # features are working correctly.
-
-    #
-    # Context "Function checking" {
-    #     $functionFiles = Get-ChildItem $publicFunctions -Filter *.ps1 |
-    #         Select-Object -ExpandProperty BaseName |
-    #         Where-Object { $_ -notlike "*.Tests" }
-
-    #     $internalFiles = Get-ChildItem $internalFunctions -Filter *.ps1 |
-    #         Select-Object -ExpandProperty BaseName |
-    #         Where-Object { $_ -notlike "*.Tests" }
-
-    #     #$exportedFunctions = $script:manifest.ExportedFunctions.Values.Name
-    #     $exportedFunctions = $script:manifest.FunctionsToExport
-
-    #     foreach ($f in $functionFiles) {
-    #         It "Exports $f" {
-    #             $exportedFunctions -contains $f | Should Be $true
-    #         }
-    #     }
-
-    #     foreach ($f in $internalFiles) {
-    #         It "Does not export $f" {
-    #             $exportedFunctions -contains $f | Should Be $false
-    #         }
-    #     }
-    # }
 
     Context "Style checking" {
 

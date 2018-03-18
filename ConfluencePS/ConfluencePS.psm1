@@ -1,6 +1,6 @@
 # Load the ConfluencePS namespace from C#
 if (!("ConfluencePS.Space" -as [Type])) {
-    Add-Type -Path (Join-Path $PSScriptRoot ConfluencePS.Types.cs) -ReferencedAssemblies Microsoft.CSharp
+    Add-Type -Path (Join-Path $PSScriptRoot ConfluencePS.Types.cs) -ReferencedAssemblies Microsoft.CSharp, Microsoft.PowerShell.Commands.Utility, System.Management.Automation
 }
 
 # Load Web assembly when needed
@@ -19,6 +19,13 @@ ForEach ($File in @($PublicFunctions + $PrivateFunctions)) {
         . $File.FullName
     }
     Catch {
-        Write-Error -Message "Failed to import function $($File.FullName): $_"
+        $errorItem = [System.Management.Automation.ErrorRecord]::new(
+            ([System.ArgumentException]"Function not found"),
+            'Load.Function',
+            [System.Management.Automation.ErrorCategory]::ObjectNotFound,
+            $File
+        )
+        $errorItem.ErrorDetails = "Failed to import function $($File.BaseName)"
+        $PSCmdlet.ThrowTerminatingError($errorItem)
     }
 }
