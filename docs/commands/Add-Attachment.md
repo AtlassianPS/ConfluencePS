@@ -22,6 +22,8 @@ Add-ConfluenceAttachment -apiURi <Uri> -Credential <PSCredential> [[-PageID] <In
 Add Attachments (one or more) to Confluence pages (one or more).
 If the Attachment did not exist previously, it will be created.
 
+This will not update an already existing Attachment; see Set-Attachment for updating a file.
+
 ## EXAMPLES
 
 ### -------------------------- EXAMPLE 1 --------------------------

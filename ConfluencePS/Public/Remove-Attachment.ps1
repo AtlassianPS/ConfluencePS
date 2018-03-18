@@ -12,10 +12,11 @@ function Remove-Attachment {
         [PSCredential]$Credential,
 
         [Parameter(
+            Position = 0,
             Mandatory = $true,
             ValueFromPipeline = $true
         )]
-        [ConfluencePS.Attachment]$Attachment
+        [ConfluencePS.Attachment[]]$Attachment
     )
 
     BEGIN {

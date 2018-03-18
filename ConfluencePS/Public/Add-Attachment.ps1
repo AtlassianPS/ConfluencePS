@@ -13,16 +13,16 @@ function Add-Attachment {
 
         [Parameter(
             Position = 0,
+            Mandatory = $true,
             ValueFromPipeline = $true,
             ValueFromPipelineByPropertyName = $true
         )]
         [ValidateRange(1, [int]::MaxValue)]
         [Alias('ID')]
-        [int]$PageID,
+        [Int]$PageID,
 
         [Parameter( Mandatory, ValueFromPipeline, ValueFromPipelineByPropertyName )]
         [ValidateScript(
-
             {
                 if (-not (Test-Path $_ -PathType Leaf)) {
                     $errorItem = [System.Management.Automation.ErrorRecord]::new(

@@ -9,20 +9,21 @@ function Get-Attachment {
         [PSCredential]$Credential,
 
         [Parameter(
+            Position = 0,
             Mandatory = $true,
             ValueFromPipeline = $true,
             ValueFromPipelineByPropertyName = $true
         )]
         [ValidateRange(1, [int]::MaxValue)]
         [Alias('ID')]
-        [int[]]$PageID,
+        [Int[]]$PageID,
 
         [String]$FileNameFilter,
 
         [String]$MediaTypeFilter,
 
         [ValidateRange(1, [int]::MaxValue)]
-        [int]$PageSize = 25
+        [Int]$PageSize = 25
     )
 
     BEGIN {
@@ -57,7 +58,7 @@ function Get-Attachment {
             }
 
             if ($MediaTypeFilter) {
-                $iwParameters["GetParameters"]["mediatype"] = $MediaTypeFilter
+                $iwParameters["GetParameters"]["mediaType"] = $MediaTypeFilter
             }
 
             # Paging
@@ -66,7 +67,7 @@ function Get-Attachment {
             }
 
             Invoke-Method @iwParameters
-       }
+        }
     }
 
     END {
