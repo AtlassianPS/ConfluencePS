@@ -9,10 +9,11 @@ function Get-AttachmentFile {
         [PSCredential]$Credential,
 
         [Parameter(
+            Position = 0,
             Mandatory = $true,
             ValueFromPipeline = $true
         )]
-        [ConfluencePS.Attachment]$Attachment,
+        [ConfluencePS.Attachment[]]$Attachment,
 
         [ValidateScript(
             {
@@ -49,23 +50,24 @@ function Get-AttachmentFile {
         }
 
         foreach ($_Attachment in $Attachment) {
-            if($Path) {
+            if ($Path) {
                 $filename = Join-Path $Path $_Attachment.Filename
-            } else {
+            }
+            else {
                 $filename = $_Attachment.Filename
             }
 
             $iwParameters = @{
-                Uri           = $_Attachment.URL
-                Method        = 'Get'
-                Headers       = @{"Accept" = $_Attachment.MediaType}
-                OutFile       = $filename
-                Credential    = $Credential
+                Uri        = $_Attachment.URL
+                Method     = 'Get'
+                Headers    = @{"Accept" = $_Attachment.MediaType}
+                OutFile    = $filename
+                Credential = $Credential
             }
 
             $result = Invoke-Method @iwParameters
             (-not $result)
-       }
+        }
     }
 
     END {

@@ -15,7 +15,7 @@ Remove an Attachment.
 ## SYNTAX
 
 ```powershell
-Remove-ConfluenceAttachment -apiURi <Uri> -Credential <PSCredential> [-Attachment] <Attachment> [-WhatIf] [-Confirm]
+Remove-ConfluenceAttachment -apiURi <Uri> -Credential <PSCredential> [-Attachment] <Attachment[]> [-WhatIf] [-Confirm]
 ```
 
 ## DESCRIPTION
@@ -35,7 +35,7 @@ Description
 
 -----------
 
-Remove all attachment fron page 12345
+Remove all attachment from page 12345
 Verbose and Confirm flags both active; you will be prompted before deletion.
 
 ### -------------------------- EXAMPLE 2 --------------------------
@@ -47,7 +47,7 @@ Description
 
 -----------
 
-Do trial deletion for all attachments on page with ID 123456, the  WhatIf parameter prevents any modifications.
+Do trial deletion for all attachments on page with ID 123456, the WhatIf parameter prevents any modifications.
 
 ### -------------------------- EXAMPLE 3 --------------------------
 ```powershell
@@ -58,7 +58,7 @@ Description
 
 -----------
 
-Remove all Attachments on page 123456, .
+Remove all Attachments on page 123456.
 
 ## PARAMETERS
 
@@ -98,14 +98,14 @@ Accept wildcard characters: False
 The Attachment(s) to remove.
 
 ```yaml
-Type: Attachment
+Type: Attachment[]
 Parameter Sets: (All)
 Aliases:
 
 Required: True
-Position: Named
+Position: 1
 Default value: None
-Accept pipeline input: True
+Accept pipeline input: True (ByValue)
 Accept wildcard characters: False
 ```
 
@@ -143,8 +143,6 @@ Accept wildcard characters: False
 ## INPUTS
 
 ## OUTPUTS
-
-### System.Boolean
 
 ## NOTES
 

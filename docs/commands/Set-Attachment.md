@@ -15,7 +15,7 @@ Updates an existing attachment with a new file.
 ## SYNTAX
 
 ```powershell
-Set-Attachment -apiURi <Uri> -Credential <PSCredential> -Attachment <Attachment> -FilePath <String> [-WhatIf] [-Confirm]
+Set-Attachment -apiURi <Uri> -Credential <PSCredential> [-Attachment] <Attachment> -FilePath <String> [-WhatIf] [-Confirm]
 ```
 
 ## DESCRIPTION
@@ -90,9 +90,9 @@ Parameter Sets: (All)
 Aliases:
 
 Required: True
-Position: Named
+Position: 1
 Default value: None
-Accept pipeline input: True
+Accept pipeline input: True (ByValue)
 Accept wildcard characters: False
 ```
 
@@ -101,10 +101,13 @@ File to be updated.
 
 ```yaml
 Type: String
+Parameter Sets: (All)
+Aliases:
 
 Required: True
 Position: Named
 Default value: None
+Accept pipeline input: False
 Accept wildcard characters: False
 ```
 

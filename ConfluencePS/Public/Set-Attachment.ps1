@@ -12,15 +12,15 @@ function Set-Attachment {
         [PSCredential]$Credential,
 
         [Parameter(
+            Position = 0,
             Mandatory = $true,
             ValueFromPipeline = $true
         )]
         [ConfluencePS.Attachment]$Attachment,
 
         # Path of the file to upload and attach
-        [Parameter( Mandatory)]
+        [Parameter( Mandatory )]
         [ValidateScript(
-
             {
                 if (-not (Test-Path $_ -PathType Leaf)) {
                     $errorItem = [System.Management.Automation.ErrorRecord]::new(
@@ -50,12 +50,11 @@ function Set-Attachment {
         Write-DebugMessage "[$($MyInvocation.MyCommand.Name)] ParameterSetName: $($PsCmdlet.ParameterSetName)"
         Write-DebugMessage "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
 
-        foreach ($_attachment in $Attachment) {
-            $readFile = Get-Content -Path $FilePath -Encoding Byte
-            $enc = [System.Text.Encoding]::GetEncoding("iso-8859-1")
-            $fileEnc = $enc.GetString($readFile)
-            $boundary = [System.Guid]::NewGuid().ToString()
-            $bodyLines = @'
+        $readFile = Get-Content -Path $FilePath -Encoding Byte
+        $enc = [System.Text.Encoding]::GetEncoding("iso-8859-1")
+        $fileEnc = $enc.GetString($readFile)
+        $boundary = [System.Guid]::NewGuid().ToString()
+        $bodyLines = @'
 --{0}
 Content-Disposition: form-data; name="file"; filename="{1}"
 Content-Type: application/octet-stream
@@ -63,27 +62,26 @@ Content-Type: application/octet-stream
 {2}
 --{0}--
 
-'@ -f $boundary, $_attachment.Title, $fileEnc
+'@ -f $boundary, $Attachment.Title, $fileEnc
 
-            $headers = @{
-                'X-Atlassian-Token' = 'nocheck'
-                'Content-Type'      = "multipart/form-data; boundary=$boundary"
-            }
+        $headers = @{
+            'X-Atlassian-Token' = 'nocheck'
+            'Content-Type'      = "multipart/form-data; boundary=$boundary"
+        }
 
-            $parameter = @{
-                URI        = $resourceApi -f $_attachment.PageID, $_attachment.ID
-                Method     = "POST"
-                Body       = $bodyLines
-                Headers    = $headers
-                RawBody    = $true
-                Credential = $Credential
-                OutputType = [ConfluencePS.Attachment]
-                Verbose    = $false
-            }
-            Write-Debug "[$($MyInvocation.MyCommand.Name)] Invoking Set Attachment Method with `$parameter"
-            if ($PSCmdlet.ShouldProcess($_attachment.PageID, "Updating attachment '$($_attachment.Title)'.")) {
-                Invoke-Method @parameter
-            }
+        $parameter = @{
+            URI        = $resourceApi -f $Attachment.PageID, $Attachment.ID
+            Method     = "POST"
+            Body       = $bodyLines
+            Headers    = $headers
+            RawBody    = $true
+            Credential = $Credential
+            OutputType = [ConfluencePS.Attachment]
+            Verbose    = $false
+        }
+        Write-Debug "[$($MyInvocation.MyCommand.Name)] Invoking Set Attachment Method with `$parameter"
+        if ($PSCmdlet.ShouldProcess($Attachment.PageID, "Updating attachment '$($Attachment.Title)'.")) {
+            Invoke-Method @parameter
         }
     }
 

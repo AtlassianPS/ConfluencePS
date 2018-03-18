@@ -15,11 +15,14 @@ Retrieves the binary Attachment for a given Attachment object.
 ## SYNTAX
 
 ```powershell
-Get-ConfluenceAttachmentFile -apiURi <Uri> -Credential <PSCredential> [-Attachment] <Attachment> [-Path <string>]
+Get-ConfluenceAttachmentFile -apiURi <Uri> -Credential <PSCredential> [-Attachment] <Attachment[]> [-Path <string>]
 ```
 
 ## DESCRIPTION
 Retrieves the binary Attachment for a given Attachment object.
+
+As the files are stored in a location of the server that requires authentication,
+this functions allows the download of the Attachment in the same way as the rest of the module authenticates with the server.
 
 ## EXAMPLES
 
@@ -32,8 +35,8 @@ Description
 
 -----------
 
-Save any attachments of page 123456 to the current directory with each filename constructed 
-with the page ID and the attachement filename.
+Save any attachments of page 123456 to the current directory with each filename constructed
+with the page ID and the attachment filename.
 
 ### -------------------------- EXAMPLE 2 --------------------------
 ```powershell
@@ -44,8 +47,8 @@ Description
 
 -----------
 
-Save any attachments of page 123456 to the c:\temp_dir directory with each filename constructed 
-with the page ID and the attachement filename.
+Save any attachments of page 123456 to the c:\temp_dir directory with each filename constructed
+with the page ID and the attachment filename.
 
 ## PARAMETERS
 
@@ -85,20 +88,24 @@ Accept wildcard characters: False
 Attachment object to download.
 
 ```yaml
-Type: Attachment
+Type: Attachment[]
+Parameter Sets: (All)
+Aliases:
 
 Required: True
 Position: 1
 Default value: None
-Accept pipeline input: True
+Accept pipeline input: True (ByValue)
 Accept wildcard characters: False
 ```
 
 ### -Path
-Override the path used to save the files. 
+Override the path used to save the files.
 
 ```yaml
 Type: String
+Parameter Sets: (All)
+Aliases:
 
 Required: False
 Position: Named

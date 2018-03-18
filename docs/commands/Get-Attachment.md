@@ -15,11 +15,11 @@ Retrieve the child Attachments of a given wiki Page.
 ## SYNTAX
 
 ```powershell
-Get-ConfluenceAttachment -apiURi <Uri> -Credential <PSCredential> [-PageID] <Int32> [-FileNameFilter <string>] [-MediaTypeFilter <string>] [-Skip <UInt64>] [-First <UInt64>] [-PageSize <UInt64>] [-IncludeTotalCount]
+Get-ConfluenceAttachment -apiURi <Uri> -Credential <PSCredential> [-PageID] <Int32[]> [-FileNameFilter <string>] [-MediaTypeFilter <string>] [-Skip <UInt64>] [-First <UInt64>] [-PageSize <UInt64>] [-IncludeTotalCount]
 ```
 
 ## DESCRIPTION
-Return all Attachments directly below the given Page. 
+Return all Attachments directly below the given Page.
 
 ## EXAMPLES
 
@@ -38,7 +38,20 @@ Both examples should return identical results.
 
 ### -------------------------- EXAMPLE 2 --------------------------
 ```powershell
-Get-ConfluenceAttachment -PageID 123456 -FileNameFilter test.png
+Get-ConfluenceAttachment -PageID 123456, 234567
+Get-ConfluencePage -PageID 123456, 234567 | Get-ConfluenceAttachment
+```
+
+Description
+
+-----------
+
+Similar to the previous example, this shows two different methods to return the Attachments of multiple pages.
+Both examples should return identical results.
+
+### -------------------------- EXAMPLE 3 --------------------------
+```powershell
+Get-ConfluenceAttachment -PageID 123456 -FileNameFilter "test.png"
 ```
 
 Description
@@ -47,9 +60,9 @@ Description
 
 Returns the Attachment called test.png from Page 123456 if it exists.
 
-### -------------------------- EXAMPLE 3 --------------------------
+### -------------------------- EXAMPLE 4 --------------------------
 ```powershell
-Get-ConfluenceAttachment -PageID 123456 -MediaTypeFilter image/png
+Get-ConfluenceAttachment -PageID 123456 -MediaTypeFilter "image/png"
 ```
 
 Description
@@ -97,7 +110,8 @@ Return attachments for a list of page IDs.
 
 ```yaml
 Type: Int32[]
-Aliases: ID
+Parameter Sets: (All)
+Aliases:
 
 Required: True
 Position: 1
@@ -112,6 +126,8 @@ Does not support wildcards (*).
 
 ```yaml
 Type: String
+Parameter Sets: (All)
+Aliases:
 
 Required: False
 Position: Named
@@ -126,6 +142,8 @@ Does not support wildcards (*).
 
 ```yaml
 Type: String
+Parameter Sets: (All)
+Aliases:
 
 Required: False
 Position: Named
