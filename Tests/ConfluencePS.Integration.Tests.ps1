@@ -1,7 +1,7 @@
 [Diagnostics.CodeAnalysis.SuppressMessageAttribute(
     "PSUseDeclaredVarsMoreThanAssigments",
     "",
-    Justification = "aa"
+    Justification = ""
 )]
 [Diagnostics.CodeAnalysis.SuppressMessageAttribute(
     "PSAvoidUsingConvertToSecureStringWithPlainText",
@@ -48,7 +48,7 @@ InModuleScope ConfluencePS {
 
         # ASSERT
         It 'credentials are stored' {
-            $global:PSDefaultParameterValues["Get-ConfluencePage:Credential"] | Should BeOfType [PSCredential]
+            $PSDefaultParameterValues["Get-ConfluencePage:Credential"] | Should BeOfType [PSCredential]
             #TODO: extend this
         }
         It 'url is stored' {
@@ -781,6 +781,278 @@ InModuleScope ConfluencePS {
         }
     }
 
+    Describe 'Add-ConfluenceAttachment' {
+        # ToDo: UniTests should ensure only 1 REST call is executed when multiple files are provided
+
+        # ARRANGE
+        BeforeAll {
+            $originalWarningPreference = $WarningPreference
+            $WarningPreference = 'SilentlyContinue'
+        }
+        AfterAll {
+            $WarningPreference = $originalWarningPreference
+        }
+        $SpaceKey = "PESTER"
+        $Page1 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page Piped" -ErrorAction Stop
+        $Page2 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page Orphan" -ErrorAction Stop
+        $Page3 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page from Object" -ErrorAction Stop
+        $Page4 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page with Parent Object" -ErrorAction Stop
+        $TextFile = Get-Item -Path "$PSScriptRoot/resources/Test.txt"
+        $ImageFile = Get-Item -Path "$PSScriptRoot/resources/Test.png"
+        $ExcelFile = Get-Item -Path "$PSScriptRoot/resources/Test.xlsx"
+
+        # ACT
+        $result1 = Add-ConfluenceAttachment -PageId $Page1.Id -FilePath $TextFile.FullName -ErrorAction Stop
+        $result2 = Add-ConfluenceAttachment -PageId $Page1.Id -FilePath $ImageFile.FullName, $ExcelFile.FullName -ErrorAction Stop
+        $result3 = Add-ConfluenceAttachment $Page2.Id -FilePath $TextFile.FullName -ErrorAction Stop
+        $result4 = $Page2 | Add-ConfluenceAttachment -FilePath $ImageFile.FullName -ErrorAction Stop
+        $result5 = $Page3 | Add-ConfluenceAttachment -FilePath $ImageFile.FullName, $ExcelFile.FullName -ErrorAction Stop
+        $result6 = $TextFile, $ImageFile, $ExcelFile | Add-ConfluenceAttachment -PageId $Page4.Id -ErrorAction Stop
+
+        # ASSERT
+        It 'attaches a file to a page' {
+            $result1 | Should Not BeNullOrEmpty
+            @($result1).Count | Should Be 1
+        }
+        It 'attaches multiple files at a time' {
+            $result2 | Should Not BeNullOrEmpty
+            @($result2).Count | Should Be 2
+        }
+        It 'can be used with positional parameters' {
+            $result3 | Should Not BeNullOrEmpty
+            @($result3).Count | Should Be 1
+        }
+        It 'accepts the PageId over the pipeline' {
+            $result4 | Should Not BeNullOrEmpty
+            @($result4).Count | Should Be 1
+            $result5 | Should Not BeNullOrEmpty
+            @($result5).Count | Should Be 2
+        }
+        It 'accepts the FilePath over the pipeline' {
+            $result6 | Should Not BeNullOrEmpty
+            @($result6).Count | Should Be 3
+        }
+        It 'returns an Attachment object' {
+            $result1 | Should BeOfType [ConfluencePS.Attachment]
+            $result2 | Should BeOfType [ConfluencePS.Attachment]
+            $result3 | Should BeOfType [ConfluencePS.Attachment]
+            $result4 | Should BeOfType [ConfluencePS.Attachment]
+            $result5 | Should BeOfType [ConfluencePS.Attachment]
+            $result6 | Should BeOfType [ConfluencePS.Attachment]
+
+            $result1.Id | Should Not BeNullOrEmpty
+            $result1.Title | Should Not BeNullOrEmpty
+            $result1.Filename | Should Not BeNullOrEmpty
+            $result1.MediaType | Should Not BeNullOrEmpty
+            $result1.FileSize | Should Not BeNullOrEmpty
+            $result1.SpaceKey | Should Not BeNullOrEmpty
+            $result1.PageID | Should Not BeNullOrEmpty
+            $result1.Version | Should BeOfType [ConfluencePS.Version]
+            $result1.Version.Number | Should Be 1
+            $result1.URL | Should Not BeNullOrEmpty
+            ([Uri]$result1.URL).AbsoluteUri | Should Not BeNullOrEmpty
+        }
+        It 'throws if the file does not exist' {
+            { Add-ConfluenceAttachment -PageId $Page1.Id -FilePath "$PSScriptRoot/non-existing.file" } | Should Throw
+        }
+        It 'throws if the item to attach is not a file' {
+            { Add-ConfluenceAttachment -PageId $Page1.Id -FilePath "$PSScriptRoot" } | Should Throw
+        }
+        It 'fails if the page already has the file attached' {
+            { Add-ConfluenceAttachment -PageId $Page1.Id -FilePath $TextFile.FullName -ErrorAction Stop } | Should Throw
+            { Add-ConfluenceAttachment -PageId $Page1.Id -FilePath $TextFile.FullName -ErrorAction SilentlyContinue } | Should Not Throw
+        }
+    }
+
+    Describe 'Get-ConfluenceAttachment' {
+        # ARRANGE
+        $SpaceKey = "PESTER"
+        $Page1 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page Piped" -ErrorAction Stop
+        $Page2 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page Orphan" -ErrorAction Stop
+        $Page3 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page from Object" -ErrorAction Stop
+        $Page4 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page with Parent Object" -ErrorAction Stop
+
+        # ACT
+        $result1 = Get-ConfluenceAttachment -PageId $Page1.Id -ErrorAction Stop
+        $result2 = Get-ConfluenceAttachment -PageId $Page2.Id, $Page3.Id -ErrorAction Stop
+        $result3 = $Page3, $Page4 | Get-ConfluenceAttachment -ErrorAction Stop
+        $result4 = $Page1, $Page2, $Page3, $Page4 | Get-ConfluenceAttachment -FileNameFilter "Test.xlsx" -ErrorAction Stop
+        $result5 = $Page1, $Page2, $Page3, $Page4 | Get-ConfluenceAttachment -MediaTypeFilter "text/plain" -ErrorAction Stop
+
+        # ASSERT
+        It 'retrieves the Attachments of a Page' {
+            $result1 | Should Not BeNullOrEmpty
+            $result1 | Should BeOfType [ConfluencePS.Attachment]
+            @($result1).Count | Should Be 3
+        }
+        It 'retrieves the Attachments of multiple Pages' {
+            $result2 | Should Not BeNullOrEmpty
+            $result2 | Should BeOfType [ConfluencePS.Attachment]
+            @($result2).Count | Should Be 4
+        }
+        It 'accepts the PageId over the Pipeline' {
+            $result3 | Should Not BeNullOrEmpty
+            $result3 | Should BeOfType [ConfluencePS.Attachment]
+            @($result3).Count | Should Be 5
+        }
+        It 'filters the Attachments by FileName' {
+            $result4 | Should Not BeNullOrEmpty
+            $result4 | Should BeOfType [ConfluencePS.Attachment]
+            @($result4).Count | Should Be 3
+            $result4.Title | Should Be ("Test.xlsx", "Test.xlsx", "Test.xlsx")
+        }
+        It 'filters the Attachments by MediaType' {
+            $result5 | Should Not BeNullOrEmpty
+            $result5 | Should BeOfType [ConfluencePS.Attachment]
+            @($result5).Count | Should Be 3
+            $result5.MediaType | Should Be ("text/plain", "text/plain", "text/plain")
+        }
+    }
+
+    Describe 'Get-ConfluenceAttachmentFile' {
+        # ARRANGE
+        BeforeAll {
+            Push-Location -Path "TestDrive:\"
+        }
+        AfterAll {
+            Pop-Location
+        }
+        $null = New-Item -Path "TestDrive:\Folder1" -ItemType Directory
+        $null = New-Item -Path "TestDrive:\Folder2" -ItemType Directory
+        $null = New-Item -Path "TestDrive:\Folder3" -ItemType Directory
+        $SpaceKey = "PESTER"
+        $Page1 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page Piped" -ErrorAction Stop
+        $Page2 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page Orphan" -ErrorAction Stop
+        $Attachments = $Page1, $Page2 | Get-ConfluenceAttachment -ErrorAction Stop
+
+        # ACT
+        $result1 = Get-ConfluenceAttachmentFile -Attachment $Attachments[0] -Path "TestDrive:\Folder1" -ErrorAction Stop
+        $result2 = Get-ConfluenceAttachmentFile $Attachments[-1] -ErrorAction Stop
+        $result3 = Get-ConfluenceAttachmentFile -Attachment $Attachments -Path "TestDrive:\Folder2" -ErrorAction Stop
+        $result4 = $Attachments | Get-ConfluenceAttachmentFile -Path "TestDrive:\Folder3" -ErrorAction Stop
+
+        # ASSERT
+        It 'downloads an Attachment to a specific Path' {
+            $result1 | Should Be $true
+            $files1 = Get-ChildItem -Path "TestDrive:\Folder1"
+            @($files1).Count | Should Be 1
+            $files1.Name | Should Be "$($Page1.Id)_$($Attachments[0].Title)"
+        }
+        It 'downloads an Attachment to the current Directory' {
+            $result2 | Should Be $true
+            $files2 = Get-ChildItem -Path $pwd.Path -File
+            @($files2).Count | Should Be 1
+            $files2.Name | Should Be "$($Page2.Id)_$($Attachments[-1].Title)"
+        }
+        It 'downloads several Attachments to a specific Path' {
+            $result3 | Should Be ($true, $true, $true, $true, $true)
+            $files3 = Get-ChildItem -Path "TestDrive:\Folder2"
+            @($files3).Count | Should Be 5
+            ($files3.Name -match "^$($Page1.Id)").Count | Should Be 3
+            ($files3.Name -match "^$($Page2.Id)").Count | Should Be 2
+        }
+        It 'accepts the Attachments over the pipeline' {
+            $result4 | Should Be ($true, $true, $true, $true, $true)
+            $files4 = Get-ChildItem -Path "TestDrive:\Folder3"
+            @($files4).Count | Should Be 5
+            ($files4.Name -match "^$($Page1.Id)").Count | Should Be 3
+            ($files4.Name -match "^$($Page2.Id)").Count | Should Be 2
+        }
+        It 'throws if the specified Path does not exist' {
+            { $Attachments | Get-ConfluenceAttachmentFile -Path "non-existing-path" } | Should Throw
+        }
+    }
+
+    Describe 'Set-ConfluenceAttachment' {
+        # ARRANGE
+        $SpaceKey = "PESTER"
+        $Page1 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page Piped" -ErrorAction Stop
+        $Attachment = $Page1 | Get-ConfluenceAttachment -FileNameFilter "Test.txt" -ErrorAction Stop
+        $TextFile = Get-Item -Path "$PSScriptRoot/resources/Test.txt"
+
+        # ACT
+        $result1 = Set-ConfluenceAttachment -Attachment $Attachment -FilePath $TextFile.FullName -ErrorAction Stop
+        $result2 = Set-ConfluenceAttachment $Attachment -FilePath $TextFile.FullName -ErrorAction Stop
+        $result3 = $Attachment | Set-ConfluenceAttachment -FilePath $TextFile.FullName -ErrorAction Stop
+
+        # ASSERT
+        It 'updates an Attachment' {
+            $result1 | Should Not BeNullOrEmpty
+            @($result1).Count | Should Be 1
+            $result1.Version.Number | Should Be 2
+        }
+        It 'can be used with positional parameters' {
+            $result2 | Should Not BeNullOrEmpty
+            @($result2).Count | Should Be 1
+            $result2.Version.Number | Should Be 3
+        }
+        It 'accepts the Attachment over the pipeline' {
+            $result3 | Should Not BeNullOrEmpty
+            @($result3).Count | Should Be 1
+            $result3.Version.Number | Should Be 4
+        }
+        It 'returns an Attachment object' {
+            $result1 | Should BeOfType [ConfluencePS.Attachment]
+            $result2 | Should BeOfType [ConfluencePS.Attachment]
+            $result3 | Should BeOfType [ConfluencePS.Attachment]
+
+            $result1.Id | Should Not BeNullOrEmpty
+            $result1.Title | Should Not BeNullOrEmpty
+            $result1.Filename | Should Not BeNullOrEmpty
+            $result1.MediaType | Should Not BeNullOrEmpty
+            $result1.FileSize | Should Not BeNullOrEmpty
+            $result1.SpaceKey | Should Not BeNullOrEmpty
+            $result1.PageID | Should Not BeNullOrEmpty
+            $result1.URL | Should Not BeNullOrEmpty
+            ([Uri]$result1.URL).AbsoluteUri | Should Not BeNullOrEmpty
+        }
+        It 'throws if the file does not exist' {
+            { Set-ConfluenceAttachment -Attachment $Attachment -FilePath "non-existing.file" } | Should Throw
+        }
+    }
+
+    Describe 'Remove-ConfluenceAttachment' {
+        # ARRANGE
+        BeforeAll {
+            $originalWarningPreference = $WarningPreference
+            $WarningPreference = 'SilentlyContinue'
+        }
+        AfterAll {
+            $WarningPreference = $originalWarningPreference
+        }
+        $SpaceKey = "PESTER"
+        $Page1 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page Piped" -ErrorAction Stop
+        $Page2 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page Orphan" -ErrorAction Stop
+        $Page3 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page from Object" -ErrorAction Stop
+        $preAttachments1 = Get-ConfluenceAttachment -PageId $Page1.Id -ErrorAction Stop
+        $preAttachments2 = Get-ConfluenceAttachment -PageId $Page2.Id -ErrorAction Stop
+        $preAttachments3 = Get-ConfluenceAttachment -PageId $Page3.Id -ErrorAction Stop
+
+        # ACT
+        Remove-ConfluenceAttachment -Attachment $preAttachments1[0] -ErrorAction Stop
+        Remove-ConfluenceAttachment $preAttachments2 -ErrorAction Stop
+        $preAttachments3 | Remove-ConfluenceAttachment -ErrorAction Stop
+
+        $postAttachments1 = Get-ConfluenceAttachment -PageId $Page1.Id -ErrorAction SilentlyContinue
+        $postAttachments2 = Get-ConfluenceAttachment -PageId $Page2.Id -ErrorAction SilentlyContinue
+        $postAttachments3 = Get-ConfluenceAttachment -PageId $Page3.Id -ErrorAction SilentlyContinue
+
+        # ASSERT
+        It 'removes an Attachment' {
+            @($postAttachments1).Count | Should Be (@($preAttachments1).Count - 1)
+        }
+        It 'removes several Attachments' {
+            $postAttachments2 | Should BeNullOrEmpty
+        }
+        It 'accepts Attachments over the pipeline' {
+            $postAttachments3 | Should BeNullOrEmpty
+        }
+        It 'fails to delete a non exisiting Attachment' {
+            { Remove-ConfluenceAttachment -Attachment $preAttachments1 -ErrorAction Stop } | Should Throw
+            { Remove-ConfluenceAttachment -Attachment $preAttachments1 -ErrorAction SilentlyContinue } | Should Not Throw
+        }
+    }
+
     Describe 'Remove-ConfluenceLabel' {
         # ARRANGE
         $SpaceKey = "PESTER"
@@ -838,7 +1110,7 @@ InModuleScope ConfluencePS {
         "PESTER1" | Remove-ConfluenceSpace -Force -ErrorAction Stop
 
         # ASSERT
-        Start-Sleep -Seconds 1
+        Start-Sleep -Seconds 20
         It 'space is no longer available' {
             { Get-ConfluenceSpace -Key PESTER -ErrorAction Stop } | Should Throw
             { Get-ConfluenceSpace -Key PESTER1 -ErrorAction Stop } | Should Throw
