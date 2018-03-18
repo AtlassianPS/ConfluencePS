@@ -12,7 +12,7 @@
     RootModule        = 'ConfluencePS.psm1'
 
     # Version number of this module.
-    ModuleVersion     = '2.1'
+    ModuleVersion     = '2.2'
 
     # ID used to uniquely identify this module
     GUID              = '20d32089-48ef-464d-ba73-6ada240e26b3'
@@ -66,28 +66,7 @@
     # NestedModules = @()
 
     # Functions to export from this module
-    FunctionsToExport = @(
-        'Add-Attachment',
-        'Add-Label',
-        'ConvertTo-StorageFormat',
-        'ConvertTo-Table',
-        'Get-Attachment',
-        'Get-AttachmentFile',
-        'Get-ChildPage',
-        'Get-Label',
-        'Get-Page',
-        'Get-Space',
-        'New-Page',
-        'New-Space',
-        'Remove-Attachment',
-        'Remove-Label',
-        'Remove-Page',
-        'Remove-Space',
-        'Set-Attachment',
-        'Set-Info',
-        'Set-Label',
-        'Set-Page'
-    )
+    FunctionsToExport = '*'
 
     # Cmdlets to export from this module
     # CmdletsToExport = '*'
@@ -96,7 +75,7 @@
     # VariablesToExport = '*'
 
     # Aliases to export from this module
-    # AliasesToExport = '*'
+    AliasesToExport = '*'
 
     # DSC resources to export from this module
     # DscResourcesToExport = @()
@@ -105,7 +84,7 @@
     # ModuleList = @()
 
     # List of all files packaged with this module
-    # FileList = @()
+    # FileList = ''
 
     # Private data to pass to the module specified in RootModule/ModuleToProcess. This may also contain a PSData hashtable with additional module metadata used by PowerShell.
     PrivateData       = @{

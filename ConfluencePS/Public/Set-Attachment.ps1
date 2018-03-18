@@ -50,31 +50,10 @@ function Set-Attachment {
         Write-DebugMessage "[$($MyInvocation.MyCommand.Name)] ParameterSetName: $($PsCmdlet.ParameterSetName)"
         Write-DebugMessage "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
 
-        $readFile = Get-Content -Path $FilePath -Encoding Byte
-        $enc = [System.Text.Encoding]::GetEncoding("iso-8859-1")
-        $fileEnc = $enc.GetString($readFile)
-        $boundary = [System.Guid]::NewGuid().ToString()
-        $bodyLines = @'
---{0}
-Content-Disposition: form-data; name="file"; filename="{1}"
-Content-Type: application/octet-stream
-
-{2}
---{0}--
-
-'@ -f $boundary, $Attachment.Title, $fileEnc
-
-        $headers = @{
-            'X-Atlassian-Token' = 'nocheck'
-            'Content-Type'      = "multipart/form-data; boundary=$boundary"
-        }
-
         $parameter = @{
             URI        = $resourceApi -f $Attachment.PageID, $Attachment.ID
             Method     = "POST"
-            Body       = $bodyLines
-            Headers    = $headers
-            RawBody    = $true
+            InFile     = $FilePath
             Credential = $Credential
             OutputType = [ConfluencePS.Attachment]
             Verbose    = $false
