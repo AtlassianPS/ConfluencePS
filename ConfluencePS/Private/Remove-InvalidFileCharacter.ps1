@@ -1,13 +1,14 @@
 function Remove-InvalidFileCharacter {
     <#
     .SYNOPSIS
-    Replace any invalid filename characters from a string with underscores
+        Replace any invalid filename characters from a string with underscores
     #>
     [CmdletBinding(
         ConfirmImpact = 'Low',
-        SupportsShouldProcess = $true
+        SupportsShouldProcess = $false
     )]
     [OutputType( [String] )]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage('PSUseShouldProcessForStateChangingFunctions', '')]
     param (
         # string to process
         [Parameter( ValueFromPipeline = $true )]
