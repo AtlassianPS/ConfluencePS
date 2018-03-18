@@ -67,18 +67,23 @@
 
     # Functions to export from this module
     FunctionsToExport = @(
+        'Add-Attachment',
         'Add-Label',
         'ConvertTo-StorageFormat',
         'ConvertTo-Table',
+        'Get-Attachment',
+        'Get-AttachmentFile',
         'Get-ChildPage',
         'Get-Label',
         'Get-Page',
         'Get-Space',
         'New-Page',
         'New-Space',
+        'Remove-Attachment',
         'Remove-Label',
         'Remove-Page',
         'Remove-Space',
+        'Set-Attachment',
         'Set-Info',
         'Set-Label',
         'Set-Page'

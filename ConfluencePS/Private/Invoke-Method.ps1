@@ -11,7 +11,8 @@ function Invoke-Method {
         [ConfluencePS.Label],
         [ConfluencePS.Icon],
         [ConfluencePS.Version],
-        [ConfluencePS.User]
+        [ConfluencePS.User],
+        [ConfluencePS.Attachment]
     )]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute( "PSAvoidUsingEmptyCatchBlock", "" )]
     param (
@@ -42,9 +43,12 @@ function Invoke-Method {
             [ConfluencePS.Label],
             [ConfluencePS.Icon],
             [ConfluencePS.Version],
-            [ConfluencePS.User]
+            [ConfluencePS.User],
+            [ConfluencePS.Attachment]
         )]
         [System.Type]$OutputType,
+        
+        [String]$OutFile,
 
         # Authentication credentials
         [Parameter(Mandatory = $true)]
@@ -105,6 +109,7 @@ function Invoke-Method {
             UseBasicParsing = $true
             Credential      = $Credential
             ErrorAction     = "Stop"
+            OutFile         = $OutFile
             Verbose         = $false     # Overwrites verbose output
         }
 
