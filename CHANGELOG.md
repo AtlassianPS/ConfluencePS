@@ -5,13 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [2.1] - 2017-11-01
+## 2.1 - 2017-11-01
 
 IMPROVEMENTS:
   - Shows a warning when the server requires a CAPTCHA for the authentication (#91, [@lipkau][])
   - Custom classes now print relevant data in `ToString()` (#92, [@lipkau][])
 
-## [2.0] - 2017-08-17
+## 2.0 - 2017-08-17
 A new major version! ConfluencePS has been totally refactored to introduce new features and greatly improve efficiency.
 
 "A new major version" means limited older functionality was intentionally broken. In addition, there are a ton of good changes, so some big picture notes first:
@@ -104,7 +104,7 @@ If you like drinking from the firehose, here's [everything we closed for 2.0], b
 [@lipkau](https://github.com/lipkau) refactored the entire module, and is the only reason `2.0` is a reality. In short, he is amazing. Thank you!
 
 
-## [1.0.0-69] - 2016-11-28
+## 1.0.0-69 - 2016-11-28
 No changelog available for version `1.0` of ConfluencePS. `1.0` was created in late 2015. Version `.69` was published to the PowerShell Gallery in Nov 2016, and it remained unchanged until `2.0`. If you're looking for things that changed prior to `2.0`...sorry, but these probably aren't the droids you're looking for. :)
 
 

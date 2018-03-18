@@ -36,6 +36,10 @@ function Invoke-Method {
         # GET Parameters
         [Hashtable]$GetParameters,
 
+        [String]$InFile,
+
+        [String]$OutFile,
+
         # Type of object to which the output will be casted to
         [ValidateSet(
             [ConfluencePS.Page],
@@ -47,8 +51,6 @@ function Invoke-Method {
             [ConfluencePS.Attachment]
         )]
         [System.Type]$OutputType,
-        
-        [String]$OutFile,
 
         # Authentication credentials
         [Parameter(Mandatory = $true)]
@@ -59,18 +61,6 @@ function Invoke-Method {
 
     BEGIN {
         Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function started"
-
-        # Validation of parameters
-        if (($Method -in ("POST", "PUT")) -and (!($Body))) {
-            $errorItem = [System.Management.Automation.ErrorRecord]::new(
-                ([System.ArgumentException]"Invalid Parameter"),
-                'ParameterProperties.IncorrectType',
-                [System.Management.Automation.ErrorCategory]::InvalidArgument,
-                $Method
-            )
-            $errorItem.ErrorDetails = "The following parameters are required when using the $Method parameter: Body."
-            $Caller.ThrowTerminatingError($errorItem)
-        }
 
         # pass input to local variable
         # this allows to use the PSBoundParameters for recursion
@@ -109,7 +99,6 @@ function Invoke-Method {
             UseBasicParsing = $true
             Credential      = $Credential
             ErrorAction     = "Stop"
-            OutFile         = $OutFile
             Verbose         = $false     # Overwrites verbose output
         }
 
@@ -128,6 +117,13 @@ function Invoke-Method {
                 # http://stackoverflow.com/questions/15290185/invoke-webrequest-issue-with-special-characters-in-json
                 $splatParameters["Body"] = [System.Text.Encoding]::UTF8.GetBytes($Body)
             }
+        }
+
+        if ($InFile) {
+            $splatParameters["InFile"] = $InFile
+        }
+        if ($OutFile) {
+            $splatParameters["OutFile"] = $OutFile
         }
 
         # Invoke the API
@@ -154,10 +150,14 @@ function Invoke-Method {
         Write-Debug "[$($MyInvocation.MyCommand.Name)] Executed WebRequest. Access `$webResponse to see details"
 
         if ($webResponse) {
-            Write-Verbose "[$($MyInvocation.MyCommand.Name)] Status code: $($webResponse.StatusCode)"
+            # In PowerShellCore (v6+) the StatusCode of an exception is somewhere else
+            if (-not ($statusCode = $webResponse.StatusCode)) {
+                $statusCode = $webresponse.Exception.Response.StatusCode
+            }
+            Write-Verbose "[$($MyInvocation.MyCommand.Name)] Status code: $($statusCode)"
 
-            if ($webResponse.StatusCode.value__ -ge 400) {
-                Write-Warning "Confluence returned HTTP error $($webResponse.StatusCode.value__) - $($webResponse.StatusCode)"
+            if ($statusCode.value__ -ge 400) {
+                Write-Warning "Confluence returned HTTP error $($statusCode.value__) - $($statusCode)"
 
                 if ((!($responseBody)) -and ($webResponse | Get-Member -Name "GetResponseStream")) {
                     # Retrieve body of HTTP response - this contains more useful information about exactly why the error occurred
@@ -171,7 +171,7 @@ function Invoke-Method {
 
                 $errorItem = [System.Management.Automation.ErrorRecord]::new(
                     ([System.ArgumentException]"Invalid Server Response"),
-                    "InvalidResponse.Status$($webResponse.StatusCode.value__)",
+                    "InvalidResponse.Status$($statusCode.value__)",
                     [System.Management.Automation.ErrorCategory]::InvalidResult,
                     $responseBody
                 )
