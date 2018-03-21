@@ -1,8 +1,4 @@
 function Invoke-Method {
-    <#
-    .SYNOPSIS
-    Extracted invokation of the REST method to own function.
-    #>
     [CmdletBinding(SupportsPaging = $true)]
     [OutputType(
         [PSObject],
@@ -16,31 +12,24 @@ function Invoke-Method {
     )]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute( "PSAvoidUsingEmptyCatchBlock", "" )]
     param (
-        # REST API to invoke
         [Parameter(Mandatory = $true)]
         [Uri]$URi,
 
-        # Method of the invokation
         [Microsoft.PowerShell.Commands.WebRequestMethod]$Method = "GET",
 
-        # Body of the request
         [ValidateNotNullOrEmpty()]
         [String]$Body,
 
-        # Do not encode the body
         [Switch]$RawBody,
 
-        # Additional headers
         [Hashtable]$Headers,
 
-        # GET Parameters
         [Hashtable]$GetParameters,
 
         [String]$InFile,
 
         [String]$OutFile,
 
-        # Type of object to which the output will be casted to
         [ValidateSet(
             [ConfluencePS.Page],
             [ConfluencePS.Space],
@@ -52,7 +41,6 @@ function Invoke-Method {
         )]
         [System.Type]$OutputType,
 
-        # Authentication credentials
         [Parameter(Mandatory = $true)]
         [PSCredential]$Credential,
 
