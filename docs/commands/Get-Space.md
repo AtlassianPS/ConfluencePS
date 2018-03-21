@@ -1,6 +1,8 @@
 ---
 external help file: ConfluencePS-help.xml
-online version: https://github.com/AtlassianPS/ConfluencePS/blob/master/docs/commands/Get-Space.md
+online version: https://atlassianps.org/docs/ConfluencePS/commands/Get-Space/
+Module Name: ConfluencePS
+Module Name: ConfluencePS
 locale: en-US
 schema: 2.0.0
 layout: documentation
