@@ -3,7 +3,6 @@ function Test-Captcha {
     param(
         # Response of Invoke-WebRequest
         [Parameter(
-            Mandatory = $true,
             ValueFromPipeline = $true
         )]
         [PSObject]$InputObject
