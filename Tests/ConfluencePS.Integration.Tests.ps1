@@ -14,7 +14,12 @@ param()
 
 Describe 'Load Module' {
     # ARRANGE
-    Remove-Module ConfluencePS -Force -ErrorAction SilentlyContinue
+    BeforeAll {
+        Remove-Module ConfluencePS -ErrorAction SilentlyContinue
+    }
+    AfterEach {
+        Remove-Module ConfluencePS -ErrorAction SilentlyContinue
+    }
 
     # ACT
     Import-Module "$PSScriptRoot\..\ConfluencePS" -Force -ErrorAction Stop
@@ -22,7 +27,6 @@ Describe 'Load Module' {
     #ASSERT
     It "imports the module" {
         Get-Module ConfluencePS | Should BeOfType [PSModuleInfo]
-        Remove-Module ConfluencePS -ErrorAction Stop
     }
 
     It "imports the module with custom prefix" {
@@ -30,7 +34,6 @@ Describe 'Load Module' {
         (Get-Command -Module ConfluencePS).Name | ForEach-Object {
             $_ -match "\-Wiki" | Should Be $true
         }
-        # Remove-Module ConfluencePS -ErrorAction Stop
     }
 }
 
@@ -81,7 +84,7 @@ InModuleScope ConfluencePS {
         }
         # $Space3
         # Ensure the space doesn't already exist
-        Get-ConfluenceSpace -Key $Key1 -ErrorAction SilentlyContinue #TODO
+        { Get-ConfluenceSpace -Key $Key1 -ErrorAction Stop } | Should Throw
 
         # ACT
         $NewSpace1 = $Space1 | New-ConfluenceSpace -ErrorAction Stop
@@ -782,8 +785,6 @@ InModuleScope ConfluencePS {
     }
 
     Describe 'Add-ConfluenceAttachment' {
-        # ToDo: UniTests should ensure only 1 REST call is executed when multiple files are provided
-
         # ARRANGE
         BeforeAll {
             $originalWarningPreference = $WarningPreference
