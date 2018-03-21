@@ -7,10 +7,21 @@
     "editor.tabSize": 4,
     "powershell.scriptAnalysis.settingsPath": "PSScriptAnalyzerSettings.psd1",
     "[markdown]": {
-        "editor.wordwrap": "on",
+        "editor.tabSize": 2,
+        "editor.wordWrap": "on",
         "editor.renderWhitespace": "all",
-        "editor.acceptSuggestionOnEnter": false,
-        "editor.rulers": [80],
+        "editor.acceptSuggestionOnEnter": "off",
         "editor.trimAutoWhitespace": false
     },
+    "[yaml]": {
+        "editor.tabSize": 2
+    },
+    "search.exclude": {
+        "./Release": true,
+        "./Tools/MyInstance": true
+    },
+    "files.watcherExclude": {
+        "./Release": true,
+        "./Tools/MyInstance": true
+    }
 }
