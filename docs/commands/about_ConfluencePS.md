@@ -1,6 +1,8 @@
 ---
 locale: en-US
 layout: documentation
+online version: https://atlassianps.org/docs/ConfluencePS/
+Module Name: ConfluencePS
 permalink: /docs/ConfluencePS/
 hide: true
 ---
