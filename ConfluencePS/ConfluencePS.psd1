@@ -12,7 +12,7 @@
     RootModule        = 'ConfluencePS.psm1'
 
     # Version number of this module.
-    ModuleVersion     = '2.2'
+    ModuleVersion     = '2.3'
 
     # ID used to uniquely identify this module
     GUID              = '20d32089-48ef-464d-ba73-6ada240e26b3'
@@ -66,23 +66,7 @@
     # NestedModules = @()
 
     # Functions to export from this module
-    FunctionsToExport = @(
-        'Add-Label',
-        'ConvertTo-StorageFormat',
-        'ConvertTo-Table',
-        'Get-ChildPage',
-        'Get-Label',
-        'Get-Page',
-        'Get-Space',
-        'New-Page',
-        'New-Space',
-        'Remove-Label',
-        'Remove-Page',
-        'Remove-Space',
-        'Set-Info',
-        'Set-Label',
-        'Set-Page'
-    )
+    FunctionsToExport = '*'
 
     # Cmdlets to export from this module
     # CmdletsToExport = '*'
@@ -91,7 +75,7 @@
     # VariablesToExport = '*'
 
     # Aliases to export from this module
-    # AliasesToExport = '*'
+    AliasesToExport = '*'
 
     # DSC resources to export from this module
     # DscResourcesToExport = @()

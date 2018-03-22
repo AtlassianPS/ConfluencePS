@@ -21,7 +21,9 @@ New-Object -TypeName ConfluencePS.Version [-Property @{}]
 
 ## REFERENCES
 The following classes use `Version` for their properties:
+- [`ConfluencePS.Attachment`](/docs/ConfluencePS/classes/ConfluencePS.Attachment/)
 - [`ConfluencePS.Page`](/docs/ConfluencePS/classes/ConfluencePS.Page/)
+
 
 ## CONSTRUCTORS
 _This class does not have a constructor._

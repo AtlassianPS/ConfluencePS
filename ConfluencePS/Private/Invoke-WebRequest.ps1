@@ -88,13 +88,33 @@ function Invoke-WebRequest {
         ${PassThru})
 
     begin {
-        Write-Verbose "ha1"
         if ($Credential) {
             $SecureCreds = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes(
                     $('{0}:{1}' -f $Credential.UserName, $Credential.GetNetworkCredential().Password)
                 ))
-            $Headers["Authorization"] = "Basic $($SecureCreds)"
-            $PSBoundParameters.Remove("Credential")
+            $PSBoundParameters["Headers"]["Authorization"] = "Basic $($SecureCreds)"
+            $null = $PSBoundParameters.Remove("Credential")
+        }
+
+        if ($InFile) {
+            $boundary = [System.Guid]::NewGuid().ToString()
+            $enc = [System.Text.Encoding]::GetEncoding("iso-8859-1")
+            $fileName = Split-Path -Path $InFile -Leaf
+            $readFile = Get-Content -Path $InFile -Encoding Byte
+            $fileEnc = $enc.GetString($readFile)
+            $PSBoundParameters["Body"] = @'
+--{0}
+Content-Disposition: form-data; name="file"; filename="{1}"
+Content-Type: application/octet-stream
+
+{2}
+--{0}--
+
+'@ -f $boundary, $fileName, $fileEnc
+
+            $PSBoundParameters["Headers"]['X-Atlassian-Token'] = 'nocheck'
+            $PSBoundParameters["ContentType"] = "multipart/form-data; boundary=`"$boundary`""
+            $null = $PSBoundParameters.Remove("InFile")
         }
 
         try {
@@ -264,9 +284,22 @@ if ($PSVersionTable.PSVersion.Major -ge 6) {
             ${SkipHeaderValidation})
 
         begin {
-            Write-Verbose "ha2"
             if ($Credential -and (-not ($Authentication))) {
                 $PSBoundParameters["Authentication"] = "Basic"
+            }
+            if ($InFile) {
+                $multipartContent = [System.Net.Http.MultipartFormDataContent]::new()
+                $FileStream = [System.IO.FileStream]::new($InFile, [System.IO.FileMode]::Open)
+                $fileHeader = [System.Net.Http.Headers.ContentDispositionHeaderValue]::new("form-data")
+                $fileHeader.Name = "file"
+                $fileHeader.FileName = ([System.io.FileInfo]$InFile).name
+                $fileContent = [System.Net.Http.StreamContent]::new($FileStream)
+                $fileContent.Headers.ContentDisposition = $fileHeader
+                $fileContent.Headers.ContentType = [System.Net.Http.Headers.MediaTypeHeaderValue]::Parse("application/octet-stream")
+                $multipartContent.Add($fileContent)
+                $PSBoundParameters["Headers"]['X-Atlassian-Token'] = 'nocheck'
+                $PSBoundParameters["Body"] = $multipartContent
+                $null = $PSBoundParameters.Remove("InFile")
             }
             try {
                 $outBuffer = $null

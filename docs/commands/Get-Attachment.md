@@ -1,54 +1,76 @@
 ---
 external help file: ConfluencePS-help.xml
-online version: https://atlassianps.org/docs/ConfluencePS/commands/Get-ChildPage/
+online version: https://atlassianps.org/docs/ConfluencePS/commands/Get-Attachment/
 Module Name: ConfluencePS
 locale: en-US
 schema: 2.0.0
 layout: documentation
-permalink: /docs/ConfluencePS/commands/Get-ChildPage/
+permalink: /docs/ConfluencePS/commands/Get-Attachment/
 ---
 
-# Get-ChildPage
+# Get-Attachment
 
 ## SYNOPSIS
-Retrieve the child pages of a given wiki page or pages.
+Retrieve the child Attachments of a given wiki Page.
 
 ## SYNTAX
 
 ```powershell
-Get-ConfluenceChildPage -apiURi <Uri> -Credential <PSCredential> [-PageID] <Int32> [-Recurse] [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
+Get-ConfluenceAttachment -apiURi <Uri> -Credential <PSCredential> [-PageID] <Int32[]> [-FileNameFilter <string>] [-MediaTypeFilter <string>] [-Skip <UInt64>] [-First <UInt64>] [-PageSize <UInt64>] [-IncludeTotalCount]
 ```
 
 ## DESCRIPTION
-Return all pages directly below the given page(s). Optionally,
-the -Recurse parameter will return all child pages, no matter how nested.
+Return all Attachments directly below the given Page.
 
 ## EXAMPLES
 
 ### -------------------------- EXAMPLE 1 --------------------------
 ```powershell
-Get-ConfluenceChildPage -PageID 123456
-Get-ConfluencePage -PageID 123456 | Get-ConfluenceChildPage
+Get-ConfluenceAttachment -PageID 123456
+Get-ConfluencePage -PageID 123456 | Get-ConfluenceAttachment
 ```
 
 Description
 
 -----------
 
-Two different methods to return all pages directly below page 123456.
+Two different methods to return all Attachments directly below Page 123456.
 Both examples should return identical results.
 
 ### -------------------------- EXAMPLE 2 --------------------------
 ```powershell
-Get-ConfluenceChildPage -PageID 123456 -Recurse
+Get-ConfluenceAttachment -PageID 123456, 234567
+Get-ConfluencePage -PageID 123456, 234567 | Get-ConfluenceAttachment
 ```
 
 Description
 
 -----------
 
-Instead of returning only 123456's child pages,
-return grandchildren, great-grandchildren, and so on.
+Similar to the previous example, this shows two different methods to return the Attachments of multiple pages.
+Both examples should return identical results.
+
+### -------------------------- EXAMPLE 3 --------------------------
+```powershell
+Get-ConfluenceAttachment -PageID 123456 -FileNameFilter "test.png"
+```
+
+Description
+
+-----------
+
+Returns the Attachment called test.png from Page 123456 if it exists.
+
+### -------------------------- EXAMPLE 4 --------------------------
+```powershell
+Get-ConfluenceAttachment -PageID 123456 -MediaTypeFilter "image/png"
+```
+
+Description
+
+-----------
+
+Returns any attachments of mime type image/png from Page 123456.
 
 ## PARAMETERS
 
@@ -85,31 +107,48 @@ Accept wildcard characters: False
 ```
 
 ### -PageID
-Filter results by page ID.
+Return attachments for a list of page IDs.
 
 ```yaml
-Type: Int32
+Type: Int32[]
 Parameter Sets: (All)
-Aliases: ID
+Aliases:
 
 Required: True
 Position: 1
-Default value: 0
+Default value: None
 Accept pipeline input: True (ByPropertyName, ByValue)
 Accept wildcard characters: False
 ```
 
-### -Recurse
-Get all child pages recursively
+### -FileNameFilter
+Filter results by filename (case sensitive).
+Does not support wildcards (*).
 
 ```yaml
-Type: SwitchParameter
+Type: String
 Parameter Sets: (All)
 Aliases:
 
 Required: False
 Position: Named
-Default value: False
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -MediaTypeFilter
+Filter results by media type (case insensitive).
+Does not support wildcards (*).
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -127,23 +166,6 @@ Aliases:
 Required: False
 Position: Named
 Default value: 25
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -IncludeTotalCount
-NOTE: Not yet implemented.
-Causes an extra output of the total count at the beginning.
-Note this is actually a uInt64, but with a custom string representation.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -180,11 +202,25 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -IncludeTotalCount
+NOTE: Not yet implemented.
+Causes an extra output of the total count at the beginning.
+Note this is actually a uInt64, but with a custom string representation.
+
+```yaml
+Type: SwitchParameter
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
 ## INPUTS
 
 ## OUTPUTS
 
-### ConfluencePS.Page
+### ConfluencePS.Attachment
 
 ## NOTES
 Confluence uses hierarchy to help organize content.

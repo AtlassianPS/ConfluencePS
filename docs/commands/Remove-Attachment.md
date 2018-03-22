@@ -1,65 +1,65 @@
 ---
 external help file: ConfluencePS-help.xml
-online version: https://atlassianps.org/docs/ConfluencePS/commands/Remove-Page/
+online version: https://atlassianps.org/docs/ConfluencePS/commands/Remove-Attachment/
 Module Name: ConfluencePS
 locale: en-US
 schema: 2.0.0
 layout: documentation
-permalink: /docs/ConfluencePS/commands/Remove-Page/
+permalink: /docs/ConfluencePS/commands/Remove-Attachment/
 ---
 
-# Remove-Page
+# Remove-Attachment
 
 ## SYNOPSIS
-Trash an existing Confluence page.
+Remove an Attachment.
 
 ## SYNTAX
 
 ```powershell
-Remove-ConfluencePage -apiURi <Uri> -Credential <PSCredential> [-PageID] <Int32[]> [-WhatIf] [-Confirm]
+Remove-ConfluenceAttachment -apiURi <Uri> -Credential <PSCredential> [-Attachment] <Attachment[]> [-WhatIf] [-Confirm]
 ```
 
 ## DESCRIPTION
-Delete existing Confluence content by page ID.
-This trashes most content, but will permanently delete "un-trashable" content.
+Remove Attachments from Confluence content.
+Does accept multiple pages piped via Get-ConfluencePage.
 Untested against non-page content.
 
 ## EXAMPLES
 
 ### -------------------------- EXAMPLE 1 --------------------------
 ```powershell
-Remove-ConfluencePage -PageID 123456 -Verbose -Confirm
+$attachments = Get-ConfluenceAtachments -PageID 123456
+Remove-ConfluenceAttachment -Attachment $attachments -Verbose -Confirm
 ```
 
 Description
 
 -----------
 
-Trash the wiki page with ID 123456.
-Verbose and Confirm flags both active; you will be prompted before removal.
+Remove all attachment from page 12345
+Verbose and Confirm flags both active; you will be prompted before deletion.
 
 ### -------------------------- EXAMPLE 2 --------------------------
 ```powershell
-Get-ConfluencePage -SpaceKey ABC -Title '*test*' | Remove-ConfluencePage -WhatIf
+Get-ConfluenceAttachment -PageID 123456 | Remove-ConfluenceAttachment -WhatIf
 ```
 
 Description
 
 -----------
 
-For all wiki pages in space ABC with "test" somewhere in the name,
-simulate the each page being trashed. -WhatIf prevents any removals.
+Do trial deletion for all attachments on page with ID 123456, the WhatIf parameter prevents any modifications.
 
 ### -------------------------- EXAMPLE 3 --------------------------
 ```powershell
-Get-ConfluencePage -Label 'deleteme' | Remove-ConfluencePage
+Get-ConfluenceAttachment -PageID 123456 | Remove-ConfluenceAttachment
 ```
 
 Description
 
 -----------
 
-For all wiki pages with the label "deleteme" applied, trash each page.
+Remove all Attachments on page 123456.
 
 ## PARAMETERS
 
@@ -95,19 +95,18 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -PageID
-The page ID to delete.
-Accepts multiple IDs via pipeline input.
+### -Attachment
+The Attachment(s) to remove.
 
 ```yaml
-Type: Int32[]
+Type: Attachment[]
 Parameter Sets: (All)
-Aliases: ID
+Aliases:
 
 Required: True
 Position: 1
 Default value: None
-Accept pipeline input: True (ByPropertyName, ByValue)
+Accept pipeline input: True (ByValue)
 Accept wildcard characters: False
 ```
 
@@ -145,8 +144,6 @@ Accept wildcard characters: False
 ## INPUTS
 
 ## OUTPUTS
-
-### System.Boolean
 
 ## NOTES
 

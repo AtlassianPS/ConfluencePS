@@ -1,8 +1,4 @@
 function Invoke-Method {
-    <#
-    .SYNOPSIS
-    Extracted invokation of the REST method to own function.
-    #>
     [CmdletBinding(SupportsPaging = $true)]
     [OutputType(
         [PSObject],
@@ -11,42 +7,40 @@ function Invoke-Method {
         [ConfluencePS.Label],
         [ConfluencePS.Icon],
         [ConfluencePS.Version],
-        [ConfluencePS.User]
+        [ConfluencePS.User],
+        [ConfluencePS.Attachment]
     )]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute( "PSAvoidUsingEmptyCatchBlock", "" )]
     param (
-        # REST API to invoke
         [Parameter(Mandatory = $true)]
         [Uri]$URi,
 
-        # Method of the invokation
         [Microsoft.PowerShell.Commands.WebRequestMethod]$Method = "GET",
 
-        # Body of the request
         [ValidateNotNullOrEmpty()]
         [String]$Body,
 
-        # Do not encode the body
         [Switch]$RawBody,
 
-        # Additional headers
         [Hashtable]$Headers,
 
-        # GET Parameters
         [Hashtable]$GetParameters,
 
-        # Type of object to which the output will be casted to
+        [String]$InFile,
+
+        [String]$OutFile,
+
         [ValidateSet(
             [ConfluencePS.Page],
             [ConfluencePS.Space],
             [ConfluencePS.Label],
             [ConfluencePS.Icon],
             [ConfluencePS.Version],
-            [ConfluencePS.User]
+            [ConfluencePS.User],
+            [ConfluencePS.Attachment]
         )]
         [System.Type]$OutputType,
 
-        # Authentication credentials
         [Parameter(Mandatory = $true)]
         [PSCredential]$Credential,
 
@@ -55,18 +49,6 @@ function Invoke-Method {
 
     BEGIN {
         Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function started"
-
-        # Validation of parameters
-        if (($Method -in ("POST", "PUT")) -and (!($Body))) {
-            $errorItem = [System.Management.Automation.ErrorRecord]::new(
-                ([System.ArgumentException]"Invalid Parameter"),
-                'ParameterProperties.IncorrectType',
-                [System.Management.Automation.ErrorCategory]::InvalidArgument,
-                $Method
-            )
-            $errorItem.ErrorDetails = "The following parameters are required when using the $Method parameter: Body."
-            $Caller.ThrowTerminatingError($errorItem)
-        }
 
         # pass input to local variable
         # this allows to use the PSBoundParameters for recursion
@@ -125,6 +107,13 @@ function Invoke-Method {
             }
         }
 
+        if ($InFile) {
+            $splatParameters["InFile"] = $InFile
+        }
+        if ($OutFile) {
+            $splatParameters["OutFile"] = $OutFile
+        }
+
         # Invoke the API
         Write-Verbose "[$($MyInvocation.MyCommand.Name)] Invoking method $Method to URI $URi"
         Write-Verbose "[$($MyInvocation.MyCommand.Name)] Invoke-WebRequest with: $(([PSCustomObject]$splatParameters) | Out-String)"
@@ -149,10 +138,14 @@ function Invoke-Method {
         Write-Debug "[$($MyInvocation.MyCommand.Name)] Executed WebRequest. Access `$webResponse to see details"
 
         if ($webResponse) {
-            Write-Verbose "[$($MyInvocation.MyCommand.Name)] Status code: $($webResponse.StatusCode)"
+            # In PowerShellCore (v6+) the StatusCode of an exception is somewhere else
+            if (-not ($statusCode = $webResponse.StatusCode)) {
+                $statusCode = $webresponse.Exception.Response.StatusCode
+            }
+            Write-Verbose "[$($MyInvocation.MyCommand.Name)] Status code: $($statusCode)"
 
-            if ($webResponse.StatusCode.value__ -ge 400) {
-                Write-Warning "Confluence returned HTTP error $($webResponse.StatusCode.value__) - $($webResponse.StatusCode)"
+            if ($statusCode.value__ -ge 400) {
+                Write-Warning "Confluence returned HTTP error $($statusCode.value__) - $($statusCode)"
 
                 if ((!($responseBody)) -and ($webResponse | Get-Member -Name "GetResponseStream")) {
                     # Retrieve body of HTTP response - this contains more useful information about exactly why the error occurred
@@ -166,7 +159,7 @@ function Invoke-Method {
 
                 $errorItem = [System.Management.Automation.ErrorRecord]::new(
                     ([System.ArgumentException]"Invalid Server Response"),
-                    "InvalidResponse.Status$($webResponse.StatusCode.value__)",
+                    "InvalidResponse.Status$($statusCode.value__)",
                     [System.Management.Automation.ErrorCategory]::InvalidResult,
                     $responseBody
                 )
