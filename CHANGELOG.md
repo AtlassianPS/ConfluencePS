@@ -5,6 +5,43 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 2.3 2018-03-22
+
+FEATURES:
+
+- Added custom object type for Attachments: `ConfluencePS.Attachment` (#123, [@JohnAdders][])
+- Added `Add-Attachment`: upload a file to a page (#123, [@JohnAdders][])
+- Added `Get-Attachment`: list all attachments of a page (#123, [@JohnAdders][])
+- Added `Get-AttachmentFile`: download an attachment to the local disc (#123, [@JohnAdders][])
+- Added `Remove-Attachment`: remove an attachment from a page (#123, [@JohnAdders][])
+- Added `Set-Attachment`: update an attachment of a page (#123, [@JohnAdders][])
+- Made `Invoke-Method` public (#130, [@lipkau][])
+- Added `-InFile` to `Invoke-Method` for uploading of files with `form-data` (#130, [@lipkau][])
+
+IMPROVEMENTS:
+
+- Moved Online Help of cmdlets to the homepage (#130, [@lipkau][])
+- Updated help for contributing to the project (#130, [@lipkau][])
+- Documentation for the custom classes of the module (#107, [@lipkau][])
+- Added full support for PowerShell Core (`pwsh`) (#119, [@lipkau][])
+- Added AppVeyor tests on PowerShell v6 (Linux) (#119, [@lipkau][])
+- Added AppVeyor tests on PowerShell v6 (Windows) (#119, [@lipkau][])
+- Tests now run from `./Release` Path (#99, [@lipkau][])
+- Have the Build script to "compile" the functions into the psm1 file (enhances performance) (#119, [@lipkau][])
+- Have a zip file deploy as artifact of the release (#90, [@lipkau][])
+
+## 2.2 - 2018-01-01
+
+FEATURES:
+- Automatic deployment of documentation to website (#120, [@lipkau][])
+- New parameter `-Query` to `Get-Page` for complex searches (#106, [@lipkau][])
+- Documentation for the custom classes of the module (#107, [@lipkau][])
+- Added full support for PowerShell Core (`pwsh`) (#119, [@lipkau][])
+
+IMPROVEMENTS:
+- Fixed encoding of Unicode chars (#101, [@lipkau][])
+- Require necessary Assembly for HttpUtility (#102, [@lipkau][])
+
 ## 2.1 - 2017-11-01
 
 IMPROVEMENTS:
@@ -108,5 +145,20 @@ If you like drinking from the firehose, here's [everything we closed for 2.0], b
 No changelog available for version `1.0` of ConfluencePS. `1.0` was created in late 2015. Version `.69` was published to the PowerShell Gallery in Nov 2016, and it remained unchanged until `2.0`. If you're looking for things that changed prior to `2.0`...sorry, but these probably aren't the droids you're looking for. :)
 
 
-
 [everything we closed for 2.0]: https://github.com/AtlassianPS/ConfluencePS/issues?utf8=%E2%9C%93&q=closed%3A2017-04-01..2017-08-17
+[@alexsuslin]: https://github.com/alexsuslin
+[@axxelG]: https://github.com/axxelG
+[@beaudryj]: https://github.com/beaudryj
+[@brianbunke]: https://github.com/brianbunke
+[@Clijsters]: https://github.com/Clijsters
+[@colhal]: https://github.com/colhal
+[@Dejulia489]: https://github.com/Dejulia489
+[@ebekker]: https://github.com/ebekker
+[@jkknorr]: https://github.com/jkknorr
+[@JohnAdders]: https://github.com/JohnAdders
+[@kittholland]: https://github.com/kittholland
+[@LiamLeane]: https://github.com/LiamLeane
+[@lipkau]: https://github.com/lipkau
+[@lukhase]: https://github.com/lukhase
+[@padgers]: https://github.com/padgers
+[@ThePSAdmin]: https://github.com/ThePSAdmin

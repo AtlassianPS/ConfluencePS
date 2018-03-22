@@ -13,7 +13,7 @@ environment:
         - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
           PowershellVersion: "6.0.0"
 
-version: 2.2.{build}
+version: 2.3.{build}
 
 # Don't rebuild when I tag a release on GitHub
 skip_tags: true
