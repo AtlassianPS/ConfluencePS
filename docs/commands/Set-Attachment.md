@@ -1,65 +1,52 @@
 ---
 external help file: ConfluencePS-help.xml
-online version: https://atlassianps.org/docs/ConfluencePS/commands/Remove-Page/
+online version: https://atlassianps.org/docs/ConfluencePS/commands/Set-Attachment/
 Module Name: ConfluencePS
 locale: en-US
 schema: 2.0.0
 layout: documentation
-permalink: /docs/ConfluencePS/commands/Remove-Page/
+permalink: /docs/ConfluencePS/commands/Set-Attachment/
 ---
 
-# Remove-Page
+# Set-Attachment
 
 ## SYNOPSIS
-Trash an existing Confluence page.
+Updates an existing attachment with a new file.
 
 ## SYNTAX
 
 ```powershell
-Remove-ConfluencePage -apiURi <Uri> -Credential <PSCredential> [-PageID] <Int32[]> [-WhatIf] [-Confirm]
+Set-Attachment -apiURi <Uri> -Credential <PSCredential> [-Attachment] <Attachment> -FilePath <String> [-WhatIf] [-Confirm]
 ```
 
 ## DESCRIPTION
-Delete existing Confluence content by page ID.
-This trashes most content, but will permanently delete "un-trashable" content.
-Untested against non-page content.
+Updates an existing attachment with a new file.
 
 ## EXAMPLES
 
 ### -------------------------- EXAMPLE 1 --------------------------
 ```powershell
-Remove-ConfluencePage -PageID 123456 -Verbose -Confirm
+$attachment = Get-ConfluenceAtachments -PageID 123456 -FileNameFilter test.png
+Set-ConfluenceAttachment -Attachment $attachment -FileName newtest.png -Verbose -Confirm
 ```
 
 Description
 
 -----------
 
-Trash the wiki page with ID 123456.
-Verbose and Confirm flags both active; you will be prompted before removal.
+For the attachment test.png on page with ID 123456, replace the file with the file newtest.png.
 
 ### -------------------------- EXAMPLE 2 --------------------------
 ```powershell
-Get-ConfluencePage -SpaceKey ABC -Title '*test*' | Remove-ConfluencePage -WhatIf
+Get-ConfluenceAtachments -PageID 123456 -FileNameFilter test.png | Set-Attachment -FileName newtest.png -WhatIf
 ```
 
 Description
 
 -----------
 
-For all wiki pages in space ABC with "test" somewhere in the name,
-simulate the each page being trashed. -WhatIf prevents any removals.
-
-### -------------------------- EXAMPLE 3 --------------------------
-```powershell
-Get-ConfluencePage -Label 'deleteme' | Remove-ConfluencePage
-```
-
-Description
-
------------
-
-For all wiki pages with the label "deleteme" applied, trash each page.
+Would replace the attachment test.png to the page with ID 123456.
+-WhatIf reports on simulated changes, but does not modify anything.
 
 ## PARAMETERS
 
@@ -95,19 +82,33 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -PageID
-The page ID to delete.
-Accepts multiple IDs via pipeline input.
+### -Attachment
+Attachment names to add to the content.
 
 ```yaml
-Type: Int32[]
+Type: Attachment
 Parameter Sets: (All)
-Aliases: ID
+Aliases:
 
 Required: True
 Position: 1
 Default value: None
-Accept pipeline input: True (ByPropertyName, ByValue)
+Accept pipeline input: True (ByValue)
+Accept wildcard characters: False
+```
+
+### -FilePath
+File to be updated.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
@@ -146,7 +147,7 @@ Accept wildcard characters: False
 
 ## OUTPUTS
 
-### System.Boolean
+### ConfluencePS.Attachment
 
 ## NOTES
 
