@@ -468,31 +468,37 @@ task PublishToGallery {
 
 # Synopsis: Update the HEAD of this git repo in the homepage repository
 task UpdateHomepage {
+    $originalErrorActionPreference = $ErrorActionPreference
     try {
+        $ErrorActionPreference = 'Continue'
         # Get the repo of the homepage
-        exec { git clone https://github.com/AtlassianPS/AtlassianPS.github.io --recursive 2>$null }
+        git clone https://github.com/AtlassianPS/AtlassianPS.github.io --recursive 2>$null
         Write-Host "Cloned"
         Set-Location "AtlassianPS.github.io/"
 
         # Update all submodules
-        exec { git submodule foreach git pull origin master 2>$null }
-        Write-Host "Fetched"
+        # git submodule foreach git pull origin master 2>$null
+        # Write-Host "Fetched"
 
         # Check if this repo was changed
-        $status = exec { git status -s 2>$null }
+        $status = git status -s 2>$null
+        Write-Host $status
         if ($status -contains " M modules/$PROJECT_NAME") {
             Write-Host "Has changes"
             # Update the repo in the homepage repo
-            exec { git add modules/$PROJECT_NAME 2>$null }
+            git add modules/$PROJECT_NAME 2>$null
             Write-Host "Added"
-            exec { git commit -m "Update module $PROJECT_NAME" 2>$null }
+            git commit -m "Update module $PROJECT_NAME" 2>$null
             Write-Host "Commited"
-            exec { git push 2>$null }
+            git push 2>$null
             Write-Host "Pushed"
         }
     }
     catch {
         throw $_
+    }
+    finally {
+        $ErrorActionPreference = $originalErrorActionPreference
     }
 }
 
