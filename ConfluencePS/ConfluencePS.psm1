@@ -1,3 +1,4 @@
+#region Dependencies
 # Load the ConfluencePS namespace from C#
 if (!("ConfluencePS.Space" -as [Type])) {
     Add-Type -Path (Join-Path $PSScriptRoot ConfluencePS.Types.cs) -ReferencedAssemblies Microsoft.CSharp, Microsoft.PowerShell.Commands.Utility, System.Management.Automation
@@ -8,8 +9,9 @@ if (!("ConfluencePS.Space" -as [Type])) {
 if (!("System.Web.HttpUtility" -as [Type])) {
     Add-Type -Assembly System.Web
 }
+#endregion Dependencies
 
-# Gather all files
+#region LoadFunctions
 $PublicFunctions = @( Get-ChildItem -Path $PSScriptRoot\Public\*.ps1 -ErrorAction SilentlyContinue )
 $PrivateFunctions = @( Get-ChildItem -Path $PSScriptRoot\Private\*.ps1 -ErrorAction SilentlyContinue )
 
@@ -29,3 +31,4 @@ ForEach ($File in @($PublicFunctions + $PrivateFunctions)) {
         $PSCmdlet.ThrowTerminatingError($errorItem)
     }
 }
+#endregion LoadFunctions

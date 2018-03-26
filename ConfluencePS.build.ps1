@@ -273,6 +273,7 @@ task CompileModule {
         }
         if (($capture -eq $true) -and ($line -match "^#endregion")) {
             $capture = $false
+            $compiled += "$line`n`n"
         }
 
         if ($capture) {
