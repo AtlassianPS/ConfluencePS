@@ -57,19 +57,7 @@ Executes a GET request on the defined URI and returns a collection of Confluence
 ### EXAMPLE 3
 ```
 $params = @{
-    Uri = https://contoso.com/rest/api/content
-    Method = "POST"
-    Credential = $cred
-}
-Invoke-ConfluenceMethod @params
-```
-
-Executes a POST request on the defined URI and returns a collection of ConfluencePS.Page
-
-### EXAMPLE 4
-```
-$params = @{
-    Uri = https://contoso.com/rest/api/content
+    Uri = "https://contoso.com/rest/api/content"
     Method = "POST"
     Credential = $cred
 }
@@ -78,15 +66,15 @@ Invoke-ConfluenceMethod @params
 
 Executes a POST request on the defined URI and returns a collection of ConfluencePS.Page.
 
-This will example doesn't really do anything on the server, as the content API needs requires a value
-for the BODY.
+This will example doesn't really do anything on the server,
+as the content API needs requires a value for the BODY.
 See next example
 
-### EXAMPLE 5
+### EXAMPLE 4
 ```
-$body = '{"type": "page", "space": {"key": "TS"}, "title": "My New Page", "body": {"storage": {"representation": "storage"}, "value": "<p>LoremIpsum"}}'
+$body = '{"type": "page", "space": {"key": "TS"}, "title": "My New Page", "body": {"storage": {"representation": "storage"}, "value": "<p>LoremIpsum</p>"}}'
 $params = @{
-    Uri = https://contoso.com/rest/api/content
+    Uri = "https://contoso.com/rest/api/content"
     Method = "POST"
     Body = $body
     Credential = $cred
@@ -94,13 +82,13 @@ $params = @{
 Invoke-ConfluenceMethod @params
 ```
 
-Executes a POST request with a JSON string in the BODY on the defined URI and returns a collection
-of ConfluencePS.Page.
+Executes a POST request with a JSON string in the BODY on the defined URI
+and returns a collection of ConfluencePS.Page.
 
-### EXAMPLE 6
+### EXAMPLE 5
 ```
 $params = @{
-    Uri = https://contoso.com/rest/api/content
+    Uri = "https://contoso.com/rest/api/content"
     GetParameters = @{
         expand = "space,version,body.storage,ancestors"
         limit  = 30
@@ -113,25 +101,25 @@ Invoke-ConfluenceMethod @params
 Executes a GET request on the defined URI with a Get Parameter that is resolved to look like this:
 ?expand=space,version,body.storage,ancestors&limit=30
 
-### EXAMPLE 7
+### EXAMPLE 6
 ```
 $params = @{
-    Uri = https://contoso.com/rest/api/content/10001/child/attachment
+    Uri = "https://contoso.com/rest/api/content/10001/child/attachment"
     Method = "POST"
-    OutputType = \[ConfluencePS.Attachment\]
+    OutputType = [ConfluencePS.Attachment]
     InFile = "c:\temp\confidentialData.txt"
     Credential = $cred
 }
 Invoke-ConfluenceMethod @params
 ```
 
-Executes a POST request on the defined URI add uploads the InFile with a multipart/form-data request.
+Executes a POST request on the defined URI and uploads the InFile with a multipart/form-data request.
 The response of the request will be cast to an object of type ConfluencePS.Attachment.
 
-### EXAMPLE 8
+### EXAMPLE 7
 ```
 $params = @{
-    Uri = https://contoso.com/rest/api/content/10001/child/attachment/110001
+    Uri = "https://contoso.com/rest/api/content/10001/child/attachment/110001"
     Method = "GET"
     Headers    = @{"Accept" = "text/plain"}
     OutFile = "c:\temp\confidentialData.txt"
@@ -267,7 +255,7 @@ Accept wildcard characters: False
 ### -OutFile
 Path to the file where the response should be stored to.
 
-This parameter does not valudate the input in any way
+This parameter does not validate the input in any way
 
 ```yaml
 Type: String
@@ -301,6 +289,8 @@ Accept wildcard characters: False
 
 ### -Credential
 Credentials to use for the authentication with the REST Api.
+
+If no sessions is available, the request will be executed anonymously.
 
 ```yaml
 Type: PSCredential
@@ -405,5 +395,7 @@ For more information, see about_CommonParameters (http://go.microsoft.com/fwlink
 ## NOTES
 
 ## RELATED LINKS
+
 [Confleunce Cloud API](https://developer.atlassian.com/cloud/confluence/rest/)
+
 [Confluence Server API](https://docs.atlassian.com/ConfluenceServer/rest/latest/)

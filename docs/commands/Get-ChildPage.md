@@ -7,10 +7,10 @@ schema: 2.0.0
 layout: documentation
 permalink: /docs/ConfluencePS/commands/Get-ChildPage/
 ---
-
 # Get-ChildPage
 
 ## SYNOPSIS
+
 Retrieve the child pages of a given wiki page or pages.
 
 ## SYNTAX
@@ -20,32 +20,28 @@ Get-ConfluenceChildPage -apiURi <Uri> -Credential <PSCredential> [-PageID] <Int3
 ```
 
 ## DESCRIPTION
-Return all pages directly below the given page(s). Optionally,
-the -Recurse parameter will return all child pages, no matter how nested.
+
+Return all pages directly below the given page(s).
+
+Optionally, the -Recurse parameter will return all child pages, no matter how nested.
 
 ## EXAMPLES
 
 ### -------------------------- EXAMPLE 1 --------------------------
+
 ```powershell
 Get-ConfluenceChildPage -PageID 123456
 Get-ConfluencePage -PageID 123456 | Get-ConfluenceChildPage
 ```
 
-Description
-
------------
-
 Two different methods to return all pages directly below page 123456.
 Both examples should return identical results.
 
 ### -------------------------- EXAMPLE 2 --------------------------
+
 ```powershell
 Get-ConfluenceChildPage -PageID 123456 -Recurse
 ```
-
-Description
-
------------
 
 Instead of returning only 123456's child pages,
 return grandchildren, great-grandchildren, and so on.
@@ -53,6 +49,7 @@ return grandchildren, great-grandchildren, and so on.
 ## PARAMETERS
 
 ### -apiURi
+
 The URi of the API interface.
 Value can be set persistently with Set-ConfluenceInfo.
 
@@ -69,6 +66,7 @@ Accept wildcard characters: False
 ```
 
 ### -Credential
+
 Confluence's credentials for authentication.
 Value can be set persistently with Set-ConfluenceInfo.
 
@@ -85,6 +83,7 @@ Accept wildcard characters: False
 ```
 
 ### -PageID
+
 Filter results by page ID.
 
 ```yaml
@@ -100,6 +99,7 @@ Accept wildcard characters: False
 ```
 
 ### -Recurse
+
 Get all child pages recursively
 
 ```yaml
@@ -115,9 +115,12 @@ Accept wildcard characters: False
 ```
 
 ### -PageSize
+
 Maximum number of results to fetch per call.
+
 This setting can be tuned to get better performance according to the load on the server.
-Warning: too high of a PageSize can cause a timeout on the request.
+
+> Warning: too high of a PageSize can cause a timeout on the request.
 
 ```yaml
 Type: Int32
@@ -132,8 +135,11 @@ Accept wildcard characters: False
 ```
 
 ### -IncludeTotalCount
-NOTE: Not yet implemented.
+
+> NOTE: Not yet implemented.
+
 Causes an extra output of the total count at the beginning.
+
 Note this is actually a uInt64, but with a custom string representation.
 
 ```yaml
@@ -149,7 +155,9 @@ Accept wildcard characters: False
 ```
 
 ### -Skip
+
 Controls how many things will be skipped before starting output.
+
 Defaults to 0.
 
 ```yaml
@@ -165,7 +173,9 @@ Accept wildcard characters: False
 ```
 
 ### -First
-NOTE: Not yet implemented.
+
+> NOTE: Not yet implemented.
+
 Indicates how many items to return.
 
 ```yaml

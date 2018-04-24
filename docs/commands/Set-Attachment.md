@@ -7,10 +7,10 @@ schema: 2.0.0
 layout: documentation
 permalink: /docs/ConfluencePS/commands/Set-Attachment/
 ---
-
 # Set-Attachment
 
 ## SYNOPSIS
+
 Updates an existing attachment with a new file.
 
 ## SYNTAX
@@ -20,30 +20,25 @@ Set-Attachment -apiURi <Uri> -Credential <PSCredential> [-Attachment] <Attachmen
 ```
 
 ## DESCRIPTION
+
 Updates an existing attachment with a new file.
 
 ## EXAMPLES
 
 ### -------------------------- EXAMPLE 1 --------------------------
+
 ```powershell
 $attachment = Get-ConfluenceAtachments -PageID 123456 -FileNameFilter test.png
 Set-ConfluenceAttachment -Attachment $attachment -FileName newtest.png -Verbose -Confirm
 ```
 
-Description
-
------------
-
 For the attachment test.png on page with ID 123456, replace the file with the file newtest.png.
 
 ### -------------------------- EXAMPLE 2 --------------------------
+
 ```powershell
 Get-ConfluenceAtachments -PageID 123456 -FileNameFilter test.png | Set-Attachment -FileName newtest.png -WhatIf
 ```
-
-Description
-
------------
 
 Would replace the attachment test.png to the page with ID 123456.
 -WhatIf reports on simulated changes, but does not modify anything.
@@ -51,6 +46,7 @@ Would replace the attachment test.png to the page with ID 123456.
 ## PARAMETERS
 
 ### -apiURi
+
 The URi of the API interface.
 Value can be set persistently with Set-ConfluenceInfo.
 
@@ -67,6 +63,7 @@ Accept wildcard characters: False
 ```
 
 ### -Credential
+
 Confluence's credentials for authentication.
 Value can be set persistently with Set-ConfluenceInfo.
 
@@ -83,6 +80,7 @@ Accept wildcard characters: False
 ```
 
 ### -Attachment
+
 Attachment names to add to the content.
 
 ```yaml
@@ -98,6 +96,7 @@ Accept wildcard characters: False
 ```
 
 ### -FilePath
+
 File to be updated.
 
 ```yaml
@@ -113,6 +112,7 @@ Accept wildcard characters: False
 ```
 
 ### -WhatIf
+
 Shows what would happen if the cmdlet runs.
 The cmdlet is not run.
 
@@ -129,6 +129,7 @@ Accept wildcard characters: False
 ```
 
 ### -Confirm
+
 Prompts you for confirmation before running the cmdlet.
 
 ```yaml
