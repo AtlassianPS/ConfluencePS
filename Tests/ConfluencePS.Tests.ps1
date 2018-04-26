@@ -164,24 +164,24 @@ Describe "ConfluencePS" {
                 }
             }
 
-            It 'Source files contain wrong line endings (windows style)' {
-                $badFiles = @(
-                    foreach ($file in $files) {
-                        $lines = Get-Content $file.FullName -Delim "`0"
+            # It 'Source files contain wrong line endings (windows style)' {
+            #     $badFiles = @(
+            #         foreach ($file in $files) {
+            #             $lines = Get-Content $file.FullName -Delim "`0"
 
-                        foreach ($line in $lines) {
-                            if ($line | Select-String "`r`n") {
-                                'File: {0}' -f $file.FullName
-                                break
-                            }
-                        }
-                    }
-                )
+            #             foreach ($line in $lines) {
+            #                 if ($line | Select-String "`r`n") {
+            #                     'File: {0}' -f $file.FullName
+            #                     break
+            #                 }
+            #             }
+            #         }
+            #     )
 
-                if ($badFiles.Count -gt 0) {
-                    throw "The following $($badFiles.Count) files contain the wrong type of line feed: `r`n`r`n$($badFiles -join "`r`n")"
-                }
-            }
+            #     if ($badFiles.Count -gt 0) {
+            #         throw "The following $($badFiles.Count) files contain the wrong type of line feed: `r`n`r`n$($badFiles -join "`r`n")"
+            #     }
+            # }
 
             It 'Source files all end with a newline' {
                 $badFiles = @(

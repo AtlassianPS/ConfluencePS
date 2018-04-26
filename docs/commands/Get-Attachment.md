@@ -7,10 +7,10 @@ schema: 2.0.0
 layout: documentation
 permalink: /docs/ConfluencePS/commands/Get-Attachment/
 ---
-
 # Get-Attachment
 
 ## SYNOPSIS
+
 Retrieve the child Attachments of a given wiki Page.
 
 ## SYNTAX
@@ -20,61 +20,51 @@ Get-ConfluenceAttachment -apiURi <Uri> -Credential <PSCredential> [-PageID] <Int
 ```
 
 ## DESCRIPTION
+
 Return all Attachments directly below the given Page.
 
 ## EXAMPLES
 
 ### -------------------------- EXAMPLE 1 --------------------------
+
 ```powershell
 Get-ConfluenceAttachment -PageID 123456
 Get-ConfluencePage -PageID 123456 | Get-ConfluenceAttachment
 ```
 
-Description
-
------------
-
 Two different methods to return all Attachments directly below Page 123456.
 Both examples should return identical results.
 
 ### -------------------------- EXAMPLE 2 --------------------------
+
 ```powershell
 Get-ConfluenceAttachment -PageID 123456, 234567
 Get-ConfluencePage -PageID 123456, 234567 | Get-ConfluenceAttachment
 ```
 
-Description
-
------------
-
 Similar to the previous example, this shows two different methods to return the Attachments of multiple pages.
 Both examples should return identical results.
 
 ### -------------------------- EXAMPLE 3 --------------------------
+
 ```powershell
 Get-ConfluenceAttachment -PageID 123456 -FileNameFilter "test.png"
 ```
 
-Description
-
------------
-
 Returns the Attachment called test.png from Page 123456 if it exists.
 
 ### -------------------------- EXAMPLE 4 --------------------------
+
 ```powershell
 Get-ConfluenceAttachment -PageID 123456 -MediaTypeFilter "image/png"
 ```
-
-Description
-
------------
 
 Returns any attachments of mime type image/png from Page 123456.
 
 ## PARAMETERS
 
 ### -apiURi
+
 The URi of the API interface.
 Value can be set persistently with Set-ConfluenceInfo.
 
@@ -91,6 +81,7 @@ Accept wildcard characters: False
 ```
 
 ### -Credential
+
 Confluence's credentials for authentication.
 Value can be set persistently with Set-ConfluenceInfo.
 
@@ -107,6 +98,7 @@ Accept wildcard characters: False
 ```
 
 ### -PageID
+
 Return attachments for a list of page IDs.
 
 ```yaml
@@ -122,6 +114,7 @@ Accept wildcard characters: False
 ```
 
 ### -FileNameFilter
+
 Filter results by filename (case sensitive).
 Does not support wildcards (*).
 
@@ -138,7 +131,9 @@ Accept wildcard characters: False
 ```
 
 ### -MediaTypeFilter
+
 Filter results by media type (case insensitive).
+
 Does not support wildcards (*).
 
 ```yaml
@@ -154,9 +149,12 @@ Accept wildcard characters: False
 ```
 
 ### -PageSize
+
 Maximum number of results to fetch per call.
+
 This setting can be tuned to get better performance according to the load on the server.
-Warning: too high of a PageSize can cause a timeout on the request.
+
+> Warning: too high of a PageSize can cause a timeout on the request.
 
 ```yaml
 Type: Int32
@@ -171,7 +169,9 @@ Accept wildcard characters: False
 ```
 
 ### -Skip
+
 Controls how many things will be skipped before starting output.
+
 Defaults to 0.
 
 ```yaml
@@ -187,7 +187,9 @@ Accept wildcard characters: False
 ```
 
 ### -First
-NOTE: Not yet implemented.
+
+> NOTE: Not yet implemented.
+
 Indicates how many items to return.
 
 ```yaml
@@ -203,8 +205,11 @@ Accept wildcard characters: False
 ```
 
 ### -IncludeTotalCount
-NOTE: Not yet implemented.
+
+> NOTE: Not yet implemented.
+
 Causes an extra output of the total count at the beginning.
+
 Note this is actually a uInt64, but with a custom string representation.
 
 ```yaml
@@ -216,6 +221,7 @@ Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
+
 ## INPUTS
 
 ## OUTPUTS
@@ -223,6 +229,7 @@ Accept wildcard characters: False
 ### ConfluencePS.Attachment
 
 ## NOTES
+
 Confluence uses hierarchy to help organize content.
 This command is meant to help provide the intended context from the command line.
 

@@ -7,10 +7,10 @@ schema: 2.0.0
 layout: documentation
 permalink: /docs/ConfluencePS/commands/Add-Label/
 ---
-
 # Add-Label
 
 ## SYNOPSIS
+
 Add a new global label to an existing Confluence page.
 
 ## SYNTAX
@@ -20,20 +20,19 @@ Add-ConfluenceLabel -apiURi <Uri> -Credential <PSCredential> [[-PageID] <Int32[]
 ```
 
 ## DESCRIPTION
+
 Assign labels (one or more) to Confluence pages (one or more).
+
 If the label did not exist previously, it will be created.
 Preexisting labels are not affected.
 
 ## EXAMPLES
 
 ### -------------------------- EXAMPLE 1 --------------------------
+
 ```powershell
 Add-ConfluenceLabel -PageID 123456 -Label alpha -Verbose
 ```
-
-Description
-
------------
 
 Apply the label alpha to the wiki page with ID 123456.
 -Verbose output provides extra technical details, if interested.
@@ -44,10 +43,6 @@ Apply the label alpha to the wiki page with ID 123456.
 Get-ConfluencePage -SpaceKey SRV | Add-ConfluenceLabel -Label servers -WhatIf
 ```
 
-Description
-
------------
-
 Simulates applying the label "servers" to all pages in the space with key SRV.
 -WhatIf provides PageIDs of pages that would have been affected.
 
@@ -57,16 +52,13 @@ Simulates applying the label "servers" to all pages in the space with key SRV.
 Get-ConfluencePage -SpaceKey DEMO | Add-ConfluenceLabel -Label abc -Confirm
 ```
 
-Description
-
------------
-
 Applies the label "abc" to all pages in the space with key DEMO.
 -Confirm prompts Yes/No for each page that would be affected.
 
 ## PARAMETERS
 
 ### -apiURi
+
 The URi of the API interface.
 Value can be set persistently with Set-Info.
 
@@ -83,6 +75,7 @@ Accept wildcard characters: False
 ```
 
 ### -Credential
+
 Confluence's credentials for authentication.
 Value can be set persistently with Set-ConfluenceInfo.
 
@@ -99,6 +92,7 @@ Accept wildcard characters: False
 ```
 
 ### -PageID
+
 The ID of the page to which apply the label to.
 Accepts multiple IDs, including via pipeline input.
 
@@ -115,6 +109,7 @@ Accept wildcard characters: False
 ```
 
 ### -Label
+
 One or more labels to be added.
 Currently only supports labels of prefix "global".
 
@@ -131,6 +126,7 @@ Accept wildcard characters: False
 ```
 
 ### -WhatIf
+
 Shows what would happen if the cmdlet runs.
 The cmdlet is not run.
 
@@ -147,6 +143,7 @@ Accept wildcard characters: False
 ```
 
 ### -Confirm
+
 Prompts you for confirmation before running the cmdlet.
 
 ```yaml

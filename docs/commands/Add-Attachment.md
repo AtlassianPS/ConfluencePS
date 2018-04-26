@@ -7,10 +7,11 @@ schema: 2.0.0
 layout: documentation
 permalink: /docs/ConfluencePS/commands/Add-Attachment/
 ---
-
 # Add-Attachment
 
+
 ## SYNOPSIS
+
 Add a new attachment to an existing Confluence page.
 
 ## SYNTAX
@@ -20,6 +21,7 @@ Add-ConfluenceAttachment -apiURi <Uri> -Credential <PSCredential> [[-PageID] <In
 ```
 
 ## DESCRIPTION
+
 Add Attachments (one or more) to Confluence pages (one or more).
 If the Attachment did not exist previously, it will be created.
 
@@ -28,13 +30,10 @@ This will not update an already existing Attachment; see Set-Attachment for upda
 ## EXAMPLES
 
 ### -------------------------- EXAMPLE 1 --------------------------
+
 ```powershell
 Add-ConfluenceAttachment -PageID 123456 -FilePath test.png -Verbose
 ```
-
-Description
-
------------
 
 Adds the Attachment test.png to the wiki page with ID 123456.
 -Verbose output provides extra technical details, if interested.
@@ -45,16 +44,13 @@ Adds the Attachment test.png to the wiki page with ID 123456.
 Get-ConfluencePage -SpaceKey SRV | Add-ConfluenceAttachment -FilePath test.png -WhatIf
 ```
 
-Description
-
------------
-
 Simulates adding the Attachment test.png to all pages in the space with key SRV.
 -WhatIf provides PageIDs of pages that would have been affected.
 
 ## PARAMETERS
 
 ### -apiURi
+
 The URi of the API interface.
 Value can be set persistently with Set-Info.
 
@@ -71,6 +67,7 @@ Accept wildcard characters: False
 ```
 
 ### -Credential
+
 Confluence's credentials for authentication.
 Value can be set persistently with Set-ConfluenceInfo.
 
@@ -87,6 +84,7 @@ Accept wildcard characters: False
 ```
 
 ### -PageID
+
 The ID of the page to which apply the Attachment to.
 Accepts multiple IDs, including via pipeline input.
 
@@ -103,6 +101,7 @@ Accept wildcard characters: False
 ```
 
 ### -FilePath
+
 One or more files to be added.
 
 ```yaml
@@ -117,7 +116,9 @@ Accept wildcard characters: False
 ```
 
 ### -WhatIf
+
 Shows what would happen if the cmdlet runs.
+
 The cmdlet is not run.
 
 ```yaml
@@ -133,6 +134,7 @@ Accept wildcard characters: False
 ```
 
 ### -Confirm
+
 Prompts you for confirmation before running the cmdlet.
 
 ```yaml
