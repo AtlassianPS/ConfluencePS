@@ -24,7 +24,6 @@ function ConvertTo-Attachment {
                 $PageID = [convert]::ToInt32($PageID, 10)
             }
 
-            
             [ConfluencePS.Attachment](ConvertTo-Hashtable -InputObject ($object | Select-Object `
                     @{Name = "id"; Expression = {
                             $ID = $_.id -replace 'att', ''
