@@ -7,10 +7,10 @@ schema: 2.0.0
 layout: documentation
 permalink: /docs/ConfluencePS/commands/Get-AttachmentFile/
 ---
-
 # Get-AttachmentFile
 
 ## SYNOPSIS
+
 Retrieves the binary Attachment for a given Attachment object.
 
 ## SYNTAX
@@ -20,6 +20,7 @@ Get-ConfluenceAttachmentFile -apiURi <Uri> -Credential <PSCredential> [-Attachme
 ```
 
 ## DESCRIPTION
+
 Retrieves the binary Attachment for a given Attachment object.
 
 As the files are stored in a location of the server that requires authentication,
@@ -28,32 +29,24 @@ this functions allows the download of the Attachment in the same way as the rest
 ## EXAMPLES
 
 ### -------------------------- EXAMPLE 1 --------------------------
+
 ```powershell
 Get-ConfluenceAttachment -PageID 123456 | Get-ConfluenceAttachmentFile
 ```
-
-Description
-
------------
 
 Save any attachments of page 123456 to the current directory with each filename constructed
 with the page ID and the attachment filename.
 
 ### -------------------------- EXAMPLE 2 --------------------------
+
 ```powershell
 Get-ConfluenceAttachment -PageID 123456 | Get-ConfluenceAttachmentFile -Path "c:\temp_dir"
 ```
 
-Description
-
------------
-
-Save any attachments of page 123456 to the c:\temp_dir directory with each filename constructed
-with the page ID and the attachment filename.
-
 ## PARAMETERS
 
 ### -apiURi
+
 The URi of the API interface.
 Value can be set persistently with Set-ConfluenceInfo.
 
@@ -70,6 +63,7 @@ Accept wildcard characters: False
 ```
 
 ### -Credential
+
 Confluence's credentials for authentication.
 Value can be set persistently with Set-ConfluenceInfo.
 
@@ -86,6 +80,7 @@ Accept wildcard characters: False
 ```
 
 ### -Attachment
+
 Attachment object to download.
 
 ```yaml
@@ -101,6 +96,7 @@ Accept wildcard characters: False
 ```
 
 ### -Path
+
 Override the path used to save the files.
 
 ```yaml
@@ -122,6 +118,7 @@ Accept wildcard characters: False
 ### ConfluencePS.Attachment
 
 ## NOTES
+
 Confluence uses hierarchy to help organize content.
 This command is meant to help provide the intended context from the command line.
 
