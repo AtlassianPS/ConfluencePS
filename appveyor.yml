@@ -7,8 +7,8 @@ environment:
     matrix:
         - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
         # don't use the next image, as long as poshcode/Configuration is not compatible with PSv4
-        # - APPVEYOR_BUILD_WORKER_IMAGE: WMF 4
-        - APPVEYOR_BUILD_WORKER_IMAGE: ubuntu
+        - APPVEYOR_BUILD_WORKER_IMAGE: WMF 4
+        - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
           PowershellVersion: "6.0.0"
         - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
           PowershellVersion: "6.0.0"
