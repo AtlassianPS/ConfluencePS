@@ -1,12 +1,13 @@
+#requires -Modules InvokeBuild
+
 [CmdletBinding()]
 [System.Diagnostics.CodeAnalysis.SuppressMessage('PSAvoidUsingWriteHost', '')]
 [System.Diagnostics.CodeAnalysis.SuppressMessage('PSAvoidUsingEmptyCatchBlock', '')]
 param(
-    $ModuleName = (Split-Path $BuildRoot -Leaf),
-    $releasePath = "$BuildRoot/Release"
+    [String[]]$Tag,
+    [String[]]$ExcludeTag
 )
 
-#region Setup
 $WarningPreference = "Continue"
 if ($PSBoundParameters.ContainsKey('Verbose')) {
     $VerbosePreference = "Continue"
@@ -23,77 +24,56 @@ try {
 }
 catch { }
 
-$PSModulePath = $env:PSModulePath -split ([IO.Path]::PathSeparator)
-if ($releasePath -notin $PSModulePath) {
-    $PSModulePath += $releasePath
-    $env:PSModulePath = $PSModulePath -join ([IO.Path]::PathSeparator)
-}
-
-# hide progress bars on linux/macOS
-# as they mess with the CI's console
-if (-not ($script:IsWindows)) {
-    $script:ProgressPreference = 'SilentlyContinue'
-}
-
 Set-StrictMode -Version Latest
 
-function Get-AppVeyorBuild {
-    param()
-
-    if (-not ($env:APPVEYOR_API_TOKEN)) {
-        throw "missing api token for AppVeyor."
-    }
-    if (-not ($env:APPVEYOR_ACCOUNT_NAME)) {
-        throw "not an appveyor build."
-    }
-
-    Invoke-RestMethod -Uri "https://ci.appveyor.com/api/projects/$env:APPVEYOR_ACCOUNT_NAME/$env:APPVEYOR_PROJECT_SLUG" -Method GET -Headers @{
-        "Authorization" = "Bearer $env:APPVEYOR_API_TOKEN"
-        "Content-type"  = "application/json"
-    }
-}
-function Get-TravisBuild {
-    param()
-
-    if (-not ($env:TRAVIS_API_TOKEN)) {
-        throw "missing api token for Travis-CI."
-    }
-    if (-not ($env:APPVEYOR_ACCOUNT_NAME)) {
-        throw "not an appveyor build."
-    }
-
-    Invoke-RestMethod -Uri "https://api.travis-ci.org/builds?limit=10" -Method Get -Headers @{
-        "Authorization"      = "token $env:TRAVIS_API_TOKEN"
-        "Travis-API-Version" = "3"
-    }
+Import-Module "$PSScriptRoot/Tools/build.psm1" -Force -ErrorAction Stop
+if ($BuildTask -notin @("SetUp", "InstallDependencies")) {
+    Import-Module BuildHelpers -Force -ErrorAction Stop
 }
 
+#region SetUp
 # Synopsis: Create an initial environment for developing on the module
 task SetUp InstallDependencies, Build
 
 # Synopsis: Install all module used for the development of this module
-task InstallDependencies InstallPandoc, {
-    Install-Module platyPS -Scope CurrentUser -Force
-    Install-Module Pester -Scope CurrentUser -Force
-    Install-Module PSScriptAnalyzer -Scope CurrentUser -Force
+task InstallDependencies {
+    Install-PSDepend
+    Import-Module PSDepend -Force
+    $parameterPSDepend = @{
+        Path        = "$PSScriptRoot/Tools/build.requirements.psd1"
+        Target      = $Scope
+        Install     = $true
+        Import      = $true
+        Force       = $true
+        ErrorAction = "Stop"
+    }
+    $null = Invoke-PSDepend @parameterPSDepend
+    Import-Module BuildHelpers -Force
+}
+
+# Synopsis: Ensure the build environment is all ready to go
+task Init {
+    Set-BuildEnvironment -BuildOutput '$ProjectPath/Release' -ErrorAction SilentlyContinue
+
+    Add-ToModulePath -Path $env:BHBuildOutput
+}, GetNextVersion
+
+# Synopsis: Get the next version for the build
+task GetNextVersion {
+    $currentVersion = [Version](Get-Metadata -Path $env:BHPSModuleManifest)
+    if ($env:BHBuildNumber) {
+        $newRevision = $env:BHBuildNumber
+    }
+    else {
+        $newRevision = 0
+    }
+    $env:NextBuildVersion = [Version]::New($currentVersion.Major, $currentVersion.Minor, $newRevision)
+    $env:CurrentBuildVersion = $currentVersion
 }
 #endregion Setup
 
 #region HarmonizeVariables
 switch ($true) {
-    {$env:APPVEYOR_JOB_ID} {
-        $CI = "AppVeyor"
-        $OS = "Windows"
-    }
-    {$env:TRAVIS} {
-        $CI = "Travis"
-        $OS = $env:TRAVIS_OS_NAME
-    }
-    { (-not($env:APPVEYOR_JOB_ID)) -and (-not($env:TRAVIS)) } {
-        $CI = "local"
-        $branch = git branch 2>$null | select-string -Pattern "^\*\s(.+)$" | Foreach-Object { $_.Matches.Groups[1].Value}
-        $commit = git log 2>$null | select-string -Pattern "^commit ([0-9a-f]{7}) \(HEAD ->.*$branch.*$" | Foreach-Object { $_.Matches.Groups[1].Value}
-    }
     {$IsWindows} {
         $OS = "Windows"
         if (-not ($IsCoreCLR)) {
@@ -110,159 +90,69 @@ switch ($true) {
         $OSVersion = $PSVersionTable.OS
     }
 }
-
-$PROJECT_NAME = if ($env:APPVEYOR_PROJECT_NAME) {$env:APPVEYOR_PROJECT_NAME} elseif ($env:TRAVIS_REPO_SLUG) {$env:TRAVIS_REPO_SLUG} else {$ModuleName}
-$BUILD_FOLDER = if ($env:APPVEYOR_BUILD_FOLDER) {$env:APPVEYOR_BUILD_FOLDER} elseif ($env:TRAVIS_BUILD_DIR) {$env:TRAVIS_BUILD_DIR} else {$BuildRoot}
-$REPO_NAME = if ($env:APPVEYOR_REPO_NAME) {$env:APPVEYOR_REPO_NAME} elseif ($env:TRAVIS_REPO_SLUG) {$env:TRAVIS_REPO_SLUG} else {$ModuleName}
-$REPO_BRANCH = if ($env:APPVEYOR_REPO_BRANCH) {$env:APPVEYOR_REPO_BRANCH} elseif ($env:TRAVIS_BRANCH) {$env:TRAVIS_BRANCH} elseif ($branch) {$branch} else {''}
-$REPO_COMMIT = if ($env:APPVEYOR_REPO_COMMIT) {$env:APPVEYOR_REPO_COMMIT} elseif ($env:TRAVIS_COMMIT) {$env:TRAVIS_COMMIT} elseif ($commit) {$commit} else {''}
-$REPO_COMMIT_AUTHOR = if ($env:APPVEYOR_REPO_COMMIT_AUTHOR) {$env:APPVEYOR_REPO_COMMIT_AUTHOR} else {''}
-$REPO_COMMIT_TIMESTAMP = if ($env:APPVEYOR_REPO_COMMIT_TIMESTAMP) {$env:APPVEYOR_REPO_COMMIT_TIMESTAMP} else {''}
-$REPO_COMMIT_RANGE = if ($env:TRAVIS_COMMIT_RANGE) {$env:TRAVIS_COMMIT_RANGE} else {''}
-$REPO_COMMIT_MESSAGE = if ($env:APPVEYOR_REPO_COMMIT_MESSAGE) {$env:APPVEYOR_REPO_COMMIT_MESSAGE} elseif ($env:TRAVIS_COMMIT_MESSAGE) {$env:TRAVIS_COMMIT_MESSAGE} else {''}
-$REPO_COMMIT_MESSAGE_EXTENDED = if ($env:APPVEYOR_REPO_COMMIT_MESSAGE_EXTENDED) {$env:APPVEYOR_REPO_COMMIT_MESSAGE_EXTENDED} else {''}
-$REPO_PULL_REQUEST_NUMBER = if ($env:APPVEYOR_PULL_REQUEST_NUMBER) {$env:APPVEYOR_PULL_REQUEST_NUMBER} elseif ($env:TRAVIS_PULL_REQUEST) {$env:TRAVIS_PULL_REQUEST} else {''}
-$REPO_PULL_REQUEST_TITLE = if ($env:APPVEYOR_PULL_REQUEST_TITLE) {$env:APPVEYOR_PULL_REQUEST_TITLE} else {''}
-$REPO_PULL_REQUEST_SHA = if ($env:TRAVIS_PULL_REQUEST_SHA) {$env:TRAVIS_PULL_REQUEST_SHA} else {''}
-$BUILD_ID = if ($env:APPVEYOR_BUILD_ID) {$env:APPVEYOR_BUILD_ID} elseif ($env:TRAVIS_BUILD_ID) {$env:TRAVIS_BUILD_ID} else {''}
-$BUILD_NUMBER = if ($env:APPVEYOR_BUILD_NUMBER) {$env:APPVEYOR_BUILD_NUMBER} elseif ($env:TRAVIS_BUILD_NUMBER) {$env:TRAVIS_BUILD_NUMBER} else {''}
-$BUILD_VERSION = if ($env:APPVEYOR_BUILD_VERSION) {$env:APPVEYOR_BUILD_VERSION} elseif ($env:TRAVIS_BUILD_NUMBER) {$env:TRAVIS_BUILD_NUMBER} else {''}
-$BUILD_JOB_ID = if ($env:APPVEYOR_JOB_ID) {$env:APPVEYOR_JOB_ID} elseif ($env:TRAVIS_JOB_ID) {$env:TRAVIS_JOB_ID} else {''}
-$REPO_TAG = if ($env:APPVEYOR_REPO_TAG) {$env:APPVEYOR_REPO_TAG} elseif ($env:TRAVIS_TAG) {([bool]$env:TRAVIS_TAG)} else {''}
-$REPO_TAG_NAME = if ($env:APPVEYOR_REPO_TAG_NAME) {$env:APPVEYOR_REPO_TAG_NAME} elseif ($env:TRAVIS_TAG) {$env:TRAVIS_TAG} else {''}
 #endregion HarmonizeVariables
 
 #region DebugInformation
-task ShowDebug {
-    Write-Host "" -Foreground "Gray"
-    Write-Host ('Running in:                 {0}' -f $CI) -Foreground "Gray"
-    Write-Host "" -Foreground "Gray"
-    Write-Host ('Project name:               {0}' -f $PROJECT_NAME) -Foreground "Gray"
-    Write-Host ('Project root:               {0}' -f $BUILD_FOLDER) -Foreground "Gray"
-    Write-Host ('Repo name:                  {0}' -f $REPO_NAME) -Foreground "Gray"
-    Write-Host ('Branch:                     {0}' -f $REPO_BRANCH) -Foreground "Gray"
-    Write-Host ('Commit:                     {0}' -f $REPO_COMMIT) -Foreground "Gray"
-    Write-Host ('  - Author:                 {0}' -f $REPO_COMMIT_AUTHOR) -Foreground "Gray"
-    Write-Host ('  - Time:                   {0}' -f $REPO_COMMIT_TIMESTAMP) -Foreground "Gray"
-    Write-Host ('  - Range:                  {0}' -f $REPO_COMMIT_RANGE) -Foreground "Gray"
-    Write-Host ('  - Message:                {0}' -f $REPO_COMMIT_MESSAGE) -Foreground "Gray"
-    Write-Host ('  - Extended message:       {0}' -f $REPO_COMMIT_MESSAGE_EXTENDED) -Foreground "Gray"
-    Write-Host ('Pull request:') -Foreground "Gray"
-    Write-Host ('  - Pull request number:    {0}' -f $REPO_PULL_REQUEST_NUMBER) -Foreground "Gray"
-    Write-Host ('  - Pull request title:     {0}' -f $REPO_PULL_REQUEST_TITLE) -Foreground "Gray"
-    Write-Host ('  - Pull request SHA:       {0}' -f $REPO_PULL_REQUEST_SHA) -Foreground "Gray"
-    Write-Host ('CI data:') -Foreground "Gray"
-    Write-Host ('  - Build ID:               {0}' -f $BUILD_ID) -Foreground "Gray"
-    Write-Host ('  - Build number:           {0}' -f $BUILD_NUMBER) -Foreground "Gray"
-    Write-Host ('  - Build version:          {0}' -f $BUILD_VERSION) -Foreground "Gray"
-    Write-Host ('  - Job ID:                 {0}' -f $BUILD_JOB_ID) -Foreground "Gray"
-    Write-Host ('Build triggered from tag?   {0}' -f $REPO_TAG) -Foreground "Gray"
-    Write-Host ('  - Tag name:               {0}' -f $REPO_TAG_NAME) -Foreground "Gray"
-    Write-Host "" -Foreground "Gray"
-    Write-Host ('PowerShell version:         {0}' -f $PSVersionTable.PSVersion.ToString()) -Foreground "Gray"
-    Write-Host ('OS:                         {0}' -f $OS) -Foreground "Gray"
-    Write-Host ('OS Version:                 {0}' -f $OSVersion) -Foreground "Gray"
-    Write-Host "" -Foreground "Gray"
+task ShowInfo Init, {
+    Write-Build Gray
+    Write-Build Gray ('Running in:                 {0}' -f $env:BHBuildSystem)
+    Write-Build Gray '-------------------------------------------------------'
+    Write-Build Gray
+    Write-Build Gray ('Project name:               {0}' -f $env:BHProjectName)
+    Write-Build Gray ('Project root:               {0}' -f $env:BHProjectPath)
+    Write-Build Gray ('Build Path:                 {0}' -f $env:BHBuildOutput)
+    Write-Build Gray ('Current Version:            {0}' -f $env:CurrentBuildVersion)
+    Write-Build Gray '-------------------------------------------------------'
+    Write-Build Gray
+    Write-Build Gray ('Branch:                     {0}' -f $env:BHBranchName)
+    Write-Build Gray ('Commit:                     {0}' -f $env:BHCommitMessage)
+    Write-Build Gray ('Build #:                    {0}' -f $env:BHBuildNumber)
+    Write-Build Gray ('Next Version:               {0}' -f $env:NextBuildVersion)
+    Write-Build Gray ('Will deploy new version?    {0}' -f (Test-ShouldDeploy))
+    Write-Build Gray '-------------------------------------------------------'
+    Write-Build Gray
+    Write-Build Gray ('PowerShell version:         {0}' -f $PSVersionTable.PSVersion.ToString())
+    Write-Build Gray ('OS:                         {0}' -f $OS)
+    Write-Build Gray ('OS Version:                 {0}' -f $OSVersion)
+    Write-Build Gray
 }
 #endregion DebugInformation
 
-#region DependecyTasks
-# Synopsis: Install pandoc to .\Tools\
-task InstallPandoc {
-    # Setup
-    if (-not (Test-Path "$BuildRoot/Tools")) {
-        $null = New-Item -Path "$BuildRoot/Tools" -ItemType Directory
-    }
-
-    if ($OS -like "Windows*") {
-        $path = $env:Path -split ([IO.Path]::PathSeparator)
-        if ("$BuildRoot/Tools" -notin $path) {
-            $path += Join-path $BuildRoot "Tools"
-            $env:Path = $path -join ([IO.Path]::PathSeparator)
-        }
-    }
-
-    $pandocVersion = $false
-    try {
-        $pandocVersion = & { pandoc --version }
-    }
-    catch { }
-    If (-not ($pandocVersion)) {
-
-        $installationFile = "$([System.IO.Path]::GetTempPath()){0}"
-
-        # Get latest bits
-        switch -regex ($OS) {
-            "^[wW]indows" {
-                $latestRelease = "https://github.com/jgm/pandoc/releases/download/1.19.2.1/pandoc-1.19.2.1-windows.msi"
-                Invoke-WebRequest -Uri $latestRelease -OutFile ($installationFile -f "pandoc.msi")
-
-                # Extract bits
-                $extractionPath = "$([System.IO.Path]::GetTempPath())pandoc"
-                $null = New-Item -Path $extractionPath -ItemType Directory -Force
-                Start-Process -Wait -FilePath msiexec.exe -ArgumentList " /qn /a `"$($installationFile -f "pandoc.msi")`" targetdir=`"$extractionPath`""
-
-                # Move to Tools folder
-                Copy-Item -Path "$extractionPath/Pandoc/pandoc.exe" -Destination "$BuildRoot/Tools/"
-                Copy-Item -Path "$extractionPath/Pandoc/pandoc-citeproc.exe" -Destination "$BuildRoot/Tools/"
-
-                # Clean
-                Remove-Item -Path ($installationFile -f "pandoc.msi") -Force -ErrorAction SilentlyContinue
-                Remove-Item -Path $extractionPath -Recurse -Force -ErrorAction SilentlyContinue
-            }
-            "^[lL]inux" {
-                $latestRelease = "https://github.com/jgm/pandoc/releases/download/1.19.2.1/pandoc-1.19.2.1-1-amd64.deb"
-                Invoke-WebRequest -Uri $latestRelease -OutFile ($installationFile -f "pandoc.deb")
-
-                sudo dpkg -i $($installationFile -f "pandoc.deb")
-
-                Remove-Item -Path ($installationFile -f "pandoc.deb") -Force -ErrorAction SilentlyContinue
-            }
-            "osx" {
-                $latestRelease = "https://github.com/jgm/pandoc/releases/download/1.19.2.1/pandoc-1.19.2.1-osx.pkg"
-                Invoke-WebRequest -Uri $latestRelease -OutFile ($installationFile -f "pandoc.pkg")
-
-                sudo installer -pkg $($installationFile -f "pandoc.pkg") -target /
-
-                Remove-Item -Path ($installationFile -f "pandoc.deb") -Force -ErrorAction SilentlyContinue
-            }
-        }
-    }
-
-    $out = & { pandoc --version }
-    if (-not($out)) {throw "Could not install pandoc"}
-
-}
-#endregion DependecyTasks
-
 #region BuildRelease
-# Synopsis: Build shippable release
-task Build GenerateRelease, ConvertMarkdown, UpdateManifest
+# Synopsis: Build a shippable release
+task Build GenerateRelease, UpdateManifest, CompileModule, Package
 
-# Synopsis: Generate .\Release structure
-task GenerateRelease {
+# Synopsis: Generate ./Release structure
+task GenerateRelease Init, GenerateExternalHelp, {
+    # Setup
+    if (-not (Test-Path "$env:BHBuildOutput/$env:BHProjectName")) {
+        $null = New-Item -Path "$env:BHBuildOutput/$env:BHProjectName" -ItemType Directory
+    }
+
     # Copy module
-    Copy-Item -Path "$BuildRoot/$PROJECT_NAME" -Destination "$releasePath/$PROJECT_NAME" -Recurse -Force
+    Copy-Item -Path "$env:BHModulePath/*" -Destination "$env:BHBuildOutput/$env:BHProjectName" -Recurse -Force
     # Copy additional files
     Copy-Item -Path @(
-        "$BuildRoot/CHANGELOG.md"
-        "$BuildRoot/LICENSE"
-        "$BuildRoot/README.md"
-    ) -Destination "$releasePath/$PROJECT_NAME" -Force
+        "$env:BHProjectPath/CHANGELOG.md"
+        "$env:BHProjectPath/LICENSE"
+        "$env:BHProjectPath/README.md"
+    ) -Destination "$env:BHBuildOutput/$env:BHProjectName" -Force
+    Copy-Item -Path @(
+        # TODO: "$env:BHProjectPath/appveyor.yml"
+        "$env:BHProjectPath/PSScriptAnalyzerSettings.psd1"
+    ) -Destination $env:BHBuildOutput -Force
     # Copy Tests
-    $null = New-Item -Path "$releasePath/Tests" -ItemType Directory -ErrorAction SilentlyContinue
-    Copy-Item -Path "$BuildRoot/Tests/*" -Destination "$releasePath/Tests" -Recurse -Force
-    # Include Analyzer Settings
-    Copy-Item -Path "$BuildRoot/PSScriptAnalyzerSettings.psd1" -Destination "$releasePath/PSScriptAnalyzerSettings.psd1" -Force
-    Update-MetaData -Path "$releasePath/PSScriptAnalyzerSettings.psd1" -PropertyName ExcludeRules -Value ''
-
-}, CompileModule, CreateHelp
+    $null = New-Item -Path "$env:BHBuildOutput/Tests" -ItemType Directory -ErrorAction SilentlyContinue
+    Copy-Item -Path "$env:BHProjectPath/Tests" -Destination $env:BHBuildOutput -Recurse -Force
+    # Remove all execptions from PSScriptAnalyzer
+    BuildHelpers\Update-Metadata -Path "$env:BHBuildOutput/PSScriptAnalyzerSettings.psd1" -PropertyName ExcludeRules -Value ''
+}
 
 # Synopsis: Compile all functions into the .psm1 file
 task CompileModule {
     $regionsToKeep = @('Dependencies', 'ModuleConfig')
 
-    $targetFile = "$releasePath/$PROJECT_NAME/$PROJECT_NAME.psm1"
+    $targetFile = "$env:BHBuildOutput/$env:BHProjectName/$env:BHProjectName.psm1"
     $content = Get-Content -Encoding UTF8 -LiteralPath $targetFile
     $capture = $false
     $compiled = ""
@@ -273,7 +163,6 @@ task CompileModule {
         }
         if (($capture -eq $true) -and ($line -match "^#endregion")) {
             $capture = $false
-            $compiled += "$line`n`n"
         }
 
         if ($capture) {
@@ -281,252 +170,178 @@ task CompileModule {
         }
     }
 
-    $PublicFunctions = @( Get-ChildItem -Path "$releasePath/$PROJECT_NAME/Public/*.ps1" -ErrorAction SilentlyContinue )
-    $PrivateFunctions = @( Get-ChildItem -Path "$releasePath/$PROJECT_NAME/Private/*.ps1" -ErrorAction SilentlyContinue )
+    $PublicFunctions = @( Get-ChildItem -Path "$env:BHBuildOutput/$env:BHProjectName/Public/*.ps1" -ErrorAction SilentlyContinue )
+    $PrivateFunctions = @( Get-ChildItem -Path "$env:BHBuildOutput/$env:BHProjectName/Private/*.ps1" -ErrorAction SilentlyContinue )
 
     foreach ($function in @($PublicFunctions + $PrivateFunctions)) {
         $compiled += (Get-Content -Path $function.FullName -Raw)
-        $compiled += "`n"
+        $compiled += "`r`n"
     }
 
     Set-Content -LiteralPath $targetFile -Value $compiled -Encoding UTF8 -Force
-    "Private", "Public" | Foreach-Object { Remove-Item -Path "$releasePath/$PROJECT_NAME/$_" -Recurse -Force }
+    Remove-Utf8Bom -Path $targetFile
+
+    "Private", "Public" | Foreach-Object { Remove-Item -Path "$env:BHBuildOutput/$env:BHProjectName/$_" -Recurse -Force }
 }
 
-# Synopsis: Generate external XML-help file from Markdown
-task CreateHelp -If (Get-ChildItem "$BuildRoot/docs/commands" -ErrorAction SilentlyContinue) {
+# Synopsis: Use PlatyPS to generate External-Help
+task GenerateExternalHelp Init, {
     Import-Module platyPS -Force
-    $null = New-ExternalHelp -Path "$BuildRoot/docs/commands" -OutputPath "$releasePath/$PROJECT_NAME/en-US" -Force
-    Remove-Module $PROJECT_NAME, platyPS
-}
-
-$ConvertMarkdown = @{
-    # <http://johnmacfarlane.net/pandoc/>
-    Inputs  = { Get-ChildItem "$releasePath/$PROJECT_NAME/*.md" -Recurse }
-    Outputs = {process {
-            [System.IO.Path]::ChangeExtension($_, 'htm')
-        }
+    foreach ($locale in (Get-ChildItem "$env:BHProjectPath/docs" -Attribute Directory)) {
+        New-ExternalHelp -Path "$($locale.FullName)" -OutputPath "$env:BHModulePath/$($locale.Basename)" -Force
+        New-ExternalHelp -Path "$($locale.FullName)/commands" -OutputPath "$env:BHModulePath/$($locale.Basename)" -Force
     }
+    Remove-Module platyPS
 }
-# Synopsis: Converts *.md and *.markdown files to *.htm
-task ConvertMarkdown -Partial @ConvertMarkdown InstallPandoc, {
-    process {
-        pandoc $_ --standalone --from=markdown_github "--output=$2"
-    }
-}, RemoveMarkdownFiles
 
 # Synopsis: Update the manifest of the module
-task UpdateManifest GetVersion, {
-    Remove-Module $PROJECT_NAME -ErrorAction SilentlyContinue
-    Import-Module "$BuildRoot/$PROJECT_NAME/$PROJECT_NAME.psd1" -Force
-    $ModuleAlias = @(Get-Alias | Where-Object {$_.ModuleName -eq "$PROJECT_NAME"})
+task UpdateManifest GetNextVersion, {
+    Remove-Module $env:BHProjectName -ErrorAction SilentlyContinue
+    Import-Module $env:BHPSModuleManifest -Force
+    $ModuleAlias = @(Get-Alias | Where-Object {$_.ModuleName -eq "$env:BHProjectName"})
 
-    Remove-Module $PROJECT_NAME -ErrorAction SilentlyContinue
-    Import-Module $PROJECT_NAME -Force
+    Remove-Module $env:BHProjectName -ErrorAction SilentlyContinue
+    Import-Module $env:BHProjectName -Force
 
-    Remove-Module BuildHelpers -ErrorAction SilentlyContinue
-    Import-Module BuildHelpers -Force
-
-    BuildHelpers\Update-Metadata -Path "$releasePath/$PROJECT_NAME/$PROJECT_NAME.psd1" -PropertyName ModuleVersion -Value $script:Version
-    # BuildHelpers\Update-Metadata -Path "$releasePath/$PROJECT_NAME/$PROJECT_NAME.psd1" -PropertyName FileList -Value (Get-ChildItem "$releasePath/$PROJECT_NAME" -Recurse).Name
+    BuildHelpers\Update-Metadata -Path "$env:BHBuildOutput/$env:BHProjectName/$env:BHProjectName.psd1" -PropertyName ModuleVersion -Value $env:NextBuildVersion
+    # BuildHelpers\Update-Metadata -Path "$env:BHBuildOutput/$env:BHProjectName/$env:BHProjectName.psd1" -PropertyName FileList -Value (Get-ChildItem "$env:BHBuildOutput/$env:BHProjectName" -Recurse).Name
+    BuildHelpers\Set-ModuleFunctions -Name "$env:BHBuildOutput/$env:BHProjectName/$env:BHProjectName.psd1" -FunctionsToExport ([string[]](Get-ChildItem "$env:BHBuildOutput/$env:BHProjectName/Public/*.ps1").BaseName)
+    BuildHelpers\Update-Metadata -Path "$env:BHBuildOutput/$env:BHProjectName/$env:BHProjectName.psd1" -PropertyName AliasesToExport -Value ''
     if ($ModuleAlias) {
-        BuildHelpers\Update-Metadata -Path "$releasePath/$PROJECT_NAME/$PROJECT_NAME.psd1" -PropertyName AliasesToExport -Value @($ModuleAlias.Name)
+        BuildHelpers\Update-Metadata -Path "$env:BHBuildOutput/$env:BHProjectName/$env:BHProjectName.psd1" -PropertyName AliasesToExport -Value @($ModuleAlias.Name)
     }
-    else {
-        BuildHelpers\Update-Metadata -Path "$releasePath/$PROJECT_NAME/$PROJECT_NAME.psd1" -PropertyName AliasesToExport -Value ''
-    }
-    BuildHelpers\Set-ModuleFunctions -Name "$releasePath/$PROJECT_NAME/$PROJECT_NAME.psd1" -FunctionsToExport ([string[]](Get-ChildItem "$BuildRoot\$PROJECT_NAME\Public\*.ps1").BaseName)
 }
 
-task GetVersion {
-    $manifestContent = Get-Content -Path "$releasePath/$PROJECT_NAME/$PROJECT_NAME.psd1" -Raw
-    if ($manifestContent -notmatch '(?<=ModuleVersion\s+=\s+'')(?<ModuleVersion>.*)(?='')') {
-        throw "Module version was not found in manifest file."
-    }
-
-    $currentVersion = [Version]($Matches.ModuleVersion)
-    if ($BUILD_NUMBER) {
-        $newRevision = $BUILD_NUMBER
-    }
-    else {
-        $newRevision = 0
-    }
-    $script:Version = New-Object -TypeName System.Version -ArgumentList $currentVersion.Major,
-    $currentVersion.Minor,
-    $newRevision
+# Synopsis: Create a ZIP file with this build
+task Package GenerateRelease, {
+    Remove-Item "$env:BHBuildOutput\$env:BHProjectName.zip" -ErrorAction SilentlyContinue
+    $null = Compress-Archive -Path "$env:BHBuildOutput\$env:BHProjectName" -DestinationPath "$env:BHBuildOutput\$env:BHProjectName.zip"
 }
 #endregion BuildRelease
 
 #region Test
-function allCIsFinished {
-    param()
+task Test Init, Build, {
+    Assert-True { Test-Path $env:BHBuildOutput -PathType Container } "Release path must exist"
 
-    if (-not ($env:APPVEYOR_REPO_COMMIT)) {
-        return $true
+    Remove-Module $env:BHProjectName -ErrorAction SilentlyContinue
+
+    $params = @{
+        Path    = "$env:BHBuildOutput/$env:BHProjectName"
+        Include = '*.ps1', '*.psm1'
+        Recurse = $True
+        # Exclude = $CodeCoverageExclude
     }
-
-    Write-Host "[IDLE] :: waiting on travis to finish"
-
-    [datetime]$stop = ([datetime]::Now).AddMinutes($env:TimeOutMins)
-
-    do {
-        $currentBuild = (Get-TravisBuild).builds | Where-Object {$_.commit.sha -eq $env:APPVEYOR_REPO_COMMIT}
-        switch -regex ($currentBuild.state) {
-            "^passed$" {
-                return $true
-            }
-            "^(errored|failed|canceled)" {
-                throw "Travis Job ($($currentBuild.id)) failed"
-            }
-        }
-
-        Start-sleep 5
-    } while (([datetime]::Now) -lt $stop)
-    if (!$currentBuild) {
-        throw "Could not get information about Travis build with sha $REPO_COMMIT"
-    }
-
-    throw "Travis build did not finished in $env:TimeOutMins minutes"
-}
-# Synopsis: Run Pester tests on the module
-task Test Build, {
-    # $null = allCIsFinished
-
-    assert { Test-Path "$releasePath/Tests/" -PathType Container } "No Test folder available."
-
-    Remove-Module BuildHelpers -ErrorAction SilentlyContinue
-    Import-Module BuildHelpers -Force
+    $codeCoverageFiles = Get-ChildItem @params
 
     try {
-        $result = Invoke-Pester -Script "$releasePath/Tests/*" -PassThru -OutputFile "$BuildRoot/TestResult.xml" -OutputFormat "NUnitXml"
-        if ($CI -eq "AppVeyor") {
-            BuildHelpers\Add-TestResultToAppveyor -TestFile "$BuildRoot/TestResult.xml"
+        $parameter = @{
+            Script       = "$env:BHBuildOutput/Tests/*"
+            Tag          = $Tag
+            ExcludeTag   = $ExcludeTag
+            Show         = "Fails"
+            PassThru     = $true
+            OutputFile   = "$env:BHProjectPath/TestResult.xml"
+            OutputFormat = "NUnitXml"
+            # CodeCoverage = $codeCoverageFiles
         }
-        Remove-Item "$BuildRoot/TestResult.xml" -Force
-        assert ($result.FailedCount -eq 0) "$($result.FailedCount) Pester test(s) failed."
+        $testResults = Invoke-Pester @parameter
+
+        If ('AppVeyor' -eq $env:BHBuildSystem) {
+            BuildHelpers\Add-TestResultToAppveyor -TestFile $parameter["OutputFile"]
+        }
+
+        Assert-True ($testResults.FailedCount -eq 0) "$($testResults.FailedCount) Pester test(s) failed."
     }
     catch {
         throw $_
     }
-}
+
+    Set-BuildEnvironment -BuildOutput '$ProjectPath/Release' -ErrorAction SilentlyContinue
+}, RemoveTestResults
 #endregion
 
 #region Publish
-function allJobsFinished {
-    param()
-    $buildData = Get-AppVeyorBuild
-    $lastJob = ($buildData.build.jobs | Select-Object -Last 1).jobId
-
-    if ($lastJob -ne $env:APPVEYOR_JOB_ID) {
-        return $false
-    }
-
-    write-host "[IDLE] :: waiting for other jobs to complete"
-
-    [datetime]$stop = ([datetime]::Now).AddMinutes($env:TimeOutMins)
-
-    do {
-        $project = Get-AppVeyorBuild
-        $continue = @()
-        $project.build.jobs | Where-Object {$_.jobId -ne $env:APPVEYOR_JOB_ID} | Foreach-Object {
-            $job = $_
-            switch -regex ($job.status) {
-                "failed" { throw "AppVeyor's Job ($($job.jobId)) failed." }
-                "(running|success)" { $continue += $true; continue }
-                Default { $continue += $false; Write-Host "new state: $_.status" }
-            }
-        }
-        if ($false -notin $continue) { return $true }
-        Start-sleep 5
-    } while (([datetime]::Now) -lt $stop)
-
-    throw "Test jobs were not finished in $env:TimeOutMins minutes"
-}
-
-$shouldDeploy = (
-    # only deploy from AppVeyor
-    ($CI -eq "AppVeyor") -and
-    # only deploy from last Job
-    (allJobsFinished) -and
-    # only deploy master branch
-    ($REPO_BRANCH -eq 'master') -and
-    # it cannot be a PR
-    (-not ($REPO_PULL_REQUEST_NUMBER)) -and
-    # it cannot have a commit message that contains "skip-deploy"
-    ($REPO_COMMIT_MESSAGE -notlike '*skip-deploy*')
-)
-# Synopsis: Publish a new release on github, PSGallery and the homepage
-task Deploy -If $shouldDeploy PublishToGallery, UpdateHomepage, GeneratePackage
+# Synopsis: Publish a new release on github and the PSGallery
+task Deploy -If { Test-ShouldDeploy } Init, PublishToGallery, TagReplository, UpdateHomepage
 
 # Synipsis: Publish the $release to the PSGallery
 task PublishToGallery {
-    assert ($env:PSGalleryAPIKey) "No key for the PSGallery"
+    Assert-True ($env:PSGalleryAPIKey) "No key for the PSGallery"
 
-    Remove-Module $PROJECT_NAME -ErrorAction SilentlyContinue
-    Import-Module $PROJECT_NAME -ErrorAction Stop
-    Publish-Module -Name $PROJECT_NAME -NuGetApiKey $env:PSGalleryAPIKey
+    Remove-Module $env:BHProjectName -ErrorAction SilentlyContinue
+
+    Publish-Module -Name $env:BHProjectName -NuGetApiKey $env:PSGalleryAPIKey
 }
 
-# Synopsis: Update the HEAD of this git repo in the homepage repository
+task TagReplository GetNextVersion, {
+    $releaseText = "Release version $env:NextBuildVersion"
+
+    # Push a tag to the repository
+    Write-Build Gray "git checkout $ENV:BHBranchName"
+    cmd /c "git checkout $ENV:BHBranchName 2>&1"
+
+    Write-Build Gray "git tag -a v$env:NextBuildVersion"
+    cmd /c "git tag -a v$env:NextBuildVersion 2>&1 -m `"$releaseText`""
+
+    Write-Build Gray "git push origin v$env:NextBuildVersion"
+    cmd /c "git push origin v$env:NextBuildVersion 2>&1"
+
+    # Publish a release on github for the tag above
+    $releaseResponse = Publish-GithubRelease -ReleaseText $releaseText -NextBuildVersion $env:NextBuildVersion
+
+    # Upload the package of the version to the release
+    $packageFile = Get-Item "$env:BHBuildOutput\$env:BHProjectName.zip" -ErrorAction Stop
+    $uploadURI = $releaseResponse.upload_url -replace "\{\?name,label\}", "?name=$($packageFile.Name)"
+    $null = Publish-GithubReleaseArtifact -Uri $uploadURI -Path $packageFile
+}
+
+# Synopsis: Update the version of this module that the homepage uses
 task UpdateHomepage {
-    $originalErrorActionPreference = $ErrorActionPreference
     try {
-        $ErrorActionPreference = 'Continue'
-        # Get the repo of the homepage
-        git clone https://github.com/AtlassianPS/AtlassianPS.github.io --recursive 2>$null
-        Write-Host "Cloned"
-        Set-Location "AtlassianPS.github.io/"
+        Write-Build Gray "git close .../AtlassianPS.github.io --recursive"
+        $null = cmd /c "git clone https://github.com/AtlassianPS/AtlassianPS.github.io --recursive 2>&1"
 
-        # Update all submodules
-        # git submodule foreach git pull origin master 2>$null
-        # Write-Host "Fetched"
+        Push-Location "AtlassianPS.github.io/"
 
-        # Check if this repo was changed
-        $status = git status -s 2>$null
-        Write-Host $status
-        if ($status -contains " M modules/$PROJECT_NAME") {
-            Write-Host "Has changes"
-            # Update the repo in the homepage repo
-            git add modules/$PROJECT_NAME 2>$null
-            Write-Host "Added"
-            git commit -m "Update module $PROJECT_NAME" 2>$null
-            Write-Host "Commited"
-            git push 2>$null
-            Write-Host "Pushed"
+        Write-Build Gray "git submodule foreach git pull origin master"
+        $null = cmd /c "git submodule foreach git pull origin master 2>&1"
+
+        Write-Build Gray "git status -s"
+        $status = cmd /c "git status -s 2>&1"
+
+        if ($status -contains " M modules/$env:BHProjectName") {
+            Write-Build Gray "git add modules/$env:BHProjectName"
+            $null = cmd /c "git add modules/$env:BHProjectName 2>&1"
+
+            Write-Build Gray "git commit -m `"Update module $env:BHProjectName`""
+            cmd /c "git commit -m `"Update module $env:BHProjectName`" 2>&1"
+
+            Write-Build Gray "git push"
+            cmd /c "git push 2>&1"
         }
-    }
-    catch {
-        throw $_
-    }
-    finally {
-        $ErrorActionPreference = $originalErrorActionPreference
-    }
-}
 
-# Synopsis: Create a zip package file of the release
-task GeneratePackage {
-    $null = Compress-Archive -Path "$releasePath\$PROJECT_NAME" -DestinationPath "$releasePath\$PROJECT_NAME.zip"
+        Pop-Location
+    }
+    catch { Write-Warning "Failed to deploy to homepage"}
 }
-# endregion
+#endregion Publish
 
 #region Cleaning tasks
 # Synopsis: Clean the working dir
-task Clean RemoveGeneratedFiles
+task Clean Init, RemoveGeneratedFiles, RemoveTestResults
 
 # Synopsis: Remove generated and temp files.
 task RemoveGeneratedFiles {
-    $itemsToRemove = @(
-        'Release'
-        '*.htm'
-        'TestResult.xml'
-        '$PROJECT_NAME\en-US\*'
-    )
-    Remove-Item $itemsToRemove -Force -Recurse -ErrorAction 0
+    Remove-Item "$env:BHModulePath/en-US/*" -Force -ErrorAction SilentlyContinue
+    Remove-Item $env:BHBuildOutput -Force -Recurse -ErrorAction SilentlyContinue
 }
 
-task RemoveMarkdownFiles {
-    Remove-Item "$releasePath\$PROJECT_NAME\*.md" -Force -ErrorAction 0
+# Synopsis: Remove Pester results
+task RemoveTestResults {
+    Remove-Item "TestResult.xml" -Force -ErrorAction SilentlyContinue
 }
-# endregion
+#endregion
 
-task . ShowDebug, Clean, Build, Test, Deploy
+task . ShowInfo, Clean, Build, Test, Deploy
+
+Remove-Item -Path Env:\BH*
