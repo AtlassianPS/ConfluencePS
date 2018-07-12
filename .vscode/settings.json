@@ -1,35 +1,27 @@
 // Place your settings in this file to overwrite default and user settings.
 {
-    "files.eol": "\r\n",
     "files.encoding": "utf8",
-    "files.insertFinalNewline": true,
+    "files.eol": "\r\n",
+    "editor.trimAutoWhitespace": true,
     "files.trimTrailingWhitespace": true,
-    "files.defaultLanguage": "powershell",
+    "files.insertFinalNewline": true,
     "editor.tabSize": 4,
-    "editor.insertSpaces": true,
-    "search.exclude": {
-        "./Release": true
-    },
-    "files.watcherExclude": {
-        "./Release": true
-    },
-    "powershell.codeFormatting.ignoreOneLineBlock": true,
+    "powershell.scriptAnalysis.settingsPath": "PSScriptAnalyzerSettings.psd1",
     "powershell.codeFormatting.openBraceOnSameLine": true,
-    "powershell.codeFormatting.newLineAfterOpenBrace": false,
+    "powershell.codeFormatting.newLineAfterOpenBrace": true,
     "powershell.codeFormatting.newLineAfterCloseBrace": true,
     "powershell.codeFormatting.whitespaceBeforeOpenBrace": true,
     "powershell.codeFormatting.whitespaceBeforeOpenParen": true,
     "powershell.codeFormatting.whitespaceAroundOperator": true,
     "powershell.codeFormatting.whitespaceAfterSeparator": true,
-    "powershell.scriptAnalysis.settingsPath": "PSScriptAnalyzerSettings.psd1",
     "[markdown]": {
-        "editor.tabSize": 2,
         "editor.wordWrap": "on",
         "editor.renderWhitespace": "all",
         "editor.acceptSuggestionOnEnter": "off",
-        "editor.trimAutoWhitespace": false
+        "editor.trimAutoWhitespace": false,
+        "files.trimTrailingWhitespace": false
     },
-    "[yaml]": {
-        "editor.tabSize": 2
+    "search.exclude": {
+        "./Release/*": true
     }
 }
