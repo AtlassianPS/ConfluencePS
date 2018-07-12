@@ -1,47 +1,44 @@
+version: 2.3.{build}
+
 environment:
     PSGalleryAPIKey:
         secure: Kffca6TRgAQESKLBk5ghCDMFbMmH2+8DzLyu1M6a7EBRJCwfxaiJeaIXs9SmQz0i
-    access_token:
+    GITHUB_ACCESS_TOKEN:
         secure: PX1R0Ds6r3TTm+wxVbx8MRAgjCRV/juO3cYSEz1MedB/OXvZ3YkqpQGE+X47bcFT
-    fast_finish: true
+    APPVEYOR_API_TOKEN:
+        secure: +xOSP/ONVCmOzJ+I3PY7r7yHXf4+XtYWiYYdX0kSne0=
+    TRAVIS_API_TOKEN:
+        secure: xwsl4f9maG+AEQDAWzFNA/sFXFZfGuFdHf+V6Eikabs=
+    TIMEOUT_MINS: 30
+    # APPVEYOR_BUILD_WORKER_CLOUD: gce
     matrix:
         - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
-        # don't use the next image, as long as poshcode/Configuration is not compatible with PSv4
+          PowershellVersion: "5.1"
+        # waiting on https://github.com/RamblingCookieMonster/BuildHelpers/pull/60
         # - APPVEYOR_BUILD_WORKER_IMAGE: WMF 4
-        - APPVEYOR_BUILD_WORKER_IMAGE: ubuntu
-          PowershellVersion: "6.0.0"
+        - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
+          PowershellVersion: "6.0.2"
         - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
-          PowershellVersion: "6.0.0"
+          PowershellVersion: "6.0.2"
 
-version: 2.3.{build}
-
-# Don't rebuild when I tag a release on GitHub
+# Fail the Build with the first Job that failes
+matrix:
+    fast_finish: true
+# Don't rebuild when a release is tagged on GitHub
 skip_tags: true
-
-# Ignore testing a commit if only the readme changed
-# Or if I include "skip-tests" in the commit message
-skip_commits:
-  message: /skip\-tests/
-  files:
-    - .github/
-    - .vscode/
-    - README.md
-    - .gitattributes
-    - .gitignore
-    - .env*
-
-# PRs, by definition, don't change anything and therefore should not increment the version
-# To be fair, this is not important, and is really just AppVeyor enabling my pedantry
+# Logic for skipping CI is in the build script
 pull_requests:
-  do_not_increment_build_number: true
+    do_not_increment_build_number: true
 
 init:
-    - ps: if (-not ($env:PowershellVersion)) {$env:PowershellVersion = "5.1"}
-    - ps: if (([version]$env:PowershellVersion).Major -ge 6) {$env:posh = "pwsh"} else {$env:posh = "powershell"}
+    - ps: |
+        if (-not ($env:PowershellVersion)) {$env:PowershellVersion = "5.1"}
+        if (([version]$env:PowershellVersion).Major -ge 6) {$env:posh = "pwsh"} else {$env:posh = "powershell"}
+        Add-Content (Join-Path $Home ".git-credentials") "https://$($env:GITHUB_ACCESS_TOKEN):x-oauth-basic@github.com`n"
     - git config --global credential.helper "store --file ~/.git-credentials"
-    - ps: Add-Content (Join-Path $Home ".git-credentials") "https://$($env:access_token):x-oauth-basic@github.com`n"
     - git config --global user.email "support@atlassianps.org"
     - git config --global user.name "AtlassianPS automation"
+    - git config --global core.autocrlf "false"
 
 install:
     - ps: '& $env:posh -File "./Tools/setup.ps1"'
@@ -49,18 +46,5 @@ install:
 build_script:
     - ps: '& $env:posh -Command "Invoke-Build"'
 
-deploy:
-    provider: GitHub
-    release: v$(appveyor_build_version)
-    description: ''
-    auth_token:
-        secure: PX1R0Ds6r3TTm+wxVbx8MRAgjCRV/juO3cYSEz1MedB/OXvZ3YkqpQGE+X47bcFT
-    artifact: ./Release/ConfluencePS.zip
-    draft: false
-    prerelease: false
-    on:
-        branch: master                  # release from master branch only
-        appveyor_repo_tag: false        # deploy on tag push only
-
 # on_failure:
-#   - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+    # - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
