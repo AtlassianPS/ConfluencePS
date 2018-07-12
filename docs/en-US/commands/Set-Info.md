@@ -60,7 +60,6 @@ Set-ConfluenceInfo -BaseURI 'https://wiki.contoso.com' -PromptCredentials -PageS
 Declare the URI of your Confluence instance; be prompted for username and password.
 Set the default "page size" for all your commands in this session to 50 (see Notes).
 
-
 ### -------------------------- EXAMPLE 4 --------------------------
 
 ```powershell
