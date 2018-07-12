@@ -1,11 +1,12 @@
 ---
 layout: documentation
+Module Name: ConfluencePS
 permalink: /docs/ConfluencePS/classes/ConfluencePS.Attachment/
 ---
-
 # ConfluencePS.Attachment
 
 ## SYNOPSIS
+
 Defines an object for Attachments in Confluence.
 
 ## SYNTAX
@@ -17,14 +18,19 @@ New-Object -TypeName ConfluencePS.Attachment [-Property @{}]
 ```
 
 ## DESCRIPTION
-**fix**The `Attachment` is an object that describes Attachments in Confluence.
+
+<!-- TODO -->
+The `Attachment` is an object that describes Attachments in Confluence.
 
 ## CONSTRUCTORS
+
+<!-- TODO -->
 _This class does not have a constructor._
 
 ## PROPERTIES
 
 ### Id
+
 The Id is the unique identifier of the `Attachment`.
 
 _This value can't be changed and is assigned by the server._
@@ -36,6 +42,7 @@ Default value: None
 ```
 
 ### Status
+
 The Status describes the current status of the `Attachment`.
 
 Possible values are: `current`, `trashed` and `draft`.
@@ -47,6 +54,7 @@ Default value: current
 ```
 
 ### Title
+
 The filename / Title of the `Attachment` as stored by the server.
 
 Note that this name is not unique between pages and can contain invalid characters for windows files.
@@ -58,6 +66,7 @@ Default value: None
 ```
 
 ### Filename
+
 The filename that will be used by Get-AttachmentFile.
 
 Note that this is designed to be unique as the page id is prepended to the name and invalid characters removed.
@@ -67,7 +76,9 @@ Type: String
 Required: True
 Default value: None
 ```
+
 ### MediaType
+
 The MIME media type of the `Attachment`.
 
 ```yaml
@@ -77,6 +88,7 @@ Default value: None
 ```
 
 ### FileSize
+
 The file size of the `Attachment` in bytes.
 
 ```yaml
@@ -86,6 +98,7 @@ Default value: None
 ```
 
 ### SpaceKey
+
 The Space key in where the `Attachment` is stored.
 
 ```yaml
@@ -95,6 +108,7 @@ Default value: None
 ```
 
 ### PageId
+
 The page ID in where the `Attachment` is stored.
 
 ```yaml
@@ -104,6 +118,7 @@ Default value: None
 ```
 
 ### Version
+
 Contains the information about the latest version of the `Attachment`.
 
 ```yaml
@@ -113,6 +128,7 @@ Default value: None
 ```
 
 ### URL
+
 Contains the URL under which the `Attachment` is accessible.
 
 ```yaml
@@ -120,9 +136,11 @@ Type: String
 Required: True
 Default value: None
 ```
+
 ## METHODS
 
 ### ToString()
+
 The method for casting an object of this class to string is overwritten.
 
 When cast to string, this will return `[$Id] $Title`.

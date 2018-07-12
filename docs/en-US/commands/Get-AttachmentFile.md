@@ -43,6 +43,9 @@ with the page ID and the attachment filename.
 Get-ConfluenceAttachment -PageID 123456 | Get-ConfluenceAttachmentFile -Path "c:\temp_dir"
 ```
 
+Save any attachments of page 123456 to "C:\temp_dir" with each filename constructed
+with the page ID and the attachment filename.
+
 ## PARAMETERS
 
 ### -apiURi

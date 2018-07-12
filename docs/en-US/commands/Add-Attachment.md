@@ -9,7 +9,6 @@ permalink: /docs/ConfluencePS/commands/Add-Attachment/
 ---
 # Add-Attachment
 
-
 ## SYNOPSIS
 
 Add a new attachment to an existing Confluence page.
