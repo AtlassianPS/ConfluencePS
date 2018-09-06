@@ -2,10 +2,9 @@
 layout: module
 permalink: /module/ConfluencePS/
 ---
+# [ConfluencePS](https://atlassianps.org/module/ConfluencePS)
 
-# ConfluencePS
-
-[![GitHub release](https://img.shields.io/github/release/AtlassianPS/ConfluencePS.svg)](https://github.com/AtlassianPS/ConfluencePS/releases/latest) [![Build status](https://ci.appveyor.com/api/projects/status/viulo95g362l6vym/branch/master?svg=true)](https://ci.appveyor.com/project/AtlassianPS/confluenceps/branch/master) [![PowerShell Gallery](https://img.shields.io/powershellgallery/dt/ConfluencePS.svg)](https://www.powershellgallery.com/packages/ConfluencePS) ![License](https://img.shields.io/badge/license-MIT-blue.svg)
+[![GitHub release](https://img.shields.io/github/release/AtlassianPS/ConfluencePS.svg)](https://github.com/AtlassianPS/ConfluencePS/releases/latest) [![Build status](https://img.shields.io/appveyor/ci/AtlassianPS/ConfluencePS/master.svg)](https://ci.appveyor.com/project/AtlassianPS/confluenceps/branch/master) [![PowerShell Gallery](https://img.shields.io/powershellgallery/dt/ConfluencePS.svg)](https://www.powershellgallery.com/packages/ConfluencePS) ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
 Automate your documentation! ConfluencePS is a PowerShell module that interacts with Atlassian's [Confluence] wiki product.
 
@@ -48,14 +47,14 @@ Get-Command -Module ConfluencePS
 Get-Help Get-ConfluencePage -Full   # or any other command
 ```
 
-For first steps to get up and running, check out the [Getting Started](https://atlassianps.org/docs/ConfluencePS/Getting_Started.html) page.
+For first steps to get up and running, check out the [Getting Started](https://atlassianps.org/docs/ConfluencePS/#getting-started) page.
 
 ### Contribute
 
 Want to contribute to AtlassianPS? Great!
 We appreciate [everyone](https://atlassianps.org/#people) who invests their time to make our modules the best they can be.
 
-Check out our guidelines on [Contributing](https://atlassianps.org/docs/Contributing.html) to our modules and documentation.
+Check out our guidelines on [Contributing](https://atlassianps.org/docs/Contributing/) to our modules and documentation.
 
 ## Acknowledgments
 
