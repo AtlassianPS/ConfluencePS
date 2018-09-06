@@ -38,7 +38,7 @@ function ConvertTo-Table {
             }
             $_.PSObject.Properties |
                 ForEach-Object -Begin {$Row = ""} `
-                -Process {$Row += "|$($_.Value)"} `
+                -Process {if ($($_.value)) {$Row += "|$($_.Value)"} else {$Row += "| "}} `
                 -End {$Row += "|"}
             $RowArray.Add($Row) | Out-Null
         }
