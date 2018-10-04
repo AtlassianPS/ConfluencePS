@@ -8,6 +8,8 @@ function ConvertTo-Table {
         )]
         $Content,
 
+        [switch]$Vertical,
+
         [switch]$NoHeader
     )
 
@@ -27,25 +29,42 @@ function ConvertTo-Table {
 
         # This ForEach needed if the content wasn't piped in
         $Content | ForEach-Object {
-            # Header row enclosed by ||
-            If ($null -eq $HeaderGenerated) {
-                $_.PSObject.Properties | ForEach-Object `
-                    -Begin   {$Header = ""} `
-                    -Process {$Header += "||$($_.Name)"} `
-                    -End     {$Header += "||"}
-                [void]$RowArray.Add($Header)
-                $HeaderGenerated = $true
-            }
+            If ($Vertical) {
+                If ($HeaderGenerated) {$pipe = '|'}
+                Else {$pipe = '||'}
 
-            # All other rows enclosed by |
-            $_.PSObject.Properties | ForEach-Object `
-                -Begin   {$Row = ""} `
-                -Process {
-                    if ($_.value) {$Row += "|$($_.Value)"}
-                    else          {$Row += "| "}
-                } `
-                -End     {$Row += "|"}
-            [void]$RowArray.Add($Row) | Out-Null
+                # Put an empty row between multiple tables (objects)
+                If ($Spacer) {
+                    [void]$RowArray.Add('')
+                }
+
+                $_.PSObject.Properties | ForEach-Object {
+                        $Row = "$pipe{0}$pipe{1}|" -f $_.Name, $_.Value
+                        [void]$RowArray.Add($Row)
+                }
+
+                $Spacer = $true
+            } Else {
+                # Header row enclosed by ||
+                If ($null -eq $HeaderGenerated) {
+                    $_.PSObject.Properties | ForEach-Object `
+                        -Begin   {$Header = ""} `
+                        -Process {$Header += "||$($_.Name)"} `
+                        -End     {$Header += "||"}
+                    [void]$RowArray.Add($Header)
+                    $HeaderGenerated = $true
+                }
+
+                # All other rows enclosed by |
+                $_.PSObject.Properties | ForEach-Object `
+                    -Begin   {$Row = ""} `
+                    -Process {
+                        if ($_.value) {$Row += "|$($_.Value)"}
+                        else          {$Row += "| "}
+                    } `
+                    -End     {$Row += "|"}
+                [void]$RowArray.Add($Row)
+            }
         }
     }
 
