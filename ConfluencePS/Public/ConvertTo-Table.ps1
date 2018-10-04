@@ -14,7 +14,7 @@ function ConvertTo-Table {
     BEGIN {
         Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function started"
 
-        $RowArray = New-Object System.Collections.ArrayList
+        $RowArray = New-Object System.Collections.Generic.List[string]
     }
 
     PROCESS {
@@ -27,26 +27,32 @@ function ConvertTo-Table {
 
         # This ForEach needed if the content wasn't piped in
         $Content | ForEach-Object {
-            # First row enclosed by ||, all other rows by |
-            If (!$HeaderGenerated) {
-                $_.PSObject.Properties |
-                    ForEach-Object -Begin {$Header = ""} `
+            # Header row enclosed by ||
+            If ($null -eq $HeaderGenerated) {
+                $_.PSObject.Properties | ForEach-Object `
+                    -Begin   {$Header = ""} `
                     -Process {$Header += "||$($_.Name)"} `
-                    -End {$Header += "||"}
-                $RowArray.Add($Header) | Out-Null
+                    -End     {$Header += "||"}
+                [void]$RowArray.Add($Header)
                 $HeaderGenerated = $true
             }
-            $_.PSObject.Properties |
-                ForEach-Object -Begin {$Row = ""} `
-                -Process {if ($($_.value)) {$Row += "|$($_.Value)"} else {$Row += "| "}} `
-                -End {$Row += "|"}
-            $RowArray.Add($Row) | Out-Null
+
+            # All other rows enclosed by |
+            $_.PSObject.Properties | ForEach-Object `
+                -Begin   {$Row = ""} `
+                -Process {
+                    if ($_.value) {$Row += "|$($_.Value)"}
+                    else          {$Row += "| "}
+                } `
+                -End     {$Row += "|"}
+            [void]$RowArray.Add($Row) | Out-Null
         }
     }
 
     END {
+        # Return the array as one large, multi-line string
         $RowArray | Out-String
 
-        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function ened"
+        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function ended"
     }
 }
