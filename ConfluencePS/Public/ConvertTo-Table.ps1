@@ -8,24 +8,22 @@ function ConvertTo-Table {
         )]
         $Content,
 
-        [switch]$Vertical,
+        [Switch]$Vertical,
 
-        [switch]$NoHeader
+        [Switch]$NoHeader
     )
 
     BEGIN {
         Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function started"
 
-        $RowArray = New-Object System.Collections.Generic.List[string]
+        $sb = [System.Text.StringBuilder]::new()
     }
 
     PROCESS {
         Write-Debug "[$($MyInvocation.MyCommand.Name)] ParameterSetName: $($PsCmdlet.ParameterSetName)"
         Write-Debug "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
 
-        If ($NoHeader) {
-            $HeaderGenerated = $true
-        }
+        $HeaderGenerated = $NoHeader
 
         # This ForEach needed if the content wasn't piped in
         $Content | ForEach-Object {
@@ -35,42 +33,32 @@ function ConvertTo-Table {
 
                 # Put an empty row between multiple tables (objects)
                 If ($Spacer) {
-                    [void]$RowArray.Add('')
+                    $null = $sb.AppendLine('')
                 }
 
                 $_.PSObject.Properties | ForEach-Object {
-                        $Row = "$pipe{0}$pipe{1}|" -f $_.Name, $_.Value
-                        [void]$RowArray.Add($Row)
+                    $row = ("$pipe {0} $pipe {1} |" -f $_.Name, $_.Value) -replace "\|\s\s", "| "
+                    $null = $sb.AppendLine($row)
                 }
 
                 $Spacer = $true
             } Else {
                 # Header row enclosed by ||
-                If ($null -eq $HeaderGenerated) {
-                    $_.PSObject.Properties | ForEach-Object `
-                        -Begin   {$Header = ""} `
-                        -Process {$Header += "||$($_.Name)"} `
-                        -End     {$Header += "||"}
-                    [void]$RowArray.Add($Header)
+                If (-not $HeaderGenerated) {
+                    $null = $sb.AppendLine("|| {0} ||" -f ($_.PSObject.Properties.Name -join " || "))
                     $HeaderGenerated = $true
                 }
 
                 # All other rows enclosed by |
-                $_.PSObject.Properties | ForEach-Object `
-                    -Begin   {$Row = ""} `
-                    -Process {
-                        if ($_.value) {$Row += "|$($_.Value)"}
-                        else          {$Row += "| "}
-                    } `
-                    -End     {$Row += "|"}
-                [void]$RowArray.Add($Row)
+                $row = ("| " + ($_.PSObject.Properties.Value -join " | ") + " |") -replace "\|\s\s", "| "
+                $null = $sb.AppendLine($row)
             }
         }
     }
 
     END {
         # Return the array as one large, multi-line string
-        $RowArray | Out-String
+        $sb.ToString()
 
         Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function ended"
     }
