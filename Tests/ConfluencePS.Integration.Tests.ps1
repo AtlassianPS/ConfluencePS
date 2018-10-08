@@ -40,7 +40,7 @@ Describe 'Load Module' {
 Import-Module "$PSScriptRoot\..\ConfluencePS" -Force -ErrorAction Stop
 InModuleScope ConfluencePS {
 
-    Describe 'Set-ConfluenceInfo' {
+    Describe 'Set-ConfluenceInfo' -Tag 'Integration' {
         # ARRANGE
         # Could be a long one-liner, but breaking down for readability
         $Pass = ConvertTo-SecureString -AsPlainText -Force -String $env:WikiPass
@@ -60,7 +60,7 @@ InModuleScope ConfluencePS {
         }
     }
 
-    Describe 'New-ConfluenceSpace' {
+    Describe 'New-ConfluenceSpace' -Tag 'Integration' {
         # ARRANGE
         # We don't want warnings on the screen
         $WarningPreference = 'SilentlyContinue'
@@ -123,7 +123,7 @@ InModuleScope ConfluencePS {
         }
     }
 
-    Describe 'Get-ConfluenceSpace' {
+    Describe 'Get-ConfluenceSpace' -Tag 'Integration' {
         # ARRANGE
         # Set up test values:
         $Key1 = "PESTER"
@@ -214,7 +214,7 @@ InModuleScope ConfluencePS {
         }
     }
 
-    Describe 'ConvertTo-ConfluenceStorageFormat' {
+    Describe 'ConvertTo-ConfluenceStorageFormat' -Tag 'Integration' {
         # ARRANGE
         $InputString = "Hi Pester!"
         $OutputString = "<p>Hi Pester!</p>"
@@ -237,7 +237,7 @@ InModuleScope ConfluencePS {
         }
     }
 
-    Describe 'New-ConfluencePage' {
+    Describe 'New-ConfluencePage' -Tag 'Integration' {
         <# TODO:
             * Title may not be empty
             * Space may not be empty when no parent is provided
@@ -329,7 +329,7 @@ InModuleScope ConfluencePS {
         }
     }
 
-    Describe 'Get-ConfluencePage' {
+    Describe 'Get-ConfluencePage' -Tag 'Integration' {
         # ARRANGE
         $SpaceKey = "PESTER"
         $Title1 = "Pester New Page from Object"
@@ -468,7 +468,7 @@ InModuleScope ConfluencePS {
         }
     }
 
-    Describe 'Add-ConfluenceLabel' {
+    Describe 'Add-ConfluenceLabel' -Tag 'Integration' {
         # ARRANGE
         $SpaceKey = "PESTER"
         $Page1 = Get-ConfluencePage -Title "Pester New Page Piped" -SpaceKey $SpaceKey -ErrorAction Stop
@@ -513,7 +513,7 @@ InModuleScope ConfluencePS {
         }
     }
 
-    Describe 'Set-ConfluenceLabel' {
+    Describe 'Set-ConfluenceLabel' -Tag 'Integration' {
         # ARRANGE
         $SpaceKey = "PESTER"
         $Title1 = "Pester New Page from Object"
@@ -553,7 +553,7 @@ InModuleScope ConfluencePS {
         }
     }
 
-    Describe 'Get-ConfluenceLabel' {
+    Describe 'Get-ConfluenceLabel' -Tag 'Integration' {
         # ARRANGE
         $SpaceKey = "PESTER"
         $patternLabel1 = "pester[abc]$"
@@ -594,7 +594,7 @@ InModuleScope ConfluencePS {
         }
     }
 
-    Describe 'Set-ConfluencePage' {
+    Describe 'Set-ConfluencePage' -Tag 'Integration' {
         <# TODO:
         * Title may not be empty
         * fails when version is 1 larger than current version
@@ -766,7 +766,7 @@ InModuleScope ConfluencePS {
         }
     }
 
-    Describe 'Get-ConfluenceChildPage' {
+    Describe 'Get-ConfluenceChildPage' -Tag 'Integration' {
         # ARRANGE
 
         # ACT
@@ -784,7 +784,7 @@ InModuleScope ConfluencePS {
         }
     }
 
-    Describe 'Add-ConfluenceAttachment' {
+    Describe 'Add-ConfluenceAttachment' -Tag 'Integration' {
         # ARRANGE
         BeforeAll {
             $originalWarningPreference = $WarningPreference
@@ -865,7 +865,7 @@ InModuleScope ConfluencePS {
         }
     }
 
-    Describe 'Get-ConfluenceAttachment' {
+    Describe 'Get-ConfluenceAttachment' -Tag 'Integration' {
         # ARRANGE
         $SpaceKey = "PESTER"
         $Page1 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page Piped" -ErrorAction Stop
@@ -910,7 +910,7 @@ InModuleScope ConfluencePS {
         }
     }
 
-    Describe 'Get-ConfluenceAttachmentFile' {
+    Describe 'Get-ConfluenceAttachmentFile' -Tag 'Integration' {
         # ARRANGE
         BeforeAll {
             Push-Location -Path "TestDrive:\"
@@ -964,7 +964,7 @@ InModuleScope ConfluencePS {
         }
     }
 
-    Describe 'Set-ConfluenceAttachment' {
+    Describe 'Set-ConfluenceAttachment' -Tag 'Integration' {
         # ARRANGE
         $SpaceKey = "PESTER"
         $Page1 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page Piped" -ErrorAction Stop
@@ -1012,7 +1012,7 @@ InModuleScope ConfluencePS {
         }
     }
 
-    Describe 'Remove-ConfluenceAttachment' {
+    Describe 'Remove-ConfluenceAttachment' -Tag 'Integration' {
         # ARRANGE
         BeforeAll {
             $originalWarningPreference = $WarningPreference
@@ -1054,7 +1054,7 @@ InModuleScope ConfluencePS {
         }
     }
 
-    Describe 'Remove-ConfluenceLabel' {
+    Describe 'Remove-ConfluenceLabel' -Tag 'Integration' {
         # ARRANGE
         $SpaceKey = "PESTER"
         $Label1 = "pesterc"
@@ -1080,7 +1080,7 @@ InModuleScope ConfluencePS {
         }
     }
 
-    Describe 'Remove-ConfluencePage' {
+    Describe 'Remove-ConfluencePage' -Tag 'Integration' {
         # ARRANGE
         $SpaceKey = "PESTER"
         $Title = "Pester New Page Orphan"
@@ -1101,7 +1101,7 @@ InModuleScope ConfluencePS {
         }
     }
 
-    Describe 'Remove-ConfluenceSpace' {
+    Describe 'Remove-ConfluenceSpace' -Tag 'Integration' {
         # ARRANGE
         # We don't want warnings on the screen
         $WarningPreference = 'SilentlyContinue'

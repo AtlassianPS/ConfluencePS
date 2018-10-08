@@ -7,7 +7,10 @@ param(
     [String[]]$Tag,
     [String[]]$ExcludeTag,
     [String]$PSGalleryAPIKey,
-    [String]$GithubAccessToken
+    [String]$GithubAccessToken,
+    [String]$WikiUri = $env:WikiURI,
+    [String]$WikiUser = $env:WikiUser,
+    [String]$WikiPassword = $env:WikiPass
 )
 
 $WarningPreference = "Continue"
@@ -37,6 +40,10 @@ if ($BuildTask -notin @("SetUp", "InstallDependencies")) {
 if ('AppVeyor' -eq $env:BHBuildSystem) {
     $project = Get-AppVeyorProject
 }
+
+$env:WikiURI = $WikiUri
+$env:WikiUser = $WikiUser
+$env:WikiPass = $WikiPassword
 
 $shouldDeploy = (
     # only deploy master branch
