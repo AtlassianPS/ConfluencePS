@@ -65,18 +65,8 @@ Describe "ConfluencePS" {
 
             $manifest = $null
             foreach ($line in (Get-Content -Path $changelogFile)) {
-                if ($line -match "(?:##|\<h2.*?\>)\s*(?<Version>(\d+\.?){1,2})") {
+                if ($line -match "(?:##|\<h2.*?\>)\s*\[(?<Version>(\d+\.?){1,2})\]") {
                     $changelogVersion = $matches.Version
-                    break
-                }
-            }
-
-            foreach ($line in (Get-Content -Path $appveyorFile)) {
-                # (?<Version>()) - non-capturing group, but named Version. This makes it
-                # easy to reference the inside group later.
-
-                if ($line -match '^\D*(?<Version>(\d+\.){1,3}\d+).\{build\}') {
-                    $appveyorVersion = $matches.Version
                     break
                 }
             }
@@ -118,21 +108,6 @@ Describe "ConfluencePS" {
 
             It "Changelog version matches manifest version" {
                 $manifest -like "$($changelogVersion.ModuleVersion)*" | Should Be $true
-            }
-
-            # Back to me! Pester doesn't use AppVeyor, as far as I know, and I do.
-
-            It "Includes an appveyor.yml file" {
-                $appveyorFile | Should Exist
-            }
-
-            It "Appveyor.yml file includes the module version" {
-                $appveyorVersion               | Should Not BeNullOrEmpty
-                $appveyorVersion -as [Version] | Should Not BeNullOrEmpty
-            }
-
-            It "Appveyor version matches manifest version" {
-                $manifest -like "$($appveyorVersion.ModuleVersion)*" | Should Be $true
             }
         }
 
