@@ -7,10 +7,7 @@ param(
     [String[]]$Tag,
     [String[]]$ExcludeTag,
     [String]$PSGalleryAPIKey,
-    [String]$GithubAccessToken,
-    [String]$WikiUri = $env:WikiURI,
-    [String]$WikiUser = $env:WikiUser,
-    [String]$WikiPassword = $env:WikiPass
+    [String]$GithubAccessToken
 )
 
 $WarningPreference = "Continue"
@@ -37,25 +34,14 @@ if ($BuildTask -notin @("SetUp", "InstallDependencies")) {
     Import-Module BuildHelpers -Force -ErrorAction Stop
     Invoke-Init
 }
-if ('AppVeyor' -eq $env:BHBuildSystem) {
-    $project = Get-AppVeyorProject
-}
-
-$env:WikiURI = $WikiUri
-$env:WikiUser = $WikiUser
-$env:WikiPass = $WikiPassword
 
 $shouldDeploy = (
     # only deploy master branch
     ('master' -eq $env:BHBranchName) -and
     # it cannot be a PR
-    # ( -not $env:APPVEYOR_PULL_REQUEST_NUMBER) -and
-    # only deploy from AppVeyor
+    ( -not $env:SYSTEM_PULLREQUEST_PULLREQUESTID) -and
+    # only deploy from VSTS
     ('VSTS' -eq $env:BHBuildSystem) -and
-    # must be last job of AppVeyor
-    # (Test-IsLastJob) -and
-    # Travis-CI must be finished (if used)
-    # TODO: ( -not Test-TravisProgress) -and
     # it cannot have a commit message that contains "skip-deploy"
     ($env:BHCommitMessage -notlike '*skip-deploy*')
 )
@@ -148,10 +134,10 @@ task ShowInfo Init, GetNextVersion, {
 
 #region BuildRelease
 # Synopsis: Build a shippable release
-task Build Init, GenerateRelease, UpdateManifest, CompileModule
+task Build Init, GenerateExternalHelp, CopyModuleFiles, UpdateManifest, CompileModule, PrepareTests
 
 # Synopsis: Generate ./Release structure
-task GenerateRelease GenerateExternalHelp, {
+task CopyModuleFiles {
     # Setup
     if (-not (Test-Path "$env:BHBuildOutput/$env:BHProjectName")) {
         $null = New-Item -Path "$env:BHBuildOutput/$env:BHProjectName" -ItemType Directory
@@ -165,16 +151,17 @@ task GenerateRelease GenerateExternalHelp, {
         "$env:BHProjectPath/LICENSE"
         "$env:BHProjectPath/README.md"
     ) -Destination "$env:BHBuildOutput/$env:BHProjectName" -Force
-    # Copy Tests
-    Copy-Item -Path "$env:BHProjectPath/PSScriptAnalyzerSettings.psd1" -Destination $env:BHBuildOutput -Force
+}
+
+# Synopsis: Prepare tests for ./Release
+task PrepareTests Init, {
     $null = New-Item -Path "$env:BHBuildOutput/Tests" -ItemType Directory -ErrorAction SilentlyContinue
     Copy-Item -Path "$env:BHProjectPath/Tests" -Destination $env:BHBuildOutput -Recurse -Force
-    # Remove all execptions from PSScriptAnalyzer
-    BuildHelpers\Update-Metadata -Path "$env:BHBuildOutput/PSScriptAnalyzerSettings.psd1" -PropertyName ExcludeRules -Value ''
+    Copy-Item -Path "$env:BHProjectPath/PSScriptAnalyzerSettings.psd1" -Destination $env:BHBuildOutput -Force
 }
 
 # Synopsis: Compile all functions into the .psm1 file
-task CompileModule {
+task CompileModule Init, {
     $regionsToKeep = @('Dependencies', 'ModuleConfig')
 
     $targetFile = "$env:BHBuildOutput/$env:BHProjectName/$env:BHProjectName.psm1"
@@ -210,7 +197,7 @@ task CompileModule {
 }
 
 # Synopsis: Use PlatyPS to generate External-Help
-task GenerateExternalHelp {
+task GenerateExternalHelp Init, {
     Import-Module platyPS -Force
     foreach ($locale in (Get-ChildItem "$env:BHProjectPath/docs" -Attribute Directory)) {
         New-ExternalHelp -Path "$($locale.FullName)" -OutputPath "$env:BHModulePath/$($locale.Basename)" -Force
@@ -250,13 +237,13 @@ task Test Init, {
 
     Remove-Module $env:BHProjectName -ErrorAction SilentlyContinue
 
-    $params = @{
+    <# $params = @{
         Path    = "$env:BHBuildOutput/$env:BHProjectName"
         Include = '*.ps1', '*.psm1'
         Recurse = $True
-        # Exclude = $CodeCoverageExclude
+        Exclude = $CodeCoverageExclude
     }
-    $codeCoverageFiles = Get-ChildItem @params
+    $codeCoverageFiles = Get-ChildItem @params #>
 
     try {
         $parameter = @{
@@ -270,10 +257,6 @@ task Test Init, {
             # CodeCoverage = $codeCoverageFiles
         }
         $testResults = Invoke-Pester @parameter
-
-        if ('AppVeyor' -eq $env:BHBuildSystem) {
-            BuildHelpers\Add-TestResultToAppveyor -TestFile $parameter["OutputFile"]
-        }
 
         Assert-True ($testResults.FailedCount -eq 0) "$($testResults.FailedCount) Pester test(s) failed."
     }

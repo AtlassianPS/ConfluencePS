@@ -158,7 +158,6 @@ If you like drinking from the firehose, here's [everything we closed for 2.0], b
 
 No changelog available for version `1.0` of ConfluencePS. `1.0` was created in late 2015. Version `.69` was published to the PowerShell Gallery in Nov 2016, and it remained unchanged until `2.0`. If you're looking for things that changed prior to `2.0`...sorry, but these probably aren't the droids you're looking for. :)
 
-
 [everything we closed for 2.0]: https://github.com/AtlassianPS/ConfluencePS/issues?utf8=%E2%9C%93&q=closed%3A2017-04-01..2017-08-17
 [@alexsuslin]: https://github.com/alexsuslin
 [@axxelG]: https://github.com/axxelG

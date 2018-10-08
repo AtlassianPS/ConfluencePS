@@ -1,7 +1,7 @@
 #requires -modules BuildHelpers
 #requires -modules Pester
 
-Describe "General project validation" -Tag Unit {
+Describe "Validation of example codes in the documentation" -Tag Documentation, NotImplemented {
 
     BeforeAll {
         Remove-Item -Path Env:\BH*
@@ -33,30 +33,13 @@ Describe "General project validation" -Tag Unit {
         Remove-Item -Path Env:\BH*
     }
 
-    It "passes Test-ModuleManifest" {
-        { Test-ModuleManifest -Path $env:BHManifestToTest -ErrorAction Stop } | Should -Not -Throw
-    }
+    Assert-True $script:isBuild "Examples can only be tested in the build environment. Please run `Invoke-Build -Task Build`."
 
-    It "module '$env:BHProjectName' can import cleanly" {
-        { Import-Module $env:BHManifestToTest } | Should Not Throw
-    }
+    $functions = Get-Command -Module $env:BHProjectName | Get-Help
+    foreach ($function in $functions) {
+        Context "Examples of $($function.Name)" {
 
-    It "module '$env:BHProjectName' exports functions" {
-        Import-Module $env:BHManifestToTest
 
-        (Get-Command -Module $env:BHProjectName | Measure-Object).Count | Should -BeGreaterThan 0
-    }
-
-    It "module uses the correct root module" {
-        Get-Metadata -Path $env:BHManifestToTest -PropertyName RootModule | Should -Be 'ConfluencePS.psm1'
-    }
-
-    It "module uses the correct guid" {
-        Get-Metadata -Path $env:BHManifestToTest -PropertyName Guid | Should -Be '20d32089-48ef-464d-ba73-6ada240e26b3'
-    }
-
-    It "module uses a valid version" {
-        [Version](Get-Metadata -Path $env:BHManifestToTest -PropertyName ModuleVersion) | Should -Not -BeNullOrEmpty
-        [Version](Get-Metadata -Path $env:BHManifestToTest -PropertyName ModuleVersion) | Should -BeOfType [Version]
+        }
     }
 }

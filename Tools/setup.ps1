@@ -1,4 +1,3 @@
-#requires -Version 5
 #requires -Module PowerShellGet
 
 [CmdletBinding()]
