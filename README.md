@@ -4,7 +4,10 @@ permalink: /module/ConfluencePS/
 ---
 # [ConfluencePS](https://atlassianps.org/module/ConfluencePS)
 
-[![GitHub release](https://img.shields.io/github/release/AtlassianPS/ConfluencePS.svg)](https://github.com/AtlassianPS/ConfluencePS/releases/latest) [![Build status](https://img.shields.io/appveyor/ci/AtlassianPS/ConfluencePS/master.svg)](https://ci.appveyor.com/project/AtlassianPS/confluenceps/branch/master) [![PowerShell Gallery](https://img.shields.io/powershellgallery/dt/ConfluencePS.svg)](https://www.powershellgallery.com/packages/ConfluencePS) ![License](https://img.shields.io/badge/license-MIT-blue.svg)
+[![GitHub release](https://img.shields.io/github/release/AtlassianPS/ConfluencePS.svg?style=for-the-badge)](https://github.com/AtlassianPS/ConfluencePS/releases/latest)
+[![Build Status](https://img.shields.io/vso/build/AtlassianPS/ConfluencePS/3/master.svg?style=for-the-badge)](https://dev.azure.com/AtlassianPS/ConfluencePS/_build/latest?definitionId=3)
+[![PowerShell Gallery](https://img.shields.io/powershellgallery/dt/ConfluencePS.svg?style=for-the-badge)](https://www.powershellgallery.com/packages/ConfluencePS)
+![License](https://img.shields.io/badge/license-MIT-blue.svg?style=for-the-badge)
 
 Automate your documentation! ConfluencePS is a PowerShell module that interacts with Atlassian's [Confluence] wiki product.
 
@@ -55,6 +58,17 @@ Want to contribute to AtlassianPS? Great!
 We appreciate [everyone](https://atlassianps.org/#people) who invests their time to make our modules the best they can be.
 
 Check out our guidelines on [Contributing](https://atlassianps.org/docs/Contributing/) to our modules and documentation.
+
+## Tested on
+
+|Configuration|Status|
+|-------------|------|
+|Windows Powershell v3|[![Build Status](https://img.shields.io/teamcity/http/build.powershell.org/s/ConfluencePS_TestOnPowerShellV3.svg?label=Build%20Status)](https://build.powershell.org/viewType.html?buildTypeId=ConfluencePS_TestOnPowerShellV3)|
+|Windows Powershell v4|[![Build Status](https://img.shields.io/teamcity/http/build.powershell.org/s/ConfluencePS_TestOnPowerShellV4.svg?label=Build%20Status)](https://build.powershell.org/viewType.html?buildTypeId=ConfluencePS_TestOnPowerShellV4)|
+|Windows Powershell v5.1|[![Build Status](https://img.shields.io/vso/build/AtlassianPS/ConfluencePS/3/master.svg?style=for-the-badge)](https://dev.azure.com/AtlassianPS/ConfluencePS/_build/latest?definitionId=3)|
+|Powershell Core (latest) on Windows|[![Build Status](https://img.shields.io/vso/build/AtlassianPS/ConfluencePS/3/master.svg?style=for-the-badge)](https://dev.azure.com/AtlassianPS/ConfluencePS/_build/latest?definitionId=3)|
+|Powershell Core (latest) on Ubuntu|[![Build Status](https://img.shields.io/vso/build/AtlassianPS/ConfluencePS/3/master.svg?style=for-the-badge)](https://dev.azure.com/AtlassianPS/ConfluencePS/_build/latest?definitionId=3)|
+|Powershell Core (latest) on MacOS|[![Build Status](https://img.shields.io/vso/build/AtlassianPS/ConfluencePS/3/master.svg?style=for-the-badge)](https://dev.azure.com/AtlassianPS/ConfluencePS/_build/latest?definitionId=3)|
 
 ## Acknowledgments
 
