@@ -27,5 +27,12 @@
     "markdownlint.config": {
         "MD024": false,
         "MD025": false
-    }
+    },
+    "cSpell.dictionaryDefinitions": [
+        { "name": "customDictionary", "path": "./.spelling"}
+    ],
+    "cSpell.dictionaries": [
+        "customDictionary"
+    ],
+    "cSpell.language": "en"
 }

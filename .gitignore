@@ -3,6 +3,8 @@
 # except for git files
 !.gitattributes
 !.gitignore
+!.editorconfig
+!.spelling
 !.github/
 !.vscode/
 !.travis.yml
