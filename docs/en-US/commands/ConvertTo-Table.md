@@ -98,7 +98,7 @@ Accept wildcard characters: False
 
 ## NOTES
 
-Basically stolen verbatim from thomykay's PoshConfluence SOAP API module.
+Basically stolen verbatim from thomykay`s PoshConfluence SOAP API module.
 See links section.
 
 ## RELATED LINKS

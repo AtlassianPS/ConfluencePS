@@ -39,15 +39,15 @@ Body content needs to be in "Confluence storage format" -- see also -Convert.
 ### -------------------------- EXAMPLE 1 --------------------------
 
 ```powershell
-New-ConfluencePage -Title 'Test New Page' -SpaceKey asdf
+New-ConfluencePage -Title 'Test New Page' -SpaceKey Hoth
 ```
 
-Create a new blank wiki page at the root of space "asdf".
+Create a new blank wiki page at the root of space "Hoth".
 
 ### -------------------------- EXAMPLE 2 --------------------------
 
 ```powershell
-New-ConfluencePage -Title 'Luke Skywalker' -Parent (Get-ConfluencePage -Title 'Darth Vader' -SpaceKey 'STARWARS')
+New-ConfluencePage -Title 'Luke Skywalker' -Parent (Get-ConfluencePage -Title 'Darth Vader' -SpaceKey 'StarWars')
 ```
 
 Creates a new blank wiki page as a child page below "Darth Vader" in the specified space.
@@ -81,7 +81,6 @@ Create a new wiki page named 'foo' at the root of space 'bar'.
 
 The wiki page will contain the text "Testing 123".
 -Convert will condition the -Body parameter's string into storage format.
-
 
 ### -------------------------- EXAMPLE 6 --------------------------
 

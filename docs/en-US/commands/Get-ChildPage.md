@@ -197,6 +197,7 @@ Accept wildcard characters: False
 ### ConfluencePS.Page
 
 ## NOTES
+
 Confluence uses hierarchy to help organize content.
 This command is meant to help provide the intended context from the command line.
 

@@ -91,7 +91,7 @@ Label text must match exactly; no wildcards are applied.
 ### -------------------------- EXAMPLE 5 --------------------------
 
 ```powershell
-Get-ConfluencePage -Query "mention = jsmith and creator != jsmith"
+Get-ConfluencePage -Query "mention = jSmith and creator != jSmith"
 ```
 
 Return all pages matching the query.
@@ -299,6 +299,7 @@ Accept wildcard characters: False
 ```
 
 ### -Skip
+
 Controls how many things will be skipped before starting output.
 
 Defaults to 0.

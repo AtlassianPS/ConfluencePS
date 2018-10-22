@@ -70,7 +70,7 @@ Get-ConfluencePage -Title 'Test Page' | Format-List *
 
 # EXAMPLES
 
-1. Making it easy to perform the same change on many wiki pages
+## Making it easy to perform the same change on many wiki pages
 
 To apply a new label to all pages matching specified criteria:
 
@@ -87,7 +87,7 @@ Get-ConfluencePage -Label test | Remove-ConfluencePage -WhatIf
 Use -WhatIf first to be sure only intended pages will be affected,
 then run the command again without the -WhatIf parameter.
 
-2. Automating documentation updates
+## Automating documentation updates
 
 My use case involved wanting a page for each VM with up-to-date specs and purpose,
 because the whole team did not have access to the VM management environment.
@@ -95,7 +95,7 @@ because the whole team did not have access to the VM management environment.
 To accomplish this, assume there is a nightly script that pulls the following
 VM info and stores it in a CSV (or database/whatever):
 
-```
+```text
 Name, IP, Dept, Purpose
 ```
 
@@ -107,7 +107,7 @@ instance, see if anything has changed, and update pages accordingly with
 something like the following:
 
 ```powershell
-$CSV = Import-Csv .\vmlist.csv
+$CSV = Import-Csv .\vmList.csv
 ForEach ($VM in (Get-Content .\changes.txt)) {
     $Table = $CSV | Where Name -eq $VM | ConvertTo-ConfluenceTable | Out-String
     $Body = $Table | ConvertTo-ConfluenceStorageFormat
@@ -133,13 +133,13 @@ Find us on GitHub or Slack, and let us know what you think.
 
 # SEE ALSO
 
-ConfluencePS on Github: https://github.com/AtlassianPS/ConfluencePS
+ConfluencePS on Github: <https://github.com/AtlassianPS/ConfluencePS>
 
-Confluence's REST API documentation: https://docs.atlassian.com/atlassian-confluence/REST/latest/
+Confluence's REST API documentation: <https://docs.atlassian.com/atlassian-confluence/REST/latest/>
 
-AtlassianPS org: https://atlassianps.org
+AtlassianPS org: <https://atlassianps.org>
 
-AtlassianPS Slack team: https://atlassianps.org/slack
+AtlassianPS Slack team: <https://atlassianps.org/slack>
 
 # KEYWORD
 
