@@ -1,38 +1,51 @@
 // Place your settings in this file to overwrite default and user settings.
 {
-    "files.encoding": "utf8",
     "files.eol": "\r\n",
-    "editor.trimAutoWhitespace": true,
-    "files.trimTrailingWhitespace": true,
+    "files.encoding": "utf8",
     "files.insertFinalNewline": true,
+    "files.trimTrailingWhitespace": true,
+
     "editor.tabSize": 4,
+    "editor.insertSpaces": true,
+
+    // https://en.wikipedia.org/wiki/Indentation_style#Styles
+    "powershell.codeFormatting.preset": "Stroustrup",
+    "powershell.codeFormatting.ignoreOneLineBlock": true,
     "powershell.scriptAnalysis.settingsPath": "PSScriptAnalyzerSettings.psd1",
-    "powershell.codeFormatting.openBraceOnSameLine": true,
-    "powershell.codeFormatting.newLineAfterOpenBrace": true,
-    "powershell.codeFormatting.newLineAfterCloseBrace": true,
-    "powershell.codeFormatting.whitespaceBeforeOpenBrace": true,
-    "powershell.codeFormatting.whitespaceBeforeOpenParen": true,
-    "powershell.codeFormatting.whitespaceAroundOperator": true,
-    "powershell.codeFormatting.whitespaceAfterSeparator": true,
+
     "[markdown]": {
-        "editor.wordWrap": "on",
-        "editor.renderWhitespace": "all",
-        "editor.acceptSuggestionOnEnter": "off",
+        "editor.tabSize": 2,
         "editor.trimAutoWhitespace": false,
         "files.trimTrailingWhitespace": false
     },
-    "search.exclude": {
-        "./Release/*": true
+    "[yaml]": {
+        "editor.tabSize": 2
     },
+
     "markdownlint.config": {
+        "MD009": false,
         "MD024": false,
-        "MD025": false
+        "MD025": false,
+        "MD028": false
     },
-    "cSpell.dictionaryDefinitions": [
-        { "name": "customDictionary", "path": "./.spelling"}
-    ],
+    "cSpell.dictionaryDefinitions": [{
+        "name": "customDictionary",
+        "path": "./.spelling"
+    }],
     "cSpell.dictionaries": [
         "customDictionary"
     ],
     "cSpell.language": "en"
+
+    // Recomendations for "USER SETTINGS":
+    // "editor.formatOnType": true,
+    // "editor.formatOnPaste": true,
+    // "[markdown]": {
+    //     "editor.wordWrap": "on",
+    //     "editor.renderWhitespace": "boundary",
+    //     "editor.acceptSuggestionOnEnter": "off"
+    // },
+    // "search.exclude": {
+    //     "./Release": true
+    // }
 }
