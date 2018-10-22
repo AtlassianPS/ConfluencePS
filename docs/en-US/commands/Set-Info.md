@@ -24,7 +24,7 @@ Set-ConfluenceInfo [[-BaseURi] <Uri>] [[-Credential] <PSCredential>] [[-PageSize
 Set-ConfluenceInfo uses scoped variables and PSDefaultParameterValues to supply
 URI/auth info to all other functions in the module (e.g. Get-ConfluenceSpace).
 These session defaults can be overwritten on any single command, but using
-Set-ConfluenceInfo avoids repetitively specifying -ApiUri and -Credential parameters.
+Set-ConfluenceInfo avoids repetitively specifying -ApiURi and -Credential parameters.
 
 Confluence's REST API supports passing basic authentication in headers.
 (If you have a better suggestion for how to handle auth, please reach out on GitHub!)
@@ -59,7 +59,6 @@ Set-ConfluenceInfo -BaseURI 'https://wiki.contoso.com' -PromptCredentials -PageS
 
 Declare the URI of your Confluence instance; be prompted for username and password.
 Set the default "page size" for all your commands in this session to 50 (see Notes).
-
 
 ### -------------------------- EXAMPLE 4 --------------------------
 

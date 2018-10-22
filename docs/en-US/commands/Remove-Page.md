@@ -50,10 +50,10 @@ simulate the each page being trashed. -WhatIf prevents any removals.
 ### -------------------------- EXAMPLE 3 --------------------------
 
 ```powershell
-Get-ConfluencePage -Label 'deleteme' | Remove-ConfluencePage
+Get-ConfluencePage -Label 'deleteMe' | Remove-ConfluencePage
 ```
 
-For all wiki pages with the label "deleteme" applied, trash each page.
+For all wiki pages with the label "deleteMe" applied, trash each page.
 
 ## PARAMETERS
 

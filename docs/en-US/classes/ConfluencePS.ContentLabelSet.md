@@ -6,6 +6,7 @@ permalink: /docs/ConfluencePS/classes/ConfluencePS.ContentLabelSet/
 # ConfluencePS.ContentLabelSet
 
 ## SYNOPSIS
+
 Defines an object for ContentLabelSets in Confluence.
 
 ## SYNTAX
@@ -17,17 +18,21 @@ New-Object -TypeName ConfluencePS.ContentLabelSet [-Property @{}]
 ```
 
 ## DESCRIPTION
+
 The `ContentLabelSet` is an object that describes the `Label`s that are assigned to a `Page`.
 
 ## REFERENCES
+
 _This class is not used by any other class._
 
 ## CONSTRUCTORS
+
 _This class does not have a constructor._
 
 ## PROPERTIES
 
 ### Page
+
 Contains the `Page` that is being described.
 
 ```yaml
@@ -37,6 +42,7 @@ Default value: None
 ```
 
 ### Labels
+
 Contains a list of `Label`s that are assigned to the `Page`.
 
 ```yaml
@@ -48,4 +54,5 @@ Default value: None
 ## METHODS
 
 ### ToString()
+
 _No behavior of casting to string is defined._

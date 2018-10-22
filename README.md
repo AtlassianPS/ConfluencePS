@@ -11,7 +11,7 @@ permalink: /module/ConfluencePS/
 
 Automate your documentation! ConfluencePS is a PowerShell module that interacts with Atlassian's [Confluence] wiki product.
 
-Need to add 100 new pages based on some dumb CSV file? Are you trying to figure out how to delete all pages labeled 'deleteme'? Are you sick of manually editing the same page every single day? ConfluencePS has you covered!
+Need to add 100 new pages based on some dumb CSV file? Are you trying to figure out how to delete all pages labeled 'deleteMe'? Are you sick of manually editing the same page every single day? ConfluencePS has you covered!
 
 ConfluencePS communicates with Atlassian's actively supported [REST API] via basic authentication. The REST implementation is the only way to interact with their cloud-hosted instances via API, and will eventually be the only way to interact with server installations.
 
@@ -43,6 +43,7 @@ Set-ConfluenceInfo -BaseURI 'https://YourCloudWiki.atlassian.net/wiki' -PromptCr
 ### Usage
 
 You can find the full documentation on our [homepage](https://atlassianps.org/docs/ConfluencePS) and in the console.
+
 ```powershell
 # Review the help at any time!
 Get-Help about_ConfluencePS
@@ -70,7 +71,7 @@ Check out our guidelines on [Contributing](https://atlassianps.org/docs/Contribu
 |Powershell Core (latest) on Ubuntu|[![Build Status](https://img.shields.io/vso/build/AtlassianPS/ConfluencePS/3/master.svg?style=for-the-badge)](https://dev.azure.com/AtlassianPS/ConfluencePS/_build/latest?definitionId=3)|
 |Powershell Core (latest) on MacOS|[![Build Status](https://img.shields.io/vso/build/AtlassianPS/ConfluencePS/3/master.svg?style=for-the-badge)](https://dev.azure.com/AtlassianPS/ConfluencePS/_build/latest?definitionId=3)|
 
-## Acknowledgments
+## Acknowledgements
 
 * Thanks to [brianbunke] for getting this module on it's feet
 * Thanks to [thomykay] for his [PoshConfluence] SOAP API module, which provided enough of a starting point to feel comfortable undertaking this project.

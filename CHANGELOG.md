@@ -86,7 +86,7 @@ A new major version! ConfluencePS has been totally refactored to introduce new f
 - Private functions are leveraged heavily to reduce repeat code
   - `Invoke-Method` is the most prominent example
 
-If you like drinking from the firehose, here's [everything we closed for 2.0], because we probably forgot to list something here. Otherwise, read on for summarized details.
+If you like drinking from the fire hose, here's [everything we closed for 2.0], because we probably forgot to list something here. Otherwise, read on for summarized details.
 
 ### Added
 
@@ -106,7 +106,7 @@ If you like drinking from the firehose, here's [everything we closed for 2.0], b
 - `Get-ConfluenceChildPage`
   - Default behavior returns only immediate child pages. Which also means...
   - Added `-Recurse` to return all pages below the given page, not just immediate child objects
-    - NOTE: Recurse is not available in on-prem installs right now, only Atlassian cloud instances
+    - NOTE: Recurse is not available in on-premise installs right now, only Atlassian cloud instances
   - `-ParentID` > `-PageID`
 - `Get-ConfluenceLabel`
   - Name used to be `Get-WikiPageLabel`
