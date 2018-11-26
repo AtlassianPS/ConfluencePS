@@ -2,7 +2,7 @@
 #requires -modules Configuration
 #requires -modules Pester
 
-Describe "Validation of build environment" {
+Describe "Validation of build environment" -Tag Unit {
 
     BeforeAll {
         Remove-Item -Path Env:\BH*
