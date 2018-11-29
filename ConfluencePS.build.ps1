@@ -262,12 +262,13 @@ task Test Init, {
         }
         $testResults = Invoke-Pester @parameter
 
+        Write-Host (Get-Childitem $env:BHProjectPath)
         Assert-True ($testResults.FailedCount -eq 0) "$($testResults.FailedCount) Pester test(s) failed."
     }
     catch {
         throw $_
     }
-}, RemoveTestResults, { Init }
+}, { Init }
 #endregion
 
 #region Publish
