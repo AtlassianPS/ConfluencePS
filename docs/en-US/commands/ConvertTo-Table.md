@@ -16,7 +16,7 @@ Convert your content to Confluence's wiki markup table format.
 ## SYNTAX
 
 ```powershell
-ConvertTo-ConfluenceTable [-Content] <Object> [-NoHeader]
+ConvertTo-ConfluenceTable [-Content] <Object> [-Vertical] [-NoHeader]
 ```
 
 ## DESCRIPTION
