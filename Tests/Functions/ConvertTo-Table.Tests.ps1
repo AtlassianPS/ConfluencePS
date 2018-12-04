@@ -1,5 +1,5 @@
-﻿#requires -modules BuildHelpers
-#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "4.3.1" }
+#requires -modules BuildHelpers
+#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "4.4.2" }
 
 Describe 'ConvertTo-Table' -Tag Unit {
 
@@ -53,7 +53,8 @@ Describe 'ConvertTo-Table' -Tag Unit {
     Context "Behavior checking" {
 
         #region Mocking
-        Mock Get-Service {
+        # linux and macOS don't have Fake
+        function Get-FakeService {
             [PSCustomObject]@{
                 Name = "AppMgmt"
                 DisplayName = "Application Management"
@@ -108,7 +109,7 @@ Describe 'ConvertTo-Table' -Tag Unit {
         #endregion Mocking
 
         It "creates a table with a header row" {
-            $table = ConvertTo-ConfluenceTable -Content (Get-Service)
+            $table = ConvertTo-ConfluenceTable -Content (Get-FakeService)
             $row = $table -split [Environment]::NewLine
 
             $row.Count | Should -Be 12
@@ -132,7 +133,7 @@ Describe 'ConvertTo-Table' -Tag Unit {
         }
 
         It "creates a table without a header row" {
-            $table = ConvertTo-ConfluenceTable (Get-Service) -NoHeader
+            $table = ConvertTo-ConfluenceTable (Get-FakeService) -NoHeader
             $row = $table -split [Environment]::NewLine
 
             $row.Count | Should -Be 11
@@ -149,12 +150,12 @@ Describe 'ConvertTo-Table' -Tag Unit {
             $row = $table -split [Environment]::NewLine
 
             $row.Count | Should -Be 4
-            $row[0..3] | ForEach-Object {
+            $row[0..2] | ForEach-Object {
                 $_ | Should -Match '^|| [\w\s]+ || [\w\s]+ |$'
                 $_ | Should -Not -Match '\|\|$'
                 $_ | Should -Not -Match '\|\s\s+\|'
             }
-            $row[4] | Should -BeNullOrEmpty
+            $row[3] | Should -BeNullOrEmpty
         }
 
         It "creates an empty vertical table with a header column" {
@@ -162,12 +163,12 @@ Describe 'ConvertTo-Table' -Tag Unit {
             $row = $table -split [Environment]::NewLine
 
             $row.Count | Should -Be 4
-            $row[0..3] | ForEach-Object {
+            $row[0..2] | ForEach-Object {
                 $_ | Should -Match '^|| [\w\s]+? || |$'
                 $_ | Should -Not -Match '\|\|$'
                 $_ | Should -Not -Match '\|\s\s+\|'
             }
-            $row[4] | Should -BeNullOrEmpty
+            $row[3] | Should -BeNullOrEmpty
         }
 
         It "creates a vertical table without a header column" {
@@ -175,12 +176,12 @@ Describe 'ConvertTo-Table' -Tag Unit {
             $row = $table -split [Environment]::NewLine
 
             $row.Count | Should -Be 4
-            $row[0..3] | ForEach-Object {
+            $row[0..2] | ForEach-Object {
                 $_ | Should -Match '^| [\w\s]+? | [\w\s]+? |$'
                 $_ | Should -Not -Match '\|\|$'
                 $_ | Should -Not -Match '\|\s\s+\|'
             }
-            $row[4] | Should -BeNullOrEmpty
+            $row[3] | Should -BeNullOrEmpty
         }
 
         It "creates an empty vertical table without a header column" {
@@ -188,20 +189,20 @@ Describe 'ConvertTo-Table' -Tag Unit {
             $row = $table -split [Environment]::NewLine
 
             $row.Count | Should -Be 4
-            $row[0..3] | ForEach-Object {
+            $row[0..2] | ForEach-Object {
                 $_ | Should -Match '^| [\w\s]+? | |$'
                 $_ | Should -Not -Match '\|\|$'
                 $_ | Should -Not -Match '\|\s\s+\|'
             }
-            $row[4] | Should -BeNullOrEmpty
+            $row[3] | Should -BeNullOrEmpty
         }
 
         It "returns a single string object" {
-            $table = ConvertTo-ConfluenceTable (Get-Service)
+            $table = ConvertTo-ConfluenceTable (Get-FakeService)
             $row = $table -split [Environment]::NewLine
 
-            $table.Count | Should -Be 1
-            $row.Count | Should -BeGreaterThan 1
+            @($table).Count | Should -Be 1
+            @($row).Count | Should -BeGreaterThan 1
         }
     }
 }
