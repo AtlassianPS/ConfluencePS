@@ -5,50 +5,60 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## 2.3 2018-03-22
+## [Unreleased]
 
-FEATURES:
+### Changed
 
-- Added custom object type for Attachments: `ConfluencePS.Attachment` (#123, [@JohnAdders][])
-- Added `Add-Attachment`: upload a file to a page (#123, [@JohnAdders][])
-- Added `Get-Attachment`: list all attachments of a page (#123, [@JohnAdders][])
-- Added `Get-AttachmentFile`: download an attachment to the local disc (#123, [@JohnAdders][])
-- Added `Remove-Attachment`: remove an attachment from a page (#123, [@JohnAdders][])
-- Added `Set-Attachment`: update an attachment of a page (#123, [@JohnAdders][])
+.
+
+## [2.3] 2018-03-22
+
+### Added
+
+- custom object type for Attachments: `ConfluencePS.Attachment` (#123, [@JohnAdders][])
+- `Add-Attachment`: upload a file to a page (#123, [@JohnAdders][])
+- `Get-Attachment`: list all attachments of a page (#123, [@JohnAdders][])
+- `Get-AttachmentFile`: download an attachment to the local disc (#123, [@JohnAdders][])
+- `Remove-Attachment`: remove an attachment from a page (#123, [@JohnAdders][])
+- `Set-Attachment`: update an attachment of a page (#123, [@JohnAdders][])
+- `-InFile` to `Invoke-Method` for uploading of files with `form-data` (#130, [@lipkau][])
+- full support for PowerShell Core (`pwsh`) (#119, [@lipkau][])
+- AppVeyor tests on PowerShell v6 (Linux) (#119, [@lipkau][])
+- AppVeyor tests on PowerShell v6 (Windows) (#119, [@lipkau][])
+
+### Changed
+
 - Made `Invoke-Method` public (#130, [@lipkau][])
-- Added `-InFile` to `Invoke-Method` for uploading of files with `form-data` (#130, [@lipkau][])
-
-IMPROVEMENTS:
-
 - Moved Online Help of cmdlets to the homepage (#130, [@lipkau][])
 - Updated help for contributing to the project (#130, [@lipkau][])
 - Documentation for the custom classes of the module (#107, [@lipkau][])
-- Added full support for PowerShell Core (`pwsh`) (#119, [@lipkau][])
-- Added AppVeyor tests on PowerShell v6 (Linux) (#119, [@lipkau][])
-- Added AppVeyor tests on PowerShell v6 (Windows) (#119, [@lipkau][])
 - Tests now run from `./Release` Path (#99, [@lipkau][])
 - Have the Build script to "compile" the functions into the psm1 file (enhances performance) (#119, [@lipkau][])
 - Have a zip file deploy as artifact of the release (#90, [@lipkau][])
 
-## 2.2 - 2018-01-01
+## [2.2] - 2018-01-01
 
-FEATURES:
+### Added
+
 - Automatic deployment of documentation to website (#120, [@lipkau][])
 - New parameter `-Query` to `Get-Page` for complex searches (#106, [@lipkau][])
 - Documentation for the custom classes of the module (#107, [@lipkau][])
 - Added full support for PowerShell Core (`pwsh`) (#119, [@lipkau][])
 
-IMPROVEMENTS:
+### Changed
+
 - Fixed encoding of Unicode chars (#101, [@lipkau][])
 - Require necessary Assembly for HttpUtility (#102, [@lipkau][])
 
-## 2.1 - 2017-11-01
+## [2.1] - 2017-11-01
 
-IMPROVEMENTS:
-  - Shows a warning when the server requires a CAPTCHA for the authentication (#91, [@lipkau][])
-  - Custom classes now print relevant data in `ToString()` (#92, [@lipkau][])
+### Changed
 
-## 2.0 - 2017-08-17
+- Shows a warning when the server requires a CAPTCHA for the authentication (#91, [@lipkau][])
+- Custom classes now print relevant data in `ToString()` (#92, [@lipkau][])
+
+## [2.0] - 2017-08-17
+
 A new major version! ConfluencePS has been totally refactored to introduce new features and greatly improve efficiency.
 
 "A new major version" means limited older functionality was intentionally broken. In addition, there are a ton of good changes, so some big picture notes first:
@@ -76,9 +86,10 @@ A new major version! ConfluencePS has been totally refactored to introduce new f
 - Private functions are leveraged heavily to reduce repeat code
   - `Invoke-Method` is the most prominent example
 
-If you like drinking from the firehose, here's [everything we closed for 2.0], because we probably forgot to list something here. Otherwise, read on for summarized details.
+If you like drinking from the fire hose, here's [everything we closed for 2.0], because we probably forgot to list something here. Otherwise, read on for summarized details.
 
 ### Added
+
 - All `Get-*` functions now support paging
 - `-ApiUri` and `-Credential` parameters added to functions
   - `Set-ConfluenceInfo` behavior is mostly unchanged (see below)
@@ -86,6 +97,7 @@ If you like drinking from the firehose, here's [everything we closed for 2.0], b
   - Try piping ConfluencePS objects into `Format-List *` to see all properties
 
 ### Changed
+
 - Function prefix defaults to "Confluence" instead of "Wiki" (`Get-ConfluenceSpace`)
   - If you like "Wiki", you can `Import-Module ConfluencePS -Prefix Wiki`
 - `Add-ConfluenceLabel`
@@ -94,7 +106,7 @@ If you like drinking from the firehose, here's [everything we closed for 2.0], b
 - `Get-ConfluenceChildPage`
   - Default behavior returns only immediate child pages. Which also means...
   - Added `-Recurse` to return all pages below the given page, not just immediate child objects
-    - NOTE: Recurse is not available in on-prem installs right now, only Atlassian cloud instances
+    - NOTE: Recurse is not available in on-premise installs right now, only Atlassian cloud instances
   - `-ParentID` > `-PageID`
 - `Get-ConfluenceLabel`
   - Name used to be `Get-WikiPageLabel`
@@ -131,6 +143,7 @@ If you like drinking from the firehose, here's [everything we closed for 2.0], b
   - New `-Parent` parameter accepts Page objects
 
 ### Removed
+
 - `-Limit` and `-Expand` parameters
   - `Get-*` function paging removes the need for fiddling with returned object limits
   - Custom object types hold relevant properties, removing the need to manually "expand" results
@@ -138,12 +151,12 @@ If you like drinking from the firehose, here's [everything we closed for 2.0], b
   - Functionality replaced with `Get-ConfluencePage -Label foo`
 
 ### Much ❤
+
 [@lipkau](https://github.com/lipkau) refactored the entire module, and is the only reason `2.0` is a reality. In short, he is amazing. Thank you!
 
+## [1.0].0-69 - 2016-11-28
 
-## 1.0.0-69 - 2016-11-28
 No changelog available for version `1.0` of ConfluencePS. `1.0` was created in late 2015. Version `.69` was published to the PowerShell Gallery in Nov 2016, and it remained unchanged until `2.0`. If you're looking for things that changed prior to `2.0`...sorry, but these probably aren't the droids you're looking for. :)
-
 
 [everything we closed for 2.0]: https://github.com/AtlassianPS/ConfluencePS/issues?utf8=%E2%9C%93&q=closed%3A2017-04-01..2017-08-17
 [@alexsuslin]: https://github.com/alexsuslin

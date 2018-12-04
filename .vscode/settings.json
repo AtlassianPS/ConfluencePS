@@ -4,32 +4,48 @@
     "files.encoding": "utf8",
     "files.insertFinalNewline": true,
     "files.trimTrailingWhitespace": true,
-    "files.defaultLanguage": "powershell",
+
     "editor.tabSize": 4,
     "editor.insertSpaces": true,
-    "search.exclude": {
-        "./Release": true
-    },
-    "files.watcherExclude": {
-        "./Release": true
-    },
+
+    // https://en.wikipedia.org/wiki/Indentation_style#Styles
+    "powershell.codeFormatting.preset": "Stroustrup",
     "powershell.codeFormatting.ignoreOneLineBlock": true,
-    "powershell.codeFormatting.openBraceOnSameLine": true,
-    "powershell.codeFormatting.newLineAfterOpenBrace": false,
-    "powershell.codeFormatting.newLineAfterCloseBrace": true,
-    "powershell.codeFormatting.whitespaceBeforeOpenBrace": true,
-    "powershell.codeFormatting.whitespaceBeforeOpenParen": true,
-    "powershell.codeFormatting.whitespaceAroundOperator": true,
-    "powershell.codeFormatting.whitespaceAfterSeparator": true,
     "powershell.scriptAnalysis.settingsPath": "PSScriptAnalyzerSettings.psd1",
+
     "[markdown]": {
         "editor.tabSize": 2,
-        "editor.wordWrap": "on",
-        "editor.renderWhitespace": "all",
-        "editor.acceptSuggestionOnEnter": "off",
-        "editor.trimAutoWhitespace": false
+        "editor.trimAutoWhitespace": false,
+        "files.trimTrailingWhitespace": false
     },
     "[yaml]": {
         "editor.tabSize": 2
-    }
+    },
+
+    "markdownlint.config": {
+        "MD009": false,
+        "MD024": false,
+        "MD025": false,
+        "MD028": false
+    },
+    "cSpell.dictionaryDefinitions": [{
+        "name": "customDictionary",
+        "path": "./.spelling"
+    }],
+    "cSpell.dictionaries": [
+        "customDictionary"
+    ],
+    "cSpell.language": "en"
+
+    // Recomendations for "USER SETTINGS":
+    // "editor.formatOnType": true,
+    // "editor.formatOnPaste": true,
+    // "[markdown]": {
+    //     "editor.wordWrap": "on",
+    //     "editor.renderWhitespace": "boundary",
+    //     "editor.acceptSuggestionOnEnter": "off"
+    // },
+    // "search.exclude": {
+    //     "./Release": true
+    // }
 }
