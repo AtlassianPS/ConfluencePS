@@ -1,7 +1,8 @@
 #requires -modules BuildHelpers
+#requires -modules Configuration
 #requires -modules Pester
 
-Describe "General project validation" -Tag Unit {
+Describe "Validation of build environment" -Tag Unit {
 
     BeforeAll {
         Remove-Item -Path Env:\BH*
@@ -33,30 +34,33 @@ Describe "General project validation" -Tag Unit {
         Remove-Item -Path Env:\BH*
     }
 
-    It "passes Test-ModuleManifest" {
-        { Test-ModuleManifest -Path $env:BHManifestToTest -ErrorAction Stop } | Should -Not -Throw
+    $changelogFile = if ($script:isBuild) {
+        "$env:BHBuildOutput/$env:BHProjectName/CHANGELOG.md"
+    }
+    else {
+        "$env:BHProjectPath/CHANGELOG.md"
     }
 
-    It "module '$env:BHProjectName' can import cleanly" {
-        { Import-Module $env:BHManifestToTest } | Should Not Throw
-    }
+    Context "CHANGELOG" {
 
-    It "module '$env:BHProjectName' exports functions" {
-        Import-Module $env:BHManifestToTest
+        foreach ($line in (Get-Content $changelogFile)) {
+            if ($line -match "(?:##|\<h2.*?\>)\s*\[(?<Version>(\d+\.?){1,2})\]") {
+                $changelogVersion = $matches.Version
+                break
+            }
+        }
 
-        (Get-Command -Module $env:BHProjectName | Measure-Object).Count | Should -BeGreaterThan 0
-    }
+        It "has a changelog file" {
+            $changelogFile | Should -Exist
+        }
 
-    It "module uses the correct root module" {
-        Get-Metadata -Path $env:BHManifestToTest -PropertyName RootModule | Should -Be 'ConfluencePS.psm1'
-    }
+        It "has a valid version in the changelog" {
+            $changelogVersion            | Should -Not -BeNullOrEmpty
+            [Version]($changelogVersion)  | Should -BeOfType [Version]
+        }
 
-    It "module uses the correct guid" {
-        Get-Metadata -Path $env:BHManifestToTest -PropertyName Guid | Should -Be '20d32089-48ef-464d-ba73-6ada240e26b3'
-    }
-
-    It "module uses a valid version" {
-        [Version](Get-Metadata -Path $env:BHManifestToTest -PropertyName ModuleVersion) | Should -Not -BeNullOrEmpty
-        [Version](Get-Metadata -Path $env:BHManifestToTest -PropertyName ModuleVersion) | Should -BeOfType [Version]
+        It "has a version changelog that matches the manifest version" {
+            Configuration\Get-Metadata -Path $env:BHManifestToTest -PropertyName ModuleVersion | Should -BeLike "$changelogVersion*"
+        }
     }
 }
