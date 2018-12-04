@@ -35,17 +35,6 @@ if ($BuildTask -notin @("SetUp", "InstallDependencies")) {
     Invoke-Init
 }
 
-$shouldDeploy = (
-    # only deploy master branch
-    ('master' -eq $env:BHBranchName) -and
-    # it cannot be a PR
-    ( -not $env:SYSTEM_PULLREQUEST_PULLREQUESTID) -and
-    # only deploy from VSTS
-    ('VSTS' -eq $env:BHBuildSystem) -and
-    # it cannot have a commit message that contains "skip-deploy"
-    ($env:BHCommitMessage -notlike '*skip-deploy*')
-)
-
 #region SetUp
 # Synopsis: Proxy task
 task Init { Invoke-Init }
@@ -127,7 +116,6 @@ task ShowInfo Init, GetNextVersion, {
     Write-Build Gray ('Commit:                     {0}' -f $env:BHCommitMessage)
     Write-Build Gray ('Build #:                    {0}' -f $env:BHBuildNumber)
     Write-Build Gray ('Next Version:               {0}' -f $env:NextBuildVersion)
-    Write-Build Gray ('Will deploy new version?    {0}' -f $shouldDeploy)
     Write-Build Gray '-------------------------------------------------------'
     Write-Build Gray
     Write-Build Gray ('PowerShell version:         {0}' -f $PSVersionTable.PSVersion.ToString())
@@ -273,7 +261,7 @@ task Test Init, {
 
 #region Publish
 # Synopsis: Publish a new release on github and the PSGallery
-task Deploy -If ($shouldDeploy) Init, PublishToGallery, TagReplository, UpdateHomepage
+task Deploy Init, PublishToGallery, TagReplository, UpdateHomepage
 
 # Synpsis: Publish the $release to the PSGallery
 task PublishToGallery {
