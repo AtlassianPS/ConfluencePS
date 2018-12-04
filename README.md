@@ -4,11 +4,14 @@ permalink: /module/ConfluencePS/
 ---
 # [ConfluencePS](https://atlassianps.org/module/ConfluencePS)
 
-[![GitHub release](https://img.shields.io/github/release/AtlassianPS/ConfluencePS.svg)](https://github.com/AtlassianPS/ConfluencePS/releases/latest) [![Build status](https://img.shields.io/appveyor/ci/AtlassianPS/ConfluencePS/master.svg)](https://ci.appveyor.com/project/AtlassianPS/confluenceps/branch/master) [![PowerShell Gallery](https://img.shields.io/powershellgallery/dt/ConfluencePS.svg)](https://www.powershellgallery.com/packages/ConfluencePS) ![License](https://img.shields.io/badge/license-MIT-blue.svg)
+[![GitHub release](https://img.shields.io/github/release/AtlassianPS/ConfluencePS.svg?style=for-the-badge)](https://github.com/AtlassianPS/ConfluencePS/releases/latest)
+[![Build Status](https://img.shields.io/vso/build/AtlassianPS/ConfluencePS/12/master.svg?style=for-the-badge)](https://dev.azure.com/AtlassianPS/ConfluencePS/_build/latest?definitionId=12)
+[![PowerShell Gallery](https://img.shields.io/powershellgallery/dt/ConfluencePS.svg?style=for-the-badge)](https://www.powershellgallery.com/packages/ConfluencePS)
+![License](https://img.shields.io/badge/license-MIT-blue.svg?style=for-the-badge)
 
 Automate your documentation! ConfluencePS is a PowerShell module that interacts with Atlassian's [Confluence] wiki product.
 
-Need to add 100 new pages based on some dumb CSV file? Are you trying to figure out how to delete all pages labeled 'deleteme'? Are you sick of manually editing the same page every single day? ConfluencePS has you covered!
+Need to add 100 new pages based on some dumb CSV file? Are you trying to figure out how to delete all pages labeled 'deleteMe'? Are you sick of manually editing the same page every single day? ConfluencePS has you covered!
 
 ConfluencePS communicates with Atlassian's actively supported [REST API] via basic authentication. The REST implementation is the only way to interact with their cloud-hosted instances via API, and will eventually be the only way to interact with server installations.
 
@@ -40,6 +43,7 @@ Set-ConfluenceInfo -BaseURI 'https://YourCloudWiki.atlassian.net/wiki' -PromptCr
 ### Usage
 
 You can find the full documentation on our [homepage](https://atlassianps.org/docs/ConfluencePS) and in the console.
+
 ```powershell
 # Review the help at any time!
 Get-Help about_ConfluencePS
@@ -56,7 +60,18 @@ We appreciate [everyone](https://atlassianps.org/#people) who invests their time
 
 Check out our guidelines on [Contributing](https://atlassianps.org/docs/Contributing/) to our modules and documentation.
 
-## Acknowledgments
+## Tested on
+
+|Configuration|Status|
+|-------------|------|
+|Windows Powershell v3|[![Build Status](https://img.shields.io/teamcity/http/build.powershell.org/s/ConfluencePS_TestOnPowerShellV3.svg?label=Build%20Status)](https://build.powershell.org/viewType.html?buildTypeId=ConfluencePS_TestOnPowerShellV3)|
+|Windows Powershell v4|[![Build Status](https://img.shields.io/teamcity/http/build.powershell.org/s/ConfluencePS_TestOnPowerShellV4.svg?label=Build%20Status)](https://build.powershell.org/viewType.html?buildTypeId=ConfluencePS_TestOnPowerShellV4)|
+|Windows Powershell v5.1|[![Build Status](https://img.shields.io/vso/build/AtlassianPS/ConfluencePS/12/master.svg?style=for-the-badge)](https://dev.azure.com/AtlassianPS/ConfluencePS/_build/latest?definitionId=12)|
+|Powershell Core (latest) on Windows|[![Build Status](https://img.shields.io/vso/build/AtlassianPS/ConfluencePS/12/master.svg?style=for-the-badge)](https://dev.azure.com/AtlassianPS/ConfluencePS/_build/latest?definitionId=12)|
+|Powershell Core (latest) on Ubuntu|[![Build Status](https://img.shields.io/vso/build/AtlassianPS/ConfluencePS/12/master.svg?style=for-the-badge)](https://dev.azure.com/AtlassianPS/ConfluencePS/_build/latest?definitionId=12)|
+|Powershell Core (latest) on MacOS|[![Build Status](https://img.shields.io/vso/build/AtlassianPS/ConfluencePS/12/master.svg?style=for-the-badge)](https://dev.azure.com/AtlassianPS/ConfluencePS/_build/latest?definitionId=12)|
+
+## Acknowledgements
 
 * Thanks to [brianbunke] for getting this module on it's feet
 * Thanks to [thomykay] for his [PoshConfluence] SOAP API module, which provided enough of a starting point to feel comfortable undertaking this project.
@@ -91,3 +106,4 @@ Hopefully this is obvious, but:
 
 <!-- [//]: # (Sweet online markdown editor at http://dillinger.io) -->
 <!-- [//]: # ("GitHub Flavored Markdown" https://help.github.com/articles/github-flavored-markdown/) -->
+<!-- -->
