@@ -63,7 +63,6 @@ function Get-Label {
                 $InputObject = Get-Page -PageID $_page -ApiURi $apiURi -Credential $Credential
             }
             $iwParameters["Uri"] = $resourceApi -f $_page
-            Write-debug "Hey"
             $output = New-Object -TypeName ConfluencePS.ContentLabelSet
             $output.Page = $InputObject
             $output.Labels += (Invoke-Method @iwParameters)
