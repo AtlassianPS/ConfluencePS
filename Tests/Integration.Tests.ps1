@@ -1,3 +1,6 @@
+#requires -modules BuildHelpers
+#requires -modules Pester
+
 [Diagnostics.CodeAnalysis.SuppressMessageAttribute(
     "PSUseDeclaredVarsMoreThanAssigments",
     "",
@@ -12,35 +15,41 @@ param()
 # Pester integration/acceptance tests to use during module development. Dave Wyatt's five-part series:
 # http://blogs.technet.com/b/heyscriptingguy/archive/2015/12/14/what-is-pester-and-why-should-i-care.aspx
 
-Describe 'Load Module' {
-    # ARRANGE
+$SpaceID = Get-Random
+
+Describe 'Integration Tests' -Tag Integration {
+
     BeforeAll {
-        Remove-Module ConfluencePS -ErrorAction SilentlyContinue
-    }
-    AfterEach {
-        Remove-Module ConfluencePS -ErrorAction SilentlyContinue
-    }
-
-    # ACT
-    Import-Module "$PSScriptRoot\..\ConfluencePS" -Force -ErrorAction Stop
-
-    #ASSERT
-    It "imports the module" {
-        Get-Module ConfluencePS | Should BeOfType [PSModuleInfo]
-    }
-
-    It "imports the module with custom prefix" {
-        Import-Module "$PSScriptRoot\..\ConfluencePS" -Prefix "Wiki" -Force -ErrorAction Stop
-        (Get-Command -Module ConfluencePS).Name | ForEach-Object {
-            $_ -match "\-Wiki" | Should Be $true
+        Remove-Item -Path Env:\BH*
+        $projectRoot = (Resolve-Path "$PSScriptRoot/..").Path
+        if ($projectRoot -like "*Release") {
+            $projectRoot = (Resolve-Path "$projectRoot/..").Path
         }
+
+        Import-Module BuildHelpers
+        Set-BuildEnvironment -BuildOutput '$ProjectPath/Release' -Path $projectRoot -ErrorAction SilentlyContinue
+
+        $env:BHManifestToTest = $env:BHPSModuleManifest
+        $script:isBuild = $PSScriptRoot -like "$env:BHBuildOutput*"
+        if ($script:isBuild) {
+            $Pattern = [regex]::Escape($env:BHProjectPath)
+
+            $env:BHBuildModuleManifest = $env:BHPSModuleManifest -replace $Pattern, $env:BHBuildOutput
+            $env:BHManifestToTest = $env:BHBuildModuleManifest
+        }
+
+        Import-Module "$env:BHProjectPath/Tools/BuildTools.psm1"
+
+        Remove-Module $env:BHProjectName -ErrorAction SilentlyContinue
+        Import-Module $env:BHManifestToTest
     }
-}
+    AfterAll {
+        Remove-Module $env:BHProjectName -ErrorAction SilentlyContinue
+        Remove-Module BuildHelpers -ErrorAction SilentlyContinue
+        Remove-Item -Path Env:\BH*
+    }
 
-Import-Module "$PSScriptRoot\..\ConfluencePS" -Force -ErrorAction Stop
-InModuleScope ConfluencePS {
-
-    Describe 'Set-ConfluenceInfo' -Tag 'Integration' {
+    Context 'Set-ConfluenceInfo' {
         # ARRANGE
         # Could be a long one-liner, but breaking down for readability
         $Pass = ConvertTo-SecureString -AsPlainText -Force -String $env:WikiPass
@@ -60,14 +69,14 @@ InModuleScope ConfluencePS {
         }
     }
 
-    Describe 'New-ConfluenceSpace' -Tag 'Integration' {
+    Context 'New-ConfluenceSpace' {
         # ARRANGE
         # We don't want warnings on the screen
         $WarningPreference = 'SilentlyContinue'
 
         # Set up test values:
-        $Key1 = "PESTER"
-        $Key2 = "PESTER1"
+        $Key1 = "PESTER$SpaceID"
+        $Key2 = "PESTER1$SpaceID"
         $Name1 = "Pester Test Space"
         $Name2 = "Second Pester Space"
         $Description = "<p>A nice description</p>"
@@ -123,11 +132,11 @@ InModuleScope ConfluencePS {
         }
     }
 
-    Describe 'Get-ConfluenceSpace' -Tag 'Integration' {
+    Context 'Get-ConfluenceSpace' {
         # ARRANGE
         # Set up test values:
-        $Key1 = "PESTER"
-        $Key2 = "PESTER1"
+        $Key1 = "PESTER$SpaceID"
+        $Key2 = "PESTER1$SpaceID"
         $Name1 = "Pester Test Space"
         $Name2 = "Second Pester Space"
         $Description = "<p>A nice description</p>"
@@ -149,10 +158,10 @@ InModuleScope ConfluencePS {
             ($GetSpace3 | Get-Member -MemberType Property).Count | Should Be 7
         }
         It 'has the correct number of results' {
-            $AllSpaces.Count | Should BeGreaterThan 2
-            $GetSpace1.Count | Should Be 1
-            $GetSpace2.Count | Should Be 1
-            $GetSpace3.Count | Should Be 2
+            @($AllSpaces).Count | Should BeGreaterThan 2
+            @($GetSpace1).Count | Should Be 1
+            @($GetSpace2).Count | Should Be 1
+            @($GetSpace3).Count | Should Be 2
         }
         It 'id is integer' {
             $GetSpace1.ID | Should BeOfType [Int]
@@ -214,7 +223,7 @@ InModuleScope ConfluencePS {
         }
     }
 
-    Describe 'ConvertTo-ConfluenceStorageFormat' -Tag 'Integration' {
+    Context 'ConvertTo-ConfluenceStorageFormat' {
         # ARRANGE
         $InputString = "Hi Pester!"
         $OutputString = "<p>Hi Pester!</p>"
@@ -237,15 +246,15 @@ InModuleScope ConfluencePS {
         }
     }
 
-    Describe 'New-ConfluencePage' -Tag 'Integration' {
+    Context 'New-ConfluencePage' {
         <# TODO:
             * Title may not be empty
             * Space may not be empty when no parent is provided
         #>
 
         # ARRANGE
-        $SpaceKey = "PESTER"
-        $parentPage = Get-ConfluencePage -Title "Pester Test Space Home" -SpaceKey "PESTER" -ErrorAction Stop
+        $SpaceKey = "PESTER$SpaceID"
+        $parentPage = Get-ConfluencePage -Title "Pester Test Space Home" -SpaceKey $SpaceKey -ErrorAction Stop
         $Title1 = "Pester New Page Piped"
         $Title2 = "Pester New Page Orphan"
         $Title3 = "Pester New Page from Object"
@@ -329,15 +338,15 @@ InModuleScope ConfluencePS {
         }
     }
 
-    Describe 'Get-ConfluencePage' -Tag 'Integration' {
+    Context 'Get-ConfluencePage' {
         # ARRANGE
-        $SpaceKey = "PESTER"
+        $SpaceKey = "PESTER$SpaceID"
         $Title1 = "Pester New Page from Object"
         $Title2 = "Pester New Page Orphan"
         $Title3 = "Pester Test Space Home"
         $Title4 = "orphan"
         $Title5 = "*orphan"
-        $Query = "space=PESTER and title~`"*Object`""
+        $Query = "space=PESTER$SpaceID and title~`"*Object`""
         $ContentRaw = "<p>Hi Pester!👋</p>"
         $ContentFormatted = "<p>Hi Pester!</p><p>👋</p>"
         (Get-ConfluenceSpace -SpaceKey $SpaceKey).Homepage | Add-ConfluenceLabel -Label "important" -ErrorAction Stop
@@ -358,17 +367,17 @@ InModuleScope ConfluencePS {
 
         # ASSERT
         It 'returns the correct amount of results' {
-            $GetTitle1.Count | Should Be 1
-            $GetTitle2.Count | Should Be 1
-            $GetPartial.Count | Should Be 0
-            $GetWildcard.Count | Should Be 1
-            $GetID1.Count | Should Be 1
-            $GetID2.Count | Should Be 1
-            $GetKeys.Count | Should Be 5
-            $GetByLabel.Count | Should Be 1
-            $GetSpacePage.Count | Should Be 5
-            $GetByQuery.Count | Should Be 2
-            $GetSpacePiped.Count | Should Be 5
+            @($GetTitle1).Count | Should Be 1
+            @($GetTitle2).Count | Should Be 1
+            @($GetPartial).Count | Should Be 0
+            @($GetWildcard).Count | Should Be 1
+            @($GetID1).Count | Should Be 1
+            @($GetID2).Count | Should Be 1
+            @($GetKeys).Count | Should Be 5
+            @($GetByLabel).Count | Should Be 1
+            @($GetSpacePage).Count | Should Be 5
+            @($GetByQuery).Count | Should Be 2
+            @($GetSpacePiped).Count | Should Be 5
         }
         It 'returns an object with specific properties' {
             $GetTitle1 | Should BeOfType [ConfluencePS.Page]
@@ -408,7 +417,7 @@ InModuleScope ConfluencePS {
             $GetID2.Title | Should BeExactly $Title2
             $GetKeys.Title -contains $Title3 | Should Be $true
             $GetKeys.Title -contains $GetID1.Title | Should Be $true
-            $GetByLabel.Title -like "PESTER * Home" | Should Be $true
+            $GetByLabel.Title -like "PESTER Test Space Home" | Should Be $true
         }
         It 'space matches the specified value' {
             $GetTitle1.Space.Key | Should BeExactly $SpaceKey
@@ -425,9 +434,11 @@ InModuleScope ConfluencePS {
             $GetByLabel.Version.Number | Should Be 1
         }
         It 'body matches the specified value' {
-            (ConvertFrom-HTMLEncoded $GetTitle1.Body) | Should BeExactly $ContentFormatted
-            (ConvertFrom-HTMLEncoded $GetTitle2.Body) | Should BeExactly $ContentRaw
-            (ConvertFrom-HTMLEncoded $GetID1.Body) | Should BeExactly $ContentFormatted
+            . "$env:BHProjectPath/$env:BHProjectName/Private/ConvertFrom-HTMLEncoded.ps1"
+
+            ConvertFrom-HTMLEncoded $GetTitle1.Body | Should BeExactly $ContentFormatted
+            ConvertFrom-HTMLEncoded $GetTitle2.Body | Should BeExactly $ContentRaw
+            ConvertFrom-HTMLEncoded $GetID1.Body | Should BeExactly $ContentFormatted
         }
         It 'url is string' {
             $GetTitle1.URL | Should BeOfType [String]
@@ -468,9 +479,9 @@ InModuleScope ConfluencePS {
         }
     }
 
-    Describe 'Add-ConfluenceLabel' -Tag 'Integration' {
+    Context 'Add-ConfluenceLabel' {
         # ARRANGE
-        $SpaceKey = "PESTER"
+        $SpaceKey = "PESTER$SpaceID"
         $Page1 = Get-ConfluencePage -Title "Pester New Page Piped" -SpaceKey $SpaceKey -ErrorAction Stop
         $Label1 = "pestera", "pesterb", "pesterc"
         $Label2 = "pesterall"
@@ -513,9 +524,9 @@ InModuleScope ConfluencePS {
         }
     }
 
-    Describe 'Set-ConfluenceLabel' -Tag 'Integration' {
+    Context 'Set-ConfluenceLabel' {
         # ARRANGE
-        $SpaceKey = "PESTER"
+        $SpaceKey = "PESTER$SpaceID"
         $Title1 = "Pester New Page from Object"
         $Label1 = @("overwrite", "remove")
         $Label2 = "final"
@@ -544,8 +555,8 @@ InModuleScope ConfluencePS {
         It 'label matches the specified value' {
             $After1.Labels.Name | Should BeExactly $Label1
             $After2.Labels.Name | Should BeExactly $Label2
-            $After1.Labels.Name -notcontains $Before.Labels.Name | Should Be $true
-            $After2.Labels.Name -notcontains $Before.Labels.Name | Should Be $true
+            $After1.Labels.Name -notcontains $Before1.Labels.Name | Should Be $true
+            $After2.Labels.Name -notcontains $Before1.Labels.Name | Should Be $true
         }
         It 'labelid is not null or empty' {
             $After1.Labels.ID | Should Not BeNullOrEmpty
@@ -553,9 +564,9 @@ InModuleScope ConfluencePS {
         }
     }
 
-    Describe 'Get-ConfluenceLabel' -Tag 'Integration' {
+    Context 'Get-ConfluenceLabel' {
         # ARRANGE
-        $SpaceKey = "PESTER"
+        $SpaceKey = "PESTER$SpaceID"
         $patternLabel1 = "pester[abc]$"
         $patternLabel2 = "(pest|import|fin)"
         $Page = Get-ConfluencePage -Title "Pester New Page Piped" -SpaceKey $SpaceKey
@@ -594,7 +605,7 @@ InModuleScope ConfluencePS {
         }
     }
 
-    Describe 'Set-ConfluencePage' -Tag 'Integration' {
+    Context 'Set-ConfluencePage' {
         <# TODO:
         * Title may not be empty
         * fails when version is 1 larger than current version
@@ -630,7 +641,7 @@ InModuleScope ConfluencePS {
             }
         }
 
-        $SpaceKey = "PESTER"
+        $SpaceKey = "PESTER$SpaceID"
         $Page1 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page Piped"
         $Page2 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page Orphan"
         $Page3 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page from Object"
@@ -670,15 +681,15 @@ InModuleScope ConfluencePS {
 
         # ASSERT
         It 'returns the correct amount of results' {
-            $SetPage1.Count | Should Be 1
-            $SetPage2.Count | Should Be 1
-            $SetPage3.Count | Should Be 1
-            $SetPage4.Count | Should Be 1
-            $SetPage5.Count | Should Be 1
-            $SetPage6.Count | Should Be 1
-            $SetPage7.Count | Should Be 1
-            $SetPage8.Count | Should Be 1
-            $AllChangedPages.Count | Should Be 9
+            @($SetPage1).Count | Should Be 1
+            @($SetPage2).Count | Should Be 1
+            @($SetPage3).Count | Should Be 1
+            @($SetPage4).Count | Should Be 1
+            @($SetPage5).Count | Should Be 1
+            @($SetPage6).Count | Should Be 1
+            @($SetPage7).Count | Should Be 1
+            @($SetPage8).Count | Should Be 1
+            @($AllChangedPages).Count | Should Be 9
         }
         It 'returns an object with specific properties' {
             $SetPage1 | Should BeOfType [ConfluencePS.Page]
@@ -766,12 +777,12 @@ InModuleScope ConfluencePS {
         }
     }
 
-    Describe 'Get-ConfluenceChildPage' -Tag 'Integration' {
+    Context 'Get-ConfluenceChildPage' {
         # ARRANGE
 
         # ACT
-        $ChildPages = (Get-ConfluenceSpace -SpaceKey PESTER).Homepage | Get-ConfluenceChildPage
-        $DesendantPages = (Get-ConfluenceSpace -SpaceKey PESTER).Homepage | Get-ConfluenceChildPage -Recurse
+        $ChildPages = (Get-ConfluenceSpace -SpaceKey "PESTER$SpaceID").Homepage | Get-ConfluenceChildPage
+        $DesendantPages = (Get-ConfluenceSpace -SpaceKey "PESTER$SpaceID").Homepage | Get-ConfluenceChildPage -Recurse
 
         # ASSERT
         It 'returns the correct amount of results' {
@@ -784,7 +795,7 @@ InModuleScope ConfluencePS {
         }
     }
 
-    Describe 'Add-ConfluenceAttachment' -Tag 'Integration' {
+    Context 'Add-ConfluenceAttachment' {
         # ARRANGE
         BeforeAll {
             $originalWarningPreference = $WarningPreference
@@ -793,7 +804,7 @@ InModuleScope ConfluencePS {
         AfterAll {
             $WarningPreference = $originalWarningPreference
         }
-        $SpaceKey = "PESTER"
+        $SpaceKey = "PESTER$SpaceID"
         $Page1 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page Piped" -ErrorAction Stop
         $Page2 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page Orphan" -ErrorAction Stop
         $Page3 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page from Object" -ErrorAction Stop
@@ -865,9 +876,9 @@ InModuleScope ConfluencePS {
         }
     }
 
-    Describe 'Get-ConfluenceAttachment' -Tag 'Integration' {
+    Context 'Get-ConfluenceAttachment' {
         # ARRANGE
-        $SpaceKey = "PESTER"
+        $SpaceKey = "PESTER$SpaceID"
         $Page1 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page Piped" -ErrorAction Stop
         $Page2 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page Orphan" -ErrorAction Stop
         $Page3 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page from Object" -ErrorAction Stop
@@ -910,7 +921,7 @@ InModuleScope ConfluencePS {
         }
     }
 
-    Describe 'Get-ConfluenceAttachmentFile' -Tag 'Integration' {
+    Context 'Get-ConfluenceAttachmentFile' {
         # ARRANGE
         BeforeAll {
             Push-Location -Path "TestDrive:\"
@@ -921,7 +932,7 @@ InModuleScope ConfluencePS {
         $null = New-Item -Path "TestDrive:\Folder1" -ItemType Directory
         $null = New-Item -Path "TestDrive:\Folder2" -ItemType Directory
         $null = New-Item -Path "TestDrive:\Folder3" -ItemType Directory
-        $SpaceKey = "PESTER"
+        $SpaceKey = "PESTER$SpaceID"
         $Page1 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page Piped" -ErrorAction Stop
         $Page2 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page Orphan" -ErrorAction Stop
         $Attachments = $Page1, $Page2 | Get-ConfluenceAttachment -ErrorAction Stop
@@ -964,9 +975,9 @@ InModuleScope ConfluencePS {
         }
     }
 
-    Describe 'Set-ConfluenceAttachment' -Tag 'Integration' {
+    Context 'Set-ConfluenceAttachment' {
         # ARRANGE
-        $SpaceKey = "PESTER"
+        $SpaceKey = "PESTER$SpaceID"
         $Page1 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page Piped" -ErrorAction Stop
         $Attachment = $Page1 | Get-ConfluenceAttachment -FileNameFilter "Test.txt" -ErrorAction Stop
         $TextFile = Get-Item -Path "$PSScriptRoot/resources/Test.txt"
@@ -1012,7 +1023,7 @@ InModuleScope ConfluencePS {
         }
     }
 
-    Describe 'Remove-ConfluenceAttachment' -Tag 'Integration' {
+    Context 'Remove-ConfluenceAttachment' {
         # ARRANGE
         BeforeAll {
             $originalWarningPreference = $WarningPreference
@@ -1021,7 +1032,7 @@ InModuleScope ConfluencePS {
         AfterAll {
             $WarningPreference = $originalWarningPreference
         }
-        $SpaceKey = "PESTER"
+        $SpaceKey = "PESTER$SpaceID"
         $Page1 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page Piped" -ErrorAction Stop
         $Page2 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page Orphan" -ErrorAction Stop
         $Page3 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page from Object" -ErrorAction Stop
@@ -1054,12 +1065,12 @@ InModuleScope ConfluencePS {
         }
     }
 
-    Describe 'Remove-ConfluenceLabel' -Tag 'Integration' {
+    Context 'Remove-ConfluenceLabel' {
         # ARRANGE
-        $SpaceKey = "PESTER"
+        $SpaceKey = "PESTER$SpaceID"
         $Label1 = "pesterc"
         $Page1 = Get-ConfluencePage -Title 'Pester New Page Piped' -SpaceKey $SpaceKey -ErrorAction Stop
-        $Page2 = (Get-ConfluenceSpace -SpaceKey PESTER).Homepage
+        $Page2 = (Get-ConfluenceSpace -SpaceKey $SpaceKey).Homepage
 
         # ACT
         $Before1 = $Page1 | Get-ConfluenceLabel -ErrorAction SilentlyContinue
@@ -1071,18 +1082,18 @@ InModuleScope ConfluencePS {
 
         # ASSERT
         It 'page has one label less' {
-            ($Before1.Labels).Count - ($After1.Labels).Count| Should Be 1
-            ($Before2.Labels).Count - ($After2.Labels).Count| Should Be 2
+            @($Before1.Labels).Count - @($After1.Labels).Count | Should Be 1
+            ($After1.Labels).Name -notcontains $Label1 | Should Be $true
         }
         It 'page does not have labels' {
-            $After1.Labels.Name -notcontains $Label1 | Should Be $true
-            $After2.Labels.Name -notcontains $Label1 | Should Be $true
+            @($Before2.Labels).Count | Should Be 2
+            $After2.Labels | Should BeNullOrEmpty
         }
     }
 
-    Describe 'Remove-ConfluencePage' -Tag 'Integration' {
+    Context 'Remove-ConfluencePage' {
         # ARRANGE
-        $SpaceKey = "PESTER"
+        $SpaceKey = "PESTER$SpaceID"
         $Title = "Pester New Page Orphan"
         $PageID = Get-ConfluencePage -Title $Title -SpaceKey $SpaceKey -ErrorAction Stop
         $Before = Get-ConfluencePage -SpaceKey $SpaceKey -ErrorAction Stop
@@ -1097,24 +1108,24 @@ InModuleScope ConfluencePS {
             $Before | Should Not BeNullOrEmpty
         }
         It 'space does not have pages after' {
-            $After.ID | Should BeNullOrEmpty
+            $After | Should BeNullOrEmpty
         }
     }
 
-    Describe 'Remove-ConfluenceSpace' -Tag 'Integration' {
+    Context 'Remove-ConfluenceSpace' {
         # ARRANGE
         # We don't want warnings on the screen
         $WarningPreference = 'SilentlyContinue'
 
         # ACT
-        Remove-ConfluenceSpace -Key PESTER -Force -ErrorAction Stop
-        "PESTER1" | Remove-ConfluenceSpace -Force -ErrorAction Stop
+        Remove-ConfluenceSpace -Key "PESTER$SpaceID" -Force -ErrorAction Stop
+        "PESTER1$SpaceID" | Remove-ConfluenceSpace -Force -ErrorAction Stop
 
         # ASSERT
         Start-Sleep -Seconds 20
         It 'space is no longer available' {
-            { Get-ConfluenceSpace -Key PESTER -ErrorAction Stop } | Should Throw
-            { Get-ConfluenceSpace -Key PESTER1 -ErrorAction Stop } | Should Throw
+            { Get-ConfluenceSpace -Key "PESTER$SpaceID" -ErrorAction Stop } | Should Throw
+            { Get-ConfluenceSpace -Key "PESTER1$SpaceID" -ErrorAction Stop } | Should Throw
         }
     }
 }
