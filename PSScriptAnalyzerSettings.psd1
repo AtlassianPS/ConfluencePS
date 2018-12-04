@@ -1,7 +1,5 @@
 @{
     Severity=@('Error','Warning')
     # IncludeRules = @()
-    ExcludeRules = @(
-        'PSAvoidAlias'
-    )
+    # ExcludeRules = @()
 }
