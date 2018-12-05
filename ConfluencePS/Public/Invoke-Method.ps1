@@ -52,6 +52,11 @@ function Invoke-Method {
 
         Set-TlsLevel -Tls12
 
+        # Sanitize double slash `//`
+        # Happens when the BaseUri is the domain name
+        # [Uri]"http://google.com" vs [Uri]"http://google.com/foo"
+        $URi = $URi -replace '(?<!:)\/\/', '/'
+
         # pass input to local variable
         # this allows to use the PSBoundParameters for recursion
         $_headers = @{   # Set any default headers
