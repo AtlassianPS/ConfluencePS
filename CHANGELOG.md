@@ -11,6 +11,20 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 .
 
+## [2.4] 2018-12-12
+
+### Added
+
+- Added `-Vertical` to `ConvertTo-Table` (#148, [@brianbunke])
+- Added support for TLS1.2 (#155, [@lipkau])
+
+### Changed
+
+- Changed productive module files to be compiled into single `.psm1` file (#133, [@lipkau])
+- Fixed `ConvertTo-Table` for empty cells (#144, [@FelixMelchert])
+- Changed CI/CD pipeline from AppVeyor to Azure DevOps (#150, [@lipkau])
+- Fixed trailing slash in ApiURi parameter (#153, [@lipkau])
+
 ## [2.3] 2018-03-22
 
 ### Added
@@ -167,6 +181,7 @@ No changelog available for version `1.0` of ConfluencePS. `1.0` was created in l
 [@colhal]: https://github.com/colhal
 [@Dejulia489]: https://github.com/Dejulia489
 [@ebekker]: https://github.com/ebekker
+[@FelixMelchert]: https://github.com/FelixMelchert
 [@jkknorr]: https://github.com/jkknorr
 [@JohnAdders]: https://github.com/JohnAdders
 [@kittholland]: https://github.com/kittholland
