@@ -110,6 +110,7 @@ function Get-Page {
                 break
             }
             "bySpace" { # This includes 'bySpaceObject'
+                $iwParameters["Paging"] = $true
                 $iwParameters["Uri"] = $resourceApi -f ''
                 $iwParameters["GetParameters"]["type"] = "page"
                 if ($SpaceKey) { $iwParameters["GetParameters"]["spaceKey"] = $SpaceKey }
@@ -123,6 +124,7 @@ function Get-Page {
                 break
             }
             "byLabel" {
+                $iwParameters["Paging"] = $true
                 $iwParameters["Uri"] = $resourceApi -f "/search"
 
                 $CQLparameters = @("type=page", "label=$Label")
@@ -135,6 +137,7 @@ function Get-Page {
                 break
             }
             "byQuery" {
+                $iwParameters["Paging"] = $true
                 $iwParameters["Uri"] = $resourceApi -f "/search"
 
                 $cqlQuery = ConvertTo-URLEncoded $Query
