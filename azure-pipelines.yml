@@ -183,7 +183,11 @@ phases:
        Invoke-Build -Task ShowInfo
     displayName: Setup
 
-  - powershell: 'Invoke-Build -Task Test -Tag "Integration"'
+  - powershell: 'Invoke-Build -Task Test -Tag "Integration" -ExcludeTag ""'
+    env:
+        WikiURI: WikiURI
+        WikiUser: WikiUser
+        WikiPass: WikiPass
     displayName: Test
 
   - task: PublishTestResults@2

@@ -59,9 +59,9 @@ task InstallDependencies {
 
 # Synopsis: Get the next version for the build
 task GetNextVersion {
+    $manifestVersion = [Version](Get-Metadata -Path $env:BHPSModuleManifest)
     try {
         $env:CurrentOnlineVersion = [Version](Find-Module -Name $env:BHProjectName).Version
-        $manifestVersion = [Version](Get-Metadata -Path $env:BHPSModuleManifest)
         $nextOnlineVersion = Get-NextNugetPackageVersion -Name $env:BHProjectName
 
         if ( ($manifestVersion.Major -gt $nextOnlineVersion.Major) -or
@@ -250,7 +250,6 @@ task Test Init, {
         }
         $testResults = Invoke-Pester @parameter
 
-        Write-Host (Get-Childitem $env:BHProjectPath)
         Assert-True ($testResults.FailedCount -eq 0) "$($testResults.FailedCount) Pester test(s) failed."
     }
     catch {
