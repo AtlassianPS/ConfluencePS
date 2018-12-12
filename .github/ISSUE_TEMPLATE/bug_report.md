@@ -32,7 +32,7 @@ about: Create a report to help us improve
 <!-- The following code snip is a recommendation. You can just paste the output here. -->
 
 > ```powershell
-> Get-Module AtlassianPS.Configuration -ListAvailable | Select Name, Version
+> Get-Module ConfluencePS -ListAvailable | Select Name, Version
 > $PSVersionTable
 > ```
 
