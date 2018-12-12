@@ -59,4 +59,22 @@ Describe "General project validation" -Tag Unit {
         [Version](Get-Metadata -Path $env:BHManifestToTest -PropertyName ModuleVersion) | Should -Not -BeNullOrEmpty
         [Version](Get-Metadata -Path $env:BHManifestToTest -PropertyName ModuleVersion) | Should -BeOfType [Version]
     }
+
+    It "module is imported with default prefix" {
+        $prefix = Get-Metadata -Path $env:BHManifestToTest -PropertyName DefaultCommandPrefix
+
+        Import-Module $env:BHManifestToTest -Force -ErrorAction Stop
+        (Get-Command -Module $env:BHProjectName).Name | ForEach-Object {
+            $_ | Should -Match "\-$prefix"
+        }
+    }
+
+    It "module is imported with custom prefix" {
+        $prefix = "Wiki"
+
+        Import-Module $env:BHManifestToTest -Prefix $prefix -Force -ErrorAction Stop
+        (Get-Command -Module $env:BHProjectName).Name | ForEach-Object {
+            $_ | Should -Match "\-$prefix"
+        }
+    }
 }
