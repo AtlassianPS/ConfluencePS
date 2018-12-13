@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections;
-using System.Linq;
+// using System.Linq;
 
 namespace ConfluencePS
 {
@@ -78,5 +78,22 @@ namespace ConfluencePS
 	public class ContentLabelSet {
 		public Page Page { get; set; }
 		public Label[] Labels { get; set; }
+	}
+
+	public class Attachment {
+		public Int32 ID { get; set; }
+		public String Status { get; set; }
+		public String Title { get; set; }
+		public String Filename { get; set; }
+		public String MediaType { get; set; }
+		public Int32 FileSize { get; set; }
+		public String Comment { get; set; }
+		public String SpaceKey { get; set; }
+		public Int32 PageID { get; set; }
+		public Version Version { get; set; }
+		public String URL { get; set; }
+		public override string ToString() {
+			return "[att$ID] $Title";
+		}
 	}
 }

@@ -1,15 +1,16 @@
 ---
 external help file: ConfluencePS-help.xml
-online version: https://github.com/AtlassianPS/ConfluencePS/blob/master/docs/commands/Remove-Space.md
+online version: https://atlassianps.org/docs/ConfluencePS/commands/Remove-Space/
+Module Name: ConfluencePS
 locale: en-US
 schema: 2.0.0
 layout: documentation
 permalink: /docs/ConfluencePS/commands/Remove-Space/
 ---
-
 # Remove-Space
 
 ## SYNOPSIS
+
 Remove an existing Confluence space.
 
 ## SYNTAX
@@ -19,39 +20,37 @@ Remove-ConfluenceSpace -apiURi <Uri> -Credential <PSCredential> [-SpaceKey] <Str
 ```
 
 ## DESCRIPTION
+
 Delete an existing Confluence space, including child content.
-"The space is deleted in a long running task, so the space cannot be considered deleted when this resource returns."
+
+> Note: The space is deleted in a long running task, so the space cannot be considered deleted when this resource returns.
 
 ## EXAMPLES
 
 ### -------------------------- EXAMPLE 1 --------------------------
+
 ```powershell
 Remove-ConfluenceSpace -SpaceKey ABC -WhatIf
 ```
-
-Description
-
------------
 
 Simulates the deletion of wiki space ABC and all child content.
 -WhatIf parameter prevents removal of content.
 
 ### -------------------------- EXAMPLE 2 --------------------------
+
 ```powershell
 Remove-ConfluenceSpace -SpaceKey XYZ -Force
 ```
 
-Description
-
------------
-
 Delete wiki space XYZ and all child content below it.
+
 By default, you will be prompted to confirm removal. ("Are you sure? Y/N")
 -Force suppresses all confirmation prompts and carries out the deletion.
 
 ## PARAMETERS
 
 ### -apiURi
+
 The URi of the API interface.
 Value can be set persistently with Set-ConfluenceInfo.
 
@@ -68,6 +67,7 @@ Accept wildcard characters: False
 ```
 
 ### -Credential
+
 Confluence's credentials for authentication.
 Value can be set persistently with Set-ConfluenceInfo.
 
@@ -84,6 +84,7 @@ Accept wildcard characters: False
 ```
 
 ### -SpaceKey
+
 The key (short code) of the space to delete.
 Accepts multiple keys via pipeline input.
 
@@ -100,6 +101,7 @@ Accept wildcard characters: False
 ```
 
 ### -Force
+
 Forces the deletion of the space without prompting for confirmation.
 
 ```yaml
@@ -115,6 +117,7 @@ Accept wildcard characters: False
 ```
 
 ### -WhatIf
+
 Shows what would happen if the cmdlet runs.
 The cmdlet is not run.
 
@@ -131,6 +134,7 @@ Accept wildcard characters: False
 ```
 
 ### -Confirm
+
 Prompts you for confirmation before running the cmdlet.
 
 ```yaml

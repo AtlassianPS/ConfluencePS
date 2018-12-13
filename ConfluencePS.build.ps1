@@ -1,240 +1,360 @@
-[CmdletBinding()]
-param()
+#requires -Modules InvokeBuild
 
-$DebugPreference = "SilentlyContinue"
+[CmdletBinding()]
+[System.Diagnostics.CodeAnalysis.SuppressMessage('PSAvoidUsingWriteHost', '')]
+[System.Diagnostics.CodeAnalysis.SuppressMessage('PSAvoidUsingEmptyCatchBlock', '')]
+param(
+    [String[]]$Tag,
+    [String[]]$ExcludeTag = @("Integration"),
+    [String]$PSGalleryAPIKey,
+    [String]$GithubAccessToken
+)
+
 $WarningPreference = "Continue"
 if ($PSBoundParameters.ContainsKey('Verbose')) {
     $VerbosePreference = "Continue"
 }
-
-if (!($env:releasePath)) {
-    $releasePath = "$BuildRoot\Release"
+if ($PSBoundParameters.ContainsKey('Debug')) {
+    $DebugPreference = "Continue"
 }
-elseif ($env:releasePath) {
-    $releasePath = $env:releasePath
-}
-else {
-    $releasePath = "$($pwd.Path)\Release"
-}
-$env:PSModulePath = "$($env:PSModulePath);$releasePath"
 
-Import-Module BuildHelpers
+try {
+    $script:IsWindows = (-not (Get-Variable -Name IsWindows -ErrorAction Ignore)) -or $IsWindows
+    $script:IsLinux = (Get-Variable -Name IsLinux -ErrorAction Ignore) -and $IsLinux
+    $script:IsMacOS = (Get-Variable -Name IsMacOS -ErrorAction Ignore) -and $IsMacOS
+    $script:IsCoreCLR = $PSVersionTable.ContainsKey('PSEdition') -and $PSVersionTable.PSEdition -eq 'Core'
+}
+catch { }
 
-# Ensure Invoke-Build works in the most strict mode.
 Set-StrictMode -Version Latest
 
-# region debug information
-task ShowDebug {
-    Write-Build Gray
-    Write-Build Gray ('Project name:               {0}' -f $env:APPVEYOR_PROJECT_NAME)
-    Write-Build Gray ('Project root:               {0}' -f $env:APPVEYOR_BUILD_FOLDER)
-    Write-Build Gray ('Repo name:                  {0}' -f $env:APPVEYOR_REPO_NAME)
-    Write-Build Gray ('Branch:                     {0}' -f $env:APPVEYOR_REPO_BRANCH)
-    Write-Build Gray ('Commit:                     {0}' -f $env:APPVEYOR_REPO_COMMIT)
-    Write-Build Gray ('  - Author:                 {0}' -f $env:APPVEYOR_REPO_COMMIT_AUTHOR)
-    Write-Build Gray ('  - Time:                   {0}' -f $env:APPVEYOR_REPO_COMMIT_TIMESTAMP)
-    Write-Build Gray ('  - Message:                {0}' -f $env:APPVEYOR_REPO_COMMIT_MESSAGE)
-    Write-Build Gray ('  - Extended message:       {0}' -f $env:APPVEYOR_REPO_COMMIT_MESSAGE_EXTENDED)
-    Write-Build Gray ('Pull request number:        {0}' -f $env:APPVEYOR_PULL_REQUEST_NUMBER)
-    Write-Build Gray ('Pull request title:         {0}' -f $env:APPVEYOR_PULL_REQUEST_TITLE)
-    Write-Build Gray ('AppVeyor build ID:          {0}' -f $env:APPVEYOR_BUILD_ID)
-    Write-Build Gray ('AppVeyor build number:      {0}' -f $env:APPVEYOR_BUILD_NUMBER)
-    Write-Build Gray ('AppVeyor build version:     {0}' -f $env:APPVEYOR_BUILD_VERSION)
-    Write-Build Gray ('AppVeyor job ID:            {0}' -f $env:APPVEYOR_JOB_ID)
-    Write-Build Gray ('Build triggered from tag?   {0}' -f $env:APPVEYOR_REPO_TAG)
-    Write-Build Gray ('  - Tag name:               {0}' -f $env:APPVEYOR_REPO_TAG_NAME)
-    Write-Build Gray ('PowerShell version:         {0}' -f $PSVersionTable.PSVersion.ToString())
-    Write-Build Gray
+Import-Module "$PSScriptRoot/Tools/BuildTools.psm1" -Force -ErrorAction Stop
+
+if ($BuildTask -notin @("SetUp", "InstallDependencies")) {
+    Import-Module BuildHelpers -Force -ErrorAction Stop
+    Invoke-Init
 }
 
-# Synopsis: Install pandoc to .\Tools\
-task InstallPandoc -If (-not (Test-Path Tools\pandoc.exe)) {
-    # Setup
-    if (-not (Test-Path "$BuildRoot\Tools")) {
-        $null = New-Item -Path "$BuildRoot\Tools" -ItemType Directory
+#region SetUp
+# Synopsis: Proxy task
+task Init { Invoke-Init }
+
+# Synopsis: Create an initial environment for developing on the module
+task SetUp InstallDependencies, Build
+
+# Synopsis: Install all module used for the development of this module
+task InstallDependencies {
+    Install-PSDepend
+    Import-Module PSDepend -Force
+    $parameterPSDepend = @{
+        Path        = "$PSScriptRoot/Tools/build.requirements.psd1"
+        Install     = $true
+        Import      = $false
+        Force       = $true
+        ErrorAction = "Stop"
     }
-
-    # Get latest bits
-    $latestRelease = "https://github.com/jgm/pandoc/releases/download/1.19.2.1/pandoc-1.19.2.1-windows.msi"
-    Invoke-WebRequest -Uri $latestRelease -OutFile "$($env:temp)\pandoc.msi"
-
-    # Extract bits
-    $null = New-Item -Path $env:temp\pandoc -ItemType Directory -Force
-    Start-Process -Wait -FilePath msiexec.exe -ArgumentList " /qn /a `"$($env:temp)\pandoc.msi`" targetdir=`"$($env:temp)\pandoc\`""
-
-    # Move to Tools folder
-    Copy-Item -Path "$($env:temp)\pandoc\Pandoc\pandoc.exe" -Destination "$BuildRoot\Tools\"
-    Copy-Item -Path "$($env:temp)\pandoc\Pandoc\pandoc-citeproc.exe" -Destination "$BuildRoot\Tools\"
-
-    # Clean
-    Remove-Item -Path "$($env:temp)\pandoc" -Recurse -Force
-}
-# endregion
-
-# region test
-task Test RapidTest
-
-# Synopsis: Using the "Fast" Test Suit
-task RapidTest PesterTests
-# Synopsis: Using the complete Test Suit, which includes all supported Powershell versions
-task FullTest TestVersions
-
-# Synopsis: Warn about not empty git status if .git exists.
-task GitStatus -If (Test-Path .git) {
-    $status = exec { git status -s }
-    if ($status) {
-        Write-Warning "Git status: $($status -join ', ')"
-    }
+    $null = Invoke-PSDepend @parameterPSDepend
+    Import-Module BuildHelpers -Force
 }
 
-task TestVersions TestPS3, TestPS4, TestPS4, TestPS5
-task TestPS3 {
-    exec {powershell.exe -Version 3 -NoProfile Invoke-Build PesterTests}
-}
-task TestPS4 {
-    exec {powershell.exe -Version 4 -NoProfile Invoke-Build PesterTests}
-}
-task TestPS5 {
-    exec {powershell.exe -Version 5 -NoProfile Invoke-Build PesterTests}
-}
-
-# Synopsis: Invoke Pester Tests
-task PesterTests CreateHelp, {
+# Synopsis: Get the next version for the build
+task GetNextVersion {
+    $manifestVersion = [Version](Get-Metadata -Path $env:BHPSModuleManifest)
     try {
-        $result = Invoke-Pester -PassThru -OutputFile "$BuildRoot\TestResult.xml" -OutputFormat "NUnitXml"
-        if ($env:APPVEYOR_PROJECT_NAME) {
-            Add-TestResultToAppveyor -TestFile "$BuildRoot\TestResult.xml"
-            Remove-Item "$BuildRoot\TestResult.xml" -Force
+        $env:CurrentOnlineVersion = [Version](Find-Module -Name $env:BHProjectName).Version
+        $nextOnlineVersion = Get-NextNugetPackageVersion -Name $env:BHProjectName
+
+        if ( ($manifestVersion.Major -gt $nextOnlineVersion.Major) -or
+            ($manifestVersion.Minor -gt $nextOnlineVersion.Minor)
+            # -or ($manifestVersion.Build -gt $nextOnlineVersion.Build)
+        ) {
+            $env:NextBuildVersion = [Version]::New($manifestVersion.Major, $manifestVersion.Minor, 0)
         }
-        assert ($result.FailedCount -eq 0) "$($result.FailedCount) Pester test(s) failed."
+        else {
+            $env:NextBuildVersion = $nextOnlineVersion
+        }
     }
     catch {
-        throw
+        $env:NextBuildVersion = $manifestVersion
     }
 }
-# endregion
+#endregion Setup
 
-# region build
-# Synopsis: Build shippable release
-task Build GenerateRelease, ConvertMarkdown, UpdateManifest
-
-task CreateHelp {
-    Import-Module platyPS -Force
-    New-ExternalHelp -Path "$BuildRoot\docs\commands" -OutputPath "$BuildRoot\ConfluencePS\en-US" -Force
-    Remove-Module ConfluencePS, platyPS
+#region HarmonizeVariables
+switch ($true) {
+    {$IsWindows} {
+        $OS = "Windows"
+        if (-not ($IsCoreCLR)) {
+            $OSVersion = $PSVersionTable.BuildVersion.ToString()
+        }
+    }
+    {$IsLinux} {
+        $OS = "Linux"
+    }
+    {$IsMacOs} {
+        $OS = "OSX"
+    }
+    {$IsCoreCLR} {
+        $OSVersion = $PSVersionTable.OS
+    }
 }
+#endregion HarmonizeVariables
 
-# Synopsis: Generate .\Release structure
-task GenerateRelease CreateHelp, {
+#region DebugInformation
+task ShowInfo Init, GetNextVersion, {
+    Write-Build Gray
+    Write-Build Gray ('Running in:                 {0}' -f $env:BHBuildSystem)
+    Write-Build Gray '-------------------------------------------------------'
+    Write-Build Gray
+    Write-Build Gray ('Project name:               {0}' -f $env:BHProjectName)
+    Write-Build Gray ('Project root:               {0}' -f $env:BHProjectPath)
+    Write-Build Gray ('Build Path:                 {0}' -f $env:BHBuildOutput)
+    Write-Build Gray ('Current (online) Version:   {0}' -f $env:CurrentOnlineVersion)
+    Write-Build Gray '-------------------------------------------------------'
+    Write-Build Gray
+    Write-Build Gray ('Branch:                     {0}' -f $env:BHBranchName)
+    Write-Build Gray ('Commit:                     {0}' -f $env:BHCommitMessage)
+    Write-Build Gray ('Build #:                    {0}' -f $env:BHBuildNumber)
+    Write-Build Gray ('Next Version:               {0}' -f $env:NextBuildVersion)
+    Write-Build Gray '-------------------------------------------------------'
+    Write-Build Gray
+    Write-Build Gray ('PowerShell version:         {0}' -f $PSVersionTable.PSVersion.ToString())
+    Write-Build Gray ('OS:                         {0}' -f $OS)
+    Write-Build Gray ('OS Version:                 {0}' -f $OSVersion)
+    Write-Build Gray
+}
+#endregion DebugInformation
+
+#region BuildRelease
+# Synopsis: Build a shippable release
+task Build Init, GenerateExternalHelp, CopyModuleFiles, UpdateManifest, CompileModule, PrepareTests
+
+# Synopsis: Generate ./Release structure
+task CopyModuleFiles {
     # Setup
-    if (-not (Test-Path "$releasePath\ConfluencePS")) {
-        $null = New-Item -Path "$releasePath\ConfluencePS" -ItemType Directory
+    if (-not (Test-Path "$env:BHBuildOutput/$env:BHProjectName")) {
+        $null = New-Item -Path "$env:BHBuildOutput/$env:BHProjectName" -ItemType Directory
     }
 
     # Copy module
-    Copy-Item -Path "$BuildRoot\ConfluencePS\*" -Destination "$releasePath\ConfluencePS" -Recurse -Force
+    Copy-Item -Path "$env:BHModulePath/*" -Destination "$env:BHBuildOutput/$env:BHProjectName" -Recurse -Force
     # Copy additional files
-    $additionalFiles = @(
-        "$BuildRoot\CHANGELOG.md"
-        "$BuildRoot\LICENSE"
-        "$BuildRoot\README.md"
-    )
-    Copy-Item -Path $additionalFiles -Destination "$releasePath\ConfluencePS" -Force
+    Copy-Item -Path @(
+        "$env:BHProjectPath/CHANGELOG.md"
+        "$env:BHProjectPath/LICENSE"
+        "$env:BHProjectPath/README.md"
+    ) -Destination "$env:BHBuildOutput/$env:BHProjectName" -Force
+}
+
+# Synopsis: Prepare tests for ./Release
+task PrepareTests Init, {
+    $null = New-Item -Path "$env:BHBuildOutput/Tests" -ItemType Directory -ErrorAction SilentlyContinue
+    Copy-Item -Path "$env:BHProjectPath/Tests" -Destination $env:BHBuildOutput -Recurse -Force
+    Copy-Item -Path "$env:BHProjectPath/PSScriptAnalyzerSettings.psd1" -Destination $env:BHBuildOutput -Force
+}
+
+# Synopsis: Compile all functions into the .psm1 file
+task CompileModule Init, {
+    $regionsToKeep = @('Dependencies', 'Configuration')
+
+    $targetFile = "$env:BHBuildOutput/$env:BHProjectName/$env:BHProjectName.psm1"
+    $content = Get-Content -Encoding UTF8 -LiteralPath $targetFile
+    $capture = $false
+    $compiled = ""
+
+    foreach ($line in $content) {
+        if ($line -match "^#region ($($regionsToKeep -join "|"))$") {
+            $capture = $true
+        }
+        if (($capture -eq $true) -and ($line -match "^#endregion")) {
+            $capture = $false
+        }
+
+        if ($capture) {
+            $compiled += "$line`r`n"
+        }
+    }
+
+    $PublicFunctions = @( Get-ChildItem -Path "$env:BHBuildOutput/$env:BHProjectName/Public/*.ps1" -ErrorAction SilentlyContinue )
+    $PrivateFunctions = @( Get-ChildItem -Path "$env:BHBuildOutput/$env:BHProjectName/Private/*.ps1" -ErrorAction SilentlyContinue )
+
+    foreach ($function in @($PublicFunctions + $PrivateFunctions)) {
+        $compiled += (Get-Content -Path $function.FullName -Raw)
+        $compiled += "`r`n"
+    }
+
+    Set-Content -LiteralPath $targetFile -Value $compiled -Encoding UTF8 -Force
+    Remove-Utf8Bom -Path $targetFile
+
+    "Private", "Public" | Foreach-Object { Remove-Item -Path "$env:BHBuildOutput/$env:BHProjectName/$_" -Recurse -Force }
+}
+
+# Synopsis: Use PlatyPS to generate External-Help
+task GenerateExternalHelp Init, {
+    Import-Module platyPS -Force
+    foreach ($locale in (Get-ChildItem "$env:BHProjectPath/docs" -Attribute Directory)) {
+        New-ExternalHelp -Path "$($locale.FullName)" -OutputPath "$env:BHModulePath/$($locale.Basename)" -Force
+        New-ExternalHelp -Path "$($locale.FullName)/commands" -OutputPath "$env:BHModulePath/$($locale.Basename)" -Force
+    }
+    Remove-Module platyPS
 }
 
 # Synopsis: Update the manifest of the module
-task UpdateManifest GetVersion, {
-    Update-Metadata -Path "$releasePath\ConfluencePS\ConfluencePS.psd1" -PropertyName ModuleVersion -Value $script:Version
-    # Update-Metadata -Path "$releasePath\ConfluencePS\ConfluencePS.psd1" -PropertyName FileList -Value (Get-ChildItem $releasePath\ConfluencePS -Recurse).Name
-    $functionsToExport = Get-ChildItem "$BuildRoot\ConfluencePS\Public" | ForEach-Object {$_.BaseName}
-    Set-ModuleFunctions -Name "$releasePath\ConfluencePS\ConfluencePS.psd1" -FunctionsToExport $functionsToExport
+task UpdateManifest GetNextVersion, {
+    Remove-Module $env:BHProjectName -ErrorAction SilentlyContinue
+    Import-Module $env:BHPSModuleManifest -Force
+    $ModuleAlias = @(Get-Alias | Where-Object {$_.ModuleName -eq "$env:BHProjectName"})
+
+    BuildHelpers\Update-Metadata -Path "$env:BHBuildOutput/$env:BHProjectName/$env:BHProjectName.psd1" -PropertyName ModuleVersion -Value $env:NextBuildVersion
+    # BuildHelpers\Update-Metadata -Path "$env:BHBuildOutput/$env:BHProjectName/$env:BHProjectName.psd1" -PropertyName FileList -Value (Get-ChildItem "$env:BHBuildOutput/$env:BHProjectName" -Recurse).Name
+    BuildHelpers\Set-ModuleFunctions -Name "$env:BHBuildOutput/$env:BHProjectName/$env:BHProjectName.psd1" -FunctionsToExport ([string[]](Get-ChildItem "$env:BHBuildOutput/$env:BHProjectName/Public/*.ps1").BaseName)
+    BuildHelpers\Update-Metadata -Path "$env:BHBuildOutput/$env:BHProjectName/$env:BHProjectName.psd1" -PropertyName AliasesToExport -Value ''
+    if ($ModuleAlias) {
+        BuildHelpers\Update-Metadata -Path "$env:BHBuildOutput/$env:BHProjectName/$env:BHProjectName.psd1" -PropertyName AliasesToExport -Value @($ModuleAlias.Name)
+    }
 }
 
-task GetVersion {
-    $manifestContent = Get-Content -Path "$releasePath\ConfluencePS\ConfluencePS.psd1" -Raw
-    if ($manifestContent -notmatch '(?<=ModuleVersion\s+=\s+'')(?<ModuleVersion>.*)(?='')') {
-        throw "Module version was not found in manifest file,"
-    }
+# Synopsis: Create a ZIP file with this build
+task Package Init, {
+    Assert-True { Test-Path "$env:BHBuildOutput\$env:BHProjectName" } "Missing files to package"
 
-    $currentVersion = [Version] $Matches.ModuleVersion
-    if ($env:APPVEYOR_BUILD_NUMBER) {
-        $newRevision = $env:APPVEYOR_BUILD_NUMBER
-    }
-    else {
-        $newRevision = 0
-    }
-    $script:Version = New-Object -TypeName System.Version -ArgumentList $currentVersion.Major,
-    $currentVersion.Minor,
-    $newRevision
+    Remove-Item "$env:BHBuildOutput\$env:BHProjectName.zip" -ErrorAction SilentlyContinue
+    $null = Compress-Archive -Path "$env:BHBuildOutput\$env:BHProjectName" -DestinationPath "$env:BHBuildOutput\$env:BHProjectName.zip"
 }
+#endregion BuildRelease
 
-# Synopsis: Convert markdown files to HTML.
-# <http://johnmacfarlane.net/pandoc/>
-$ConvertMarkdown = @{
-    Inputs  = { Get-ChildItem "$releasePath\ConfluencePS\*.md" -Recurse }
-    Outputs = {process {
-            [System.IO.Path]::ChangeExtension($_, 'htm')
+#region Test
+task Test Init, {
+    Assert-True { Test-Path $env:BHBuildOutput -PathType Container } "Release path must exist"
+
+    Remove-Module $env:BHProjectName -ErrorAction SilentlyContinue
+
+    <# $params = @{
+        Path    = "$env:BHBuildOutput/$env:BHProjectName"
+        Include = '*.ps1', '*.psm1'
+        Recurse = $True
+        Exclude = $CodeCoverageExclude
+    }
+    $codeCoverageFiles = Get-ChildItem @params #>
+
+    try {
+        $parameter = @{
+            Script       = "$env:BHBuildOutput/Tests/*"
+            Tag          = $Tag
+            ExcludeTag   = $ExcludeTag
+            Show         = "Fails"
+            PassThru     = $true
+            OutputFile   = "$env:BHProjectPath/Test-$OS-$($PSVersionTable.PSVersion.ToString()).xml"
+            OutputFormat = "NUnitXml"
+            # CodeCoverage = $codeCoverageFiles
         }
-    }
-}
-# Synopsis: Converts *.md and *.markdown files to *.htm
-task ConvertMarkdown -Partial @ConvertMarkdown InstallPandoc, {process {
-        exec { Tools\pandoc.exe $_ --standalone --from=markdown_github "--output=$2" }
-    }
-}, RemoveMarkdownFiles
-# endregion
+        $testResults = Invoke-Pester @parameter
 
-# region publish
-task Deploy -If (
-    # Only deploy if the master branch changes
-    $env:APPVEYOR_REPO_BRANCH -eq 'master' -and
-    # Do not deploy if this is a pull request (because it hasn't been approved yet)
-    (-not ($env:APPVEYOR_PULL_REQUEST_NUMBER)) -and
-    # Do not deploy if the commit contains the string "skip-deploy"
-    # Meant for major/minor version publishes with a .0 build/patch version (like 2.1.0)
-    $env:APPVEYOR_REPO_COMMIT_MESSAGE -notlike '*skip-deploy*'
-) {
-    Remove-Module ConfluencePS -ErrorAction SilentlyContinue
-}, PublishToGallery
+        Assert-True ($testResults.FailedCount -eq 0) "$($testResults.FailedCount) Pester test(s) failed."
+    }
+    catch {
+        throw $_
+    }
+}, { Init }
+#endregion
 
+#region Publish
+# Synopsis: Publish a new release on github and the PSGallery
+task Deploy Init, PublishToGallery, TagReplository, UpdateHomepage
+
+# Synpsis: Publish the $release to the PSGallery
 task PublishToGallery {
-    assert ($env:PSGalleryAPIKey) "No key for the PSGallery"
+    Assert-True (-not [String]::IsNullOrEmpty($PSGalleryAPIKey)) "No key for the PSGallery"
+    Assert-True {Get-Module $env:BHProjectName -ListAvailable} "Module $env:BHProjectName is not available"
 
-    Import-Module $releasePath\ConfluencePS\ConfluencePS.psd1 -ErrorAction Stop
-    Publish-Module -Name ConfluencePS -NuGetApiKey $env:PSGalleryAPIKey
+    Remove-Module $env:BHProjectName -ErrorAction Ignore
+
+    Publish-Module -Name $env:BHProjectName -NuGetApiKey $PSGalleryAPIKey
 }
 
-# Synopsis: Push with a version tag.
-task PushRelease GitStatus, GetVersion, {
-    # Done in appveyor.yml with deploy provider.
-    # This is needed, as I don't know how to athenticate (2-factor) in here.
-    exec { git checkout master }
-    $changes = exec { git status --short }
-    assert (!$changes) "Please, commit changes."
+# Synopsis: push a tag with the version to the git repository
+task TagReplository GetNextVersion, Package, {
+    Assert-True (-not [String]::IsNullOrEmpty($GithubAccessToken)) "No key for the PSGallery"
 
-    exec { git push }
-    exec { git tag -a "v$Version" -m "v$Version" }
-    exec { git push origin "v$Version" }
+    $releaseText = "Release version $env:NextBuildVersion"
+
+    # Push a tag to the repository
+    Write-Build Gray "git checkout $ENV:BHBranchName"
+    cmd /c "git checkout $ENV:BHBranchName 2>&1"
+
+    Write-Build Gray "git tag -a v$env:NextBuildVersion"
+    cmd /c "git tag -a v$env:NextBuildVersion 2>&1 -m `"$releaseText`""
+
+    Write-Build Gray "git push origin v$env:NextBuildVersion"
+    cmd /c "git push origin v$env:NextBuildVersion 2>&1"
+
+    # Publish a release on github for the tag above
+    $releaseResponse = Publish-GithubRelease -GITHUB_ACCESS_TOKEN $GithubAccessToken -ReleaseText $releaseText -NextBuildVersion $env:NextBuildVersion
+
+    # Upload the package of the version to the release
+    $packageFile = Get-Item "$env:BHBuildOutput\$env:BHProjectName.zip" -ErrorAction Stop
+    $uploadURI = $releaseResponse.upload_url -replace "\{\?name,label\}", "?name=$($packageFile.Name)"
+    $null = Publish-GithubReleaseArtifact -GITHUB_ACCESS_TOKEN $GithubAccessToken -Uri $uploadURI -Path $packageFile
 }
-# endregion
+
+# Synopsis: Update the version of this module that the homepage uses
+task UpdateHomepage {
+    try {
+        Add-Content (Join-Path $Home ".git-credentials") "https://$GithubAccessToken:x-oauth-basic@github.com`n"
+
+        Write-Build Gray "git config --global credential.helper `"store --file ~/.git-credentials`""
+        git config --global credential.helper "store --file ~/.git-credentials"
+
+        Write-Build Gray "git config --global user.email `"support@atlassianps.org`""
+        git config --global user.email "support@atlassianps.org"
+
+        Write-Build Gray "git config --global user.name `"AtlassianPS automation`""
+        git config --global user.name "AtlassianPS automation"
+
+        Write-Build Gray "git close .../AtlassianPS.github.io --recursive"
+        $null = cmd /c "git clone https://github.com/AtlassianPS/AtlassianPS.github.io --recursive 2>&1"
+
+        Push-Location "AtlassianPS.github.io/"
+
+        Write-Build Gray "git submodule foreach git pull origin master"
+        $null = cmd /c "git submodule foreach git pull origin master 2>&1"
+
+        Write-Build Gray "git status -s"
+        $status = cmd /c "git status -s 2>&1"
+
+        if ($status -contains " M modules/$env:BHProjectName") {
+            Write-Build Gray "git add modules/$env:BHProjectName"
+            $null = cmd /c "git add modules/$env:BHProjectName 2>&1"
+
+            Write-Build Gray "git commit -m `"Update module $env:BHProjectName`""
+            cmd /c "git commit -m `"Update module $env:BHProjectName`" 2>&1"
+
+            Write-Build Gray "git push"
+            cmd /c "git push 2>&1"
+        }
+
+        Pop-Location
+    }
+    catch { Write-Warning "Failed to deploy to homepage"}
+}
+#endregion Publish
 
 #region Cleaning tasks
-task Clean RemoveGeneratedFiles
+# Synopsis: Clean the working dir
+task Clean Init, RemoveGeneratedFiles, RemoveTestResults
 
 # Synopsis: Remove generated and temp files.
 task RemoveGeneratedFiles {
-    $itemsToRemove = @(
-        'Release'
-        '*.htm'
-        'TestResult.xml'
-        'ConfluencePS\en-US\*'
-    )
-    Remove-Item $itemsToRemove -Force -Recurse -ErrorAction 0
+    Remove-Item "$env:BHModulePath/en-US/*" -Force -ErrorAction SilentlyContinue
+    Remove-Item $env:BHBuildOutput -Force -Recurse -ErrorAction SilentlyContinue
 }
 
-task RemoveMarkdownFiles {
-    Remove-Item "$releasePath\ConfluencePS\*.md" -Force -ErrorAction 0
+# Synopsis: Remove Pester results
+task RemoveTestResults {
+    Remove-Item "Test-*.xml" -Force -ErrorAction SilentlyContinue
 }
-# endregion
+#endregion
 
-task . ShowDebug, Clean, Test, Build, Deploy
+task . ShowInfo, Clean, Build, Test
+
+Remove-Item -Path Env:\BH*

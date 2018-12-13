@@ -1,15 +1,16 @@
 ---
 external help file: ConfluencePS-help.xml
-online version: https://github.com/AtlassianPS/ConfluencePS/blob/master/docs/commands/Get-Label.md
+online version: https://atlassianps.org/docs/ConfluencePS/commands/Get-Label/
+Module Name: ConfluencePS
 locale: en-US
 schema: 2.0.0
 layout: documentation
 permalink: /docs/ConfluencePS/commands/Get-Label/
 ---
-
 # Get-Label
 
 ## SYNOPSIS
+
 Retrieve all labels applied to the given object(s).
 
 ## SYNTAX
@@ -20,27 +21,33 @@ Get-ConfluenceLabel -apiURi <Uri> -Credential <PSCredential> [-PageID] <Int32[]>
 ```
 
 ## DESCRIPTION
+
 Currently, this command only returns a label list from wiki pages.
 It is intended to eventually support other content types as well.
 
 ## EXAMPLES
 
 ### -------------------------- EXAMPLE 1 --------------------------
+
 ```powershell
 Get-ConfluenceLabel -PageID 123456
 ```
+
 Returns all labels applied to wiki page 123456.
 
 ### -------------------------- EXAMPLE 2 --------------------------
+
 ```powershell
 Get-ConfluencePage -SpaceKey HOTH -Label skywalker | Get-ConfluenceLabel
 ```
+
 For all pages in HOTH with the "skywalker" label applied,
 return the full list of labels found on each page.
 
 ## PARAMETERS
 
 ### -apiURi
+
 The URi of the API interface.
 Value can be set persistently with Set-ConfluenceInfo.
 
@@ -57,6 +64,7 @@ Accept wildcard characters: False
 ```
 
 ### -Credential
+
 Confluence's credentials for authentication.
 Value can be set persistently with Set-ConfluenceInfo.
 
@@ -73,7 +81,9 @@ Accept wildcard characters: False
 ```
 
 ### -PageID
+
 List the PageID number to check for labels.
+
 Accepts piped input.
 
 ```yaml
@@ -89,9 +99,12 @@ Accept wildcard characters: False
 ```
 
 ### -PageSize
+
 Maximum number of results to fetch per call.
+
 This setting can be tuned to get better performance according to the load on the server.
-Warning: too high of a PageSize can cause a timeout on the request.
+
+> Warning: too high of a PageSize can cause a timeout on the request.
 
 ```yaml
 Type: Int32
@@ -106,8 +119,11 @@ Accept wildcard characters: False
 ```
 
 ### -IncludeTotalCount
-NOTE: Not yet implemented.
+
+> NOTE: Not yet implemented.
+
 Causes an extra output of the total count at the beginning.
+
 Note this is actually a uInt64, but with a custom string representation.
 
 ```yaml
@@ -123,7 +139,9 @@ Accept wildcard characters: False
 ```
 
 ### -Skip
+
 Controls how many things will be skipped before starting output.
+
 Defaults to 0.
 
 ```yaml
@@ -139,7 +157,9 @@ Accept wildcard characters: False
 ```
 
 ### -First
-NOTE: Not yet implemented.
+
+> NOTE: Not yet implemented.
+
 Indicates how many items to return.
 
 ```yaml

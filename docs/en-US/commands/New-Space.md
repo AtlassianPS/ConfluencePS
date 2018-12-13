@@ -1,49 +1,51 @@
 ---
 external help file: ConfluencePS-help.xml
-online version: https://github.com/AtlassianPS/ConfluencePS/blob/master/docs/commands/New-Space.md
+online version: https://atlassianps.org/docs/ConfluencePS/commands/New-Space/
+Module Name: ConfluencePS
 locale: en-US
 schema: 2.0.0
 layout: documentation
 permalink: /docs/ConfluencePS/commands/New-Space/
 ---
-
 # New-Space
 
 ## SYNOPSIS
+
 Create a new blank space on your Confluence instance.
 
 ## SYNTAX
 
 ### byObject (Default)
+
 ```powershell
 New-ConfluenceSpace -apiURi <Uri> -Credential <PSCredential> -InputObject <Space> [-WhatIf] [-Confirm]
 ```
 
 ### byProperties
+
 ```powershell
 New-ConfluenceSpace -apiURi <Uri> -Credential <PSCredential> -SpaceKey <String> -Name <String>
  [-Description <String>] [-WhatIf] [-Confirm]
 ```
 
 ## DESCRIPTION
+
 Create a new blank space.
-Key and Name mandatory, Description recommended.
+
+A value for `Key` and `Name` is mandatory. Not so for `Description`, although recommended.
 
 ## EXAMPLES
 
 ### -------------------------- EXAMPLE 1 --------------------------
+
 ```powershell
 New-ConfluenceSpace -Key 'HOTH' -Name 'Planet Hoth' -Description "It's really cold" -Verbose
 ```
 
-Description
-
------------
-
 Create a new blank space with an optional description and verbose output.
 
-
 ### -------------------------- EXAMPLE 2 --------------------------
+
 ```powershell
 $spaceObject = [ConfluencePS.Space]@{
     Key         = "HOTH"
@@ -51,20 +53,20 @@ $spaceObject = [ConfluencePS.Space]@{
     Description = "It's really cold"
 }
 
+# example 1
 New-ConfluenceSpace -InputObject $spaceObject
+# example 2
 $spaceObject | New-ConfluenceSpace
 ```
 
-Description
-
------------
-
 Two different methods of creating a new space from an object `ConfluencePS.Space`.
+
 Both examples should return identical results.
 
 ## PARAMETERS
 
 ### -apiURi
+
 The URi of the API interface.
 Value can be set persistently with Set-ConfluenceInfo.
 
@@ -81,6 +83,7 @@ Accept wildcard characters: False
 ```
 
 ### -Credential
+
 Confluence's credentials for authentication.
 Value can be set persistently with Set-ConfluenceInfo.
 
@@ -97,6 +100,7 @@ Accept wildcard characters: False
 ```
 
 ### -InputObject
+
 Space Object from which to create the new space.
 
 ```yaml
@@ -112,6 +116,7 @@ Accept wildcard characters: False
 ```
 
 ### -SpaceKey
+
 Specify the short key to be used in the space URI.
 
 ```yaml
@@ -127,6 +132,7 @@ Accept wildcard characters: False
 ```
 
 ### -Name
+
 Specify the space's name.
 
 ```yaml
@@ -142,6 +148,7 @@ Accept wildcard characters: False
 ```
 
 ### -Description
+
 A short description of the new space.
 
 ```yaml
@@ -157,6 +164,7 @@ Accept wildcard characters: False
 ```
 
 ### -WhatIf
+
 Shows what would happen if the cmdlet runs.
 The cmdlet is not run.
 
@@ -173,6 +181,7 @@ Accept wildcard characters: False
 ```
 
 ### -Confirm
+
 Prompts you for confirmation before running the cmdlet.
 
 ```yaml
