@@ -1,32 +1,55 @@
+#requires -modules BuildHelpers
+#requires -modules Pester
+
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute(
+    "PSUseDeclaredVarsMoreThanAssigments",
+    "",
+    Justification = ""
+)]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute(
+    "PSAvoidUsingConvertToSecureStringWithPlainText",
+    "",
+    Justification = "Converting received plaintext token to SecureString"
+)]
+param()
 # Pester integration/acceptance tests to use during module development. Dave Wyatt's five-part series:
 # http://blogs.technet.com/b/heyscriptingguy/archive/2015/12/14/what-is-pester-and-why-should-i-care.aspx
 
-Describe 'Load Module' {
-    # ARRANGE
-    Remove-Module ConfluencePS -Force -ErrorAction SilentlyContinue
+$SpaceID = Get-Random
 
-    # ACT
-    Import-Module "$PSScriptRoot\..\ConfluencePS" -Force -ErrorAction Stop
+Describe 'Integration Tests' -Tag Integration {
 
-    #ASSERT
-    It "imports the module" {
-        Get-Module ConfluencePS | Should BeOfType [PSModuleInfo]
-        Remove-Module ConfluencePS -ErrorAction Stop
-    }
-
-    It "imports the module with custom prefix" {
-        Import-Module "$PSScriptRoot\..\ConfluencePS" -Prefix "Wiki" -Force -ErrorAction Stop
-        (Get-Command -Module ConfluencePS).Name | ForEach-Object {
-            $_ -match "\-Wiki" | Should Be $true
+    BeforeAll {
+        Remove-Item -Path Env:\BH*
+        $projectRoot = (Resolve-Path "$PSScriptRoot/..").Path
+        if ($projectRoot -like "*Release") {
+            $projectRoot = (Resolve-Path "$projectRoot/..").Path
         }
-        # Remove-Module ConfluencePS -ErrorAction Stop
+
+        Import-Module BuildHelpers
+        Set-BuildEnvironment -BuildOutput '$ProjectPath/Release' -Path $projectRoot -ErrorAction SilentlyContinue
+
+        $env:BHManifestToTest = $env:BHPSModuleManifest
+        $script:isBuild = $PSScriptRoot -like "$env:BHBuildOutput*"
+        if ($script:isBuild) {
+            $Pattern = [regex]::Escape($env:BHProjectPath)
+
+            $env:BHBuildModuleManifest = $env:BHPSModuleManifest -replace $Pattern, $env:BHBuildOutput
+            $env:BHManifestToTest = $env:BHBuildModuleManifest
+        }
+
+        Import-Module "$env:BHProjectPath/Tools/BuildTools.psm1"
+
+        Remove-Module $env:BHProjectName -ErrorAction SilentlyContinue
+        Import-Module $env:BHManifestToTest
     }
-}
+    AfterAll {
+        Remove-Module $env:BHProjectName -ErrorAction SilentlyContinue
+        Remove-Module BuildHelpers -ErrorAction SilentlyContinue
+        Remove-Item -Path Env:\BH*
+    }
 
-Import-Module "$PSScriptRoot\..\ConfluencePS" -Force -ErrorAction Stop
-InModuleScope ConfluencePS {
-
-    Describe 'Set-ConfluenceInfo' {
+    Context 'Set-ConfluenceInfo' {
         # ARRANGE
         # Could be a long one-liner, but breaking down for readability
         $Pass = ConvertTo-SecureString -AsPlainText -Force -String $env:WikiPass
@@ -37,7 +60,7 @@ InModuleScope ConfluencePS {
 
         # ASSERT
         It 'credentials are stored' {
-            $global:PSDefaultParameterValues["Get-ConfluencePage:Credential"] | Should BeOfType [PSCredential]
+            $PSDefaultParameterValues["Get-ConfluencePage:Credential"] | Should BeOfType [PSCredential]
             #TODO: extend this
         }
         It 'url is stored' {
@@ -46,31 +69,31 @@ InModuleScope ConfluencePS {
         }
     }
 
-    Describe 'New-ConfluenceSpace' {
+    Context 'New-ConfluenceSpace' {
         # ARRANGE
         # We don't want warnings on the screen
         $WarningPreference = 'SilentlyContinue'
 
         # Set up test values:
-        $Key1 = "PESTER"
-        $Key2 = "PESTER1"
+        $Key1 = "PESTER$SpaceID"
+        $Key2 = "PESTER1$SpaceID"
         $Name1 = "Pester Test Space"
         $Name2 = "Second Pester Space"
         $Description = "<p>A nice description</p>"
         $Icon = [ConfluencePS.Icon] @{
-            path = "/images/logo/default-space-logo-256.png"
-            width = 48
-            height = 48
+            path      = "/images/logo/default-space-logo-256.png"
+            width     = 48
+            height    = 48
             isDefault = $False
         }
         $Space1 = [ConfluencePS.Space]@{
-            Key = $Key1
-            Name = $Name1
+            Key         = $Key1
+            Name        = $Name1
             Description = $Description
         }
         # $Space3
         # Ensure the space doesn't already exist
-        Get-ConfluenceSpace -Key $Key1 -ErrorAction SilentlyContinue #TODO
+        { Get-ConfluenceSpace -Key $Key1 -ErrorAction Stop } | Should Throw
 
         # ACT
         $NewSpace1 = $Space1 | New-ConfluenceSpace -ErrorAction Stop
@@ -109,11 +132,11 @@ InModuleScope ConfluencePS {
         }
     }
 
-    Describe 'Get-ConfluenceSpace' {
+    Context 'Get-ConfluenceSpace' {
         # ARRANGE
         # Set up test values:
-        $Key1 = "PESTER"
-        $Key2 = "PESTER1"
+        $Key1 = "PESTER$SpaceID"
+        $Key2 = "PESTER1$SpaceID"
         $Name1 = "Pester Test Space"
         $Name2 = "Second Pester Space"
         $Description = "<p>A nice description</p>"
@@ -135,10 +158,10 @@ InModuleScope ConfluencePS {
             ($GetSpace3 | Get-Member -MemberType Property).Count | Should Be 7
         }
         It 'has the correct number of results' {
-            $AllSpaces.Count | Should BeGreaterThan 2
-            $GetSpace1.Count | Should Be 1
-            $GetSpace2.Count | Should Be 1
-            $GetSpace3.Count | Should Be 2
+            @($AllSpaces).Count | Should BeGreaterThan 2
+            @($GetSpace1).Count | Should Be 1
+            @($GetSpace2).Count | Should Be 1
+            @($GetSpace3).Count | Should Be 2
         }
         It 'id is integer' {
             $GetSpace1.ID | Should BeOfType [Int]
@@ -200,7 +223,7 @@ InModuleScope ConfluencePS {
         }
     }
 
-    Describe 'ConvertTo-ConfluenceStorageFormat' {
+    Context 'ConvertTo-ConfluenceStorageFormat' {
         # ARRANGE
         $InputString = "Hi Pester!"
         $OutputString = "<p>Hi Pester!</p>"
@@ -223,26 +246,26 @@ InModuleScope ConfluencePS {
         }
     }
 
-    Describe 'New-ConfluencePage' {
+    Context 'New-ConfluencePage' {
         <# TODO:
             * Title may not be empty
             * Space may not be empty when no parent is provided
         #>
 
         # ARRANGE
-        $SpaceKey = "PESTER"
-        $parentPage = Get-ConfluencePage -Title "Pester Test Space Home" -SpaceKey "PESTER" -ErrorAction Stop
+        $SpaceKey = "PESTER$SpaceID"
+        $parentPage = Get-ConfluencePage -Title "Pester Test Space Home" -SpaceKey $SpaceKey -ErrorAction Stop
         $Title1 = "Pester New Page Piped"
         $Title2 = "Pester New Page Orphan"
         $Title3 = "Pester New Page from Object"
         $Title4 = "Pester New Page with Parent Object"
-        $RawContent = "Hi Pester!"
+        $RawContent = "Hi Pester!👋"
         $FormattedContent = "<p>Hi Pester!</p><p>👋</p>"
         $pageObject = New-Object -TypeName ConfluencePS.Page -Property @{
-            Title = $Title3
-            Body = $FormattedContent
+            Title     = $Title3
+            Body      = $FormattedContent
             Ancestors = @($parentPage)
-            Space = New-Object -TypeName ConfluencePS.Space -Property @{key = $SpaceKey}
+            Space     = New-Object -TypeName ConfluencePS.Space -Property @{key = $SpaceKey}
         }
 
         # ACT
@@ -315,27 +338,28 @@ InModuleScope ConfluencePS {
         }
     }
 
-    Describe 'Get-ConfluencePage' {
+    Context 'Get-ConfluencePage' {
         # ARRANGE
-        $SpaceKey = "PESTER"
+        $SpaceKey = "PESTER$SpaceID"
         $Title1 = "Pester New Page from Object"
         $Title2 = "Pester New Page Orphan"
         $Title3 = "Pester Test Space Home"
         $Title4 = "orphan"
         $Title5 = "*orphan"
-        $Query = "space=PESTER and title~`"*Object`""
-        $Content = "<p>Hi Pester!</p><p>&eth;&Yuml;&lsquo;&lsaquo;</p>"
+        $Query = "space=PESTER$SpaceID and title~`"*Object`""
+        $ContentRaw = "<p>Hi Pester!👋</p>"
+        $ContentFormatted = "<p>Hi Pester!</p><p>👋</p>"
         (Get-ConfluenceSpace -SpaceKey $SpaceKey).Homepage | Add-ConfluenceLabel -Label "important" -ErrorAction Stop
         Start-Sleep -Seconds 20 # Delay to allow DB index to update
 
         # ACT
-        $GetTitle1   = Get-ConfluencePage -Title $Title1 -SpaceKey $SpaceKey -PageSize 200 -ErrorAction SilentlyContinue
-        $GetTitle2   = Get-ConfluencePage -Title $Title2 -SpaceKey $SpaceKey -ErrorAction SilentlyContinue
-        $GetPartial  = Get-ConfluencePage -Title $Title4 -SpaceKey $SpaceKey -ErrorAction SilentlyContinue
+        $GetTitle1 = Get-ConfluencePage -Title $Title1.ToLower() -SpaceKey $SpaceKey -PageSize 200 -ErrorAction SilentlyContinue
+        $GetTitle2 = Get-ConfluencePage -Title $Title2 -SpaceKey $SpaceKey -ErrorAction SilentlyContinue
+        $GetPartial = Get-ConfluencePage -Title $Title4 -SpaceKey $SpaceKey -ErrorAction SilentlyContinue
         $GetWildcard = Get-ConfluencePage -Title $Title5 -SpaceKey $SpaceKey -ErrorAction SilentlyContinue
         $GetID1 = Get-ConfluencePage -PageID $GetTitle1.ID -ErrorAction SilentlyContinue
         $GetID2 = Get-ConfluencePage -PageID $GetTitle2.ID -ErrorAction SilentlyContinue
-        $GetKeys = Get-ConfluencePage -SpaceKey $SpaceKey | Sort ID -ErrorAction SilentlyContinue
+        $GetKeys = Get-ConfluencePage -SpaceKey $SpaceKey -ErrorAction SilentlyContinue | Sort-Object ID
         $GetByLabel = Get-ConfluencePage -Label "important" -ErrorAction SilentlyContinue
         $GetByQuery = Get-ConfluencePage -Query $query -ErrorAction SilentlyContinue
         $GetSpacePage = Get-ConfluencePage -Space (Get-ConfluenceSpace -SpaceKey $SpaceKey) -ErrorAction SilentlyContinue
@@ -343,17 +367,17 @@ InModuleScope ConfluencePS {
 
         # ASSERT
         It 'returns the correct amount of results' {
-            $GetTitle1.Count | Should Be 1
-            $GetTitle2.Count | Should Be 1
-            $GetPartial.Count | Should Be 0
-            $GetWildcard.Count | Should Be 0
-            $GetID1.Count | Should Be 1
-            $GetID2.Count | Should Be 1
-            $GetKeys.Count | Should Be 5
-            $GetByLabel.Count | Should Be 1
-            $GetSpacePage.Count | Should Be 5
-            $GetByQuery.Count | Should Be 2
-            $GetSpacePiped.Count | Should Be 5
+            @($GetTitle1).Count | Should Be 1
+            @($GetTitle2).Count | Should Be 1
+            @($GetPartial).Count | Should Be 0
+            @($GetWildcard).Count | Should Be 1
+            @($GetID1).Count | Should Be 1
+            @($GetID2).Count | Should Be 1
+            @($GetKeys).Count | Should Be 5
+            @($GetByLabel).Count | Should Be 1
+            @($GetSpacePage).Count | Should Be 5
+            @($GetByQuery).Count | Should Be 2
+            @($GetSpacePiped).Count | Should Be 5
         }
         It 'returns an object with specific properties' {
             $GetTitle1 | Should BeOfType [ConfluencePS.Page]
@@ -393,7 +417,7 @@ InModuleScope ConfluencePS {
             $GetID2.Title | Should BeExactly $Title2
             $GetKeys.Title -contains $Title3 | Should Be $true
             $GetKeys.Title -contains $GetID1.Title | Should Be $true
-            $GetByLabel.Title -like "PESTER * Home" | Should Be $true
+            $GetByLabel.Title -like "PESTER Test Space Home" | Should Be $true
         }
         It 'space matches the specified value' {
             $GetTitle1.Space.Key | Should BeExactly $SpaceKey
@@ -410,9 +434,11 @@ InModuleScope ConfluencePS {
             $GetByLabel.Version.Number | Should Be 1
         }
         It 'body matches the specified value' {
-            $GetTitle1.Body | Should BeExactly $Content
-            $GetID1.Body | Should BeExactly $Content
-            $GetKeys.Body -contains $Content | Should Be $true
+            . "$env:BHProjectPath/$env:BHProjectName/Private/ConvertFrom-HTMLEncoded.ps1"
+
+            ConvertFrom-HTMLEncoded $GetTitle1.Body | Should BeExactly $ContentFormatted
+            ConvertFrom-HTMLEncoded $GetTitle2.Body | Should BeExactly $ContentRaw
+            ConvertFrom-HTMLEncoded $GetID1.Body | Should BeExactly $ContentFormatted
         }
         It 'url is string' {
             $GetTitle1.URL | Should BeOfType [String]
@@ -453,9 +479,9 @@ InModuleScope ConfluencePS {
         }
     }
 
-    Describe 'Add-ConfluenceLabel' {
+    Context 'Add-ConfluenceLabel' {
         # ARRANGE
-        $SpaceKey = "PESTER"
+        $SpaceKey = "PESTER$SpaceID"
         $Page1 = Get-ConfluencePage -Title "Pester New Page Piped" -SpaceKey $SpaceKey -ErrorAction Stop
         $Label1 = "pestera", "pesterb", "pesterc"
         $Label2 = "pesterall"
@@ -489,7 +515,7 @@ InModuleScope ConfluencePS {
         It 'label matches the specified value' {
             $NewLabel1.Labels.Name | Should BeExactly $Label1
             $NewLabel2.Labels.Name -contains $Label2 | Should Be $true
-            ($NewLabel3.Labels.Name -match $PartialLabel | Sort) | Should Be (($Label1 + $Label2) | Sort )
+            ($NewLabel3.Labels.Name -match $PartialLabel | Sort-Object) | Should Be (($Label1 + $Label2) | Sort-Object )
         }
         It 'labelid is not null or empty' {
             $NewLabel1.Labels.ID | Should Not BeNullOrEmpty
@@ -498,9 +524,9 @@ InModuleScope ConfluencePS {
         }
     }
 
-    Describe 'Set-ConfluenceLabel' {
+    Context 'Set-ConfluenceLabel' {
         # ARRANGE
-        $SpaceKey = "PESTER"
+        $SpaceKey = "PESTER$SpaceID"
         $Title1 = "Pester New Page from Object"
         $Label1 = @("overwrite", "remove")
         $Label2 = "final"
@@ -529,8 +555,8 @@ InModuleScope ConfluencePS {
         It 'label matches the specified value' {
             $After1.Labels.Name | Should BeExactly $Label1
             $After2.Labels.Name | Should BeExactly $Label2
-            $After1.Labels.Name -notcontains $Before.Labels.Name | Should Be $true
-            $After2.Labels.Name -notcontains $Before.Labels.Name | Should Be $true
+            $After1.Labels.Name -notcontains $Before1.Labels.Name | Should Be $true
+            $After2.Labels.Name -notcontains $Before1.Labels.Name | Should Be $true
         }
         It 'labelid is not null or empty' {
             $After1.Labels.ID | Should Not BeNullOrEmpty
@@ -538,9 +564,9 @@ InModuleScope ConfluencePS {
         }
     }
 
-    Describe 'Get-ConfluenceLabel' {
+    Context 'Get-ConfluenceLabel' {
         # ARRANGE
-        $SpaceKey = "PESTER"
+        $SpaceKey = "PESTER$SpaceID"
         $patternLabel1 = "pester[abc]$"
         $patternLabel2 = "(pest|import|fin)"
         $Page = Get-ConfluencePage -Title "Pester New Page Piped" -SpaceKey $SpaceKey
@@ -553,7 +579,7 @@ InModuleScope ConfluencePS {
         It 'returns the correct amount of results' {
             ($GetPageLabel1.Labels).Count | Should Be 5
             ($GetPageLabel2.Labels).Count | Should Be 10
-            ($GetPageLabel2.Labels | Where {$_.Name -match $patternLabel1}).Count | Should Be 3
+            ($GetPageLabel2.Labels | Where-Object {$_.Name -match $patternLabel1}).Count | Should Be 3
         }
         It 'returns an object with specific properties' {
             $GetPageLabel1 | Should BeOfType [ConfluencePS.ContentLabelSet]
@@ -579,14 +605,19 @@ InModuleScope ConfluencePS {
         }
     }
 
-    Describe 'Set-ConfluencePage' {
+    Context 'Set-ConfluencePage' {
         <# TODO:
         * Title may not be empty
         * fails when version is 1 larger than current version
         #>
 
         # ARRANGE
-        function dummy-Function {
+        function Set-PageContent {
+            [Diagnostics.CodeAnalysis.SuppressMessageAttribute(
+                'PSUseShouldProcessForStateChangingFunctions',
+                '',
+                Scope = '*'
+            )]
             [CmdletBinding()]
             param (
                 [Parameter(
@@ -610,7 +641,7 @@ InModuleScope ConfluencePS {
             }
         }
 
-        $SpaceKey = "PESTER"
+        $SpaceKey = "PESTER$SpaceID"
         $Page1 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page Piped"
         $Page2 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page Orphan"
         $Page3 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page from Object"
@@ -629,7 +660,7 @@ InModuleScope ConfluencePS {
 
         # ACT
         # change the body of all pages - all pages should have version 2
-        $AllChangedPages = $AllPages | dummy-Function -Body $NewContent1 | Set-ConfluencePage -ErrorAction Stop
+        $AllChangedPages = $AllPages | Set-PageContent -Body $NewContent1 | Set-ConfluencePage -ErrorAction Stop
         # set the body of a page to the same value as it already had - should remain on verion 2
         $SetPage1 = $Page1.ID | Set-ConfluencePage -Body $NewContent1 -ErrorAction Stop
         # change the body of a page by property - this page should have version 3
@@ -644,21 +675,21 @@ InModuleScope ConfluencePS {
         $SetPage5 = Set-ConfluencePage -PageID $Page5.ID -ParentID $Page4.ID
         # change the title of a page
         $SetPage6 = $Page6.ID | Set-ConfluencePage -Title $NewTitle6
-        $SetPage7 = $AllChangedPages | Where {$_.ID -eq $Page7.ID} | dummy-Function -Title $NewTitle7 | Set-ConfluencePage
+        $SetPage7 = $AllChangedPages | Where-Object {$_.ID -eq $Page7.ID} | Set-PageContent -Title $NewTitle7 | Set-ConfluencePage
         # clear the body of a page
         $SetPage8 = Set-ConfluencePage -PageID $Page8.ID -Body ""
 
         # ASSERT
         It 'returns the correct amount of results' {
-            $SetPage1.Count | Should Be 1
-            $SetPage2.Count | Should Be 1
-            $SetPage3.Count | Should Be 1
-            $SetPage4.Count | Should Be 1
-            $SetPage5.Count | Should Be 1
-            $SetPage6.Count | Should Be 1
-            $SetPage7.Count | Should Be 1
-            $SetPage8.Count | Should Be 1
-            $AllChangedPages.Count | Should Be 9
+            @($SetPage1).Count | Should Be 1
+            @($SetPage2).Count | Should Be 1
+            @($SetPage3).Count | Should Be 1
+            @($SetPage4).Count | Should Be 1
+            @($SetPage5).Count | Should Be 1
+            @($SetPage6).Count | Should Be 1
+            @($SetPage7).Count | Should Be 1
+            @($SetPage8).Count | Should Be 1
+            @($AllChangedPages).Count | Should Be 9
         }
         It 'returns an object with specific properties' {
             $SetPage1 | Should BeOfType [ConfluencePS.Page]
@@ -698,7 +729,7 @@ InModuleScope ConfluencePS {
             $SetPage6.Space.Key | Should BeExactly $SpaceKey
             $SetPage7.Space.Key | Should BeExactly $SpaceKey
             $SetPage8.Space.Key | Should BeExactly $SpaceKey
-            $AllChangedPages.Space.Key | Should BeExactly (1..9 | % {$SpaceKey})
+            $AllChangedPages.Space.Key | Should BeExactly (1..9 | ForEach-Object {$SpaceKey})
         }
         It 'title has the specified value' {
             $SetPage1.Title | Should BeExactly $Page1.Title
@@ -746,12 +777,12 @@ InModuleScope ConfluencePS {
         }
     }
 
-    Describe 'Get-ConfluenceChildPage' {
+    Context 'Get-ConfluenceChildPage' {
         # ARRANGE
 
         # ACT
-        $ChildPages = (Get-ConfluenceSpace -SpaceKey PESTER).Homepage | Get-ConfluenceChildPage
-        $DesendantPages = (Get-ConfluenceSpace -SpaceKey PESTER).Homepage | Get-ConfluenceChildPage -Recurse
+        $ChildPages = (Get-ConfluenceSpace -SpaceKey "PESTER$SpaceID").Homepage | Get-ConfluenceChildPage
+        $DesendantPages = (Get-ConfluenceSpace -SpaceKey "PESTER$SpaceID").Homepage | Get-ConfluenceChildPage -Recurse
 
         # ASSERT
         It 'returns the correct amount of results' {
@@ -764,12 +795,282 @@ InModuleScope ConfluencePS {
         }
     }
 
-    Describe 'Remove-ConfluenceLabel' {
+    Context 'Add-ConfluenceAttachment' {
         # ARRANGE
-        $SpaceKey = "PESTER"
+        BeforeAll {
+            $originalWarningPreference = $WarningPreference
+            $WarningPreference = 'SilentlyContinue'
+        }
+        AfterAll {
+            $WarningPreference = $originalWarningPreference
+        }
+        $SpaceKey = "PESTER$SpaceID"
+        $Page1 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page Piped" -ErrorAction Stop
+        $Page2 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page Orphan" -ErrorAction Stop
+        $Page3 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page from Object" -ErrorAction Stop
+        $Page4 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page with Parent Object" -ErrorAction Stop
+        $TextFile = Get-Item -Path "$PSScriptRoot/resources/Test.txt"
+        $ImageFile = Get-Item -Path "$PSScriptRoot/resources/Test.png"
+        $ExcelFile = Get-Item -Path "$PSScriptRoot/resources/Test.xlsx"
+
+        # ACT
+        $result1 = Add-ConfluenceAttachment -PageId $Page1.Id -FilePath $TextFile.FullName -ErrorAction Stop
+        $result2 = Add-ConfluenceAttachment -PageId $Page1.Id -FilePath $ImageFile.FullName, $ExcelFile.FullName -ErrorAction Stop
+        $result3 = Add-ConfluenceAttachment $Page2.Id -FilePath $TextFile.FullName -ErrorAction Stop
+        $result4 = $Page2 | Add-ConfluenceAttachment -FilePath $ImageFile.FullName -ErrorAction Stop
+        $result5 = $Page3 | Add-ConfluenceAttachment -FilePath $ImageFile.FullName, $ExcelFile.FullName -ErrorAction Stop
+        $result6 = $TextFile, $ImageFile, $ExcelFile | Add-ConfluenceAttachment -PageId $Page4.Id -ErrorAction Stop
+
+        # ASSERT
+        It 'attaches a file to a page' {
+            $result1 | Should Not BeNullOrEmpty
+            @($result1).Count | Should Be 1
+        }
+        It 'attaches multiple files at a time' {
+            $result2 | Should Not BeNullOrEmpty
+            @($result2).Count | Should Be 2
+        }
+        It 'can be used with positional parameters' {
+            $result3 | Should Not BeNullOrEmpty
+            @($result3).Count | Should Be 1
+        }
+        It 'accepts the PageId over the pipeline' {
+            $result4 | Should Not BeNullOrEmpty
+            @($result4).Count | Should Be 1
+            $result5 | Should Not BeNullOrEmpty
+            @($result5).Count | Should Be 2
+        }
+        It 'accepts the FilePath over the pipeline' {
+            $result6 | Should Not BeNullOrEmpty
+            @($result6).Count | Should Be 3
+        }
+        It 'returns an Attachment object' {
+            $result1 | Should BeOfType [ConfluencePS.Attachment]
+            $result2 | Should BeOfType [ConfluencePS.Attachment]
+            $result3 | Should BeOfType [ConfluencePS.Attachment]
+            $result4 | Should BeOfType [ConfluencePS.Attachment]
+            $result5 | Should BeOfType [ConfluencePS.Attachment]
+            $result6 | Should BeOfType [ConfluencePS.Attachment]
+
+            $result1.Id | Should Not BeNullOrEmpty
+            $result1.Title | Should Not BeNullOrEmpty
+            $result1.Filename | Should Not BeNullOrEmpty
+            $result1.MediaType | Should Not BeNullOrEmpty
+            $result1.FileSize | Should Not BeNullOrEmpty
+            $result1.SpaceKey | Should Not BeNullOrEmpty
+            $result1.PageID | Should Not BeNullOrEmpty
+            $result1.Version | Should BeOfType [ConfluencePS.Version]
+            $result1.Version.Number | Should Be 1
+            $result1.URL | Should Not BeNullOrEmpty
+            ([Uri]$result1.URL).AbsoluteUri | Should Not BeNullOrEmpty
+        }
+        It 'throws if the file does not exist' {
+            { Add-ConfluenceAttachment -PageId $Page1.Id -FilePath "$PSScriptRoot/non-existing.file" } | Should Throw
+        }
+        It 'throws if the item to attach is not a file' {
+            { Add-ConfluenceAttachment -PageId $Page1.Id -FilePath "$PSScriptRoot" } | Should Throw
+        }
+        It 'fails if the page already has the file attached' {
+            { Add-ConfluenceAttachment -PageId $Page1.Id -FilePath $TextFile.FullName -ErrorAction Stop } | Should Throw
+            { Add-ConfluenceAttachment -PageId $Page1.Id -FilePath $TextFile.FullName -ErrorAction SilentlyContinue } | Should Not Throw
+        }
+    }
+
+    Context 'Get-ConfluenceAttachment' {
+        # ARRANGE
+        $SpaceKey = "PESTER$SpaceID"
+        $Page1 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page Piped" -ErrorAction Stop
+        $Page2 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page Orphan" -ErrorAction Stop
+        $Page3 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page from Object" -ErrorAction Stop
+        $Page4 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page with Parent Object" -ErrorAction Stop
+
+        # ACT
+        $result1 = Get-ConfluenceAttachment -PageId $Page1.Id -ErrorAction Stop
+        $result2 = Get-ConfluenceAttachment -PageId $Page2.Id, $Page3.Id -ErrorAction Stop
+        $result3 = $Page3, $Page4 | Get-ConfluenceAttachment -ErrorAction Stop
+        $result4 = $Page1, $Page2, $Page3, $Page4 | Get-ConfluenceAttachment -FileNameFilter "Test.xlsx" -ErrorAction Stop
+        $result5 = $Page1, $Page2, $Page3, $Page4 | Get-ConfluenceAttachment -MediaTypeFilter "text/plain" -ErrorAction Stop
+
+        # ASSERT
+        It 'retrieves the Attachments of a Page' {
+            $result1 | Should Not BeNullOrEmpty
+            $result1 | Should BeOfType [ConfluencePS.Attachment]
+            @($result1).Count | Should Be 3
+        }
+        It 'retrieves the Attachments of multiple Pages' {
+            $result2 | Should Not BeNullOrEmpty
+            $result2 | Should BeOfType [ConfluencePS.Attachment]
+            @($result2).Count | Should Be 4
+        }
+        It 'accepts the PageId over the Pipeline' {
+            $result3 | Should Not BeNullOrEmpty
+            $result3 | Should BeOfType [ConfluencePS.Attachment]
+            @($result3).Count | Should Be 5
+        }
+        It 'filters the Attachments by FileName' {
+            $result4 | Should Not BeNullOrEmpty
+            $result4 | Should BeOfType [ConfluencePS.Attachment]
+            @($result4).Count | Should Be 3
+            $result4.Title | Should Be ("Test.xlsx", "Test.xlsx", "Test.xlsx")
+        }
+        It 'filters the Attachments by MediaType' {
+            $result5 | Should Not BeNullOrEmpty
+            $result5 | Should BeOfType [ConfluencePS.Attachment]
+            @($result5).Count | Should Be 3
+            $result5.MediaType | Should Be ("text/plain", "text/plain", "text/plain")
+        }
+    }
+
+    Context 'Get-ConfluenceAttachmentFile' {
+        # ARRANGE
+        BeforeAll {
+            Push-Location -Path "TestDrive:\"
+        }
+        AfterAll {
+            Pop-Location
+        }
+        $null = New-Item -Path "TestDrive:\Folder1" -ItemType Directory
+        $null = New-Item -Path "TestDrive:\Folder2" -ItemType Directory
+        $null = New-Item -Path "TestDrive:\Folder3" -ItemType Directory
+        $SpaceKey = "PESTER$SpaceID"
+        $Page1 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page Piped" -ErrorAction Stop
+        $Page2 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page Orphan" -ErrorAction Stop
+        $Attachments = $Page1, $Page2 | Get-ConfluenceAttachment -ErrorAction Stop
+
+        # ACT
+        $result1 = Get-ConfluenceAttachmentFile -Attachment $Attachments[0] -Path "TestDrive:\Folder1" -ErrorAction Stop
+        $result2 = Get-ConfluenceAttachmentFile $Attachments[-1] -ErrorAction Stop
+        $result3 = Get-ConfluenceAttachmentFile -Attachment $Attachments -Path "TestDrive:\Folder2" -ErrorAction Stop
+        $result4 = $Attachments | Get-ConfluenceAttachmentFile -Path "TestDrive:\Folder3" -ErrorAction Stop
+
+        # ASSERT
+        It 'downloads an Attachment to a specific Path' {
+            $result1 | Should Be $true
+            $files1 = Get-ChildItem -Path "TestDrive:\Folder1"
+            @($files1).Count | Should Be 1
+            $files1.Name | Should Be "$($Page1.Id)_$($Attachments[0].Title)"
+        }
+        It 'downloads an Attachment to the current Directory' {
+            $result2 | Should Be $true
+            $files2 = Get-ChildItem -Path $pwd.Path -File
+            @($files2).Count | Should Be 1
+            $files2.Name | Should Be "$($Page2.Id)_$($Attachments[-1].Title)"
+        }
+        It 'downloads several Attachments to a specific Path' {
+            $result3 | Should Be ($true, $true, $true, $true, $true)
+            $files3 = Get-ChildItem -Path "TestDrive:\Folder2"
+            @($files3).Count | Should Be 5
+            ($files3.Name -match "^$($Page1.Id)").Count | Should Be 3
+            ($files3.Name -match "^$($Page2.Id)").Count | Should Be 2
+        }
+        It 'accepts the Attachments over the pipeline' {
+            $result4 | Should Be ($true, $true, $true, $true, $true)
+            $files4 = Get-ChildItem -Path "TestDrive:\Folder3"
+            @($files4).Count | Should Be 5
+            ($files4.Name -match "^$($Page1.Id)").Count | Should Be 3
+            ($files4.Name -match "^$($Page2.Id)").Count | Should Be 2
+        }
+        It 'throws if the specified Path does not exist' {
+            { $Attachments | Get-ConfluenceAttachmentFile -Path "non-existing-path" } | Should Throw
+        }
+    }
+
+    Context 'Set-ConfluenceAttachment' {
+        # ARRANGE
+        $SpaceKey = "PESTER$SpaceID"
+        $Page1 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page Piped" -ErrorAction Stop
+        $Attachment = $Page1 | Get-ConfluenceAttachment -FileNameFilter "Test.txt" -ErrorAction Stop
+        $TextFile = Get-Item -Path "$PSScriptRoot/resources/Test.txt"
+
+        # ACT
+        $result1 = Set-ConfluenceAttachment -Attachment $Attachment -FilePath $TextFile.FullName -ErrorAction Stop
+        $result2 = Set-ConfluenceAttachment $Attachment -FilePath $TextFile.FullName -ErrorAction Stop
+        $result3 = $Attachment | Set-ConfluenceAttachment -FilePath $TextFile.FullName -ErrorAction Stop
+
+        # ASSERT
+        It 'updates an Attachment' {
+            $result1 | Should Not BeNullOrEmpty
+            @($result1).Count | Should Be 1
+            $result1.Version.Number | Should Be 2
+        }
+        It 'can be used with positional parameters' {
+            $result2 | Should Not BeNullOrEmpty
+            @($result2).Count | Should Be 1
+            $result2.Version.Number | Should Be 3
+        }
+        It 'accepts the Attachment over the pipeline' {
+            $result3 | Should Not BeNullOrEmpty
+            @($result3).Count | Should Be 1
+            $result3.Version.Number | Should Be 4
+        }
+        It 'returns an Attachment object' {
+            $result1 | Should BeOfType [ConfluencePS.Attachment]
+            $result2 | Should BeOfType [ConfluencePS.Attachment]
+            $result3 | Should BeOfType [ConfluencePS.Attachment]
+
+            $result1.Id | Should Not BeNullOrEmpty
+            $result1.Title | Should Not BeNullOrEmpty
+            $result1.Filename | Should Not BeNullOrEmpty
+            $result1.MediaType | Should Not BeNullOrEmpty
+            $result1.FileSize | Should Not BeNullOrEmpty
+            $result1.SpaceKey | Should Not BeNullOrEmpty
+            $result1.PageID | Should Not BeNullOrEmpty
+            $result1.URL | Should Not BeNullOrEmpty
+            ([Uri]$result1.URL).AbsoluteUri | Should Not BeNullOrEmpty
+        }
+        It 'throws if the file does not exist' {
+            { Set-ConfluenceAttachment -Attachment $Attachment -FilePath "non-existing.file" } | Should Throw
+        }
+    }
+
+    Context 'Remove-ConfluenceAttachment' {
+        # ARRANGE
+        BeforeAll {
+            $originalWarningPreference = $WarningPreference
+            $WarningPreference = 'SilentlyContinue'
+        }
+        AfterAll {
+            $WarningPreference = $originalWarningPreference
+        }
+        $SpaceKey = "PESTER$SpaceID"
+        $Page1 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page Piped" -ErrorAction Stop
+        $Page2 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page Orphan" -ErrorAction Stop
+        $Page3 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page from Object" -ErrorAction Stop
+        $preAttachments1 = Get-ConfluenceAttachment -PageId $Page1.Id -ErrorAction Stop
+        $preAttachments2 = Get-ConfluenceAttachment -PageId $Page2.Id -ErrorAction Stop
+        $preAttachments3 = Get-ConfluenceAttachment -PageId $Page3.Id -ErrorAction Stop
+
+        # ACT
+        Remove-ConfluenceAttachment -Attachment $preAttachments1[0] -ErrorAction Stop
+        Remove-ConfluenceAttachment $preAttachments2 -ErrorAction Stop
+        $preAttachments3 | Remove-ConfluenceAttachment -ErrorAction Stop
+
+        $postAttachments1 = Get-ConfluenceAttachment -PageId $Page1.Id -ErrorAction SilentlyContinue
+        $postAttachments2 = Get-ConfluenceAttachment -PageId $Page2.Id -ErrorAction SilentlyContinue
+        $postAttachments3 = Get-ConfluenceAttachment -PageId $Page3.Id -ErrorAction SilentlyContinue
+
+        # ASSERT
+        It 'removes an Attachment' {
+            @($postAttachments1).Count | Should Be (@($preAttachments1).Count - 1)
+        }
+        It 'removes several Attachments' {
+            $postAttachments2 | Should BeNullOrEmpty
+        }
+        It 'accepts Attachments over the pipeline' {
+            $postAttachments3 | Should BeNullOrEmpty
+        }
+        It 'fails to delete a non exisiting Attachment' {
+            { Remove-ConfluenceAttachment -Attachment $preAttachments1 -ErrorAction Stop } | Should Throw
+            { Remove-ConfluenceAttachment -Attachment $preAttachments1 -ErrorAction SilentlyContinue } | Should Not Throw
+        }
+    }
+
+    Context 'Remove-ConfluenceLabel' {
+        # ARRANGE
+        $SpaceKey = "PESTER$SpaceID"
         $Label1 = "pesterc"
         $Page1 = Get-ConfluencePage -Title 'Pester New Page Piped' -SpaceKey $SpaceKey -ErrorAction Stop
-        $Page2 = (Get-ConfluenceSpace -SpaceKey PESTER).Homepage
+        $Page2 = (Get-ConfluenceSpace -SpaceKey $SpaceKey).Homepage
 
         # ACT
         $Before1 = $Page1 | Get-ConfluenceLabel -ErrorAction SilentlyContinue
@@ -781,18 +1082,18 @@ InModuleScope ConfluencePS {
 
         # ASSERT
         It 'page has one label less' {
-            ($Before1.Labels).Count - ($After1.Labels).Count| Should Be 1
-            ($Before2.Labels).Count - ($After2.Labels).Count| Should Be 2
+            @($Before1.Labels).Count - @($After1.Labels).Count | Should Be 1
+            ($After1.Labels).Name -notcontains $Label1 | Should Be $true
         }
         It 'page does not have labels' {
-            $After1.Labels.Name -notcontains $Label1 | Should Be $true
-            $After2.Labels.Name -notcontains $Label1 | Should Be $true
+            @($Before2.Labels).Count | Should Be 2
+            $After2.Labels | Should BeNullOrEmpty
         }
     }
 
-    Describe 'Remove-ConfluencePage' {
+    Context 'Remove-ConfluencePage' {
         # ARRANGE
-        $SpaceKey = "PESTER"
+        $SpaceKey = "PESTER$SpaceID"
         $Title = "Pester New Page Orphan"
         $PageID = Get-ConfluencePage -Title $Title -SpaceKey $SpaceKey -ErrorAction Stop
         $Before = Get-ConfluencePage -SpaceKey $SpaceKey -ErrorAction Stop
@@ -807,24 +1108,24 @@ InModuleScope ConfluencePS {
             $Before | Should Not BeNullOrEmpty
         }
         It 'space does not have pages after' {
-            $After.ID | Should BeNullOrEmpty
+            $After | Should BeNullOrEmpty
         }
     }
 
-    Describe 'Remove-ConfluenceSpace' {
+    Context 'Remove-ConfluenceSpace' {
         # ARRANGE
         # We don't want warnings on the screen
         $WarningPreference = 'SilentlyContinue'
 
         # ACT
-        Remove-ConfluenceSpace -Key PESTER -Force -ErrorAction Stop
-        "PESTER1" | Remove-ConfluenceSpace -Force -ErrorAction Stop
+        Remove-ConfluenceSpace -Key "PESTER$SpaceID" -Force -ErrorAction Stop
+        "PESTER1$SpaceID" | Remove-ConfluenceSpace -Force -ErrorAction Stop
 
         # ASSERT
-        Start-Sleep -Seconds 1
+        Start-Sleep -Seconds 20
         It 'space is no longer available' {
-            { Get-ConfluenceSpace -Key PESTER -ErrorAction Stop } | Should Throw
-            { Get-ConfluenceSpace -Key PESTER1 -ErrorAction Stop } | Should Throw
+            { Get-ConfluenceSpace -Key "PESTER$SpaceID" -ErrorAction Stop } | Should Throw
+            { Get-ConfluenceSpace -Key "PESTER1$SpaceID" -ErrorAction Stop } | Should Throw
         }
     }
 }

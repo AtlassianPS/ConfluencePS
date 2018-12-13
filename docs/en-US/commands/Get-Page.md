@@ -1,114 +1,105 @@
 ---
 external help file: ConfluencePS-help.xml
-online version: https://github.com/AtlassianPS/ConfluencePS/blob/master/docs/commands/Get-Page.md
+online version: https://atlassianps.org/docs/ConfluencePS/commands/Get-Page/
+Module Name: ConfluencePS
 locale: en-US
 schema: 2.0.0
 layout: documentation
 permalink: /docs/ConfluencePS/commands/Get-Page/
 ---
-
 # Get-Page
 
 ## SYNOPSIS
+
 Retrieve a listing of pages in your Confluence instance.
 
 ## SYNTAX
 
 ### byId (Default)
+
 ```powershell
 Get-ConfluencePage -ApiURi <Uri> -Credential <PSCredential> [-PageID] <Int32[]> [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
 ```
 
 ### byLabel
+
 ```powershell
 Get-ConfluencePage -ApiURi <Uri> -Credential <PSCredential> [-SpaceKey <String>] [-Space <Space>] -Label <String[]> [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
 ```
 
 ### bySpace
+
 ```powershell
 Get-ConfluencePage -ApiURi <Uri> -Credential <PSCredential> -SpaceKey <String> [-Title <String>] [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
 ```
 
 ### byQuery
+
 ```powershell
 Get-ConfluencePage -ApiURi <Uri> -Credential <PSCredential> [-Query <String>] [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
 ```
 
 ### bySpaceObject
+
 ```powershell
 Get-ConfluencePage -ApiURi <Uri> -Credential <PSCredential> -Space <Space> [-Title <String>] [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
 ```
 
 ## DESCRIPTION
+
 Return Confluence pages, filtered by ID, Name, or Space.
-Piped output into other cmdlets is generally tested and supported.
 
 ## EXAMPLES
 
 ### -------------------------- EXAMPLE 1 --------------------------
+
 ```powershell
 Get-ConfluencePage -SpaceKey HOTH
 Get-ConfluenceSpace -SpaceKey HOTH | Get-ConfluencePage
 ```
 
-Description
-
------------
-
 Two different methods to return all wiki pages in space "HOTH".
 Both examples should return identical results.
 
 ### -------------------------- EXAMPLE 2 --------------------------
+
 ```powershell
 Get-ConfluencePage -PageID 123456 | Format-List *
 ```
-
-Description
-
------------
 
 Returns the wiki page with ID 123456.
 `Format-List *` displays all of the object's properties, including the full page body.
 
 ### -------------------------- EXAMPLE 3 --------------------------
+
 ```powershell
 Get-ConfluencePage -Title 'luke*' -SpaceKey HOTH
 ```
-
-Description
-
------------
 
 Return all pages in HOTH whose names start with "luke" (case-insensitive).
 Wildcards (*) can be inserted to support partial matching.
 
 ### -------------------------- EXAMPLE 4 --------------------------
+
 ```powershell
 Get-ConfluencePage -Label 'skywalker'
 ```
-
-Description
-
------------
 
 Return all pages containing the label "skywalker" (case-insensitive).
 Label text must match exactly; no wildcards are applied.
 
 ### -------------------------- EXAMPLE 5 --------------------------
+
 ```powershell
-Get-ConfluencePage -Query "mention = jsmith and creator != jsmith"
+Get-ConfluencePage -Query "mention = jSmith and creator != jSmith"
 ```
 
-Description
-
------------
-
 Return all pages matching the query.
-
 
 ## PARAMETERS
 
 ### -ApiURi
+
 The URi of the API interface.
 Value can be set persistently with Set-ConfluenceInfo.
 
@@ -125,6 +116,7 @@ Accept wildcard characters: False
 ```
 
 ### -Credential
+
 Confluence's credentials for authentication.
 Value can be set persistently with Set-ConfluenceInfo.
 
@@ -141,7 +133,9 @@ Accept wildcard characters: False
 ```
 
 ### -PageID
+
 Filter results by page ID.
+
 Best option if you already know the ID.
 
 ```yaml
@@ -157,10 +151,10 @@ Accept wildcard characters: False
 ```
 
 ### -Title
+
 Filter results by page name (case-insensitive).
 
-This does not support wildcards (*).
-In order to use wildcards, use `-Query 'title~"*term*"'`.
+This supports wildcards (*) to allow for partial matching.
 
 ```yaml
 Type: String
@@ -175,6 +169,7 @@ Accept wildcard characters: True
 ```
 
 ### -SpaceKey
+
 Filter results by space key (case-insensitive).
 
 ```yaml
@@ -202,6 +197,7 @@ Accept wildcard characters: False
 ```
 
 ### -Space
+
 Filter results by space object(s), typically from the pipeline.
 
 ```yaml
@@ -229,6 +225,7 @@ Accept wildcard characters: False
 ```
 
 ### -Label
+
 Filter results to only pages with the specified label(s).
 
 ```yaml
@@ -244,6 +241,7 @@ Accept wildcard characters: False
 ```
 
 ### -Query
+
 Use Confluences advanced search: [CQL](https://developer.atlassian.com/cloud/confluence/advanced-searching-using-cql/).
 
 This cmdlet will always append a filter to only look for pages (`type=page`).
@@ -261,9 +259,12 @@ Accept wildcard characters: False
 ```
 
 ### -PageSize
+
 Maximum number of results to fetch per call.
+
 This setting can be tuned to get better performance according to the load on the server.
-Warning: too high of a PageSize can cause a timeout on the request.
+
+> Warning: too high of a PageSize can cause a timeout on the request.
 
 ```yaml
 Type: Int32
@@ -278,8 +279,11 @@ Accept wildcard characters: False
 ```
 
 ### -IncludeTotalCount
-NOTE: Not yet implemented.
+
+>NOTE: Not yet implemented.
+
 Causes an extra output of the total count at the beginning.
+
 Note this is actually a uInt64, but with a custom string representation.
 
 ```yaml
@@ -295,7 +299,9 @@ Accept wildcard characters: False
 ```
 
 ### -Skip
+
 Controls how many things will be skipped before starting output.
+
 Defaults to 0.
 
 ```yaml
@@ -311,7 +317,9 @@ Accept wildcard characters: False
 ```
 
 ### -First
-NOTE: Not yet implemented.
+
+> NOTE: Not yet implemented.
+
 Indicates how many items to return.
 
 ```yaml
@@ -333,6 +341,8 @@ Accept wildcard characters: False
 ### ConfluencePS.Page
 
 ## NOTES
+
+Piped output into other cmdlets is generally tested and supported.
 
 ## RELATED LINKS
 

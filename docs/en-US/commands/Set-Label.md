@@ -1,15 +1,16 @@
 ---
 external help file: ConfluencePS-help.xml
-online version: https://github.com/AtlassianPS/ConfluencePS/blob/master/docs/commands/Set-Label.md
+online version: https://atlassianps.org/docs/ConfluencePS/commands/Set-Label/
+Module Name: ConfluencePS
 locale: en-US
 schema: 2.0.0
 layout: documentation
 permalink: /docs/ConfluencePS/commands/Set-Label/
 ---
-
 # Set-Label
 
 ## SYNOPSIS
+
 Set the labels applied to existing Confluence content.
 
 ## SYNTAX
@@ -19,31 +20,28 @@ Set-Label -apiURi <Uri> -Credential <PSCredential> [-PageID] <Int32[]> -Label <S
 ```
 
 ## DESCRIPTION
+
 Sets desired labels for Confluence content.
-(Currently, Set-ConfluenceLabel only supports interacting with wiki pages.)
+
 All preexisting labels will be *removed* in the process.
+
+> Note: Currently, Set-ConfluenceLabel only supports interacting with wiki pages.
 
 ## EXAMPLES
 
 ### -------------------------- EXAMPLE 1 --------------------------
+
 ```powershell
 Set-ConfluenceLabel -PageID 123456 -Label 'a','b','c'
 ```
 
-Description
-
------------
-
 For existing wiki page with ID 123456, remove all labels, then add the three specified.
 
 ### -------------------------- EXAMPLE 2 --------------------------
+
 ```powershell
 Get-ConfluencePage -SpaceKey 'ABC' | Set-Label -Label '123' -WhatIf
 ```
-
-Description
-
------------
 
 Would remove all labels and apply only the label "123" to all pages in the ABC space.
 -WhatIf reports on simulated changes, but does not modifying anything.
@@ -51,6 +49,7 @@ Would remove all labels and apply only the label "123" to all pages in the ABC s
 ## PARAMETERS
 
 ### -apiURi
+
 The URi of the API interface.
 Value can be set persistently with Set-ConfluenceInfo.
 
@@ -67,6 +66,7 @@ Accept wildcard characters: False
 ```
 
 ### -Credential
+
 Confluence's credentials for authentication.
 Value can be set persistently with Set-ConfluenceInfo.
 
@@ -83,6 +83,7 @@ Accept wildcard characters: False
 ```
 
 ### -PageID
+
 The page ID to remove the label from.
 Accepts multiple IDs via pipeline input.
 
@@ -99,6 +100,7 @@ Accept wildcard characters: False
 ```
 
 ### -Label
+
 Label names to add to the content.
 
 ```yaml
@@ -114,6 +116,7 @@ Accept wildcard characters: False
 ```
 
 ### -WhatIf
+
 Shows what would happen if the cmdlet runs.
 The cmdlet is not run.
 
@@ -130,6 +133,7 @@ Accept wildcard characters: False
 ```
 
 ### -Confirm
+
 Prompts you for confirmation before running the cmdlet.
 
 ```yaml

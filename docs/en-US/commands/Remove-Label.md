@@ -1,15 +1,16 @@
 ---
 external help file: ConfluencePS-help.xml
-online version: https://github.com/AtlassianPS/ConfluencePS/blob/master/docs/commands/Remove-Label.md
+online version: https://atlassianps.org/docs/ConfluencePS/commands/Remove-Label/
+Module Name: ConfluencePS
 locale: en-US
 schema: 2.0.0
 layout: documentation
 permalink: /docs/ConfluencePS/commands/Remove-Label/
 ---
-
 # Remove-Label
 
 ## SYNOPSIS
+
 Remove a label from existing Confluence content.
 
 ## SYNTAX
@@ -19,50 +20,45 @@ Remove-ConfluenceLabel -apiURi <Uri> -Credential <PSCredential> [-PageID] <Int32
 ```
 
 ## DESCRIPTION
+
 Remove labels from Confluence content.
+
 Does accept multiple pages piped via Get-ConfluencePage.
-Untested against non-page content.
+
+> Untested against non-page content.
 
 ## EXAMPLES
 
 ### -------------------------- EXAMPLE 1 --------------------------
+
 ```powershell
 Remove-ConfluenceLabel -PageID 123456 -Label 'seven' -Verbose -Confirm
 ```
-
-Description
-
------------
 
 Remove label "seven" from the wiki page with ID 123456.
 Verbose and Confirm flags both active; you will be prompted before deletion.
 
 ### -------------------------- EXAMPLE 2 --------------------------
+
 ```powershell
-Get-ConfluencePage -SpaceKey 'ABC' -Label 'asdf' | Remove-ConfluenceLabel -Label 'asdf' -WhatIf
+Get-ConfluencePage -SpaceKey 'ABC' -Label 'deleteMe' | Remove-ConfluenceLabel -Label 'deleteMe' -WhatIf
 ```
 
-Description
-
------------
-
-For all wiki pages in the ABC space, the label "asdf" would be removed.
+For all wiki pages in the ABC space, the label "deleteMe" would be removed.
 WhatIf parameter prevents any modifications.
 
 ### -------------------------- EXAMPLE 3 --------------------------
+
 ```powershell
 Get-ConfluenceChildPage -PageID 123456 | Remove-ConfluenceLabel
 ```
-
-Description
-
------------
 
 For all wiki pages immediately below page 123456, remove all labels from each page.
 
 ## PARAMETERS
 
 ### -apiURi
+
 The URi of the API interface.
 Value can be set persistently with Set-ConfluenceInfo.
 
@@ -79,6 +75,7 @@ Accept wildcard characters: False
 ```
 
 ### -Credential
+
 Confluence's credentials for authentication.
 Value can be set persistently with Set-ConfluenceInfo.
 
@@ -95,7 +92,9 @@ Accept wildcard characters: False
 ```
 
 ### -PageID
+
 The page ID to remove the label from.
+
 Accepts multiple IDs via pipeline input.
 
 ```yaml
@@ -111,6 +110,7 @@ Accept wildcard characters: False
 ```
 
 ### -Label
+
 A single content label to remove from one or more pages.
 
 ```yaml
@@ -126,6 +126,7 @@ Accept wildcard characters: False
 ```
 
 ### -WhatIf
+
 Shows what would happen if the cmdlet runs.
 The cmdlet is not run.
 
@@ -142,6 +143,7 @@ Accept wildcard characters: False
 ```
 
 ### -Confirm
+
 Prompts you for confirmation before running the cmdlet.
 
 ```yaml

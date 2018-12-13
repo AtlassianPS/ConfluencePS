@@ -1,15 +1,16 @@
 ---
 external help file: ConfluencePS-help.xml
-online version: https://github.com/AtlassianPS/ConfluencePS/blob/master/docs/commands/Remove-Page.md
+online version: https://atlassianps.org/docs/ConfluencePS/commands/Remove-Page/
+Module Name: ConfluencePS
 locale: en-US
 schema: 2.0.0
 layout: documentation
 permalink: /docs/ConfluencePS/commands/Remove-Page/
 ---
-
 # Remove-Page
 
 ## SYNOPSIS
+
 Trash an existing Confluence page.
 
 ## SYNTAX
@@ -19,50 +20,45 @@ Remove-ConfluencePage -apiURi <Uri> -Credential <PSCredential> [-PageID] <Int32[
 ```
 
 ## DESCRIPTION
+
 Delete existing Confluence content by page ID.
+
 This trashes most content, but will permanently delete "un-trashable" content.
-Untested against non-page content.
+
+> Untested against non-page content.
 
 ## EXAMPLES
 
 ### -------------------------- EXAMPLE 1 --------------------------
+
 ```powershell
 Remove-ConfluencePage -PageID 123456 -Verbose -Confirm
 ```
-
-Description
-
------------
 
 Trash the wiki page with ID 123456.
 Verbose and Confirm flags both active; you will be prompted before removal.
 
 ### -------------------------- EXAMPLE 2 --------------------------
+
 ```powershell
 Get-ConfluencePage -SpaceKey ABC -Title '*test*' | Remove-ConfluencePage -WhatIf
 ```
-
-Description
-
------------
 
 For all wiki pages in space ABC with "test" somewhere in the name,
 simulate the each page being trashed. -WhatIf prevents any removals.
 
 ### -------------------------- EXAMPLE 3 --------------------------
+
 ```powershell
-Get-ConfluencePage -Label 'deleteme' | Remove-ConfluencePage
+Get-ConfluencePage -Label 'deleteMe' | Remove-ConfluencePage
 ```
 
-Description
-
------------
-
-For all wiki pages with the label "deleteme" applied, trash each page.
+For all wiki pages with the label "deleteMe" applied, trash each page.
 
 ## PARAMETERS
 
 ### -apiURi
+
 The URi of the API interface.
 Value can be set persistently with Set-ConfluenceInfo.
 
@@ -79,6 +75,7 @@ Accept wildcard characters: False
 ```
 
 ### -Credential
+
 Confluence's credentials for authentication.
 Value can be set persistently with Set-ConfluenceInfo.
 
@@ -95,6 +92,7 @@ Accept wildcard characters: False
 ```
 
 ### -PageID
+
 The page ID to delete.
 Accepts multiple IDs via pipeline input.
 
@@ -111,6 +109,7 @@ Accept wildcard characters: False
 ```
 
 ### -WhatIf
+
 Shows what would happen if the cmdlet runs.
 The cmdlet is not run.
 
@@ -127,6 +126,7 @@ Accept wildcard characters: False
 ```
 
 ### -Confirm
+
 Prompts you for confirmation before running the cmdlet.
 
 ```yaml
