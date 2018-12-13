@@ -1,8 +1,8 @@
 ---
 layout: documentation
-Module Name: ConfluencePS
 permalink: /docs/ConfluencePS/classes/ConfluencePS.Icon/
 ---
+
 # ConfluencePS.Icon
 
 ## SYNOPSIS
@@ -31,7 +31,6 @@ The following classes use `Icon` for their properties:
 
 ## CONSTRUCTORS
 
-<!-- TODO -->
 _This class does not have a constructor._
 
 ## PROPERTIES

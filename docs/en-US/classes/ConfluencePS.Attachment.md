@@ -1,8 +1,8 @@
 ---
 layout: documentation
-Module Name: ConfluencePS
 permalink: /docs/ConfluencePS/classes/ConfluencePS.Attachment/
 ---
+
 # ConfluencePS.Attachment
 
 ## SYNOPSIS
@@ -19,12 +19,10 @@ New-Object -TypeName ConfluencePS.Attachment [-Property @{}]
 
 ## DESCRIPTION
 
-<!-- TODO -->
-The `Attachment` is an object that describes Attachments in Confluence.
+**fix**The `Attachment` is an object that describes Attachments in Confluence.
 
 ## CONSTRUCTORS
 
-<!-- TODO -->
 _This class does not have a constructor._
 
 ## PROPERTIES

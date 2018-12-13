@@ -22,7 +22,7 @@ Describe "General project validation" -Tag Unit {
             $env:BHManifestToTest = $env:BHBuildModuleManifest
         }
 
-        Import-Module "$env:BHProjectPath/Tools/build.psm1"
+        Import-Module "$env:BHProjectPath/Tools/BuildTools.psm1"
 
         Remove-Module $env:BHProjectName -ErrorAction SilentlyContinue
         Import-Module $env:BHManifestToTest
@@ -36,17 +36,17 @@ Describe "General project validation" -Tag Unit {
     $module = Get-Module $env:BHProjectName
     $testFiles = Get-ChildItem $PSScriptRoot -Include "*.Tests.ps1" -Recurse
 
-    <#
     Context "Public functions" {
         $publicFunctions = (Get-ChildItem "$env:BHModulePath/Public/*.ps1").BaseName
 
         foreach ($function in $publicFunctions) {
 
-            It "has a test file for $function" {
-                $expectedTestFile = "$function.Unit.Tests.ps1"
+            # TODO
+            # It "has a test file for $function" {
+            #     $expectedTestFile = "$function.Unit.Tests.ps1"
 
-                $testFiles.Name | Should -Contain $expectedTestFile
-            }
+            #     $testFiles.Name | Should -Contain $expectedTestFile
+            # }
 
             It "exports $function" {
                 $expectedFunctionName = $function -replace "\-", "-$($module.Prefix)"
@@ -60,11 +60,13 @@ Describe "General project validation" -Tag Unit {
         $privateFunctions = (Get-ChildItem "$env:BHModulePath/Private/*.ps1").BaseName
 
         foreach ($function in $privateFunctions) {
-            It "has a test file for $function" {
-                $expectedTestFile = "$function.Unit.Tests.ps1"
 
-                $testFiles.Name | Should -Contain $expectedTestFile
-            }
+            # TODO
+            # It "has a test file for $function" {
+            #     $expectedTestFile = "$function.Unit.Tests.ps1"
+
+            #     $testFiles.Name | Should -Contain $expectedTestFile
+            # }
 
             It "does not export $function" {
                 $expectedFunctionName = $function -replace "\-", "-$($module.Prefix)"
@@ -74,6 +76,7 @@ Describe "General project validation" -Tag Unit {
         }
     }
 
+    <#
     Context "Classes" {
 
         foreach ($class in ([AtlassianPS.ServerData].Assembly.GetTypes() | Where-Object IsClass)) {

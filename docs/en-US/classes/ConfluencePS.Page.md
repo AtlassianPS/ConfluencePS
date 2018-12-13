@@ -1,8 +1,8 @@
 ---
 layout: documentation
-Module Name: ConfluencePS
 permalink: /docs/ConfluencePS/classes/ConfluencePS.Page/
 ---
+
 # ConfluencePS.Page
 
 ## SYNOPSIS
@@ -19,8 +19,7 @@ New-Object -TypeName ConfluencePS.Page [-Property @{}]
 
 ## DESCRIPTION
 
-<!-- TODO -->
-The `Page` is an object that describes pages in Confluence.
+**fix**The `Page` is an object that describes pages in Confluence.
 
 ## REFERENCES
 
@@ -32,7 +31,6 @@ The following classes use `Page` for their properties:
 
 ## CONSTRUCTORS
 
-<!-- TODO -->
 _This class does not have a constructor._
 
 ## PROPERTIES

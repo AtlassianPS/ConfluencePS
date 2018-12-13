@@ -1,8 +1,9 @@
 ---
 layout: documentation
-Module Name: ConfluencePS
 permalink: /docs/ConfluencePS/classes/ConfluencePS.Label/
 ---
+<!-- markdownlint-disable MD036 -->
+
 # ConfluencePS.Label
 
 ## SYNOPSIS
@@ -47,8 +48,7 @@ Default value: None
 
 ### Prefix
 
-<!-- TODO -->
-> _description missing_
+_description missing_
 
 ```yaml
 Type: String

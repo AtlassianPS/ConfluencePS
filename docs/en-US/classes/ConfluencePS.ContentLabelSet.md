@@ -1,8 +1,8 @@
 ---
 layout: documentation
-Module Name: ConfluencePS
 permalink: /docs/ConfluencePS/classes/ConfluencePS.ContentLabelSet/
 ---
+
 # ConfluencePS.ContentLabelSet
 
 ## SYNOPSIS
@@ -23,12 +23,10 @@ The `ContentLabelSet` is an object that describes the `Label`s that are assigned
 
 ## REFERENCES
 
-<!-- TODO -->
 _This class is not used by any other class._
 
 ## CONSTRUCTORS
 
-<!-- TODO -->
 _This class does not have a constructor._
 
 ## PROPERTIES

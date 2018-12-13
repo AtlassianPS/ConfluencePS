@@ -32,7 +32,7 @@ Does accept multiple pages piped via Get-ConfluencePage.
 ### -------------------------- EXAMPLE 1 --------------------------
 
 ```powershell
-$attachments = Get-ConfluenceAtachments -PageID 123456
+$attachments = Get-ConfluenceAttachment -PageID 123456
 Remove-ConfluenceAttachment -Attachment $attachments -Verbose -Confirm
 ```
 

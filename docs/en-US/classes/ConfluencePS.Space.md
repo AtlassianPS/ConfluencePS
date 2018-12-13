@@ -1,8 +1,8 @@
 ---
 layout: documentation
-Module Name: ConfluencePS
 permalink: /docs/ConfluencePS/classes/ConfluencePS.Space/
 ---
+
 # ConfluencePS.Space
 
 ## SYNOPSIS
@@ -19,8 +19,7 @@ New-Object -TypeName ConfluencePS.Space [-Property @{}]
 
 ## DESCRIPTION
 
-<!-- TODO -->
-The `Space` is an object that describes spaces in Confluence.
+**fix**The `Space` is an object that describes spaces in Confluence.
 
 ## REFERENCES
 
@@ -30,7 +29,6 @@ The following classes use `Space` for their properties:
 
 ## CONSTRUCTORS
 
-<!-- TODO -->
 _This class does not have a constructor._
 
 ## PROPERTIES
