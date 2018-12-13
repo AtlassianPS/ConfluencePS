@@ -41,10 +41,10 @@ Verbose and Confirm flags both active; you will be prompted before deletion.
 ### -------------------------- EXAMPLE 2 --------------------------
 
 ```powershell
-Get-ConfluencePage -SpaceKey 'ABC' -Label 'asdf' | Remove-ConfluenceLabel -Label 'asdf' -WhatIf
+Get-ConfluencePage -SpaceKey 'ABC' -Label 'deleteMe' | Remove-ConfluenceLabel -Label 'deleteMe' -WhatIf
 ```
 
-For all wiki pages in the ABC space, the label "asdf" would be removed.
+For all wiki pages in the ABC space, the label "deleteMe" would be removed.
 WhatIf parameter prevents any modifications.
 
 ### -------------------------- EXAMPLE 3 --------------------------

@@ -7,6 +7,7 @@ schema: 2.0.0
 layout: documentation
 permalink: /docs/ConfluencePS/commands/Invoke-Method/
 ---
+
 # Invoke-Method
 
 ## SYNOPSIS
@@ -16,11 +17,10 @@ Invoke a specific call to a Confluence REST Api endpoint
 ## SYNTAX
 
 ```powershell
-Invoke-ConfluenceMethod [-URi] <Uri> [[-Method] <WebRequestMethod>] [[-Body] <String>]
- [-RawBody] [[-Headers] <Hashtable>] [[-GetParameters] <Hashtable>] [[-InFile] <String>]
- [[-OutFile] <String>] [[-OutputType] <Type>] [-Credential] <PSCredential>
- [[-Caller] <Object>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
- [<CommonParameters>]
+Invoke-ConfluenceMethod [-URi] <Uri> [[-Method] <WebRequestMethod>] [[-Body] <String>] [-RawBody]
+ [[-Headers] <Hashtable>] [[-GetParameters] <Hashtable>] [[-InFile] <String>] [[-OutFile] <String>]
+ [[-OutputType] <Type>] [-Credential] <PSCredential> [[-Caller] <Object>] [-IncludeTotalCount] [-Skip <UInt64>]
+ [-First <UInt64>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -29,18 +29,16 @@ Make a call to a REST Api endpoint with all the benefits of ConfluencePS.
 
 This cmdlet is what the other cmdlets call under the hood.
 It handles the authentication, parses the
-response, handles exceptions from Confluence, returns specific objects and
-handles the differences between versions of Powershell and Operating Systems.
+response, handles exceptions from Confluence, returns specific objects and handles the differences between
+versions of Powershell and Operating Systems.
 
 ConfluencePS does not support any third-party plugins on Confluence.
-This cmdlet can be used to interact with REST Api enpoints which are not already
-converted in ConfluencePS.
-It allows for anyone to use the same technics as ConfluencePS uses internally
-for creating their own functions or modules.
-When used by a module, the Manifest (.psd1) can define the dependency to
-ConfluencePS with the 'RequiredModules' property.
-This will import the module if not already loaded or even download it from the
-PSGallery.
+This cmdlet can be used to interact with REST Api endpoints which are not already converted in ConfluencePS.
+It allows for anyone to use the same technics as ConfluencePS uses internally for creating their own functions
+or modules.
+When used by a module, the Manifest (.psd1) can define the dependency to ConfluencePS with the 'RequiredModules'
+property.
+This will import the module if not already loaded or even download it from the PSGallery.
 
 ## EXAMPLES
 
@@ -362,6 +360,7 @@ Accept wildcard characters: False
 ### -Skip
 
 Controls how many objects will be skipped before starting output.
+
 Defaults to 0.
 
 ```yaml
@@ -371,7 +370,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: 0
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

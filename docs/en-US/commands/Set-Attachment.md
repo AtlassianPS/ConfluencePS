@@ -28,16 +28,16 @@ Updates an existing attachment with a new file.
 ### -------------------------- EXAMPLE 1 --------------------------
 
 ```powershell
-$attachment = Get-ConfluenceAtachments -PageID 123456 -FileNameFilter test.png
-Set-ConfluenceAttachment -Attachment $attachment -FileName newtest.png -Verbose -Confirm
+$attachment = Get-ConfluenceAttachment -PageID 123456 -FileNameFilter test.png
+Set-ConfluenceAttachment -Attachment $attachment -FileName newTest.png -Verbose -Confirm
 ```
 
-For the attachment test.png on page with ID 123456, replace the file with the file newtest.png.
+For the attachment test.png on page with ID 123456, replace the file with the file newTest.png.
 
 ### -------------------------- EXAMPLE 2 --------------------------
 
 ```powershell
-Get-ConfluenceAtachments -PageID 123456 -FileNameFilter test.png | Set-Attachment -FileName newtest.png -WhatIf
+Get-ConfluenceAttachment -PageID 123456 -FileNameFilter test.png | Set-Attachment -FileName newTest.png -WhatIf
 ```
 
 Would replace the attachment test.png to the page with ID 123456.

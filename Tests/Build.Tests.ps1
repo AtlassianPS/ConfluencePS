@@ -2,7 +2,7 @@
 #requires -modules Configuration
 #requires -modules Pester
 
-Describe "Validation of build environment" {
+Describe "Validation of build environment" -Tag Unit {
 
     BeforeAll {
         Remove-Item -Path Env:\BH*
@@ -23,7 +23,7 @@ Describe "Validation of build environment" {
             $env:BHManifestToTest = $env:BHBuildModuleManifest
         }
 
-        Import-Module "$env:BHProjectPath/Tools/build.psm1"
+        Import-Module "$env:BHProjectPath/Tools/BuildTools.psm1"
 
         Remove-Module $env:BHProjectName -ErrorAction SilentlyContinue
         # Import-Module $env:BHManifestToTest
@@ -41,12 +41,10 @@ Describe "Validation of build environment" {
         "$env:BHProjectPath/CHANGELOG.md"
     }
 
-    $appveyorFile = "$env:BHProjectPath/appveyor.yml"
-
     Context "CHANGELOG" {
 
         foreach ($line in (Get-Content $changelogFile)) {
-            if ($line -match "(?:##|\<h2.*?\>)\s*(?<Version>(\d+\.?){1,2})") {
+            if ($line -match "(?:##|\<h2.*?\>)\s*\[(?<Version>(\d+\.?){1,2})\]") {
                 $changelogVersion = $matches.Version
                 break
             }
@@ -63,32 +61,6 @@ Describe "Validation of build environment" {
 
         It "has a version changelog that matches the manifest version" {
             Configuration\Get-Metadata -Path $env:BHManifestToTest -PropertyName ModuleVersion | Should -BeLike "$changelogVersion*"
-        }
-    }
-
-    Context "AppVeyor" {
-
-        foreach ($line in (Get-Content $appveyorFile)) {
-            # (?<Version>()) - non-capturing group, but named Version. This makes it
-            # easy to reference the inside group later.
-
-            if ($line -match '^\D*(?<Version>(\d+\.){1,3}\d+).\{build\}') {
-                $appveyorVersion = $matches.Version
-                break
-            }
-        }
-
-        It "has a config file for AppVeyor" {
-            $appveyorFile | Should -Exist
-        }
-
-        It "has a valid version in the appveyor config" {
-            $appveyorVersion           | Should -Not -BeNullOrEmpty
-            [Version]($appveyorVersion) | Should -BeOfType [Version]
-        }
-
-        It "has a version for appveyor that matches the manifest version" {
-            Configuration\Get-Metadata -Path $env:BHManifestToTest -PropertyName ModuleVersion | Should -BeLike "$appveyorVersion*"
         }
     }
 }

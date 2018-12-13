@@ -22,7 +22,7 @@ Describe "Help tests" -Tag Documentation {
             $env:BHManifestToTest = $env:BHBuildModuleManifest
         }
 
-        Import-Module "$env:BHProjectPath/Tools/build.psm1"
+        Import-Module "$env:BHProjectPath/Tools/BuildTools.psm1"
 
         Remove-Module $env:BHProjectName -ErrorAction SilentlyContinue
         Import-Module $env:BHManifestToTest
@@ -51,8 +51,8 @@ Describe "Help tests" -Tag Documentation {
 
     $module = Get-Module $env:BHProjectName
     $commands = Get-Command -Module $module -CommandType Cmdlet, Function, Workflow  # Not alias
-    $classes = Get-ChildItem "$env:BHProjectPath/docs/en-US/classes/*"
-    $enums = Get-ChildItem "$env:BHProjectPath/docs/en-US/enumerations/*"
+    # $classes = Get-ChildItem "$env:BHProjectPath/docs/en-US/classes/*"
+    # $enums = Get-ChildItem "$env:BHProjectPath/docs/en-US/enumerations/*"
 
     #region Public Functions
     foreach ($command in $commands) {
@@ -186,7 +186,7 @@ Describe "Help tests" -Tag Documentation {
     #endregion Public Functions
 
     #region Classes
-    foreach ($class in $classes) {
+    <# foreach ($class in $classes) {
         Context "Classes $($class.BaseName) Help" {
 
             It "is described in a markdown file" {
@@ -215,11 +215,11 @@ Describe "Help tests" -Tag Documentation {
                 $classes.BaseName | Should -Contain $class.FullName
             }
         }
-    }
+    } #>
     #endregion Classes
 
     #region Enumerations
-    foreach ($enum in $enums) {
+    <# foreach ($enum in $enums) {
         Context "Enumeration $($enum.BaseName) Help" {
 
             It "is described in a markdown file" {
@@ -241,12 +241,12 @@ Describe "Help tests" -Tag Documentation {
         }
     }
 
-    Context "Missing classes" {
-        It "has a documentation file for every class" {
+    Context "Missing enumerations" {
+        It "has a documentation file for every enumeration" {
             foreach ($enum in ([AtlassianPS.ServerData].Assembly.GetTypes() | Where-Object IsEnum)) {
                 $enums.BaseName | Should -Contain $enum.FullName
             }
         }
-    }
+    } #>
     #endregion Enumerations
 }

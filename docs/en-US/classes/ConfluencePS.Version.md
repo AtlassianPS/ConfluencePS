@@ -1,8 +1,8 @@
 ---
 layout: documentation
-Module Name: ConfluencePS
 permalink: /docs/ConfluencePS/classes/ConfluencePS.Version/
 ---
+
 # ConfluencePS.Version
 
 ## SYNOPSIS
@@ -19,8 +19,7 @@ New-Object -TypeName ConfluencePS.Version [-Property @{}]
 
 ## DESCRIPTION
 
-<!-- TODO -->
-The `Version` is an object that describes versions in Confluence.
+**fix**The `Version` is an object that describes versions in Confluence.
 
 ## REFERENCES
 
@@ -31,7 +30,6 @@ The following classes use `Version` for their properties:
 
 ## CONSTRUCTORS
 
-<!-- TODO -->
 _This class does not have a constructor._
 
 ## PROPERTIES

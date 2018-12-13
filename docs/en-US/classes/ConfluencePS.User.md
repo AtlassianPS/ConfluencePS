@@ -1,8 +1,8 @@
 ---
 layout: documentation
-Module Name: ConfluencePS
 permalink: /docs/ConfluencePS/classes/ConfluencePS.User/
 ---
+
 # ConfluencePS.User
 
 ## SYNOPSIS
@@ -19,8 +19,7 @@ New-Object -TypeName ConfluencePS.User [-Property @{}]
 
 ## DESCRIPTION
 
-<!-- TODO -->
-The `User` is an object that describes users in Confluence.
+**fix**The `User` is an object that describes users in Confluence.
 
 ## REFERENCES
 
@@ -30,7 +29,6 @@ The following classes use `User` for their properties:
 
 ## CONSTRUCTORS
 
-<!-- TODO -->
 _This class does not have a constructor._
 
 ## PROPERTIES
