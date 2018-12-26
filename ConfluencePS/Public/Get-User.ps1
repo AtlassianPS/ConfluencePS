@@ -1,7 +1,8 @@
 function Get-User
 {
     [CmdletBinding(
-        SupportsPaging = $true
+        SupportsPaging = $true,
+        DefaultParameterSetName = 'ByUsername'
     )]
     [OutputType([ConfluencePS.User])]
     param (
@@ -12,12 +13,12 @@ function Get-User
         [PSCredential]$Credential,
 
         [Parameter( Mandatory = $true,
-        ParameterSetName = 'ByUserName'
+        ParameterSetName = 'byUsername'
         )]
         [string]$Username,
 
         [Parameter( Mandatory = $true,
-        ParameterSetName = 'ByKey'
+        ParameterSetName = 'byUserKey'
         )]
         [string]$UserKey
     )
@@ -47,12 +48,12 @@ function Get-User
         }
         switch ($PsCmdlet.ParameterSetName)
         {
-            'ByUsername'
+            'byUsername'
             {
                 $iwParameters["Uri"] = $resourceApi -f "?username=$Username"
                 break
             }
-            'ByKey'
+            'byUserKey'
             {
                 $iwParameters["Uri"] = $resourceApi -f "?key=$UserKey"
                 break
