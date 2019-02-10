@@ -98,7 +98,7 @@ Return all pages matching the query.
 
 ## PARAMETERS
 
-### -ApiURi
+### -ApiUri
 
 The URi of the API interface.
 Value can be set persistently with Set-ConfluenceInfo.
