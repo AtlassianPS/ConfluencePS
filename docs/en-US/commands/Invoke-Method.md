@@ -142,7 +142,7 @@ It also uses the Headers to define what mimeTypes are expected in the response.
 
 ## PARAMETERS
 
-### -URi
+### -Uri
 
 URI address of the REST API endpoint.
 
@@ -316,8 +316,26 @@ Type: PSCredential
 Parameter Sets: (All)
 Aliases:
 
-Required: True
+Required: False
 Position: 9
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Certificate
+
+Certificate to use for the authentication with the REST Api.
+
+If no sessions is available, the request will be executed anonymously.
+
+```yaml
+Type: X509Certificate
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 10
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -333,7 +351,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 10
+Position: 11
 Default value: $PSCmdlet
 Accept pipeline input: False
 Accept wildcard characters: False
