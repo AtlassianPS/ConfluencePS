@@ -16,7 +16,7 @@ Retrieve the child Attachments of a given wiki Page.
 ## SYNTAX
 
 ```powershell
-Get-ConfluenceAttachment -apiURi <Uri> -Credential <PSCredential> [-PageID] <Int32[]> [-FileNameFilter <string>] [-MediaTypeFilter <string>] [-Skip <UInt64>] [-First <UInt64>] [-PageSize <UInt64>] [-IncludeTotalCount]
+Get-ConfluenceAttachment -ApiUri <Uri> -Credential <PSCredential> [-PageID] <Int32[]> [-FileNameFilter <string>] [-MediaTypeFilter <string>] [-Skip <UInt64>] [-First <UInt64>] [-PageSize <UInt64>] [-IncludeTotalCount]
 ```
 
 ## DESCRIPTION
@@ -63,7 +63,7 @@ Returns any attachments of mime type image/png from Page 123456.
 
 ## PARAMETERS
 
-### -apiURi
+### -ApiUri
 
 The URi of the API interface.
 Value can be set persistently with Set-ConfluenceInfo.
@@ -90,7 +90,23 @@ Type: PSCredential
 Parameter Sets: (All)
 Aliases:
 
-Required: True
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Certificate
+
+Certificate for authentication.
+
+```yaml
+Type: X509Certificate
+Parameter Sets: (All)
+Aliases:
+
+Required: False
 Position: Named
 Default value: None
 Accept pipeline input: False
