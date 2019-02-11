@@ -8,6 +8,9 @@ function Invoke-Init {
     begin {
         Set-BuildEnvironment -BuildOutput '$ProjectPath/Release' -ErrorAction SilentlyContinue
         Add-ToModulePath -Path $env:BHBuildOutput
+
+        git config --global user.email "support@atlassianps.net"
+        git config --global user.name "AtlassianPS Automated User"
     }
 }
 
