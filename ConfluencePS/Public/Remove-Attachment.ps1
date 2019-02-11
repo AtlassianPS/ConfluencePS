@@ -6,10 +6,15 @@ function Remove-Attachment {
     [OutputType([Bool])]
     param (
         [Parameter( Mandatory = $true )]
-        [URi]$apiURi,
+        [uri]$ApiUri,
 
-        [Parameter( Mandatory = $true )]
+        [Parameter( Mandatory = $false )]
         [PSCredential]$Credential,
+
+        [Parameter( Mandatory = $false )]
+        [ValidateNotNull()]
+        [System.Security.Cryptography.X509Certificates.X509Certificate]
+        $Certificate,
 
         [Parameter(
             Position = 0,
@@ -22,23 +27,20 @@ function Remove-Attachment {
     BEGIN {
         Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function started"
 
-        $resourceApi = "$apiURi/content/{0}"
+        $resourceApi = "$ApiUri/content/{0}"
     }
 
     PROCESS {
         Write-DebugMessage "[$($MyInvocation.MyCommand.Name)] ParameterSetName: $($PsCmdlet.ParameterSetName)"
         Write-DebugMessage "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
 
-        $iwParameters = @{
-            Uri        = ""
-            Method     = 'Delete'
-            Credential = $Credential
-        }
+        $iwParameters = Copy-CommonParameter -InputObject $PSBoundParameters
+        $iwParameters['Method'] = 'Delete'
 
         foreach ($_attachment in $Attachment) {
             $iwParameters["Uri"] = $resourceApi -f $_attachment.ID
 
-            If ($PSCmdlet.ShouldProcess("Attachment $($_attachment.ID), PageID $($_attachment.PageID)")) {
+            if ($PSCmdlet.ShouldProcess("Attachment $($_attachment.ID), PageID $($_attachment.PageID)")) {
                 Invoke-Method @iwParameters
             }
         }
