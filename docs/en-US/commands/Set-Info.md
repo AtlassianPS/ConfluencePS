@@ -24,7 +24,7 @@ Set-ConfluenceInfo [[-BaseURi] <Uri>] [[-Credential] <PSCredential>] [[-PageSize
 Set-ConfluenceInfo uses scoped variables and PSDefaultParameterValues to supply
 URI/auth info to all other functions in the module (e.g. Get-ConfluenceSpace).
 These session defaults can be overwritten on any single command, but using
-Set-ConfluenceInfo avoids repetitively specifying -ApiURi and -Credential parameters.
+Set-ConfluenceInfo avoids repetitively specifying -ApiUri and -Credential parameters.
 
 Confluence's REST API supports passing basic authentication in headers.
 (If you have a better suggestion for how to handle auth, please reach out on GitHub!)

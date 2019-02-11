@@ -3,7 +3,7 @@ function Get-ChildPage {
     [OutputType([ConfluencePS.Page])]
     param (
         [Parameter( Mandatory = $true )]
-        [URi]$ApiUri,
+        [uri]$ApiUri,
 
         [Parameter( Mandatory = $false )]
         [PSCredential]$Credential,

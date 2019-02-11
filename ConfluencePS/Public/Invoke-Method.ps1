@@ -13,7 +13,7 @@ function Invoke-Method {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute( "PSAvoidUsingEmptyCatchBlock", "" )]
     param (
         [Parameter(Mandatory = $true)]
-        [Uri]$Uri,
+        [uri]$Uri,
 
         [Microsoft.PowerShell.Commands.WebRequestMethod]$Method = "GET",
 
