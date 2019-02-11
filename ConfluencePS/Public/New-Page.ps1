@@ -7,10 +7,15 @@ function New-Page {
     [OutputType([ConfluencePS.Page])]
     param (
         [Parameter( Mandatory = $true )]
-        [URi]$apiURi,
+        [uri]$ApiUri,
 
-        [Parameter( Mandatory = $true )]
+        [Parameter( Mandatory = $false )]
         [PSCredential]$Credential,
+
+        [Parameter( Mandatory = $false )]
+        [ValidateNotNull()]
+        [System.Security.Cryptography.X509Certificates.X509Certificate]
+        $Certificate,
 
         [Parameter(
             Mandatory = $true,
@@ -48,20 +53,18 @@ function New-Page {
     BEGIN {
         Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function started"
 
-        $resourceApi = "$apiURi/content"
+        $resourceApi = "$ApiUri/content"
     }
 
     PROCESS {
         Write-Debug "[$($MyInvocation.MyCommand.Name)] ParameterSetName: $($PsCmdlet.ParameterSetName)"
         Write-Debug "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
 
-        $iwParameters = @{
-            Uri        = $resourceApi
-            Method     = 'Post'
-            Body       = ""
-            OutputType = [ConfluencePS.Page]
-            Credential = $Credential
-        }
+        $iwParameters = Copy-CommonParameter -InputObject $PSBoundParameters
+        $iwParameters['Uri']           = $resourceApi
+        $iwParameters['Method']        = 'Post'
+        $iwParameters['OutputType']    = [ConfluencePS.Page]
+
         $Content = [PSObject]@{
             type      = "page"
             space     = [PSObject]@{ key = ""}
@@ -91,15 +94,17 @@ function New-Page {
                     $SpaceKey = $Space.Key
                 }
 
-                If (($ParentID) -and !($SpaceKey)) {
+                if (($ParentID) -and !($SpaceKey)) {
                     Write-Verbose "[$($MyInvocation.MyCommand.Name)] SpaceKey not specified. Retrieving from Get-ConfluencePage -PageID $ParentID"
-                    $SpaceKey = (Get-Page -PageID $ParentID -ApiURi $apiURi -Credential $Credential).Space.Key
+                    $authAndApiUri = Copy-CommonParameter -InputObject $PSBoundParameters -AdditionalParameter "ApiUri"
+                    $SpaceKey = (Get-Page -PageID $ParentID @authAndApiUri).Space.Key
                 }
 
                 # If -Convert is flagged, call ConvertTo-ConfluenceStorageFormat against the -Body
-                If ($Convert) {
+                if ($Convert) {
                     Write-Verbose '[$($MyInvocation.MyCommand.Name)] -Convert flag active; converting content to Confluence storage format'
-                    $Body = ConvertTo-StorageFormat -Content $Body -ApiURi $apiURi -Credential $Credential
+                    $authAndApiUri = Copy-CommonParameter -InputObject $PSBoundParameters -AdditionalParameter "ApiUri"
+                    $Body = ConvertTo-StorageFormat -Content $Body @authAndApiUri
                 }
 
                 $Content.title = $Title
