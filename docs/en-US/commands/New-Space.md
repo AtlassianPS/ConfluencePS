@@ -18,13 +18,13 @@ Create a new blank space on your Confluence instance.
 ### byObject (Default)
 
 ```powershell
-New-ConfluenceSpace -apiURi <Uri> -Credential <PSCredential> -InputObject <Space> [-WhatIf] [-Confirm]
+New-ConfluenceSpace -ApiUri <Uri> -Credential <PSCredential> -InputObject <Space> [-WhatIf] [-Confirm]
 ```
 
 ### byProperties
 
 ```powershell
-New-ConfluenceSpace -apiURi <Uri> -Credential <PSCredential> -SpaceKey <String> -Name <String>
+New-ConfluenceSpace -ApiUri <Uri> -Credential <PSCredential> -SpaceKey <String> -Name <String>
  [-Description <String>] [-WhatIf] [-Confirm]
 ```
 
@@ -65,7 +65,7 @@ Both examples should return identical results.
 
 ## PARAMETERS
 
-### -apiURi
+### -ApiUri
 
 The URi of the API interface.
 Value can be set persistently with Set-ConfluenceInfo.
@@ -92,7 +92,23 @@ Type: PSCredential
 Parameter Sets: (All)
 Aliases:
 
-Required: True
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Certificate
+
+Certificate for authentication.
+
+```yaml
+Type: X509Certificate
+Parameter Sets: (All)
+Aliases:
+
+Required: False
 Position: Named
 Default value: None
 Accept pipeline input: False
