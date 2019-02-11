@@ -83,7 +83,7 @@ Describe "Help tests" -Tag Documentation {
             }
 
             It "has a link to the 'Online Version'" {
-                [Uri]$onlineLink = ($help.relatedLinks.navigationLink | Where-Object linkText -eq "Online Version:").Uri
+                [uri]$onlineLink = ($help.relatedLinks.navigationLink | Where-Object linkText -eq "Online Version:").Uri
 
                 $onlineLink.Authority | Should -Be "atlassianps.org"
                 $onlineLink.Scheme | Should -Be "https"
