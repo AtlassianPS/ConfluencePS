@@ -17,13 +17,13 @@ function ConvertTo-Table {
         Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function started"
 
         $sb = [System.Text.StringBuilder]::new()
+
+        $HeaderGenerated = $NoHeader
     }
 
     PROCESS {
         Write-Debug "[$($MyInvocation.MyCommand.Name)] ParameterSetName: $($PsCmdlet.ParameterSetName)"
         Write-Debug "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
-
-        $HeaderGenerated = $NoHeader
 
         # This ForEach needed if the content wasn't piped in
         $Content | ForEach-Object {
