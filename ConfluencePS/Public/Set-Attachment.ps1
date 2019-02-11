@@ -63,7 +63,7 @@ function Set-Attachment {
 
         Write-Debug "[$($MyInvocation.MyCommand.Name)] Invoking Set Attachment Method with `$parameter"
         if ($PSCmdlet.ShouldProcess($Attachment.PageID, "Updating attachment '$($Attachment.Title)'.")) {
-            Invoke-Method @parameter
+            Invoke-Method @iwParameters
         }
     }
 
