@@ -56,54 +56,54 @@ Describe 'ConvertTo-Table' -Tag Unit {
         # linux and macOS don't have Fake
         function Get-FakeService {
             [PSCustomObject]@{
-                Name = "AppMgmt"
+                Name        = "AppMgmt"
                 DisplayName = "Application Management"
-                Status = "Running"
+                Status      = "Running"
             }
             [PSCustomObject]@{
-                Name = "BITS"
+                Name        = "BITS"
                 DisplayName = "Background Intelligent Transfer Service"
-                Status = "Running"
+                Status      = "Running"
             }
             [PSCustomObject]@{
-                Name = "Dhcp"
+                Name        = "Dhcp"
                 DisplayName = "DHCP Client"
-                Status = "Running"
+                Status      = "Running"
             }
             [PSCustomObject]@{
-                Name = "DsmSvc"
+                Name        = "DsmSvc"
                 DisplayName = "Device Setup Manager"
-                Status = "Running"
+                Status      = "Running"
             }
             [PSCustomObject]@{
-                Name = "EFS"
+                Name        = "EFS"
                 DisplayName = "Encrypting File System (EFS)"
-                Status = "Running"
+                Status      = "Running"
             }
             [PSCustomObject]@{
-                Name = "lmhosts"
+                Name        = "lmhosts"
                 DisplayName = "TCP/IP NetBIOS Helper"
-                Status = "Running"
+                Status      = "Running"
             }
             [PSCustomObject]@{
-                Name = "MSDTC"
+                Name        = "MSDTC"
                 DisplayName = "Distributed Transaction Coordinator"
-                Status = "Stopped"
+                Status      = "Stopped"
             }
             [PSCustomObject]@{
-                Name = "NlaSvc"
+                Name        = "NlaSvc"
                 DisplayName = "Network Location Awareness"
-                Status = "Stopped"
+                Status      = "Stopped"
             }
             [PSCustomObject]@{
-                Name = "PolicyAgent"
+                Name        = "PolicyAgent"
                 DisplayName = "IPsec Policy Agent"
-                Status = "Stopped"
+                Status      = "Stopped"
             }
             [PSCustomObject]@{
-                Name = "SessionEnv"
+                Name        = "SessionEnv"
                 DisplayName = "Remote Desktop Configuration"
-                Status = "Stopped"
+                Status      = "Stopped"
             }
         }
         #endregion Mocking
@@ -203,6 +203,20 @@ Describe 'ConvertTo-Table' -Tag Unit {
 
             @($table).Count | Should -Be 1
             @($row).Count | Should -BeGreaterThan 1
+        }
+
+        It "returns a single table when using the pipeline" {
+            $table = Get-FakeService | ConvertTo-ConfluenceTable
+            $row = $table -split [Environment]::NewLine
+
+            $row | Should -HaveCount 12
+            $row[0] | Should -BeExactly '|| Name || DisplayName || Status ||'
+            $row[1..10] | ForEach-Object {
+                $_ | Should -Match '^| [\w\s]+? | [\w\s]+? | [\w\s]+? |$'
+                $_ | Should -Not -Match '\|\|'
+                $_ | Should -Not -Match '\|\s\s+\|'
+            }
+            $row[11] | Should -BeNullOrEmpty
         }
     }
 }
