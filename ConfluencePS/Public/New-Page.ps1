@@ -54,6 +54,9 @@ function New-Page {
         Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function started"
 
         $resourceApi = "$ApiUri/content"
+
+        #this is the splat hashtable that passes the auth and uri to calls but not Invoke-Method, i.e. Get-Page
+        $authAndApiUri = Copy-CommonParameter -InputObject $PSBoundParameters -AdditionalParameter "ApiUri"
     }
 
     PROCESS {
@@ -96,14 +99,12 @@ function New-Page {
 
                 if (($ParentID) -and !($SpaceKey)) {
                     Write-Verbose "[$($MyInvocation.MyCommand.Name)] SpaceKey not specified. Retrieving from Get-ConfluencePage -PageID $ParentID"
-                    $authAndApiUri = Copy-CommonParameter -InputObject $PSBoundParameters -AdditionalParameter "ApiUri"
                     $SpaceKey = (Get-Page -PageID $ParentID @authAndApiUri).Space.Key
                 }
 
                 # If -Convert is flagged, call ConvertTo-ConfluenceStorageFormat against the -Body
                 if ($Convert) {
                     Write-Verbose '[$($MyInvocation.MyCommand.Name)] -Convert flag active; converting content to Confluence storage format'
-                    $authAndApiUri = Copy-CommonParameter -InputObject $PSBoundParameters -AdditionalParameter "ApiUri"
                     $Body = ConvertTo-StorageFormat -Content $Body @authAndApiUri
                 }
 

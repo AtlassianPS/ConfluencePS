@@ -53,13 +53,13 @@ function Get-ChildPage {
         }
 
         $iwParameters = Copy-CommonParameter -InputObject $PSBoundParameters
-        $iwParameters['Uri']           = if ($Recurse.IsPresent) {"$ApiUri/content/{0}/descendant/page" -f $PageID} else {"$ApiUri/content/{0}/child/page" -f $PageID}
-        $iwParameters['Method']        = 'Get'
+        $iwParameters['Uri'] = if ($Recurse.IsPresent) {"$ApiUri/content/{0}/descendant/page" -f $PageID} else {"$ApiUri/content/{0}/child/page" -f $PageID}
+        $iwParameters['Method'] = 'Get'
         $iwParameters['GetParameters'] = @{
-                                            expand = "space,version,body.storage,ancestors"
-                                            limit  = $PageSize
-                                         }
-        $iwParameters['OutputType']    = [ConfluencePS.Page]
+            expand = "space,version,body.storage,ancestors"
+            limit  = $PageSize
+        }
+        $iwParameters['OutputType'] = [ConfluencePS.Page]
 
         # Paging
         ($PSCmdlet.PagingParameters | Get-Member -MemberType Property).Name | ForEach-Object {
