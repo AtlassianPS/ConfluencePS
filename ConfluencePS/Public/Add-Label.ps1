@@ -77,8 +77,8 @@ function Add-Label {
         }
 
         $iwParameters = Copy-CommonParameter -InputObject $PSBoundParameters
-        $iwParameters['Method']        = 'Post'
-        $iwParameters['OutputType']    = [ConfluencePS.Label]
+        $iwParameters['Method'] = 'Post'
+        $iwParameters['OutputType'] = [ConfluencePS.Label]
 
         # Extract name if an Object is provided
         if (($Label -is [ConfluencePS.Label]) -or $Label -is [ConfluencePS.Label[]]) {

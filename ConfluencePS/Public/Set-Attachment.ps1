@@ -56,9 +56,9 @@ function Set-Attachment {
         Write-DebugMessage "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
 
         $iwParameters = Copy-CommonParameter -InputObject $PSBoundParameters
-        $iwParameters['Uri']        = $resourceApi -f $Attachment.PageID, $Attachment.ID
-        $iwParameters['Method']     = 'Post'
-        $iwParameters['InFile']     = $FilePath
+        $iwParameters['Uri'] = $resourceApi -f $Attachment.PageID, $Attachment.ID
+        $iwParameters['Method'] = 'Post'
+        $iwParameters['InFile'] = $FilePath
         $iwParameters['OutputType'] = [ConfluencePS.Attachment]
 
         Write-Debug "[$($MyInvocation.MyCommand.Name)] Invoking Set Attachment Method with `$parameter"

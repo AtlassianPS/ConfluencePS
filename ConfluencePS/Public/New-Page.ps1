@@ -64,9 +64,9 @@ function New-Page {
         Write-Debug "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
 
         $iwParameters = Copy-CommonParameter -InputObject $PSBoundParameters
-        $iwParameters['Uri']           = $resourceApi
-        $iwParameters['Method']        = 'Post'
-        $iwParameters['OutputType']    = [ConfluencePS.Page]
+        $iwParameters['Uri'] = $resourceApi
+        $iwParameters['Method'] = 'Post'
+        $iwParameters['OutputType'] = [ConfluencePS.Page]
 
         $Content = [PSObject]@{
             type      = "page"

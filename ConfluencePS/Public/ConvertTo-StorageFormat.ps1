@@ -30,14 +30,14 @@ function ConvertTo-StorageFormat {
         Write-Debug "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
 
         $iwParameters = Copy-CommonParameter -InputObject $PSBoundParameters
-        $iwParameters['Uri']           = "$ApiUri/contentbody/convert/storage"
-        $iwParameters['Method']        = 'Post'
+        $iwParameters['Uri'] = "$ApiUri/contentbody/convert/storage"
+        $iwParameters['Method'] = 'Post'
 
         foreach ($_content in $Content) {
             $iwParameters['Body'] = @{
-                                        value          = "$_content"
-                                        representation = 'wiki'
-                                    } | ConvertTo-Json
+                value          = "$_content"
+                representation = 'wiki'
+            } | ConvertTo-Json
 
             Write-Debug "[$($MyInvocation.MyCommand.Name)] Content to be sent: $($_content | Out-String)"
             (Invoke-Method @iwParameters).value

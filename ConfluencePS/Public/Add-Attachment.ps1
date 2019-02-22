@@ -58,9 +58,9 @@ function Add-Attachment {
         Write-DebugMessage "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
 
         $iwParameters = Copy-CommonParameter -InputObject $PSBoundParameters
-        $iwParameters['Uri']           = "$ApiUri/content/{0}/child/attachment" -f $PageID
-        $iwParameters['Method']        = 'Post'
-        $iwParameters['OutputType']    = [ConfluencePS.Attachment]
+        $iwParameters['Uri'] = "$ApiUri/content/{0}/child/attachment" -f $PageID
+        $iwParameters['Method'] = 'Post'
+        $iwParameters['OutputType'] = [ConfluencePS.Attachment]
 
         foreach ($file in $FilePath) {
             $iwParameters["InFile"] = $file
