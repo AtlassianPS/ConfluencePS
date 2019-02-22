@@ -1,5 +1,4 @@
-function Copy-CommonParameter
-{
+function Copy-CommonParameter {
     <#
     .SYNOPSIS
     This is a helper function to assist in creating a hashtable for splatting parameters to inner function calls.
@@ -36,10 +35,8 @@ function Copy-CommonParameter
     )
 
     [hashtable]$ht = @{}
-    foreach($key in $InputObject.Keys)
-    {
-        if ($key -in ($DefaultParameter + $AdditionalParameter))
-        {
+    foreach ($key in $InputObject.Keys) {
+        if ($key -in ($DefaultParameter + $AdditionalParameter)) {
             $ht[$key] = $InputObject[$key]
         }
     }

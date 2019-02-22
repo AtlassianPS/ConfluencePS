@@ -46,11 +46,11 @@ function Get-Label {
         }
 
         $iwParameters = Copy-CommonParameter -InputObject $PSBoundParameters
-        $iwParameters['Method']        = 'Get'
+        $iwParameters['Method'] = 'Get'
         $iwParameters['GetParameters'] = @{
-                                            limit  = $PageSize
-                                         }
-        $iwParameters['OutputType']    = [ConfluencePS.Label]
+            limit = $PageSize
+        }
+        $iwParameters['OutputType'] = [ConfluencePS.Label]
 
         # Paging
         ($PSCmdlet.PagingParameters | Get-Member -MemberType Property).Name | ForEach-Object {

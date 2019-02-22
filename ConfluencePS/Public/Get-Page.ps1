@@ -84,9 +84,9 @@ function Get-Page {
         $iwParameters = Copy-CommonParameter -InputObject $PSBoundParameters
         $iwParameters['Method'] = 'Get'
         $iwParameters['GetParameters'] = @{
-                            expand = "space,version,body.storage,ancestors"
-                            limit  = $PageSize
-                        }
+            expand = "space,version,body.storage,ancestors"
+            limit  = $PageSize
+        }
         $iwParameters['OutputType'] = [ConfluencePS.Page]
     }
 
@@ -112,7 +112,8 @@ function Get-Page {
                 }
                 break
             }
-            "bySpace" { # This includes 'bySpaceObject'
+            "bySpace" {
+                # This includes 'bySpaceObject'
                 $iwParameters["Uri"] = $resourceApi -f ''
                 $iwParameters["GetParameters"]["type"] = "page"
                 if ($SpaceKey) { $iwParameters["GetParameters"]["spaceKey"] = $SpaceKey }

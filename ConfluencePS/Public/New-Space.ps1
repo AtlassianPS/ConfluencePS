@@ -60,9 +60,9 @@ function New-Space {
         }
 
         $iwParameters = Copy-CommonParameter -InputObject $PSBoundParameters
-        $iwParameters['Uri']           = $resourceApi
-        $iwParameters['Method']        = 'Post'
-        $iwParameters['OutputType']    = [ConfluencePS.Space]
+        $iwParameters['Uri'] = $resourceApi
+        $iwParameters['Method'] = 'Post'
+        $iwParameters['OutputType'] = [ConfluencePS.Space]
 
         $Body = @{
             key         = $SpaceKey

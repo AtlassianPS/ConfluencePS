@@ -47,8 +47,8 @@ function Set-Label {
         }
 
         $iwParameters = Copy-CommonParameter -InputObject $PSBoundParameters
-        $iwParameters['Method']        = 'Post'
-        $iwParameters['OutputType']    = [ConfluencePS.Label]
+        $iwParameters['Method'] = 'Post'
+        $iwParameters['OutputType'] = [ConfluencePS.Label]
 
         $authAndApiUri = Copy-CommonParameter -InputObject $PSBoundParameters -AdditionalParameter "ApiUri"
         foreach ($_page in $PageID) {

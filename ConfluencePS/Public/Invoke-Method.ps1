@@ -80,11 +80,11 @@ function Invoke-Method {
         $PSDefaultParameterValues = $global:PSDefaultParameterValues
 
         $splatParameters = Copy-CommonParameter -InputObject $PSBoundParameters -AdditionalParameter @("Uri", "Method", "InFile", "OutFile")
-        $splatParameters['Headers']         = $_headers
-        $splatParameters['ContentType']     = "application/json; charset=utf-8"
+        $splatParameters['Headers'] = $_headers
+        $splatParameters['ContentType'] = "application/json; charset=utf-8"
         $splatParameters['UseBasicParsing'] = $true
-        $splatParameters['ErrorAction']     = 'Stop'
-        $splatParameters['Verbose']         = $false     # Overwrites verbose output
+        $splatParameters['ErrorAction'] = 'Stop'
+        $splatParameters['Verbose'] = $false     # Overwrites verbose output
 
         #add 'start' query parameter if Paging with Skip is being used
         if (($PSCmdlet.PagingParameters) -and ($PSCmdlet.PagingParameters.Skip)) {

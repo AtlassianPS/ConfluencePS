@@ -46,12 +46,12 @@ function Get-Attachment {
         }
 
         $iwParameters = Copy-CommonParameter -InputObject $PSBoundParameters
-        $iwParameters['Method']        = 'Get'
+        $iwParameters['Method'] = 'Get'
         $iwParameters['GetParameters'] = @{
-                                            expand = "version"
-                                            limit  = $PageSize
-                                         }
-        $iwParameters['OutputType']    = [ConfluencePS.Attachment]
+            expand = "version"
+            limit  = $PageSize
+        }
+        $iwParameters['OutputType'] = [ConfluencePS.Attachment]
 
         if ($FileNameFilter) {
             $iwParameters["GetParameters"]["filename"] = $FileNameFilter

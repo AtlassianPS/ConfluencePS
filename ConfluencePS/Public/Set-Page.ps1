@@ -69,7 +69,7 @@ function Set-Page {
         Write-Debug "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
 
         $iwParameters = Copy-CommonParameter -InputObject $PSBoundParameters
-        $iwParameters['Method']     = 'Put'
+        $iwParameters['Method'] = 'Put'
         $iwParameters['OutputType'] = [ConfluencePS.Page]
 
         $Content = [PSObject]@{

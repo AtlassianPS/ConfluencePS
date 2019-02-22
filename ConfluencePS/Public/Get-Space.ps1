@@ -36,12 +36,12 @@ function Get-Space {
         Write-Debug "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
 
         $iwParameters = Copy-CommonParameter -InputObject $PSBoundParameters
-        $iwParameters['Method']        = 'Get'
+        $iwParameters['Method'] = 'Get'
         $iwParameters['GetParameters'] = @{
-                                            expand = "description.plain,icon,homepage,metadata.labels"
-                                            limit  = $PageSize
-                                         }
-        $iwParameters['OutputType']    = [ConfluencePS.Space]
+            expand = "description.plain,icon,homepage,metadata.labels"
+            limit  = $PageSize
+        }
+        $iwParameters['OutputType'] = [ConfluencePS.Space]
 
         # Paging
         ($PSCmdlet.PagingParameters | Get-Member -MemberType Property).Name | ForEach-Object {
