@@ -3,10 +3,15 @@ function Get-AttachmentFile {
     [OutputType([Bool])]
     param (
         [Parameter( Mandatory = $true )]
-        [URi]$apiURi,
+        [uri]$ApiUri,
 
-        [Parameter( Mandatory = $true )]
+        [Parameter( Mandatory = $false )]
         [PSCredential]$Credential,
+
+        [Parameter( Mandatory = $false )]
+        [ValidateNotNull()]
+        [System.Security.Cryptography.X509Certificates.X509Certificate]
+        $Certificate,
 
         [Parameter(
             Position = 0,
@@ -49,21 +54,13 @@ function Get-AttachmentFile {
             Throw $exception
         }
 
-        foreach ($_Attachment in $Attachment) {
-            if ($Path) {
-                $filename = Join-Path $Path $_Attachment.Filename
-            }
-            else {
-                $filename = $_Attachment.Filename
-            }
+        $iwParameters = Copy-CommonParameter -InputObject $PSBoundParameters
+        $iwParameters['Method'] = 'Get'
 
-            $iwParameters = @{
-                Uri        = $_Attachment.URL
-                Method     = 'Get'
-                Headers    = @{"Accept" = $_Attachment.MediaType}
-                OutFile    = $filename
-                Credential = $Credential
-            }
+        foreach ($_Attachment in $Attachment) {
+            $iwParameters['Uri'] = $_Attachment.URL
+            $iwParameters['Headers'] = @{"Accept" = $_Attachment.MediaType}
+            $iwParameters['OutFile'] = if ($Path) {Join-Path -Path $Path -ChildPath $_Attachment.Filename} else {$_Attachment.Filename}
 
             $result = Invoke-Method @iwParameters
             (-not $result)

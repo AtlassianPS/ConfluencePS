@@ -5,7 +5,7 @@ function Set-Info {
         [Parameter(
             HelpMessage = 'Example = https://brianbunke.atlassian.net/wiki (/wiki for Cloud instances)'
         )]
-        [Uri]$BaseURi,
+        [uri]$BaseURi,
 
         [PSCredential]$Credential,
 
@@ -48,7 +48,7 @@ function Set-Info {
     PROCESS {
         foreach ($command in $moduleCommands) {
 
-            $parameter = "ApiURi"
+            $parameter = "ApiUri"
             if ($BaseURi -and ($command.Parameters.Keys -contains $parameter)) {
                 Add-ConfluenceDefaultParameter -Command $command -Parameter $parameter -Value ($BaseURi.AbsoluteUri.TrimEnd('/') + '/rest/api')
             }

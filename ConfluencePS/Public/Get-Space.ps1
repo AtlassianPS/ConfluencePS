@@ -5,10 +5,15 @@ function Get-Space {
     [OutputType([ConfluencePS.Space])]
     param (
         [Parameter( Mandatory = $true )]
-        [URi]$apiURi,
+        [uri]$ApiUri,
 
-        [Parameter( Mandatory = $true )]
+        [Parameter( Mandatory = $false )]
         [PSCredential]$Credential,
+
+        [Parameter( Mandatory = $false )]
+        [ValidateNotNull()]
+        [System.Security.Cryptography.X509Certificates.X509Certificate]
+        $Certificate,
 
         [Parameter(
             Position = 0
@@ -23,23 +28,20 @@ function Get-Space {
     BEGIN {
         Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function started"
 
-        $resourceApi = "$apiURi/space{0}"
+        $resourceApi = "$ApiUri/space{0}"
     }
 
     PROCESS {
         Write-Debug "[$($MyInvocation.MyCommand.Name)] ParameterSetName: $($PsCmdlet.ParameterSetName)"
         Write-Debug "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
 
-        $iwParameters = @{
-            Uri           = ""
-            Method        = 'Get'
-            GetParameters = @{
-                expand = "description.plain,icon,homepage,metadata.labels"
-                limit  = $PageSize
-            }
-            OutputType    = [ConfluencePS.Space]
-            Credential    = $Credential
+        $iwParameters = Copy-CommonParameter -InputObject $PSBoundParameters
+        $iwParameters['Method'] = 'Get'
+        $iwParameters['GetParameters'] = @{
+            expand = "description.plain,icon,homepage,metadata.labels"
+            limit  = $PageSize
         }
+        $iwParameters['OutputType'] = [ConfluencePS.Space]
 
         # Paging
         ($PSCmdlet.PagingParameters | Get-Member -MemberType Property).Name | ForEach-Object {

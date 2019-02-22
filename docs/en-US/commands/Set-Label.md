@@ -16,7 +16,7 @@ Set the labels applied to existing Confluence content.
 ## SYNTAX
 
 ```powershell
-Set-Label -apiURi <Uri> -Credential <PSCredential> [-PageID] <Int32[]> -Label <String[]> [-WhatIf] [-Confirm]
+Set-Label -ApiUri <Uri> -Credential <PSCredential> [-PageID] <Int32[]> -Label <String[]> [-WhatIf] [-Confirm]
 ```
 
 ## DESCRIPTION
@@ -48,7 +48,7 @@ Would remove all labels and apply only the label "123" to all pages in the ABC s
 
 ## PARAMETERS
 
-### -apiURi
+### -ApiUri
 
 The URi of the API interface.
 Value can be set persistently with Set-ConfluenceInfo.
@@ -75,7 +75,23 @@ Type: PSCredential
 Parameter Sets: (All)
 Aliases:
 
-Required: True
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Certificate
+
+Certificate for authentication.
+
+```yaml
+Type: X509Certificate
+Parameter Sets: (All)
+Aliases:
+
+Required: False
 Position: Named
 Default value: None
 Accept pipeline input: False

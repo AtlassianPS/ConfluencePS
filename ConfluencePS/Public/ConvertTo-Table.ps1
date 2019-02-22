@@ -27,12 +27,12 @@ function ConvertTo-Table {
 
         # This ForEach needed if the content wasn't piped in
         $Content | ForEach-Object {
-            If ($Vertical) {
-                If ($HeaderGenerated) {$pipe = '|'}
-                Else {$pipe = '||'}
+            if ($Vertical) {
+                if ($HeaderGenerated) {$pipe = '|'}
+                else {$pipe = '||'}
 
                 # Put an empty row between multiple tables (objects)
-                If ($Spacer) {
+                if ($Spacer) {
                     $null = $sb.AppendLine('')
                 }
 
@@ -42,9 +42,10 @@ function ConvertTo-Table {
                 }
 
                 $Spacer = $true
-            } Else {
+            }
+            else {
                 # Header row enclosed by ||
-                If (-not $HeaderGenerated) {
+                if (-not $HeaderGenerated) {
                     $null = $sb.AppendLine("|| {0} ||" -f ($_.PSObject.Properties.Name -join " || "))
                     $HeaderGenerated = $true
                 }

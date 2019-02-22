@@ -6,10 +6,15 @@ function Get-Page {
     [OutputType([ConfluencePS.Page])]
     param (
         [Parameter( Mandatory = $true )]
-        [URi]$ApiURi,
+        [uri]$ApiUri,
 
-        [Parameter( Mandatory = $true )]
+        [Parameter( Mandatory = $false )]
         [PSCredential]$Credential,
+
+        [Parameter( Mandatory = $false )]
+        [ValidateNotNull()]
+        [System.Security.Cryptography.X509Certificates.X509Certificate]
+        $Certificate,
 
         [Parameter(
             Position = 0,
@@ -73,7 +78,16 @@ function Get-Page {
     BEGIN {
         Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function started"
 
-        $resourceApi = "$apiURi/content{0}"
+        $resourceApi = "$ApiUri/content{0}"
+
+        #setup defaults that don't change based on the pipeline or the parameter set
+        $iwParameters = Copy-CommonParameter -InputObject $PSBoundParameters
+        $iwParameters['Method'] = 'Get'
+        $iwParameters['GetParameters'] = @{
+            expand = "space,version,body.storage,ancestors"
+            limit  = $PageSize
+        }
+        $iwParameters['OutputType'] = [ConfluencePS.Page]
     }
 
     PROCESS {
@@ -82,17 +96,6 @@ function Get-Page {
 
         if ($Space -is [ConfluencePS.Space] -and ($Space.Key)) {
             $SpaceKey = $Space.Key
-        }
-
-        $iwParameters = @{
-            Uri           = ""
-            Method        = 'Get'
-            GetParameters = @{
-                expand = "space,version,body.storage,ancestors"
-                limit  = $PageSize
-            }
-            OutputType    = [ConfluencePS.Page]
-            Credential    = $Credential
         }
 
         # Paging
@@ -109,7 +112,8 @@ function Get-Page {
                 }
                 break
             }
-            "bySpace" { # This includes 'bySpaceObject'
+            "bySpace" {
+                # This includes 'bySpaceObject'
                 $iwParameters["Uri"] = $resourceApi -f ''
                 $iwParameters["GetParameters"]["type"] = "page"
                 if ($SpaceKey) { $iwParameters["GetParameters"]["spaceKey"] = $SpaceKey }

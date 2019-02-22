@@ -3,10 +3,15 @@ function Get-Attachment {
     [OutputType([ConfluencePS.Attachment])]
     param (
         [Parameter( Mandatory = $true )]
-        [URi]$apiURi,
+        [uri]$ApiUri,
 
-        [Parameter( Mandatory = $true )]
+        [Parameter( Mandatory = $false )]
         [PSCredential]$Credential,
+
+        [Parameter( Mandatory = $false )]
+        [ValidateNotNull()]
+        [System.Security.Cryptography.X509Certificates.X509Certificate]
+        $Certificate,
 
         [Parameter(
             Position = 0,
@@ -28,7 +33,6 @@ function Get-Attachment {
 
     BEGIN {
         Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function started"
-        $resourceApi = "$apiURi/content/{0}/child/attachment"
     }
 
     PROCESS {
@@ -41,30 +45,29 @@ function Get-Attachment {
             Throw $exception
         }
 
+        $iwParameters = Copy-CommonParameter -InputObject $PSBoundParameters
+        $iwParameters['Method'] = 'Get'
+        $iwParameters['GetParameters'] = @{
+            expand = "version"
+            limit  = $PageSize
+        }
+        $iwParameters['OutputType'] = [ConfluencePS.Attachment]
+
+        if ($FileNameFilter) {
+            $iwParameters["GetParameters"]["filename"] = $FileNameFilter
+        }
+
+        if ($MediaTypeFilter) {
+            $iwParameters["GetParameters"]["mediaType"] = $MediaTypeFilter
+        }
+
+        # Paging
+        ($PSCmdlet.PagingParameters | Get-Member -MemberType Property).Name | ForEach-Object {
+            $iwParameters[$_] = $PSCmdlet.PagingParameters.$_
+        }
+
         foreach ($_PageID in $PageID) {
-            $iwParameters = @{
-                Uri           = $resourceApi -f $_PageID
-                Method        = 'Get'
-                GetParameters = @{
-                    expand = "version"
-                    limit  = $PageSize
-                }
-                OutputType    = [ConfluencePS.Attachment]
-                Credential    = $Credential
-            }
-
-            if ($FileNameFilter) {
-                $iwParameters["GetParameters"]["filename"] = $FileNameFilter
-            }
-
-            if ($MediaTypeFilter) {
-                $iwParameters["GetParameters"]["mediaType"] = $MediaTypeFilter
-            }
-
-            # Paging
-            ($PSCmdlet.PagingParameters | Get-Member -MemberType Property).Name | ForEach-Object {
-                $iwParameters[$_] = $PSCmdlet.PagingParameters.$_
-            }
+            $iwParameters['Uri'] = "$ApiUri/content/{0}/child/attachment" -f $_PageID
 
             Invoke-Method @iwParameters
         }
