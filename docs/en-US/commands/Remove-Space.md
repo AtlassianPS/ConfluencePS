@@ -16,7 +16,7 @@ Remove an existing Confluence space.
 ## SYNTAX
 
 ```powershell
-Remove-ConfluenceSpace -apiURi <Uri> -Credential <PSCredential> [-SpaceKey] <String[]> [-Force] [-WhatIf] [-Confirm]
+Remove-ConfluenceSpace -ApiUri <Uri> -Credential <PSCredential> [-SpaceKey] <String[]> [-Force] [-WhatIf] [-Confirm]
 ```
 
 ## DESCRIPTION
@@ -49,7 +49,7 @@ By default, you will be prompted to confirm removal. ("Are you sure? Y/N")
 
 ## PARAMETERS
 
-### -apiURi
+### -ApiUri
 
 The URi of the API interface.
 Value can be set persistently with Set-ConfluenceInfo.
@@ -76,7 +76,23 @@ Type: PSCredential
 Parameter Sets: (All)
 Aliases:
 
-Required: True
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Certificate
+
+Certificate for authentication.
+
+```yaml
+Type: X509Certificate
+Parameter Sets: (All)
+Aliases:
+
+Required: False
 Position: Named
 Default value: None
 Accept pipeline input: False

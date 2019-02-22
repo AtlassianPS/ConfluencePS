@@ -16,7 +16,7 @@ Remove an Attachment.
 ## SYNTAX
 
 ```powershell
-Remove-ConfluenceAttachment -apiURi <Uri> -Credential <PSCredential> [-Attachment] <Attachment[]> [-WhatIf] [-Confirm]
+Remove-ConfluenceAttachment -ApiUri <Uri> -Credential <PSCredential> [-Attachment] <Attachment[]> [-WhatIf] [-Confirm]
 ```
 
 ## DESCRIPTION
@@ -57,7 +57,7 @@ Remove all Attachments on page 123456.
 
 ## PARAMETERS
 
-### -apiURi
+### -ApiUri
 
 The URi of the API interface.
 Value can be set persistently with Set-ConfluenceInfo.
@@ -84,7 +84,23 @@ Type: PSCredential
 Parameter Sets: (All)
 Aliases:
 
-Required: True
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Certificate
+
+Certificate for authentication.
+
+```yaml
+Type: X509Certificate
+Parameter Sets: (All)
+Aliases:
+
+Required: False
 Position: Named
 Default value: None
 Accept pipeline input: False

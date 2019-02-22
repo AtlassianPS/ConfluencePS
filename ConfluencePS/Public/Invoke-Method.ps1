@@ -13,7 +13,7 @@ function Invoke-Method {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute( "PSAvoidUsingEmptyCatchBlock", "" )]
     param (
         [Parameter(Mandatory = $true)]
-        [Uri]$URi,
+        [uri]$Uri,
 
         [Microsoft.PowerShell.Commands.WebRequestMethod]$Method = "GET",
 
@@ -41,8 +41,13 @@ function Invoke-Method {
         )]
         [System.Type]$OutputType,
 
-        [Parameter(Mandatory = $true)]
+        [Parameter( Mandatory = $false )]
         [PSCredential]$Credential,
+
+        [Parameter( Mandatory = $false )]
+        [ValidateNotNull()]
+        [System.Security.Cryptography.X509Certificates.X509Certificate]
+        $Certificate,
 
         $Caller = $PSCmdlet
     )
@@ -55,7 +60,7 @@ function Invoke-Method {
         # Sanitize double slash `//`
         # Happens when the BaseUri is the domain name
         # [Uri]"http://google.com" vs [Uri]"http://google.com/foo"
-        $URi = $URi -replace '(?<!:)\/\/', '/'
+        $Uri = $Uri -replace '(?<!:)\/\/', '/'
 
         # pass input to local variable
         # this allows to use the PSBoundParameters for recursion
@@ -74,27 +79,24 @@ function Invoke-Method {
         # as the global PSDefaultParameterValues is not used
         $PSDefaultParameterValues = $global:PSDefaultParameterValues
 
-        # Append GET parameters to URi
+        $splatParameters = Copy-CommonParameter -InputObject $PSBoundParameters -AdditionalParameter @("Uri", "Method", "InFile", "OutFile")
+        $splatParameters['Headers'] = $_headers
+        $splatParameters['ContentType'] = "application/json; charset=utf-8"
+        $splatParameters['UseBasicParsing'] = $true
+        $splatParameters['ErrorAction'] = 'Stop'
+        $splatParameters['Verbose'] = $false     # Overwrites verbose output
+
+        #add 'start' query parameter if Paging with Skip is being used
         if (($PSCmdlet.PagingParameters) -and ($PSCmdlet.PagingParameters.Skip)) {
             $GetParameters["start"] = $PSCmdlet.PagingParameters.Skip
         }
-        if ($GetParameters -and ($URi -notlike "*\?*")) {
+        # Append GET parameters to Uri, aka query Parameters
+        if ($GetParameters -and ($Uri.Query -eq "")) {
             Write-Debug "[$($MyInvocation.MyCommand.Name)] Using `$GetParameters: $($GetParameters | Out-String)"
-            [Uri]$URI = "$Uri$(ConvertTo-GetParameter $GetParameters)"
+            $splatParameters['Uri'] = [uri]"$Uri$(ConvertTo-GetParameter $GetParameters)"
             # Prevent recursive appends
+            $PSBoundParameters.Remove('GetParameters') | Out-Null
             $GetParameters = $null
-        }
-
-        # set mandatory parameters
-        $splatParameters = @{
-            Uri             = $URi
-            Method          = $Method
-            Headers         = $_headers
-            ContentType     = "application/json; charset=utf-8"
-            UseBasicParsing = $true
-            Credential      = $Credential
-            ErrorAction     = "Stop"
-            Verbose         = $false     # Overwrites verbose output
         }
 
         if ($_headers.ContainsKey("Content-Type")) {
@@ -112,13 +114,6 @@ function Invoke-Method {
                 # http://stackoverflow.com/questions/15290185/invoke-webrequest-issue-with-special-characters-in-json
                 $splatParameters["Body"] = [System.Text.Encoding]::UTF8.GetBytes($Body)
             }
-        }
-
-        if ($InFile) {
-            $splatParameters["InFile"] = $InFile
-        }
-        if ($OutFile) {
-            $splatParameters["OutFile"] = $OutFile
         }
 
         # Invoke the API
@@ -227,17 +222,10 @@ function Invoke-Method {
                                 $script:PSDefaultParameterValues.Remove("$($MyInvocation.MyCommand.Name):GetParameters")
                                 $script:PSDefaultParameterValues.Remove("$($MyInvocation.MyCommand.Name):IncludeTotalCount")
 
-                                # Self-Invoke function for recursion
-                                $parameters = @{
-                                    URi        = "{0}{1}" -f $response._links.base, $response._links.next
-                                    Method     = $Method
-                                    Credential = $Credential
-                                }
-                                if ($Body) {$parameters["Body"] = $Body}
-                                if ($Headers) {$parameters["Headers"] = $Headers}
-                                if ($OutputType) {$parameters["OutputType"] = $OutputType}
+                                $parameters = Copy-CommonParameter -InputObject $PSBoundParameters -AdditionalParameter @("Method", "Headers", "OutputType")
+                                $parameters['Uri'] = "{0}{1}" -f $response._links.base, $response._links.next
 
-                                Write-Verbose "NEXT PAGE: $($parameters["URi"])"
+                                Write-Verbose "NEXT PAGE: $($parameters["Uri"])"
 
                                 Invoke-Method @parameters
                             }

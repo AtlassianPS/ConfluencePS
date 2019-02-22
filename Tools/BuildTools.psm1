@@ -183,7 +183,7 @@ function Publish-GithubReleaseArtifact {
         [Parameter( Mandatory )]
         [ValidateNotNullOrEmpty()]
         [String]$GITHUB_ACCESS_TOKEN,
-        [Uri]$Uri,
+        [uri]$Uri,
         [String]$Path
     )
 

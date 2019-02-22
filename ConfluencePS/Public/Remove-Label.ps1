@@ -6,10 +6,15 @@ function Remove-Label {
     [OutputType([Bool])]
     param (
         [Parameter( Mandatory = $true )]
-        [URi]$apiURi,
+        [uri]$ApiUri,
 
-        [Parameter( Mandatory = $true )]
+        [Parameter( Mandatory = $false )]
         [PSCredential]$Credential,
+
+        [Parameter( Mandatory = $false )]
+        [ValidateNotNull()]
+        [System.Security.Cryptography.X509Certificates.X509Certificate]
+        $Certificate,
 
         [Parameter(
             Position = 0,
@@ -28,7 +33,7 @@ function Remove-Label {
     BEGIN {
         Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function started"
 
-        $resourceApi = "$apiURi/content/{0}/label?name={1}"
+        $resourceApi = "$ApiUri/content/{0}/label?name={1}"
     }
 
     PROCESS {
@@ -41,17 +46,15 @@ function Remove-Label {
             Throw $exception
         }
 
-        $iwParameters = @{
-            Uri        = ""
-            Method     = 'Delete'
-            Credential = $Credential
-        }
+        $iwParameters = Copy-CommonParameter -InputObject $PSBoundParameters
+        $iwParameters['Method'] = 'Delete'
 
         foreach ($_page in $PageID) {
             $_labels = $Label
             if (!$_labels) {
                 Write-Verbose "[$($MyInvocation.MyCommand.Name)] Collecting all Labels for page $_page"
-                $allLabels = Get-Label -PageID $_page -ApiURi $apiURi -Credential $Credential
+                $authAndApiUri = Copy-CommonParameter -InputObject $PSBoundParameters -AdditionalParameter "ApiUri"
+                $allLabels = Get-Label -PageID $_page @authAndApiUri
                 if ($allLabels.Labels) {
                     $_labels = $allLabels.Labels | Select-Object -ExpandProperty Name
                 }
@@ -61,7 +64,7 @@ function Remove-Label {
             foreach ($_label in $_labels) {
                 $iwParameters["Uri"] = $resourceApi -f $_page, $_label
 
-                If ($PSCmdlet.ShouldProcess("Label $_label, PageID $_page")) {
+                if ($PSCmdlet.ShouldProcess("Label $_label, PageID $_page")) {
                     Invoke-Method @iwParameters
                 }
             }
