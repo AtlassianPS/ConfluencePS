@@ -86,7 +86,7 @@ namespace ConfluencePS
 		public String Title { get; set; }
 		public String Filename { get; set; }
 		public String MediaType { get; set; }
-		public Int32 FileSize { get; set; }
+		public UInt64 FileSize { get; set; }
 		public String Comment { get; set; }
 		public String SpaceKey { get; set; }
 		public Int32 PageID { get; set; }
