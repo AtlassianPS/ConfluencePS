@@ -20,14 +20,12 @@ function ConvertTo-Attachment {
                 $PageId = $_.container.id
             }
             else {
-                $PageID = $_._expandable.container -replace '^.*\/content\/', ''
-                $PageID = [convert]::ToInt32($PageID, 10)
+                [UInt32]$PageID = $_._expandable.container -replace '^.*\/content\/', ''
             }
 
             [ConfluencePS.Attachment](ConvertTo-Hashtable -InputObject ($object | Select-Object `
                     @{Name = "id"; Expression = {
-                            $ID = $_.id -replace 'att', ''
-                            [convert]::ToInt32($ID, 10)
+                            [UInt32]($_.id -replace 'att', '')
                         }
                     },
                     status,
