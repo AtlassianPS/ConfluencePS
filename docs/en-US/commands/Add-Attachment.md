@@ -16,7 +16,7 @@ Add a new attachment to an existing Confluence page.
 ## SYNTAX
 
 ```powershell
-Add-ConfluenceAttachment -apiURi <Uri> -Credential <PSCredential> [[-PageID] <Int32>] -FilePath <String> [-WhatIf] [-Confirm]
+Add-ConfluenceAttachment -ApiUri <Uri> -Credential <PSCredential> [[-PageID] <Int32>] -FilePath <String> [-WhatIf] [-Confirm]
 ```
 
 ## DESCRIPTION
@@ -48,7 +48,7 @@ Simulates adding the Attachment test.png to all pages in the space with key SRV.
 
 ## PARAMETERS
 
-### -apiURi
+### -ApiUri
 
 The URi of the API interface.
 Value can be set persistently with Set-Info.
@@ -75,7 +75,23 @@ Type: PSCredential
 Parameter Sets: (All)
 Aliases:
 
-Required: True
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Certificate
+
+Certificate for authentication.
+
+```yaml
+Type: X509Certificate
+Parameter Sets: (All)
+Aliases:
+
+Required: False
 Position: Named
 Default value: None
 Accept pipeline input: False

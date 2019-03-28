@@ -64,8 +64,8 @@ Describe 'Integration Tests' -Tag Integration {
             #TODO: extend this
         }
         It 'url is stored' {
-            $global:PSDefaultParameterValues["Get-ConfluencePage:ApiURi"] | Should BeOfType [String]
-            $global:PSDefaultParameterValues["Get-ConfluencePage:ApiURi"] -match "^https?://.*\/rest\/api$" | Should Be $true
+            $global:PSDefaultParameterValues["Get-ConfluencePage:ApiUri"] | Should BeOfType [String]
+            $global:PSDefaultParameterValues["Get-ConfluencePage:ApiUri"] -match "^https?://.*\/rest\/api$" | Should Be $true
         }
     }
 
@@ -862,7 +862,7 @@ Describe 'Integration Tests' -Tag Integration {
             $result1.Version | Should BeOfType [ConfluencePS.Version]
             $result1.Version.Number | Should Be 1
             $result1.URL | Should Not BeNullOrEmpty
-            ([Uri]$result1.URL).AbsoluteUri | Should Not BeNullOrEmpty
+            ([uri]$result1.URL).AbsoluteUri | Should Not BeNullOrEmpty
         }
         It 'throws if the file does not exist' {
             { Add-ConfluenceAttachment -PageId $Page1.Id -FilePath "$PSScriptRoot/non-existing.file" } | Should Throw
@@ -1016,7 +1016,7 @@ Describe 'Integration Tests' -Tag Integration {
             $result1.SpaceKey | Should Not BeNullOrEmpty
             $result1.PageID | Should Not BeNullOrEmpty
             $result1.URL | Should Not BeNullOrEmpty
-            ([Uri]$result1.URL).AbsoluteUri | Should Not BeNullOrEmpty
+            ([uri]$result1.URL).AbsoluteUri | Should Not BeNullOrEmpty
         }
         It 'throws if the file does not exist' {
             { Set-ConfluenceAttachment -Attachment $Attachment -FilePath "non-existing.file" } | Should Throw

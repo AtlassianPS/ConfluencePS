@@ -6,10 +6,15 @@ function Set-Label {
     [OutputType([ConfluencePS.ContentLabelSet])]
     param (
         [Parameter( Mandatory = $true )]
-        [URi]$apiURi,
+        [uri]$ApiUri,
 
-        [Parameter( Mandatory = $true )]
+        [Parameter( Mandatory = $false )]
         [PSCredential]$Credential,
+
+        [Parameter( Mandatory = $false )]
+        [ValidateNotNull()]
+        [System.Security.Cryptography.X509Certificates.X509Certificate]
+        $Certificate,
 
         [Parameter(
             Position = 0,
@@ -28,7 +33,7 @@ function Set-Label {
     BEGIN {
         Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function started"
 
-        $resourceApi = "$apiURi/content/{0}/label"
+        $resourceApi = "$ApiUri/content/{0}/label"
     }
 
     PROCESS {
@@ -41,30 +46,27 @@ function Set-Label {
             Throw $exception
         }
 
-        $iwParameters = @{
-            Uri        = ""
-            Method     = 'Post'
-            Body       = ""
-            OutputType = [ConfluencePS.Label]
-            Credential = $Credential
-        }
+        $iwParameters = Copy-CommonParameter -InputObject $PSBoundParameters
+        $iwParameters['Method'] = 'Post'
+        $iwParameters['OutputType'] = [ConfluencePS.Label]
 
+        $authAndApiUri = Copy-CommonParameter -InputObject $PSBoundParameters -AdditionalParameter "ApiUri"
         foreach ($_page in $PageID) {
             if ($_ -is [ConfluencePS.Page]) {
                 $InputObject = $_
             }
             else {
-                $InputObject = Get-Page -PageID $_page -ApiURi $apiURi -Credential $Credential
+                $InputObject = Get-Page -PageID $_page @authAndApiUri
             }
 
             Write-Verbose "[$($MyInvocation.MyCommand.Name)] Removing all previous labels"
-            Remove-Label -PageID $_page -ApiURi $apiURi -Credential $Credential | Out-Null
+            Remove-Label -PageID $_page @authAndApiUri | Out-Null
 
             $iwParameters["Uri"] = $resourceApi -f $_page
             $iwParameters["Body"] = $Label | Foreach-Object {@{prefix = 'global'; name = $_}} | ConvertTo-Json
 
             Write-Debug "[$($MyInvocation.MyCommand.Name)] Content to be sent: $($iwParameters["Body"] | Out-String)"
-            If ($PSCmdlet.ShouldProcess("Label $Label, PageID $_page")) {
+            if ($PSCmdlet.ShouldProcess("Label $Label, PageID $_page")) {
                 $output = [ConfluencePS.ContentLabelSet]@{ Page = $InputObject }
                 $output.Labels += (Invoke-Method @iwParameters)
                 $output

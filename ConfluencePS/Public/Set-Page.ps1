@@ -7,10 +7,15 @@ function Set-Page {
     [OutputType([ConfluencePS.Page])]
     param (
         [Parameter( Mandatory = $true )]
-        [URi]$apiURi,
+        [uri]$ApiUri,
 
-        [Parameter( Mandatory = $true )]
+        [Parameter( Mandatory = $false )]
         [PSCredential]$Credential,
+
+        [Parameter( Mandatory = $false )]
+        [ValidateNotNull()]
+        [System.Security.Cryptography.X509Certificates.X509Certificate]
+        $Certificate,
 
         [Parameter(
             Mandatory = $true,
@@ -49,12 +54,13 @@ function Set-Page {
     BEGIN {
         Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function started"
 
-        $resourceApi = "$apiURi/content/{0}"
+        $resourceApi = "$ApiUri/content/{0}"
 
+        $authAndApiUri = Copy-CommonParameter -InputObject $PSBoundParameters -AdditionalParameter "ApiUri"
         # If -Convert is flagged, call ConvertTo-ConfluenceStorageFormat against the -Body
-        If ($Convert) {
+        if ($Convert) {
             Write-Verbose '[$($MyInvocation.MyCommand.Name)] -Convert flag active; converting content to Confluence storage format'
-            $Body = ConvertTo-StorageFormat -Content $Body -ApiURi $apiURi -Credential $Credential
+            $Body = ConvertTo-StorageFormat -Content $Body @authAndApiUri
         }
     }
 
@@ -62,13 +68,10 @@ function Set-Page {
         Write-Debug "[$($MyInvocation.MyCommand.Name)] ParameterSetName: $($PsCmdlet.ParameterSetName)"
         Write-Debug "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
 
-        $iwParameters = @{
-            Uri        = ""
-            Method     = 'Put'
-            Body       = ""
-            OutputType = [ConfluencePS.Page]
-            Credential = $Credential
-        }
+        $iwParameters = Copy-CommonParameter -InputObject $PSBoundParameters
+        $iwParameters['Method'] = 'Put'
+        $iwParameters['OutputType'] = [ConfluencePS.Page]
+
         $Content = [PSObject]@{
             type      = "page"
             title     = ""
@@ -96,7 +99,7 @@ function Set-Page {
             }
             "byParameters" {
                 $iwParameters["Uri"] = $resourceApi -f $PageID
-                $originalPage = Get-Page -PageID $PageID -ApiURi $apiURi -Credential $Credential
+                $originalPage = Get-Page -PageID $PageID @authAndApiUri
 
                 if (($Parent -is [ConfluencePS.Page]) -and ($Parent.ID)) {
                     $ParentID = $Parent.ID
