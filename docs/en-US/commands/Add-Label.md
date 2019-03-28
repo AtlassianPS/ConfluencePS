@@ -16,7 +16,7 @@ Add a new global label to an existing Confluence page.
 ## SYNTAX
 
 ```powershell
-Add-ConfluenceLabel -apiURi <Uri> -Credential <PSCredential> [[-PageID] <Int32[]>] -Label <Object> [-WhatIf] [-Confirm]
+Add-ConfluenceLabel -ApiUri <Uri> -Credential <PSCredential> [[-PageID] <Int32[]>] -Label <Object> [-WhatIf] [-Confirm]
 ```
 
 ## DESCRIPTION
@@ -57,7 +57,7 @@ Applies the label "abc" to all pages in the space with key DEMO.
 
 ## PARAMETERS
 
-### -apiURi
+### -ApiUri
 
 The URi of the API interface.
 Value can be set persistently with Set-Info.
@@ -84,7 +84,23 @@ Type: PSCredential
 Parameter Sets: (All)
 Aliases:
 
-Required: True
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Certificate
+
+Certificate for authentication.
+
+```yaml
+Type: X509Certificate
+Parameter Sets: (All)
+Aliases:
+
+Required: False
 Position: Named
 Default value: None
 Accept pipeline input: False

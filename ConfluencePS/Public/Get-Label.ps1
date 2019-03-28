@@ -5,10 +5,15 @@ function Get-Label {
     [OutputType([ConfluencePS.ContentLabelSet])]
     param (
         [Parameter( Mandatory = $true )]
-        [URi]$apiURi,
+        [uri]$ApiUri,
 
-        [Parameter( Mandatory = $true )]
+        [Parameter( Mandatory = $false )]
         [PSCredential]$Credential,
+
+        [Parameter( Mandatory = $false )]
+        [ValidateNotNull()]
+        [System.Security.Cryptography.X509Certificates.X509Certificate]
+        $Certificate,
 
         [Parameter(
             Position = 0,
@@ -27,7 +32,7 @@ function Get-Label {
     BEGIN {
         Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function started"
 
-        $resourceApi = "$apiURi/content/{0}/label"
+        $resourceApi = "$ApiUri/content/{0}/label"
     }
 
     PROCESS {
@@ -40,15 +45,12 @@ function Get-Label {
             Throw $exception
         }
 
-        $iwParameters = @{
-            Uri           = ""
-            Method        = 'Get'
-            GetParameters = @{
-                limit = $PageSize
-            }
-            OutputType    = [ConfluencePS.Label]
-            Credential    = $Credential
+        $iwParameters = Copy-CommonParameter -InputObject $PSBoundParameters
+        $iwParameters['Method'] = 'Get'
+        $iwParameters['GetParameters'] = @{
+            limit = $PageSize
         }
+        $iwParameters['OutputType'] = [ConfluencePS.Label]
 
         # Paging
         ($PSCmdlet.PagingParameters | Get-Member -MemberType Property).Name | ForEach-Object {
@@ -60,7 +62,8 @@ function Get-Label {
                 $InputObject = $_
             }
             else {
-                $InputObject = Get-Page -PageID $_page -ApiURi $apiURi -Credential $Credential
+                $authAndApiUri = Copy-CommonParameter -InputObject $PSBoundParameters -AdditionalParameter "ApiUri"
+                $InputObject = Get-Page -PageID $_page @authAndApiUri
             }
             $iwParameters["Uri"] = $resourceApi -f $_page
             $output = New-Object -TypeName ConfluencePS.ContentLabelSet

@@ -7,10 +7,15 @@ function New-Space {
     [OutputType([ConfluencePS.Space])]
     param (
         [Parameter( Mandatory = $true )]
-        [URi]$apiURi,
+        [uri]$ApiUri,
 
-        [Parameter( Mandatory = $true )]
+        [Parameter( Mandatory = $false )]
         [PSCredential]$Credential,
+
+        [Parameter( Mandatory = $false )]
+        [ValidateNotNull()]
+        [System.Security.Cryptography.X509Certificates.X509Certificate]
+        $Certificate,
 
         [Parameter(
             Mandatory = $true,
@@ -41,7 +46,7 @@ function New-Space {
     BEGIN {
         Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function started"
 
-        $resourceApi = "$apiURi/space"
+        $resourceApi = "$ApiUri/space"
     }
 
     PROCESS {
@@ -54,13 +59,11 @@ function New-Space {
             $Description = $InputObject.Description
         }
 
-        $iwParameters = @{
-            Uri        = $resourceApi
-            Method     = 'Post'
-            Body       = ""
-            OutputType = [ConfluencePS.Space]
-            Credential = $Credential
-        }
+        $iwParameters = Copy-CommonParameter -InputObject $PSBoundParameters
+        $iwParameters['Uri'] = $resourceApi
+        $iwParameters['Method'] = 'Post'
+        $iwParameters['OutputType'] = [ConfluencePS.Space]
+
         $Body = @{
             key         = $SpaceKey
             name        = $Name

@@ -6,10 +6,15 @@ function Add-Attachment {
     [OutputType([ConfluencePS.Attachment])]
     param(
         [Parameter( Mandatory = $true )]
-        [URi]$apiURi,
+        [uri]$ApiUri,
 
-        [Parameter( Mandatory = $true )]
+        [Parameter( Mandatory = $false )]
         [PSCredential]$Credential,
+
+        [Parameter( Mandatory = $false )]
+        [ValidateNotNull()]
+        [System.Security.Cryptography.X509Certificates.X509Certificate]
+        $Certificate,
 
         [Parameter(
             Position = 0,
@@ -46,27 +51,23 @@ function Add-Attachment {
 
     begin {
         Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function started"
-
-        $resourceApi = "$apiURi/content/{0}/child/attachment"
     }
 
     process {
         Write-DebugMessage "[$($MyInvocation.MyCommand.Name)] ParameterSetName: $($PsCmdlet.ParameterSetName)"
         Write-DebugMessage "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
 
-        $parameter = @{
-            URI        = $resourceApi -f $PageID
-            Method     = "POST"
-            Credential = $Credential
-            OutputType = [ConfluencePS.Attachment]
-            Verbose    = $false
-        }
+        $iwParameters = Copy-CommonParameter -InputObject $PSBoundParameters
+        $iwParameters['Uri'] = "$ApiUri/content/{0}/child/attachment" -f $PageID
+        $iwParameters['Method'] = 'Post'
+        $iwParameters['OutputType'] = [ConfluencePS.Attachment]
+
         foreach ($file in $FilePath) {
-            $parameter["InFile"] = $file
+            $iwParameters["InFile"] = $file
 
             Write-Debug "[$($MyInvocation.MyCommand.Name)] Invoking Add Attachment Method with `$parameter"
             if ($PSCmdlet.ShouldProcess($PageID, "Adding attachment(s) '$($file)'.")) {
-                Invoke-Method @parameter
+                Invoke-Method @iwParameters
             }
         }
     }

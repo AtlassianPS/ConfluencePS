@@ -11,6 +11,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 .
 
+## [2.5] 2019-03-27
+
+### Added
+
+- Added support for authenticating with X509Certificate (#164, [@ritzcrackr])
+
+### Fixed
+
+- Conversion of pageID attribute of Attachments to `[Int]` (#166, [@lipkau])
+- Fixed generation of headers in tables when using `ConvertTo-ConfluenceTable` (#163, [@lipkau])
+
 ## [2.4] 2018-12-12
 
 ### Added
@@ -189,4 +200,5 @@ No changelog available for version `1.0` of ConfluencePS. `1.0` was created in l
 [@lipkau]: https://github.com/lipkau
 [@lukhase]: https://github.com/lukhase
 [@padgers]: https://github.com/padgers
+[@ritzcrackr]: https://github.com/ritzcrackr
 [@ThePSAdmin]: https://github.com/ThePSAdmin
