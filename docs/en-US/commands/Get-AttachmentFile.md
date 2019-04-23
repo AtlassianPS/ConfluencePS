@@ -51,7 +51,7 @@ with the page ID and the attachment filename.
 ### -ApiUri
 
 The URi of the API interface.
-Value can be set persistently with Set-ConfluenceInfo.
+Value can be set persistently with `Set-ConfluenceInfo -BaseURi`.
 
 ```yaml
 Type: Uri
@@ -68,7 +68,7 @@ Accept wildcard characters: False
 ### -Credential
 
 Confluence's credentials for authentication.
-Value can be set persistently with Set-ConfluenceInfo.
+Value can be set persistently with `Set-ConfluenceInfo -Credential`.
 
 ```yaml
 Type: PSCredential

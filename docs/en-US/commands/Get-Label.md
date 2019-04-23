@@ -49,7 +49,7 @@ return the full list of labels found on each page.
 ### -ApiUri
 
 The URi of the API interface.
-Value can be set persistently with Set-ConfluenceInfo.
+Value can be set persistently with `Set-ConfluenceInfo -BaseURi`.
 
 ```yaml
 Type: Uri
@@ -66,7 +66,7 @@ Accept wildcard characters: False
 ### -Credential
 
 Confluence's credentials for authentication.
-Value can be set persistently with Set-ConfluenceInfo.
+Value can be set persistently with `Set-ConfluenceInfo -Credential`.
 
 ```yaml
 Type: PSCredential
