@@ -16,7 +16,7 @@ Updates an existing attachment with a new file.
 ## SYNTAX
 
 ```powershell
-Set-Attachment -ApiUri <Uri> -Credential <PSCredential> [-Attachment] <Attachment> -FilePath <String> [-WhatIf] [-Confirm]
+Set-ConfluenceAttachment -ApiUri <Uri> -Credential <PSCredential> [-Attachment] <Attachment> -FilePath <String> [-WhatIf] [-Confirm]
 ```
 
 ## DESCRIPTION
@@ -37,7 +37,7 @@ For the attachment test.png on page with ID 123456, replace the file with the fi
 ### -------------------------- EXAMPLE 2 --------------------------
 
 ```powershell
-Get-ConfluenceAttachment -PageID 123456 -FileNameFilter test.png | Set-Attachment -FileName newTest.png -WhatIf
+Get-ConfluenceAttachment -PageID 123456 -FileNameFilter test.png | Set-ConfluenceAttachment -FileName newTest.png -WhatIf
 ```
 
 Would replace the attachment test.png to the page with ID 123456.

@@ -16,7 +16,7 @@ Set the labels applied to existing Confluence content.
 ## SYNTAX
 
 ```powershell
-Set-Label -ApiUri <Uri> -Credential <PSCredential> [-PageID] <Int32[]> -Label <String[]> [-WhatIf] [-Confirm]
+Set-ConfluenceLabel -ApiUri <Uri> -Credential <PSCredential> [-PageID] <Int32[]> -Label <String[]> [-WhatIf] [-Confirm]
 ```
 
 ## DESCRIPTION
@@ -40,7 +40,7 @@ For existing wiki page with ID 123456, remove all labels, then add the three spe
 ### -------------------------- EXAMPLE 2 --------------------------
 
 ```powershell
-Get-ConfluencePage -SpaceKey 'ABC' | Set-Label -Label '123' -WhatIf
+Get-ConfluencePage -SpaceKey 'ABC' | Set-ConfluenceLabel -Label '123' -WhatIf
 ```
 
 Would remove all labels and apply only the label "123" to all pages in the ABC space.
