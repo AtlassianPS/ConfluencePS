@@ -18,7 +18,8 @@ function ConvertTo-StorageFormat {
             Mandatory = $true,
             ValueFromPipeline = $true
         )]
-        [string[]]$Content
+        [string[]]$Content,
+        [System.Management.Automation.SwitchParameter]$AsPlainText
     )
 
     BEGIN {
@@ -28,6 +29,27 @@ function ConvertTo-StorageFormat {
     PROCESS {
         Write-Debug "[$($MyInvocation.MyCommand.Name)] ParameterSetName: $($PsCmdlet.ParameterSetName)"
         Write-Debug "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
+
+        if ($AsPlainText)
+        {
+            Write-Verbose "[$($MyInvocation.MyCommand.Name)] Replace special chars with ascii code"
+            [System.Collections.Hashtable]$SpecialChars = @{
+                '#' = '&#35;'
+                '@' = '&#64;'
+                '[' = '&#91;'
+                ']' = '&#93;'
+                '{' = '&#123;'
+                '}' = '&#1225;'
+            }
+
+            foreach ($Key in $SpecialChars.Keys)
+            {
+                for ($i = 0; $i -lt $Content.Count; $i ++)
+                {
+                    $Content[$i] = $Content[$i].Replace($Key, $SpecialChars.$Key)
+                }
+            }
+        }
 
         $iwParameters = Copy-CommonParameter -InputObject $PSBoundParameters
         $iwParameters['Uri'] = "$ApiUri/contentbody/convert/storage"
