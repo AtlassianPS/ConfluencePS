@@ -9,7 +9,7 @@ function Invoke-WebRequest {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute(
         "PSAvoidOverwritingBuiltInCmdlets",
         "",
-        Justification = "Oliver Lipkau knows why it needs"
+        Justification = "Function for internal use"
     )]
     param(
         [switch]
@@ -169,7 +169,7 @@ if ($PSVersionTable.PSVersion.Major -ge 6) {
         [Diagnostics.CodeAnalysis.SuppressMessageAttribute(
             "PSAvoidOverwritingBuiltInCmdlets",
             "",
-            Justification = "Oliver Lipkau knows why it needs"
+            Justification = "Function for internal use"
         )]
         param(
             [switch]

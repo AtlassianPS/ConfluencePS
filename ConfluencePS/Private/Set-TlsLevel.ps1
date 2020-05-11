@@ -1,6 +1,9 @@
 function Set-TlsLevel {
     [CmdletBinding( SupportsShouldProcess = $false )]
-    [System.Diagnostics.CodeAnalysis.SuppressMessage('PSUseShouldProcessForStateChangingFunctions', '')]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "PSUseShouldProcessForStateChangingFunctions",
+        "",
+        Justification = "The function sets the state of the security protocol for using TLS1.2 and restores it to its original state.")]
     param (
         [Parameter(Mandatory = $true, ParameterSetName = 'Set')]
         [Switch]$Tls12,
