@@ -7,7 +7,7 @@ function Set-TlsLevel {
     [System.Diagnostics.CodeAnalysis.SuppressMessage(
         "PSReviewUnusedParameter",
         "",
-        Justification = "Unused parameters is used through ParameterSetName")]
+        Justification = "Unused parameters are used through ParameterSetName.")]
     param (
         [Parameter(Mandatory = $true, ParameterSetName = 'Set')]
         [Switch]$Tls12,
