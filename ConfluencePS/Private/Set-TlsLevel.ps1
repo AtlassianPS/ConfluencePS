@@ -4,6 +4,10 @@ function Set-TlsLevel {
         "PSUseShouldProcessForStateChangingFunctions",
         "",
         Justification = "The function sets the state of the security protocol for using TLS1.2 and restores it to its original state.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "PSReviewUnusedParameter",
+        "",
+        Justification = "Unused parameters is used through ParameterSetName")]
     param (
         [Parameter(Mandatory = $true, ParameterSetName = 'Set')]
         [Switch]$Tls12,
@@ -13,12 +17,12 @@ function Set-TlsLevel {
     )
 
     begin {
-        switch ($true) {
-            $Tls12 {
+        switch ($PSCmdlet.ParameterSetName) {
+            'Set' {
                 $Script:OriginalTlsSettings = [Net.ServicePointManager]::SecurityProtocol
                 [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
             }
-            $Revert {
+            'Revert' {
                 if ($Script:OriginalTlsSettings) {
                     [Net.ServicePointManager]::SecurityProtocol = $Script:OriginalTlsSettings
                 }
