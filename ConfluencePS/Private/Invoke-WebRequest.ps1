@@ -6,6 +6,11 @@ function Invoke-WebRequest {
         "",
         Justification = "Converting received plaintext token to SecureString"
     )]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute(
+        "PSAvoidOverwritingBuiltInCmdlets",
+        "",
+        Justification = "Function for internal use"
+    )]
     param(
         [switch]
         ${UseBasicParsing},
@@ -161,6 +166,11 @@ if ($PSVersionTable.PSVersion.Major -ge 6) {
     function Invoke-WebRequest {
         #require -Version 6
         [CmdletBinding(DefaultParameterSetName = 'StandardMethod', HelpUri = 'https://go.microsoft.com/fwlink/?LinkID=217035')]
+        [Diagnostics.CodeAnalysis.SuppressMessageAttribute(
+            "PSAvoidOverwritingBuiltInCmdlets",
+            "",
+            Justification = "Function for internal use"
+        )]
         param(
             [switch]
             ${UseBasicParsing},
