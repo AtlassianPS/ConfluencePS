@@ -26,7 +26,9 @@ function Get-ChildPage {
         [switch]$Recurse,
 
         [ValidateRange(1, [int]::MaxValue)]
-        [int]$PageSize = 25
+        [int]$PageSize = 25,
+
+        [switch]$ExcludePageBody
     )
 
     BEGIN {
@@ -59,6 +61,10 @@ function Get-ChildPage {
             expand = "space,version,body.storage,ancestors"
             limit  = $PageSize
         }
+        if($ExcludePageBody.IsPresent){
+            $iwParameters.GetParameters.expand = "space,version,ancestors"
+        }
+
         $iwParameters['OutputType'] = [ConfluencePS.Page]
 
         # Paging
