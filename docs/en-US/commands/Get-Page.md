@@ -18,36 +18,37 @@ Retrieve a listing of pages in your Confluence instance.
 ### byId (Default)
 
 ```powershell
-Get-ConfluencePage -ApiUri <Uri> -Credential <PSCredential> [-PageID] <Int32[]> [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
+Get-ConfluencePage -ApiUri <Uri> -Credential <PSCredential> [-PageID] <Int32[]> [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>]   [-First <UInt64>] [-ExcludePageBody]
 ```
 
 ### byLabel
 
 ```powershell
-Get-ConfluencePage -ApiUri <Uri> -Credential <PSCredential> [-SpaceKey <String>] [-Space <Space>] -Label <String[]> [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
+Get-ConfluencePage -ApiUri <Uri> -Credential <PSCredential> [-SpaceKey <String>] [-Space <Space>] -Label <String[]> [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>] [-ExcludePageBody]
 ```
 
 ### bySpace
 
 ```powershell
-Get-ConfluencePage -ApiUri <Uri> -Credential <PSCredential> -SpaceKey <String> [-Title <String>] [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
+Get-ConfluencePage -ApiUri <Uri> -Credential <PSCredential> -SpaceKey <String> [-Title <String>] [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>] [-ExcludePageBody]
 ```
 
 ### byQuery
 
 ```powershell
-Get-ConfluencePage -ApiUri <Uri> -Credential <PSCredential> [-Query <String>] [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
+Get-ConfluencePage -ApiUri <Uri> -Credential <PSCredential> [-Query <String>] [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>] [-ExcludePageBody]
 ```
 
 ### bySpaceObject
 
 ```powershell
-Get-ConfluencePage -ApiUri <Uri> -Credential <PSCredential> -Space <Space> [-Title <String>] [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
+Get-ConfluencePage -ApiUri <Uri> -Credential <PSCredential> -Space <Space> [-Title <String>] [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>] [-ExcludePageBody]
 ```
 
 ## DESCRIPTION
 
 Return Confluence pages, filtered by ID, Name, or Space.
+Pass the optional parameter -ExcludePageBody to avoid fetching the pages' HTML content.
 
 ## EXAMPLES
 
@@ -95,6 +96,14 @@ Get-ConfluencePage -Query "mention = jSmith and creator != jSmith"
 ```
 
 Return all pages matching the query.
+
+### -------------------------- EXAMPLE 5 --------------------------
+
+```powershell
+Get-ConfluencePage -Label 'skywalker' -ExcludePageBody
+```
+
+Return all pages containing the label "skywalker" (case-insensitive) without their page content.
 
 ## PARAMETERS
 
@@ -348,6 +357,22 @@ Aliases:
 Required: False
 Position: Named
 Default value: 18446744073709551615
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ExcludePageBody
+
+Avoids fetching pages' body
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
