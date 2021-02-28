@@ -90,7 +90,7 @@ function Get-Page {
             limit  = $PageSize
         }
 
-        if($ExcludePageBody.IsPresent){
+        if($ExcludePageBody){
             $iwParameters.GetParameters.expand = "space,version,ancestors"
         }
 
