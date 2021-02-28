@@ -61,7 +61,7 @@ function Get-ChildPage {
             expand = "space,version,body.storage,ancestors"
             limit  = $PageSize
         }
-        if($ExcludePageBody.IsPresent){
+        if($ExcludePageBody){
             $iwParameters.GetParameters.expand = "space,version,ancestors"
         }
 
