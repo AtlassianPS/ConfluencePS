@@ -147,6 +147,11 @@ Describe 'Integration Tests' -Tag Integration {
         $GetSpace2 = Get-ConfluenceSpace | Where-Object {$_.Name -like '*ter test sp*'}
         $GetSpace3 = Get-ConfluenceSpace @($Key1, $Key2)
 
+
+        $AllSpaces|ForEach-Object {
+            Write-Warning "Found space: Name = $($_.Name) Key = $($_.Key)"
+        }
+
         # ASSERT
         It 'returns an object with specific properties' {
             $AllSpaces | Should BeOfType [ConfluencePS.Space]
