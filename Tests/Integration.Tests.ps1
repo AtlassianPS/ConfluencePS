@@ -96,6 +96,13 @@ Describe 'Integration Tests' -Tag Integration {
         { Get-ConfluenceSpace -Key $Key1 -ErrorAction Stop } | Should Throw
 
         # ACT
+        Get-ConfluenceSpace|Where-Object {
+            $_.Name -in @($Name1,$Name2)
+        }| ForEach-Object {
+            Write-Warning "Removing space: $($_.Name) $($_.key)"
+            Remove-ConfluenceSpace $_.Key -Force -ErrorAction Stop
+        }
+
         $NewSpace1 = $Space1 | New-ConfluenceSpace -ErrorAction Stop
         $NewSpace2 = New-ConfluenceSpace -Key $Key2 -Name $Name2 -Description $Description -ErrorAction Stop
 
