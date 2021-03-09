@@ -16,14 +16,15 @@ Retrieve the child pages of a given wiki page or pages.
 ## SYNTAX
 
 ```powershell
-Get-ConfluenceChildPage -ApiUri <Uri> -Credential <PSCredential> [-PageID] <Int32> [-Recurse] [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
+Get-ConfluenceChildPage -ApiUri <Uri> -Credential <PSCredential> [-PageID] <Int32> [-Recurse] [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>] [-ExcludePageBody]
 ```
 
 ## DESCRIPTION
 
 Return all pages directly below the given page(s).
 
-Optionally, the -Recurse parameter will return all child pages, no matter how nested.
+Optionally, the -Recurse parameter will return all child pages, no matter how nested. 
+Pass the optional parameter -ExcludePageBody to avoid fetching the pages' HTML content.
 
 ## EXAMPLES
 
@@ -202,6 +203,22 @@ Aliases:
 Required: False
 Position: Named
 Default value: 18446744073709551615
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ExcludePageBody
+
+Avoids fetching pages' body
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

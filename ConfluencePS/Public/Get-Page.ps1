@@ -72,7 +72,9 @@ function Get-Page {
         [string]$Query,
 
         [ValidateRange(1, [int]::MaxValue)]
-        [int]$PageSize = 25
+        [int]$PageSize = 25,
+
+        [switch]$ExcludePageBody
     )
 
     BEGIN {
@@ -87,6 +89,11 @@ function Get-Page {
             expand = "space,version,body.storage,ancestors"
             limit  = $PageSize
         }
+
+        if($ExcludePageBody){
+            $iwParameters.GetParameters.expand = "space,version,ancestors"
+        }
+
         $iwParameters['OutputType'] = [ConfluencePS.Page]
     }
 
