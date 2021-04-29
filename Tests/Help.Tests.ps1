@@ -1,5 +1,5 @@
 #requires -modules BuildHelpers
-#requires -modules Pester
+#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "4.10" }
 
 Describe "Help tests" -Tag Documentation {
 
@@ -83,14 +83,14 @@ Describe "Help tests" -Tag Documentation {
             }
 
             It "has a link to the 'Online Version'" {
-                [uri]$onlineLink = ($help.relatedLinks.navigationLink | Where-Object linkText -eq "Online Version:").Uri
+                [uri]$onlineLink = ($help.relatedLinks.navigationLink | Where-Object linkText -EQ "Online Version:").Uri
 
                 $onlineLink.Authority | Should -Be "atlassianps.org"
                 $onlineLink.Scheme | Should -Be "https"
                 $onlineLink.PathAndQuery | Should -Be "/docs/$env:BHProjectName/commands/$commandName/"
             }
 
-            it "has a valid HelpUri" {
+            It "has a valid HelpUri" {
                 $command.HelpUri | Should -Not -BeNullOrEmpty
                 $Pattern = [regex]::Escape("https://atlassianps.org/docs/$env:BHProjectName/commands/$commandName")
 
