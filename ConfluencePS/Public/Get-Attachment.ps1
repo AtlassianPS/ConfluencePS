@@ -19,16 +19,16 @@ function Get-Attachment {
             ValueFromPipeline = $true,
             ValueFromPipelineByPropertyName = $true
         )]
-        [ValidateRange(1, [int]::MaxValue)]
+        [ValidateRange(1, [UInt64]::MaxValue)]
         [Alias('ID')]
-        [Int[]]$PageID,
+        [UInt64[]]$PageID,
 
         [String]$FileNameFilter,
 
         [String]$MediaTypeFilter,
 
-        [ValidateRange(1, [int]::MaxValue)]
-        [Int]$PageSize = 25
+        [ValidateRange(1, [UInt32]::MaxValue)]
+        [UInt32]$PageSize = 25
     )
 
     BEGIN {

@@ -33,8 +33,8 @@ function New-Page {
         [string]$Title,
 
         [Parameter(ParameterSetName = 'byParameters')]
-        [ValidateRange(1, [int]::MaxValue)]
-        [int]$ParentID,
+        [ValidateRange(1, [UInt64]::MaxValue)]
+        [UInt64]$ParentID,
         [Parameter(ParameterSetName = 'byParameters')]
         [ConfluencePS.Page]$Parent,
 
@@ -70,7 +70,7 @@ function New-Page {
 
         $Content = [PSObject]@{
             type      = "page"
-            space     = [PSObject]@{ key = ""}
+            space     = [PSObject]@{ key = "" }
             title     = ""
             body      = [PSObject]@{
                 storage = [PSObject]@{
@@ -86,7 +86,7 @@ function New-Page {
                 $Content.space.key = $InputObject.Space.Key
                 $Content.body.storage.value = $InputObject.Body
                 if ($InputObject.Ancestors) {
-                    $Content.ancestors += @( $InputObject.Ancestors | Foreach-Object { @{ id = $_.ID } } )
+                    $Content.ancestors += @( $InputObject.Ancestors | ForEach-Object { @{ id = $_.ID } } )
                 }
             }
             "byParameters" {

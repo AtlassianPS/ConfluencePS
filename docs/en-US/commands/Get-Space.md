@@ -17,7 +17,7 @@ Retrieve a listing of spaces in your Confluence instance.
 ## SYNTAX
 
 ```powershell
-Get-ConfluenceSpace -ApiUri <Uri> -Credential <PSCredential> [[-SpaceKey] <String[]>] [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
+Get-ConfluenceSpace -ApiUri <Uri> -Credential <PSCredential> [[-SpaceKey] <String[]>] [-PageSize <UInt32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
 ```
 
 ## DESCRIPTION
@@ -133,7 +133,7 @@ This setting can be tuned to get better performance according to the load on the
 > Warning: too high of a PageSize can cause a timeout on the request.
 
 ```yaml
-Type: Int32
+Type: UInt32
 Parameter Sets: (All)
 Aliases:
 

@@ -22,9 +22,9 @@ function Remove-Page {
             ValueFromPipeline = $true,
             ValueFromPipelineByPropertyName = $true
         )]
-        [ValidateRange(1, [int]::MaxValue)]
+        [ValidateRange(1, [UInt64]::MaxValue)]
         [Alias('ID')]
-        [int[]]$PageID
+        [UInt64[]]$PageID
     )
 
     BEGIN {

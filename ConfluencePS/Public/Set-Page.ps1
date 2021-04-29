@@ -29,9 +29,9 @@ function Set-Page {
             ValueFromPipeline = $true,
             ParameterSetName = 'byParameters'
         )]
-        [ValidateRange(1, [int]::MaxValue)]
+        [ValidateRange(1, [UInt64]::MaxValue)]
         [Alias('ID')]
-        [int]$PageID,
+        [UInt64]$PageID,
 
         [Parameter(ParameterSetName = 'byParameters')]
         [ValidateNotNullOrEmpty()]
@@ -44,8 +44,8 @@ function Set-Page {
         [switch]$Convert,
 
         [Parameter(ParameterSetName = 'byParameters')]
-        [ValidateRange(1, [int]::MaxValue)]
-        [int]$ParentID,
+        [ValidateRange(1, [UInt64]::MaxValue)]
+        [UInt64]$ParentID,
 
         [Parameter(ParameterSetName = 'byParameters')]
         [ConfluencePS.Page]$Parent

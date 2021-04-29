@@ -21,12 +21,12 @@ function Get-Label {
             ValueFromPipeline = $true,
             ValueFromPipelineByPropertyName = $true
         )]
-        [ValidateRange(1, [int]::MaxValue)]
+        [ValidateRange(1, [UInt64]::MaxValue)]
         [Alias('ID')]
-        [int[]]$PageID,
+        [UInt64[]]$PageID,
 
-        [ValidateRange(1, [int]::MaxValue)]
-        [int]$PageSize = 25
+        [ValidateRange(1, [UInt32]::MaxValue)]
+        [UInt32]$PageSize = 25
     )
 
     BEGIN {

@@ -42,7 +42,7 @@ The Id is the unique identifier of the `Page`.
 _This value can't be changed and is assigned by the server._
 
 ```yaml
-Type: Int32
+Type: UInt64
 Required: True
 Default value: None
 ```

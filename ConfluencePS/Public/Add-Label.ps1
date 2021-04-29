@@ -21,9 +21,9 @@ function Add-Label {
             ValueFromPipeline = $true,
             ValueFromPipelineByPropertyName = $true
         )]
-        [ValidateRange(1, [int]::MaxValue)]
+        [ValidateRange(1, [UInt64]::MaxValue)]
         [Alias('ID')]
-        [int[]]$PageID,
+        [UInt64[]]$PageID,
 
         [Parameter(
             Mandatory = $true,
@@ -59,7 +59,7 @@ function Add-Label {
 
         # Test if Label is String[]
         [String[]]$_label = $Label
-        $_label = $_label | Where-Object {$_ -ne "ConfluencePS.Label"}
+        $_label = $_label | Where-Object { $_ -ne "ConfluencePS.Label" }
         if ($_label) {
             [String[]]$Label = $_label
         }
@@ -98,7 +98,7 @@ function Add-Label {
             }
 
             $iwParameters["Uri"] = $resourceApi -f $_page
-            $iwParameters["Body"] = ($Label | Foreach-Object {@{prefix = 'global'; name = $_}}) | ConvertTo-Json
+            $iwParameters["Body"] = ($Label | ForEach-Object { @{prefix = 'global'; name = $_ } }) | ConvertTo-Json
 
             Write-Debug "[$($MyInvocation.MyCommand.Name)] Content to be sent: $($iwParameters["Body"] | Out-String)"
             if ($PSCmdlet.ShouldProcess("Label $Label, PageID $_page")) {

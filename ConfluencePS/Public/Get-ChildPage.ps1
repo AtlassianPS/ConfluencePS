@@ -19,14 +19,14 @@ function Get-ChildPage {
             ValueFromPipeline = $true,
             ValueFromPipelineByPropertyName = $true
         )]
-        [ValidateRange(1, [int]::MaxValue)]
+        [ValidateRange(1, [UInt64]::MaxValue)]
         [Alias('ID')]
-        [int]$PageID,
+        [UInt64]$PageID,
 
         [switch]$Recurse,
 
-        [ValidateRange(1, [int]::MaxValue)]
-        [int]$PageSize = 25,
+        [ValidateRange(1, [UInt32]::MaxValue)]
+        [UInt32]$PageSize = 25,
 
         [switch]$ExcludePageBody
     )
@@ -55,13 +55,13 @@ function Get-ChildPage {
         }
 
         $iwParameters = Copy-CommonParameter -InputObject $PSBoundParameters
-        $iwParameters['Uri'] = if ($Recurse.IsPresent) {"$ApiUri/content/{0}/descendant/page" -f $PageID} else {"$ApiUri/content/{0}/child/page" -f $PageID}
+        $iwParameters['Uri'] = if ($Recurse.IsPresent) { "$ApiUri/content/{0}/descendant/page" -f $PageID } else { "$ApiUri/content/{0}/child/page" -f $PageID }
         $iwParameters['Method'] = 'Get'
         $iwParameters['GetParameters'] = @{
             expand = "space,version,body.storage,ancestors"
             limit  = $PageSize
         }
-        if($ExcludePageBody){
+        if ($ExcludePageBody) {
             $iwParameters.GetParameters.expand = "space,version,ancestors"
         }
 
