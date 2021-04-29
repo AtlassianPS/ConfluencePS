@@ -1,5 +1,5 @@
 #requires -modules BuildHelpers
-#requires -modules Pester
+#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "4.10" }
 
 [Diagnostics.CodeAnalysis.SuppressMessageAttribute(
     "PSUseDeclaredVarsMoreThanAssigments",

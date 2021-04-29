@@ -1,6 +1,6 @@
 #requires -modules BuildHelpers
 #requires -modules Configuration
-#requires -modules Pester
+#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "4.10" }
 
 Describe "Validation of build environment" -Tag Unit {
 
