@@ -45,7 +45,7 @@ function Add-Label {
         Write-Debug "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
 
         # Validade input object from Pipeline
-        if (($_) -and -not($_ -is [ConfluencePS.Page] -or $_ -is [int] -or $_ -is [ConfluencePS.ContentLabelSet])) {
+        if (($_) -and -not($_ -is [ConfluencePS.Page] -or $_ -is [UInt64] -or $_ -is [ConfluencePS.ContentLabelSet])) {
             $message = "The Object in the pipe is not a Page."
             $exception = New-Object -TypeName System.ArgumentException -ArgumentList $message
             Throw $exception
