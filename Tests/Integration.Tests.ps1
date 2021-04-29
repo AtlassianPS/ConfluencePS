@@ -114,8 +114,8 @@ Describe 'Integration Tests' -Tag Integration {
             ($NewSpace2 | Get-Member -MemberType Property).Count | Should Be 7
         }
         It 'ID is integer' {
-            $NewSpace1.ID | Should BeOfType [Int]
-            $NewSpace2.ID | Should BeOfType [Int]
+            $NewSpace1.ID | Should BeOfType [UInt64]
+            $NewSpace2.ID | Should BeOfType [UInt64]
         }
         It 'key matches the specified value' {
             $NewSpace1.Key | Should BeOfType [String]
@@ -171,9 +171,9 @@ Describe 'Integration Tests' -Tag Integration {
             @($GetSpace3).Count | Should Be 2
         }
         It 'id is integer' {
-            $GetSpace1.ID | Should BeOfType [Int]
-            $GetSpace2.ID | Should BeOfType [Int]
-            $GetSpace3.ID | Should BeOfType [Int]
+            $GetSpace1.ID | Should BeOfType [UInt64]
+            $GetSpace2.ID | Should BeOfType [UInt64]
+            $GetSpace3.ID | Should BeOfType [UInt64]
         }
         It 'key is string' {
             $GetSpace1.Key | Should BeOfType [String]
@@ -293,10 +293,10 @@ Describe 'Integration Tests' -Tag Integration {
             ($NewPage4 | Get-Member -MemberType Property).Count | Should Be 9
         }
         It 'spaceid is integer' {
-            $NewPage1.ID | Should BeOfType [Int]
-            $NewPage2.ID | Should BeOfType [Int]
-            $NewPage3.ID | Should BeOfType [Int]
-            $NewPage4.ID | Should BeOfType [Int]
+            $NewPage1.ID | Should BeOfType [UInt64]
+            $NewPage2.ID | Should BeOfType [UInt64]
+            $NewPage3.ID | Should BeOfType [UInt64]
+            $NewPage4.ID | Should BeOfType [UInt64]
         }
         It 'key matches the specified value' {
             $NewPage1.Space.Key | Should BeExactly $SpaceKey
@@ -311,9 +311,9 @@ Describe 'Integration Tests' -Tag Integration {
             $NewPage4.Title | Should BeExactly $Title4
         }
         It 'parentid is integer' {
-            $NewPage1.Ancestors.ID | Should BeOfType [Int]
-            $NewPage3.Ancestors.ID | Should BeOfType [Int]
-            $NewPage4.Ancestors.ID | Should BeOfType [Int]
+            $NewPage1.Ancestors.ID | Should BeOfType [UInt64]
+            $NewPage3.Ancestors.ID | Should BeOfType [UInt64]
+            $NewPage4.Ancestors.ID | Should BeOfType [UInt64]
         }
         It 'parentid matches the specified value' {
             $NewPage1.Ancestors.ID | Should BeExactly $parentPage.ID
@@ -403,13 +403,13 @@ Describe 'Integration Tests' -Tag Integration {
             ($GetByQuery | Get-Member -MemberType Property).Count | Should Be 9
         }
         It 'id is integer' {
-            $GetTitle1.ID | Should BeOfType [Int]
-            $GetTitle2.ID | Should BeOfType [Int]
-            $GetID1.ID | Should BeOfType [Int]
-            $GetID2.ID | Should BeOfType [Int]
-            $GetKeys.ID | Should BeOfType [Int]
-            $GetByLabel.ID | Should BeOfType [Int]
-            $GetByQuery.ID | Should BeOfType [Int]
+            $GetTitle1.ID | Should BeOfType [UInt64]
+            $GetTitle2.ID | Should BeOfType [UInt64]
+            $GetID1.ID | Should BeOfType [UInt64]
+            $GetID2.ID | Should BeOfType [UInt64]
+            $GetKeys.ID | Should BeOfType [UInt64]
+            $GetByLabel.ID | Should BeOfType [UInt64]
+            $GetByQuery.ID | Should BeOfType [UInt64]
         }
         It 'id matches the specified value' {
             $GetID1.ID | Should Be $GetTitle1.ID
