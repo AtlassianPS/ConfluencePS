@@ -34,7 +34,7 @@ The Id is the unique identifier of the `Attachment`.
 _This value can't be changed and is assigned by the server._
 
 ```yaml
-Type: Int32
+Type: UInt64
 Required: True
 Default value: None
 ```
@@ -90,7 +90,7 @@ Default value: None
 The file size of the `Attachment` in bytes.
 
 ```yaml
-Type: Int32
+Type: UInt32
 Required: True
 Default value: None
 ```
@@ -110,7 +110,7 @@ Default value: None
 The page ID in where the `Attachment` is stored.
 
 ```yaml
-Type: Int32
+Type: UInt64
 Required: True
 Default value: None
 ```

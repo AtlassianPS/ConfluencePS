@@ -16,7 +16,7 @@ Retrieve all labels applied to the given object(s).
 ## SYNTAX
 
 ```powershell
-Get-ConfluenceLabel -ApiUri <Uri> -Credential <PSCredential> [-PageID] <Int32[]> [-PageSize <Int32>]
+Get-ConfluenceLabel -ApiUri <Uri> -Credential <PSCredential> [-PageID] <UInt64[]> [-PageSize <UInt64>]
  [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
 ```
 
@@ -103,7 +103,7 @@ List the PageID number to check for labels.
 Accepts piped input.
 
 ```yaml
-Type: Int32[]
+Type: UInt64[]
 Parameter Sets: (All)
 Aliases: ID
 
@@ -123,7 +123,7 @@ This setting can be tuned to get better performance according to the load on the
 > Warning: too high of a PageSize can cause a timeout on the request.
 
 ```yaml
-Type: Int32
+Type: UInt32
 Parameter Sets: (All)
 Aliases:
 
