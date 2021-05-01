@@ -1,5 +1,5 @@
 #requires -modules BuildHelpers
-#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "4.4.2" }
+#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "4.10" }
 
 Describe 'ConvertTo-Table' -Tag Unit {
 

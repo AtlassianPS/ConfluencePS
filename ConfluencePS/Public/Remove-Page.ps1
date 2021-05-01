@@ -22,9 +22,9 @@ function Remove-Page {
             ValueFromPipeline = $true,
             ValueFromPipelineByPropertyName = $true
         )]
-        [ValidateRange(1, [int]::MaxValue)]
+        [ValidateRange(1, [UInt64]::MaxValue)]
         [Alias('ID')]
-        [int[]]$PageID
+        [UInt64[]]$PageID
     )
 
     BEGIN {
@@ -37,7 +37,7 @@ function Remove-Page {
         Write-Debug "[$($MyInvocation.MyCommand.Name)] ParameterSetName: $($PsCmdlet.ParameterSetName)"
         Write-Debug "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
 
-        if (($_) -and -not($_ -is [ConfluencePS.Page] -or $_ -is [int])) {
+        if (($_) -and -not($_ -is [ConfluencePS.Page] -or $_ -is [UInt64])) {
             $message = "The Object in the pipe is not a Page."
             $exception = New-Object -TypeName System.ArgumentException -ArgumentList $message
             Throw $exception

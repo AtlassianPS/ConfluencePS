@@ -16,7 +16,7 @@ Trash an existing Confluence page.
 ## SYNTAX
 
 ```powershell
-Remove-ConfluencePage -ApiUri <Uri> -Credential <PSCredential> [-PageID] <Int32[]> [-WhatIf] [-Confirm]
+Remove-ConfluencePage -ApiUri <Uri> -Credential <PSCredential> [-PageID] <UInt64[]> [-WhatIf] [-Confirm]
 ```
 
 ## DESCRIPTION
@@ -113,7 +113,7 @@ The page ID to delete.
 Accepts multiple IDs via pipeline input.
 
 ```yaml
-Type: Int32[]
+Type: UInt64[]
 Parameter Sets: (All)
 Aliases: ID
 

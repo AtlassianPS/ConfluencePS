@@ -18,7 +18,7 @@ Create a new page on your Confluence instance.
 ### byParameters (Default)
 
 ```powershell
-New-ConfluencePage -ApiUri <Uri> -Credential <PSCredential> -Title <String> [-ParentID <Int32>] [-Parent <Page>] [-SpaceKey <String>] [-Space <Space>] [-Body <String>] [-Convert] [-WhatIf] [-Confirm]
+New-ConfluencePage -ApiUri <Uri> -Credential <PSCredential> -Title <String> [-ParentID <UInt64>] [-Parent <Page>] [-SpaceKey <String>] [-Space <Space>] [-Body <String>] [-Convert] [-WhatIf] [-Confirm]
 ```
 
 ### byObject
@@ -193,7 +193,7 @@ The ID of the parent page.
 > NOTE: This feature is not in the 5.8 REST API documentation, and should be considered experimental.
 
 ```yaml
-Type: Int32
+Type: UInt64
 Parameter Sets: byParameters
 Aliases:
 

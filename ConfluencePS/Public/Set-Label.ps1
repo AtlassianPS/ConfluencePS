@@ -22,9 +22,9 @@ function Set-Label {
             ValueFromPipeline = $true,
             ValueFromPipelineByPropertyName = $true
         )]
-        [ValidateRange(1, [int]::MaxValue)]
+        [ValidateRange(1, [UInt64]::MaxValue)]
         [Alias('ID')]
-        [int[]]$PageID,
+        [UInt64[]]$PageID,
 
         [Parameter(Mandatory = $true)]
         [string[]]$Label
@@ -40,7 +40,7 @@ function Set-Label {
         Write-Debug "[$($MyInvocation.MyCommand.Name)] ParameterSetName: $($PsCmdlet.ParameterSetName)"
         Write-Debug "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
 
-        if (($_) -and -not($_ -is [ConfluencePS.Page] -or $_ -is [int])) {
+        if (($_) -and -not($_ -is [ConfluencePS.Page] -or $_ -is [UInt64])) {
             $message = "The Object in the pipe is not a Page."
             $exception = New-Object -TypeName System.ArgumentException -ArgumentList $message
             Throw $exception
@@ -63,7 +63,7 @@ function Set-Label {
             Remove-Label -PageID $_page @authAndApiUri | Out-Null
 
             $iwParameters["Uri"] = $resourceApi -f $_page
-            $iwParameters["Body"] = $Label | Foreach-Object {@{prefix = 'global'; name = $_}} | ConvertTo-Json
+            $iwParameters["Body"] = $Label | ForEach-Object { @{prefix = 'global'; name = $_ } } | ConvertTo-Json
 
             Write-Debug "[$($MyInvocation.MyCommand.Name)] Content to be sent: $($iwParameters["Body"] | Out-String)"
             if ($PSCmdlet.ShouldProcess("Label $Label, PageID $_page")) {

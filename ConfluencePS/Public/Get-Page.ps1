@@ -23,9 +23,9 @@ function Get-Page {
             ValueFromPipeline = $true,
             ValueFromPipelineByPropertyName = $true
         )]
-        [ValidateRange(1, [int]::MaxValue)]
+        [ValidateRange(1, [UInt64]::MaxValue)]
         [Alias('ID')]
-        [int[]]$PageID,
+        [UInt64[]]$PageID,
 
         [Parameter(
             ParameterSetName = "bySpace"
@@ -71,8 +71,8 @@ function Get-Page {
         )]
         [string]$Query,
 
-        [ValidateRange(1, [int]::MaxValue)]
-        [int]$PageSize = 25,
+        [ValidateRange(1, [UInt32]::MaxValue)]
+        [UInt32]$PageSize = 25,
 
         [switch]$ExcludePageBody
     )
@@ -90,7 +90,7 @@ function Get-Page {
             limit  = $PageSize
         }
 
-        if($ExcludePageBody){
+        if ($ExcludePageBody) {
             $iwParameters.GetParameters.expand = "space,version,ancestors"
         }
 
@@ -126,7 +126,7 @@ function Get-Page {
                 if ($SpaceKey) { $iwParameters["GetParameters"]["spaceKey"] = $SpaceKey }
 
                 if ($Title) {
-                    Invoke-Method @iwParameters | Where-Object {$_.Title -like "$Title"}
+                    Invoke-Method @iwParameters | Where-Object { $_.Title -like "$Title" }
                 }
                 else {
                     Invoke-Method @iwParameters
@@ -137,7 +137,7 @@ function Get-Page {
                 $iwParameters["Uri"] = $resourceApi -f "/search"
 
                 $CQLparameters = @("type=page", "label=$Label")
-                if ($SpaceKey) {$CQLparameters += "space=$SpaceKey"}
+                if ($SpaceKey) { $CQLparameters += "space=$SpaceKey" }
                 $cqlQuery = ConvertTo-URLEncoded ($CQLparameters -join (" AND "))
 
                 $iwParameters["GetParameters"]["cql"] = $cqlQuery

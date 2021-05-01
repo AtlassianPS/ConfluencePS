@@ -16,7 +16,7 @@ Retrieve the child pages of a given wiki page or pages.
 ## SYNTAX
 
 ```powershell
-Get-ConfluenceChildPage -ApiUri <Uri> -Credential <PSCredential> [-PageID] <Int32> [-Recurse] [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>] [-ExcludePageBody]
+Get-ConfluenceChildPage -ApiUri <Uri> -Credential <PSCredential> [-PageID] <UInt64> [-Recurse] [-PageSize <UInt64>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>] [-ExcludePageBody]
 ```
 
 ## DESCRIPTION
@@ -104,7 +104,7 @@ Accept wildcard characters: False
 Filter results by page ID.
 
 ```yaml
-Type: Int32
+Type: UInt64
 Parameter Sets: (All)
 Aliases: ID
 
@@ -140,7 +140,7 @@ This setting can be tuned to get better performance according to the load on the
 > Warning: too high of a PageSize can cause a timeout on the request.
 
 ```yaml
-Type: Int32
+Type: UInt32
 Parameter Sets: (All)
 Aliases:
 

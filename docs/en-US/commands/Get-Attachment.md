@@ -16,7 +16,7 @@ Retrieve the child Attachments of a given wiki Page.
 ## SYNTAX
 
 ```powershell
-Get-ConfluenceAttachment -ApiUri <Uri> -Credential <PSCredential> [-PageID] <Int32[]> [-FileNameFilter <string>] [-MediaTypeFilter <string>] [-Skip <UInt64>] [-First <UInt64>] [-PageSize <UInt64>] [-IncludeTotalCount]
+Get-ConfluenceAttachment -ApiUri <Uri> -Credential <PSCredential> [-PageID] <UInt64[]> [-FileNameFilter <string>] [-MediaTypeFilter <string>] [-Skip <UInt64>] [-First <UInt64>] [-PageSize <UInt64>] [-IncludeTotalCount]
 ```
 
 ## DESCRIPTION
@@ -118,7 +118,7 @@ Accept wildcard characters: False
 Return attachments for a list of page IDs.
 
 ```yaml
-Type: Int32[]
+Type: UInt64[]
 Parameter Sets: (All)
 Aliases:
 
@@ -173,7 +173,7 @@ This setting can be tuned to get better performance according to the load on the
 > Warning: too high of a PageSize can cause a timeout on the request.
 
 ```yaml
-Type: Int32
+Type: UInt32
 Parameter Sets: (All)
 Aliases:
 

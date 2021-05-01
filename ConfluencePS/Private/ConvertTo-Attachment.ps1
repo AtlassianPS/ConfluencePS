@@ -16,7 +16,7 @@ function ConvertTo-Attachment {
         foreach ($object in $InputObject) {
             Write-Verbose "[$($MyInvocation.MyCommand.Name)] Converting Object to Attachment"
 
-            if($_.container.id) {
+            if ($_.container.id) {
                 $PageId = $_.container.id
             }
             else {
@@ -25,24 +25,24 @@ function ConvertTo-Attachment {
 
             [ConfluencePS.Attachment](ConvertTo-Hashtable -InputObject ($object | Select-Object `
                     @{Name = "id"; Expression = {
-                            [UInt32]($_.id -replace 'att', '')
+                            [UInt64]($_.id -replace 'att', '')
                         }
                     },
                     status,
                     title,
-                    @{Name = "filename";  Expression = {
-                            '{0}_{1}' -f $PageID,  $_.title | Remove-InvalidFileCharacter
+                    @{Name = "filename"; Expression = {
+                            '{0}_{1}' -f $PageID, $_.title | Remove-InvalidFileCharacter
                         }
                     },
-                    @{Name = "mediatype";  Expression = {
+                    @{Name = "mediatype"; Expression = {
                             $_.extensions.mediaType
                         }
                     },
-                    @{Name = "filesize";  Expression = {
+                    @{Name = "filesize"; Expression = {
                             [convert]::ToInt32($_.extensions.fileSize, 10)
                         }
                     },
-                    @{Name = "comment";  Expression = {
+                    @{Name = "comment"; Expression = {
                             $_.extensions.comment
                         }
                     },
@@ -58,7 +58,7 @@ function ConvertTo-Attachment {
                             if ($_.version) {
                                 ConvertTo-Version $_.version
                             }
-                            else {$null}
+                            else { $null }
                         }
                     },
                     @{Name = "URL"; Expression = {
@@ -67,7 +67,7 @@ function ConvertTo-Attachment {
                             if ($_._links.download) {
                                 "{0}{1}" -f $base, $_._links.download
                             }
-                            else {$null}
+                            else { $null }
                         }
                     }
                 ))

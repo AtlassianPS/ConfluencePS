@@ -16,7 +16,7 @@ Set the labels applied to existing Confluence content.
 ## SYNTAX
 
 ```powershell
-Set-Label -ApiUri <Uri> -Credential <PSCredential> [-PageID] <Int32[]> -Label <String[]> [-WhatIf] [-Confirm]
+Set-Label -ApiUri <Uri> -Credential <PSCredential> [-PageID] <UInt64[]> -Label <String[]> [-WhatIf] [-Confirm]
 ```
 
 ## DESCRIPTION
@@ -104,7 +104,7 @@ The page ID to remove the label from.
 Accepts multiple IDs via pipeline input.
 
 ```yaml
-Type: Int32[]
+Type: UInt64[]
 Parameter Sets: (All)
 Aliases: ID
 

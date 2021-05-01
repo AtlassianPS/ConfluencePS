@@ -19,16 +19,16 @@ function Get-Attachment {
             ValueFromPipeline = $true,
             ValueFromPipelineByPropertyName = $true
         )]
-        [ValidateRange(1, [int]::MaxValue)]
+        [ValidateRange(1, [UInt64]::MaxValue)]
         [Alias('ID')]
-        [Int[]]$PageID,
+        [UInt64[]]$PageID,
 
         [String]$FileNameFilter,
 
         [String]$MediaTypeFilter,
 
-        [ValidateRange(1, [int]::MaxValue)]
-        [Int]$PageSize = 25
+        [ValidateRange(1, [UInt32]::MaxValue)]
+        [UInt32]$PageSize = 25
     )
 
     BEGIN {
@@ -39,7 +39,7 @@ function Get-Attachment {
         Write-DebugMessage "[$($MyInvocation.MyCommand.Name)] ParameterSetName: $($PsCmdlet.ParameterSetName)"
         Write-DebugMessage "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
 
-        if (($_) -and -not($_ -is [ConfluencePS.Page] -or $_ -is [int])) {
+        if (($_) -and -not($_ -is [ConfluencePS.Page] -or $_ -is [UInt64])) {
             $message = "The Object in the pipe is not a Page."
             $exception = New-Object -TypeName System.ArgumentException -ArgumentList $message
             Throw $exception

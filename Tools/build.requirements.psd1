@@ -10,17 +10,17 @@
         }
         Version    = "latest"
     }
-    Configuration = @{
+    Configuration    = @{
         Parameters = @{
             AllowClobber = $true
         }
-        Version = "latest"
+        Version    = "latest"
     }
     Pester           = @{
         Parameters = @{
             SkipPublisherCheck = $true
         }
-        Version    = "4.4.2"
+        Version    = "4.10"
     }
     platyPS          = "latest"
     PSScriptAnalyzer = @{

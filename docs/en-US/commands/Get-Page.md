@@ -18,31 +18,31 @@ Retrieve a listing of pages in your Confluence instance.
 ### byId (Default)
 
 ```powershell
-Get-ConfluencePage -ApiUri <Uri> -Credential <PSCredential> [-PageID] <Int32[]> [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>]   [-First <UInt64>] [-ExcludePageBody]
+Get-ConfluencePage -ApiUri <Uri> -Credential <PSCredential> [-PageID] <UInt64[]> [-PageSize <UInt32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>] [-ExcludePageBody]
 ```
 
 ### byLabel
 
 ```powershell
-Get-ConfluencePage -ApiUri <Uri> -Credential <PSCredential> [-SpaceKey <String>] [-Space <Space>] -Label <String[]> [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>] [-ExcludePageBody]
+Get-ConfluencePage -ApiUri <Uri> -Credential <PSCredential> [-SpaceKey <String>] [-Space <Space>] -Label <String[]> [-PageSize <UInt32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>] [-ExcludePageBody]
 ```
 
 ### bySpace
 
 ```powershell
-Get-ConfluencePage -ApiUri <Uri> -Credential <PSCredential> -SpaceKey <String> [-Title <String>] [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>] [-ExcludePageBody]
+Get-ConfluencePage -ApiUri <Uri> -Credential <PSCredential> -SpaceKey <String> [-Title <String>] [-PageSize <UInt32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>] [-ExcludePageBody]
 ```
 
 ### byQuery
 
 ```powershell
-Get-ConfluencePage -ApiUri <Uri> -Credential <PSCredential> [-Query <String>] [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>] [-ExcludePageBody]
+Get-ConfluencePage -ApiUri <Uri> -Credential <PSCredential> [-Query <String>] [-PageSize <UInt32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>] [-ExcludePageBody]
 ```
 
 ### bySpaceObject
 
 ```powershell
-Get-ConfluencePage -ApiUri <Uri> -Credential <PSCredential> -Space <Space> [-Title <String>] [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>] [-ExcludePageBody]
+Get-ConfluencePage -ApiUri <Uri> -Credential <PSCredential> -Space <Space> [-Title <String>] [-PageSize <UInt32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>] [-ExcludePageBody]
 ```
 
 ## DESCRIPTION
@@ -166,7 +166,7 @@ Filter results by page ID.
 Best option if you already know the ID.
 
 ```yaml
-Type: Int32[]
+Type: UInt64[]
 Parameter Sets: byId
 Aliases: ID
 
@@ -294,7 +294,7 @@ This setting can be tuned to get better performance according to the load on the
 > Warning: too high of a PageSize can cause a timeout on the request.
 
 ```yaml
-Type: Int32
+Type: UInt32
 Parameter Sets: (All)
 Aliases:
 
