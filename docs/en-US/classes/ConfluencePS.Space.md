@@ -42,7 +42,7 @@ _This value can't be changed for a space and it's value is assigned by the serve
 **It is recommended to use `Key` as identifier when using this object.**
 
 ```yaml
-Type: Int32
+Type: UInt64
 Required: True
 Default value: None
 ```

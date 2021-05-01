@@ -9,7 +9,7 @@ function Set-Info {
 
         [PSCredential]$Credential,
 
-        [int]$PageSize,
+        [UInt32]$PageSize,
 
         [switch]$PromptCredentials
     )

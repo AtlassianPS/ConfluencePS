@@ -41,7 +41,7 @@ The Id is the identifier of a `Label` used by the Confluence server internally.
 _This value can't be changed and is assigned by the server._
 
 ```yaml
-Type: Int32
+Type: UInt64
 Required: True
 Default value: None
 ```

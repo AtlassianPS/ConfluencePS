@@ -18,7 +18,7 @@ Edit an existing Confluence page.
 ### byParameters (Default)
 
 ```powershell
-Set-ConfluencePage -ApiUri <Uri> -Credential <PSCredential> -PageID <Int32> [-Title <String>] [-Body <String>] [-Convert] [-ParentID <Int32>] [-Parent <Page>] [-WhatIf] [-Confirm]
+Set-ConfluencePage -ApiUri <Uri> -Credential <PSCredential> -PageID <UInt64> [-Title <String>] [-Body <String>] [-Convert] [-ParentID <UInt64>] [-Parent <Page>] [-WhatIf] [-Confirm]
 ```
 
 ### byObject
@@ -148,7 +148,7 @@ Accept wildcard characters: False
 The ID of the page to edit.
 
 ```yaml
-Type: Int32
+Type: UInt64
 Parameter Sets: byParameters
 Aliases: ID
 
@@ -215,7 +215,7 @@ Optionally define a new parent page.
 If unspecified, no change.
 
 ```yaml
-Type: Int32
+Type: UInt64
 Parameter Sets: byParameters
 Aliases:
 

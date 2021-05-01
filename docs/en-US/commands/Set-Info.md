@@ -16,7 +16,7 @@ Specify wiki location and authorization for use in this session's REST API reque
 ## SYNTAX
 
 ```powershell
-Set-ConfluenceInfo [[-BaseURi] <Uri>] [[-Credential] <PSCredential>] [[-PageSize] <Int32>] [-PromptCredentials]
+Set-ConfluenceInfo [[-BaseURi] <Uri>] [[-Credential] <PSCredential>] [[-PageSize] <UInt32>] [-PromptCredentials]
 ```
 
 ## DESCRIPTION
@@ -111,7 +111,7 @@ Default PageSize for the invocations.
 More info in the Notes field of this help file.
 
 ```yaml
-Type: Int32
+Type: UInt32
 Parameter Sets: (All)
 Aliases:
 
