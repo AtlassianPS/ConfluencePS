@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 .
 
+### Fixed
+
+- Fixed `-Label` parsing for the Get-ConfluencePage cmdlet (#193 [@claudiospizzi])
+
 ## [2.5] 2019-03-27
 
 ### Added

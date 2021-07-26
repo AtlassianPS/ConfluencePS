@@ -136,7 +136,8 @@ function Get-Page {
             "byLabel" {
                 $iwParameters["Uri"] = $resourceApi -f "/search"
 
-                $CQLparameters = @("type=page", "label=$Label")
+                $CQLparameters = @("type=page")
+                $Label | ForEach-Object { $CQLparameters += "label=$_" }
                 if ($SpaceKey) { $CQLparameters += "space=$SpaceKey" }
                 $cqlQuery = ConvertTo-URLEncoded ($CQLparameters -join (" AND "))
 
