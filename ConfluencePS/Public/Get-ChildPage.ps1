@@ -9,7 +9,8 @@ function Get-ChildPage {
         [PSCredential]$Credential,
 
         [Parameter( Mandatory = $false )]
-        [PSCredential]$PersonalAccessToken,
+        [string]
+        $PersonalAccessToken,
 
         [Parameter( Mandatory = $false )]
         [ValidateNotNull()]

@@ -45,7 +45,8 @@ function Invoke-Method {
         [PSCredential]$Credential,
 
         [Parameter( Mandatory = $false )]
-        [PSCredential]$PersonalAccessToken,
+        [string]
+        $PersonalAccessToken,
 
         [Parameter( Mandatory = $false )]
         [ValidateNotNull()]
