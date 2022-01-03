@@ -11,6 +11,9 @@ function Get-Label {
         [PSCredential]$Credential,
 
         [Parameter( Mandatory = $false )]
+        [PSCredential]$PersonalAccessToken,
+
+        [Parameter( Mandatory = $false )]
         [ValidateNotNull()]
         [System.Security.Cryptography.X509Certificates.X509Certificate]
         $Certificate,

@@ -58,6 +58,11 @@ function Set-Info {
                 Add-ConfluenceDefaultParameter -Command $command -Parameter $parameter -Value $Credential
             }
 
+            $parameter = "PersonalAccessToken"
+            if ($PersonalAccessToken -and ($command.Parameters.Keys -contains $parameter)) {
+                Add-ConfluenceDefaultParameter -Command $command -Parameter $parameter -Value $PersonalAccessToken
+            }
+
             $parameter = "PageSize"
             if ($PageSize -and ($command.Parameters.Keys -contains $parameter)) {
                 Add-ConfluenceDefaultParameter -Command $command -Parameter $parameter -Value $PageSize
