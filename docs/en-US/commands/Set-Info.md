@@ -16,7 +16,7 @@ Specify wiki location and authorization for use in this session's REST API reque
 ## SYNTAX
 
 ```powershell
-Set-ConfluenceInfo [[-BaseURi] <Uri>] [[-Credential] <PSCredential>] [[-PageSize] <UInt32>] [-PromptCredentials]
+Set-ConfluenceInfo [[-BaseURi] <Uri>] [[-Credential] <PSCredential>] [-PersonalAccessToken <PersonalAccessToken>] [[-PageSize] <UInt32>] [-PromptCredentials]
 ```
 
 ## DESCRIPTION
@@ -70,6 +70,16 @@ Set-ConfluenceInfo -BaseURI 'https://wiki.yourcompany.com' -Credential $Cred
 Declare the URI of your Confluence instance and the credentials (username and
 password).
 
+### -------------------------- EXAMPLE 5 --------------------------
+
+```powershell
+$Pat = 'NDU1MTk4NzUyNTg3Om1I/FR61TJBC8hhJKXpOgJBC0Jk'
+Set-ConfluenceInfo -BaseURI 'https://wiki.yourcompany.com' -PersonalAccessToken $Pat
+```
+
+Declare the URI of your Confluence instance and the Personal Access Token. 
+See: https://confluence.atlassian.com/enterprise/using-personal-access-tokens-1026032365.html
+
 ## PARAMETERS
 
 ### -BaseURi
@@ -105,6 +115,23 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -PersonalAccessToken
+
+The PersonalAccessToken you created in your Confluence User Settings.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 3
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+
 ### -PageSize
 
 Default PageSize for the invocations.
@@ -116,7 +143,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 3
+Position: 4
 Default value: 0
 Accept pipeline input: False
 Accept wildcard characters: False
