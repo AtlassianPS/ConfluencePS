@@ -13,7 +13,8 @@ function New-Page {
         [PSCredential]$Credential,
 
         [Parameter( Mandatory = $false )]
-        [PSCredential]$PersonalAccessToken,
+        [string]
+        $PersonalAccessToken,
 
         [Parameter( Mandatory = $false )]
         [ValidateNotNull()]
