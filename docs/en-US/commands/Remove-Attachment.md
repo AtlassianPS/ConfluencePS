@@ -91,6 +91,23 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -PersonalAccessToken
+
+Confluence's Personal Access Token for authentication.
+Value can be set persistently with Set-ConfluenceInfo.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -Certificate
 
 Certificate for authentication.
