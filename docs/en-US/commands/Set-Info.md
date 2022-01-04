@@ -16,7 +16,7 @@ Specify wiki location and authorization for use in this session's REST API reque
 ## SYNTAX
 
 ```powershell
-Set-ConfluenceInfo [[-BaseURi] <Uri>] [[-Credential] <PSCredential>] [-PersonalAccessToken <PersonalAccessToken>] [[-PageSize] <UInt32>] [-PromptCredentials]
+Set-ConfluenceInfo [[-BaseURi] <Uri>] [[-Credential] <PSCredential>] [-PersonalAccessToken <String>] [[-PageSize] <UInt32>] [-PromptCredentials]
 ```
 
 ## DESCRIPTION
