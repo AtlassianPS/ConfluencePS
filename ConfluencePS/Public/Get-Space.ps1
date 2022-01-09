@@ -5,13 +5,13 @@ function Get-Space {
     [OutputType([ConfluencePS.Space])]
     param (
         [Parameter( Mandatory = $true )]
-        [uri]$ApiUri,
+        [Uri]$ApiUri,
 
         [Parameter( Mandatory = $false )]
         [PSCredential]$Credential,
 
         [Parameter( Mandatory = $false )]
-        [string]
+        [String]
         $PersonalAccessToken,
 
         [Parameter( Mandatory = $false )]
@@ -23,7 +23,7 @@ function Get-Space {
             Position = 0
         )]
         [Alias('Key')]
-        [string[]]$SpaceKey,
+        [String[]]$SpaceKey,
 
         [ValidateRange(1, [UInt32]::MaxValue)]
         [UInt32]$PageSize = 25

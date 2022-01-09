@@ -18,13 +18,18 @@ Edit an existing Confluence page.
 ### byParameters (Default)
 
 ```powershell
-Set-ConfluencePage -ApiUri <Uri> -Credential <PSCredential> -PageID <UInt64> [-Title <String>] [-Body <String>] [-Convert] [-ParentID <UInt64>] [-Parent <Page>] [-WhatIf] [-Confirm]
+Set-ConfluencePage -ApiUri <Uri> [-Credential <PSCredential>]
+ [-PersonalAccessToken <String>] [-Certificate <X509Certificate>]
+ -PageID <UInt64> [-Title <String>] [-Body <String>] [-Convert]
+ [-ParentID <UInt64>] [-Parent <Page>] [-WhatIf] [-Confirm]
 ```
 
 ### byObject
 
 ```powershell
-Set-ConfluencePage -ApiUri <Uri> -Credential <PSCredential> -InputObject <Page> [-WhatIf] [-Confirm]
+Set-ConfluencePage -ApiUri <Uri> [-Credential <PSCredential>]
+ [-PersonalAccessToken <String>] [-Certificate <X509Certificate>]
+ -InputObject <Page> [-WhatIf] [-Confirm]
 ```
 
 ## DESCRIPTION

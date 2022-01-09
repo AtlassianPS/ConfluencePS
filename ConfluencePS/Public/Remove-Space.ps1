@@ -7,13 +7,13 @@ function Remove-Space {
     [System.Diagnostics.CodeAnalysis.SuppressMessage('PSUseDeclaredVarsMoreThanAssignments', '')]
     param (
         [Parameter( Mandatory = $true )]
-        [uri]$ApiUri,
+        [Uri]$ApiUri,
 
         [Parameter( Mandatory = $false )]
         [PSCredential]$Credential,
 
         [Parameter( Mandatory = $false )]
-        [string]
+        [String]
         $PersonalAccessToken,
 
         [Parameter( Mandatory = $false )]
@@ -28,9 +28,9 @@ function Remove-Space {
             ValueFromPipelineByPropertyName = $true
         )]
         [Alias('Key')]
-        [string[]]$SpaceKey,
+        [String[]]$SpaceKey,
 
-        [switch]$Force
+        [Switch]$Force
 
         # TODO: Probably an extra param later to loop checking the status & wait for completion?
     )

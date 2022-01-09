@@ -16,7 +16,9 @@ Remove an Attachment.
 ## SYNTAX
 
 ```powershell
-Remove-ConfluenceAttachment -ApiUri <Uri> -Credential <PSCredential> [-Attachment] <Attachment[]> [-WhatIf] [-Confirm]
+Remove-ConfluenceAttachment -ApiUri <Uri> [-Credential <PSCredential>]
+ [-PersonalAccessToken <String>] [-Certificate <X509Certificate>]
+ [-Attachment] <Attachment[]> [-WhatIf] [-Confirm]
 ```
 
 ## DESCRIPTION

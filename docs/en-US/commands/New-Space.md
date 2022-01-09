@@ -18,14 +18,17 @@ Create a new blank space on your Confluence instance.
 ### byObject (Default)
 
 ```powershell
-New-ConfluenceSpace -ApiUri <Uri> -Credential <PSCredential> -InputObject <Space> [-WhatIf] [-Confirm]
+New-ConfluenceSpace -ApiUri <Uri> [-Credential <PSCredential>]
+ [-PersonalAccessToken <String>] [-Certificate <X509Certificate>]
+ -InputObject <Space> [-WhatIf] [-Confirm]
 ```
 
 ### byProperties
 
 ```powershell
-New-ConfluenceSpace -ApiUri <Uri> -Credential <PSCredential> -SpaceKey <String> -Name <String>
- [-Description <String>] [-WhatIf] [-Confirm]
+New-ConfluenceSpace -ApiUri <Uri> [-Credential <PSCredential>]
+ [-PersonalAccessToken <String>] [-Certificate <X509Certificate>]
+ -SpaceKey <String> -Name <String> [-Description <String>] [-WhatIf] [-Confirm]
 ```
 
 ## DESCRIPTION

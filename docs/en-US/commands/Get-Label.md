@@ -16,8 +16,10 @@ Retrieve all labels applied to the given object(s).
 ## SYNTAX
 
 ```powershell
-Get-ConfluenceLabel -ApiUri <Uri> -Credential <PSCredential> [-PageID] <UInt64[]> [-PageSize <UInt64>]
- [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
+Get-ConfluenceLabel -ApiUri <Uri> [-Credential <PSCredential>]
+ [-PersonalAccessToken <String>] [-Certificate <X509Certificate>]
+ [-PageID] <UInt64[]> [-PageSize <UInt64>] [-IncludeTotalCount]
+ [-Skip <UInt64>] [-First <UInt64>]
 ```
 
 ## DESCRIPTION

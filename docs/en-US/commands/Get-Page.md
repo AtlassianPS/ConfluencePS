@@ -18,31 +18,46 @@ Retrieve a listing of pages in your Confluence instance.
 ### byId (Default)
 
 ```powershell
-Get-ConfluencePage -ApiUri <Uri> -Credential <PSCredential> [-PageID] <UInt64[]> [-PageSize <UInt32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>] [-ExcludePageBody]
+Get-ConfluencePage -ApiUri <Uri> [-Credential <PSCredential>]
+ [-PersonalAccessToken <String>] [-Certificate <X509Certificate>]
+ [-PageID] <UInt64[]> [-PageSize <UInt32>] [-IncludeTotalCount] [-Skip <UInt64>]
+ [-First <UInt64>] [-ExcludePageBody]
 ```
 
 ### byLabel
 
 ```powershell
-Get-ConfluencePage -ApiUri <Uri> -Credential <PSCredential> [-SpaceKey <String>] [-Space <Space>] -Label <String[]> [-PageSize <UInt32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>] [-ExcludePageBody]
+Get-ConfluencePage -ApiUri <Uri> [-Credential <PSCredential>]
+ [-PersonalAccessToken <String>] [-Certificate <X509Certificate>]
+ [-SpaceKey <String>] [-Space <Space>] -Label <String[]> [-PageSize <UInt32>]
+ [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>] [-ExcludePageBody]
 ```
 
 ### bySpace
 
 ```powershell
-Get-ConfluencePage -ApiUri <Uri> -Credential <PSCredential> -SpaceKey <String> [-Title <String>] [-PageSize <UInt32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>] [-ExcludePageBody]
+Get-ConfluencePage -ApiUri <Uri> [-Credential <PSCredential>]
+ [-PersonalAccessToken <String>] [-Certificate <X509Certificate>]
+ -SpaceKey <String> [-Title <String>] [-PageSize <UInt32>] [-IncludeTotalCount]
+ [-Skip <UInt64>] [-First <UInt64>] [-ExcludePageBody]
 ```
 
 ### byQuery
 
 ```powershell
-Get-ConfluencePage -ApiUri <Uri> -Credential <PSCredential> [-Query <String>] [-PageSize <UInt32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>] [-ExcludePageBody]
+Get-ConfluencePage -ApiUri <Uri> [-Credential <PSCredential>]
+ [-PersonalAccessToken <String>] [-Certificate <X509Certificate>]
+ [-Query] <String> [-PageSize <UInt32>] [-IncludeTotalCount] [-Skip <UInt64>]
+ [-First <UInt64>] [-ExcludePageBody]
 ```
 
 ### bySpaceObject
 
 ```powershell
-Get-ConfluencePage -ApiUri <Uri> -Credential <PSCredential> -Space <Space> [-Title <String>] [-PageSize <UInt32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>] [-ExcludePageBody]
+Get-ConfluencePage -ApiUri <Uri> [-Credential <PSCredential>]
+ [-PersonalAccessToken <String>] [-Certificate <X509Certificate>]
+ -Space <Space> [-Title <String>] [-PageSize <UInt32>] [-IncludeTotalCount]
+ [-Skip <UInt64>] [-First <UInt64>] [-ExcludePageBody]
 ```
 
 ## DESCRIPTION
