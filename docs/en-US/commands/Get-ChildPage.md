@@ -16,7 +16,10 @@ Retrieve the child pages of a given wiki page or pages.
 ## SYNTAX
 
 ```powershell
-Get-ConfluenceChildPage -ApiUri <Uri> -Credential <PSCredential> [-PageID] <UInt64> [-Recurse] [-PageSize <UInt64>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>] [-ExcludePageBody]
+Get-ConfluenceChildPage -ApiUri <Uri> [-Credential <PSCredential>]
+ [-PersonalAccessToken <String>] [-Certificate <X509Certificate>]
+ [-PageID] <UInt64> [-Recurse] [-PageSize <UInt64>] [-IncludeTotalCount]
+ [-Skip <UInt64>] [-First <UInt64>] [-ExcludePageBody]
 ```
 
 ## DESCRIPTION

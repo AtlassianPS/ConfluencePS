@@ -6,13 +6,13 @@ function Set-Attachment {
     [OutputType([ConfluencePS.Attachment])]
     param (
         [Parameter( Mandatory = $true )]
-        [uri]$ApiUri,
+        [Uri]$ApiUri,
 
         [Parameter( Mandatory = $false )]
         [PSCredential]$Credential,
 
         [Parameter( Mandatory = $false )]
-        [string]
+        [String]
         $PersonalAccessToken,
 
         [Parameter( Mandatory = $false )]
@@ -28,7 +28,7 @@ function Set-Attachment {
         [ConfluencePS.Attachment]$Attachment,
 
         # Path of the file to upload and attach
-        [Parameter( Mandatory )]
+        [Parameter( Mandatory = $true )]
         [ValidateScript(
             {
                 if (-not (Test-Path $_ -PathType Leaf)) {

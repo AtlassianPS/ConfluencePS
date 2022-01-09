@@ -16,7 +16,9 @@ Add a new global label to an existing Confluence page.
 ## SYNTAX
 
 ```powershell
-Add-ConfluenceLabel -ApiUri <Uri> -Credential <PSCredential> [[-PageID] <UInt64[]>] -Label <Object> [-WhatIf] [-Confirm]
+Add-ConfluenceLabel -ApiUri <Uri> [-Credential <PSCredential>]
+ [-PersonalAccessToken <String>] [-Certificate <X509Certificate>]
+ [-PageID]  <UInt64[]> -Label <Object> [-WhatIf] [-Confirm]
 ```
 
 ## DESCRIPTION

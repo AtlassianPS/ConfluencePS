@@ -17,11 +17,12 @@ Invoke a specific call to a Confluence REST Api endpoint
 ## SYNTAX
 
 ```powershell
-Invoke-ConfluenceMethod [-URi] <Uri> [[-Method] <WebRequestMethod>] [[-Body] <String>] [-RawBody]
- [-Headers <Hashtable>] [-GetParameters <Hashtable>] [-InFile <String>] [-OutFile <String>]
- [-OutputType <Type>] [-Credential <PSCredential>] [-PersonalAccessToken <String>]
- [-Certificate <X509Certificate>] [-Caller <Object>] [-IncludeTotalCount] [-Skip <UInt64>]
- [-First <UInt64>] [<CommonParameters>]
+Invoke-ConfluenceMethod [-URi] <Uri> [-Method <WebRequestMethod>] [-Body <String>]
+ [-RawBody] [-Headers <Hashtable>] [-GetParameters <Hashtable>] [-InFile <String>]
+ [-OutFile <String>] [-OutputType <Type>] [-Credential <PSCredential>]
+ [-PersonalAccessToken <String>] [-Certificate <X509Certificate>]
+ [-Caller <Object>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
+ [<CommonParameters>]
 ```
 
 ## DESCRIPTION

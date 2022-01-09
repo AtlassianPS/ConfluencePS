@@ -5,15 +5,15 @@ function Set-Info {
         [Parameter(
             HelpMessage = 'Example = https://brianbunke.atlassian.net/wiki (/wiki for Cloud instances)'
         )]
-        [uri]$BaseURi,
+        [Uri]$BaseURi,
 
         [PSCredential]$Credential,
 
-        [string]$PersonalAccessToken,
+        [String]$PersonalAccessToken,
 
         [UInt32]$PageSize,
 
-        [switch]$PromptCredentials
+        [Switch]$PromptCredentials
     )
 
     BEGIN {
@@ -21,10 +21,10 @@ function Set-Info {
         function Add-ConfluenceDefaultParameter {
             param(
                 [Parameter(Mandatory = $true)]
-                [string]$Command,
+                [String]$Command,
 
                 [Parameter(Mandatory = $true)]
-                [string]$Parameter,
+                [String]$Parameter,
 
                 [Parameter(Mandatory = $true)]
                 $Value

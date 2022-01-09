@@ -16,7 +16,8 @@ Convert your content to Confluence's storage format.
 ## SYNTAX
 
 ```powershell
-ConvertTo-ConfluenceStorageFormat -ApiUri <Uri> -Credential <PSCredential> [-Content] <String>
+ConvertTo-ConfluenceStorageFormat -ApiUri <Uri> [-Credential <PSCredential>]
+ [-PersonalAccessToken <String>] [-Certificate <X509Certificate>] [-Content] <String[]>
 ```
 
 ## DESCRIPTION

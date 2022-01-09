@@ -16,7 +16,9 @@ Remove an existing Confluence space.
 ## SYNTAX
 
 ```powershell
-Remove-ConfluenceSpace -ApiUri <Uri> -Credential <PSCredential> [-SpaceKey] <String[]> [-Force] [-WhatIf] [-Confirm]
+Remove-ConfluenceSpace -ApiUri <Uri> [-Credential <PSCredential>]
+ [-PersonalAccessToken <String>] [-Certificate <X509Certificate>]
+ [-SpaceKey] <String[]> [-Force] [-WhatIf] [-Confirm]
 ```
 
 ## DESCRIPTION

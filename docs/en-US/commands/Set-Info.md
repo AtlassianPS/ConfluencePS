@@ -16,7 +16,9 @@ Specify wiki location and authorization for use in this session's REST API reque
 ## SYNTAX
 
 ```powershell
-Set-ConfluenceInfo [[-BaseURi] <Uri>] [[-Credential] <PSCredential>] [-PersonalAccessToken <String>] [[-PageSize] <UInt32>] [-PromptCredentials]
+Set-ConfluenceInfo [-BaseURi <Uri>] [-Credential <PSCredential>]
+ [-PersonalAccessToken <String>] [-Certificate <X509Certificate>]
+ [-PageSize <UInt32>] [-PromptCredentials]
 ```
 
 ## DESCRIPTION
@@ -78,7 +80,7 @@ Set-ConfluenceInfo -BaseURI 'https://wiki.yourcompany.com' -PersonalAccessToken 
 ```
 
 Declare the URI of your Confluence instance and the Personal Access Token. 
-See: https://confluence.atlassian.com/enterprise/using-personal-access-tokens-1026032365.html
+See: <https://confluence.atlassian.com/enterprise/using-personal-access-tokens-1026032365.html>
 
 ## PARAMETERS
 
@@ -93,7 +95,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 1
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -109,7 +111,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 2
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -125,12 +127,11 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 3
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
-
 
 ### -PageSize
 
@@ -143,7 +144,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 4
+Position: Named
 Default value: 0
 Accept pipeline input: False
 Accept wildcard characters: False

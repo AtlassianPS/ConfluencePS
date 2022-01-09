@@ -16,7 +16,9 @@ Trash an existing Confluence page.
 ## SYNTAX
 
 ```powershell
-Remove-ConfluencePage -ApiUri <Uri> -Credential <PSCredential> [-PageID] <UInt64[]> [-WhatIf] [-Confirm]
+Remove-ConfluencePage -ApiUri <Uri> [-Credential <PSCredential>]
+ [-PersonalAccessToken <String>] [-Certificate <X509Certificate>]
+ [-PageID] <UInt64[]> [-WhatIf] [-Confirm]
 ```
 
 ## DESCRIPTION

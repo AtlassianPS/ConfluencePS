@@ -16,7 +16,9 @@ Retrieves the binary Attachment for a given Attachment object.
 ## SYNTAX
 
 ```powershell
-Get-ConfluenceAttachmentFile -ApiUri <Uri> -Credential <PSCredential> [-Attachment] <Attachment[]> [-Path <string>]
+Get-ConfluenceAttachmentFile -ApiUri <Uri> [-Credential <PSCredential>]
+ [-PersonalAccessToken <String>] [-Certificate <X509Certificate>]
+ [-Attachment] <Attachment[]> [-Path <string>]
 ```
 
 ## DESCRIPTION

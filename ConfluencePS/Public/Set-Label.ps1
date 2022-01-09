@@ -6,13 +6,13 @@ function Set-Label {
     [OutputType([ConfluencePS.ContentLabelSet])]
     param (
         [Parameter( Mandatory = $true )]
-        [uri]$ApiUri,
+        [Uri]$ApiUri,
 
         [Parameter( Mandatory = $false )]
         [PSCredential]$Credential,
 
         [Parameter( Mandatory = $false )]
-        [string]
+        [String]
         $PersonalAccessToken,
 
         [Parameter( Mandatory = $false )]
@@ -30,8 +30,8 @@ function Set-Label {
         [Alias('ID')]
         [UInt64[]]$PageID,
 
-        [Parameter(Mandatory = $true)]
-        [string[]]$Label
+        [Parameter( Mandatory = $true )]
+        [String[]]$Label
     )
 
     BEGIN {

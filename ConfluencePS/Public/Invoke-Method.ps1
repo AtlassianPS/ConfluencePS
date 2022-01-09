@@ -12,8 +12,11 @@ function Invoke-Method {
     )]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute( "PSAvoidUsingEmptyCatchBlock", "" )]
     param (
-        [Parameter(Mandatory = $true)]
-        [uri]$Uri,
+        [Parameter(
+            Position = 0,
+            Mandatory = $true
+        )]
+        [Uri]$Uri,
 
         [Microsoft.PowerShell.Commands.WebRequestMethod]$Method = "GET",
 
@@ -45,7 +48,7 @@ function Invoke-Method {
         [PSCredential]$Credential,
 
         [Parameter( Mandatory = $false )]
-        [string]
+        [String]
         $PersonalAccessToken,
 
         [Parameter( Mandatory = $false )]

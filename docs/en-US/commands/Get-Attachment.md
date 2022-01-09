@@ -16,7 +16,10 @@ Retrieve the child Attachments of a given wiki Page.
 ## SYNTAX
 
 ```powershell
-Get-ConfluenceAttachment -ApiUri <Uri> -Credential <PSCredential> [-PageID] <UInt64[]> [-FileNameFilter <string>] [-MediaTypeFilter <string>] [-Skip <UInt64>] [-First <UInt64>] [-PageSize <UInt64>] [-IncludeTotalCount]
+Get-ConfluenceAttachment -ApiUri <Uri> [-Credential <PSCredential>]
+ [-PersonalAccessToken <String>] [-Certificate <X509Certificate>]
+ [-PageID] <UInt64[]> [-FileNameFilter <string>] [-MediaTypeFilter <string>]
+ [-Skip <UInt64>] [-First <UInt64>] [-PageSize <UInt64>] [-IncludeTotalCount]
 ```
 
 ## DESCRIPTION
