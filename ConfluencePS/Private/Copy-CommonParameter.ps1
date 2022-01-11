@@ -31,7 +31,7 @@ function Copy-CommonParameter {
         [string[]]$AdditionalParameter,
 
         [Parameter(Mandatory = $false)]
-        [string[]]$DefaultParameter = @("Credential", "Certificate")
+        [string[]]$DefaultParameter = @("Credential", "Certificate","PersonalAccessToken")
     )
 
     [hashtable]$ht = @{}

@@ -60,7 +60,7 @@ Describe "Validation of build environment" -Tag Unit {
         }
 
         It "has a version changelog that matches the manifest version" {
-            Configuration\Get-Metadata -Path $env:BHManifestToTest -PropertyName ModuleVersion | Should -BeLike "$changelogVersion*"
+            (Metadata\Import-Metadata -Path $env:BHManifestToTest).ModuleVersion | Should -BeLike "$changelogVersion*"
         }
     }
 }

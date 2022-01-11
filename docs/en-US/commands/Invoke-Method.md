@@ -17,10 +17,12 @@ Invoke a specific call to a Confluence REST Api endpoint
 ## SYNTAX
 
 ```powershell
-Invoke-ConfluenceMethod [-URi] <Uri> [[-Method] <WebRequestMethod>] [[-Body] <String>] [-RawBody]
- [[-Headers] <Hashtable>] [[-GetParameters] <Hashtable>] [[-InFile] <String>] [[-OutFile] <String>]
- [[-OutputType] <Type>] [-Credential] <PSCredential> [[-Caller] <Object>] [-IncludeTotalCount] [-Skip <UInt64>]
- [-First <UInt64>] [<CommonParameters>]
+Invoke-ConfluenceMethod [-URi] <Uri> [-Method <WebRequestMethod>] [-Body <String>]
+ [-RawBody] [-Headers <Hashtable>] [-GetParameters <Hashtable>] [-InFile <String>]
+ [-OutFile <String>] [-OutputType <Type>] [-Credential <PSCredential>]
+ [-PersonalAccessToken <String>] [-Certificate <X509Certificate>]
+ [-Caller <Object>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
+ [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -224,7 +226,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 4
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -244,7 +246,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 5
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -262,7 +264,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 6
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -280,7 +282,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 7
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -299,7 +301,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 8
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -317,7 +319,23 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 9
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -PersonalAccessToken
+
+The PersonalAccessToken you created in your Confluence User Settings.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -335,7 +353,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 10
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -351,7 +369,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 11
+Position: Named
 Default value: $PSCmdlet
 Accept pipeline input: False
 Accept wildcard characters: False

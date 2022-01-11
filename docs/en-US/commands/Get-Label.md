@@ -16,8 +16,10 @@ Retrieve all labels applied to the given object(s).
 ## SYNTAX
 
 ```powershell
-Get-ConfluenceLabel -ApiUri <Uri> -Credential <PSCredential> [-PageID] <UInt64[]> [-PageSize <UInt64>]
- [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
+Get-ConfluenceLabel -ApiUri <Uri> [-Credential <PSCredential>]
+ [-PersonalAccessToken <String>] [-Certificate <X509Certificate>]
+ [-PageID] <UInt64[]> [-PageSize <UInt64>] [-IncludeTotalCount]
+ [-Skip <UInt64>] [-First <UInt64>]
 ```
 
 ## DESCRIPTION
@@ -70,6 +72,23 @@ Value can be set persistently with Set-ConfluenceInfo.
 
 ```yaml
 Type: PSCredential
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -PersonalAccessToken
+
+Confluence's Personal Access Token for authentication.
+Value can be set persistently with Set-ConfluenceInfo.
+
+```yaml
+Type: String
 Parameter Sets: (All)
 Aliases:
 

@@ -28,8 +28,8 @@ function ConvertTo-Table {
         # This ForEach needed if the content wasn't piped in
         $Content | ForEach-Object {
             if ($Vertical) {
-                if ($HeaderGenerated) {$pipe = '|'}
-                else {$pipe = '||'}
+                if ($HeaderGenerated) { $pipe = '|' }
+                else { $pipe = '||' }
 
                 # Put an empty row between multiple tables (objects)
                 if ($Spacer) {

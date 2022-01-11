@@ -3,10 +3,14 @@ function Get-ChildPage {
     [OutputType([ConfluencePS.Page])]
     param (
         [Parameter( Mandatory = $true )]
-        [uri]$ApiUri,
+        [Uri]$ApiUri,
 
         [Parameter( Mandatory = $false )]
         [PSCredential]$Credential,
+
+        [Parameter( Mandatory = $false )]
+        [String]
+        $PersonalAccessToken,
 
         [Parameter( Mandatory = $false )]
         [ValidateNotNull()]
@@ -23,12 +27,12 @@ function Get-ChildPage {
         [Alias('ID')]
         [UInt64]$PageID,
 
-        [switch]$Recurse,
+        [Switch]$Recurse,
 
         [ValidateRange(1, [UInt32]::MaxValue)]
         [UInt32]$PageSize = 25,
 
-        [switch]$ExcludePageBody
+        [Switch]$ExcludePageBody
     )
 
     BEGIN {

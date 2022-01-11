@@ -6,10 +6,14 @@ function Get-Page {
     [OutputType([ConfluencePS.Page])]
     param (
         [Parameter( Mandatory = $true )]
-        [uri]$ApiUri,
+        [Uri]$ApiUri,
 
         [Parameter( Mandatory = $false )]
         [PSCredential]$Credential,
+
+        [Parameter( Mandatory = $false )]
+        [String]
+        $PersonalAccessToken,
 
         [Parameter( Mandatory = $false )]
         [ValidateNotNull()]
@@ -34,7 +38,7 @@ function Get-Page {
             ParameterSetName = "bySpaceObject"
         )]
         [Alias('Name')]
-        [string]$Title,
+        [String]$Title,
 
         [Parameter(
             Mandatory = $true,
@@ -44,7 +48,7 @@ function Get-Page {
             ParameterSetName = "byLabel"
         )]
         [Alias('Key')]
-        [string]$SpaceKey,
+        [String]$SpaceKey,
 
         [Parameter(
             Mandatory = $true,
@@ -62,19 +66,19 @@ function Get-Page {
             Mandatory = $true,
             ParameterSetName = "byLabel"
         )]
-        [string[]]$Label,
+        [String[]]$Label,
 
         [Parameter(
             Position = 0,
             Mandatory = $true,
             ParameterSetName = "byQuery"
         )]
-        [string]$Query,
+        [String]$Query,
 
         [ValidateRange(1, [UInt32]::MaxValue)]
         [UInt32]$PageSize = 25,
 
-        [switch]$ExcludePageBody
+        [Switch]$ExcludePageBody
     )
 
     BEGIN {

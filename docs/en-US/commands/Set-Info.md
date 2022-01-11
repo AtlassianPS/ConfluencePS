@@ -16,7 +16,9 @@ Specify wiki location and authorization for use in this session's REST API reque
 ## SYNTAX
 
 ```powershell
-Set-ConfluenceInfo [[-BaseURi] <Uri>] [[-Credential] <PSCredential>] [[-PageSize] <UInt32>] [-PromptCredentials]
+Set-ConfluenceInfo [-BaseURi <Uri>] [-Credential <PSCredential>]
+ [-PersonalAccessToken <String>] [-Certificate <X509Certificate>]
+ [-PageSize <UInt32>] [-PromptCredentials]
 ```
 
 ## DESCRIPTION
@@ -70,6 +72,16 @@ Set-ConfluenceInfo -BaseURI 'https://wiki.yourcompany.com' -Credential $Cred
 Declare the URI of your Confluence instance and the credentials (username and
 password).
 
+### -------------------------- EXAMPLE 5 --------------------------
+
+```powershell
+$Pat = 'NDU1MTk4NzUyNTg3Om1I/FR61TJBC8hhJKXpOgJBC0Jk'
+Set-ConfluenceInfo -BaseURI 'https://wiki.yourcompany.com' -PersonalAccessToken $Pat
+```
+
+Declare the URI of your Confluence instance and the Personal Access Token. 
+See: <https://confluence.atlassian.com/enterprise/using-personal-access-tokens-1026032365.html>
+
 ## PARAMETERS
 
 ### -BaseURi
@@ -83,7 +95,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 1
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -99,7 +111,23 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 2
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -PersonalAccessToken
+
+The PersonalAccessToken you created in your Confluence User Settings.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -116,7 +144,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 3
+Position: Named
 Default value: 0
 Accept pipeline input: False
 Accept wildcard characters: False

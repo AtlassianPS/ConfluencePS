@@ -18,14 +18,17 @@ Create a new blank space on your Confluence instance.
 ### byObject (Default)
 
 ```powershell
-New-ConfluenceSpace -ApiUri <Uri> -Credential <PSCredential> -InputObject <Space> [-WhatIf] [-Confirm]
+New-ConfluenceSpace -ApiUri <Uri> [-Credential <PSCredential>]
+ [-PersonalAccessToken <String>] [-Certificate <X509Certificate>]
+ -InputObject <Space> [-WhatIf] [-Confirm]
 ```
 
 ### byProperties
 
 ```powershell
-New-ConfluenceSpace -ApiUri <Uri> -Credential <PSCredential> -SpaceKey <String> -Name <String>
- [-Description <String>] [-WhatIf] [-Confirm]
+New-ConfluenceSpace -ApiUri <Uri> [-Credential <PSCredential>]
+ [-PersonalAccessToken <String>] [-Certificate <X509Certificate>]
+ -SpaceKey <String> -Name <String> [-Description <String>] [-WhatIf] [-Confirm]
 ```
 
 ## DESCRIPTION
@@ -89,6 +92,23 @@ Value can be set persistently with Set-ConfluenceInfo.
 
 ```yaml
 Type: PSCredential
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -PersonalAccessToken
+
+Confluence's Personal Access Token for authentication.
+Value can be set persistently with Set-ConfluenceInfo.
+
+```yaml
+Type: String
 Parameter Sets: (All)
 Aliases:
 

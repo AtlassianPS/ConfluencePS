@@ -7,10 +7,14 @@ function New-Space {
     [OutputType([ConfluencePS.Space])]
     param (
         [Parameter( Mandatory = $true )]
-        [uri]$ApiUri,
+        [Uri]$ApiUri,
 
         [Parameter( Mandatory = $false )]
         [PSCredential]$Credential,
+
+        [Parameter( Mandatory = $false )]
+        [String]
+        $PersonalAccessToken,
 
         [Parameter( Mandatory = $false )]
         [ValidateNotNull()]
@@ -29,18 +33,18 @@ function New-Space {
             ParameterSetName = "byProperties"
         )]
         [Alias('Key')]
-        [string]$SpaceKey,
+        [String]$SpaceKey,
 
         [Parameter(
             Mandatory = $true,
             ParameterSetName = "byProperties"
         )]
-        [string]$Name,
+        [String]$Name,
 
         [Parameter(
             ParameterSetName = "byProperties"
         )]
-        [string]$Description
+        [String]$Description
     )
 
     BEGIN {

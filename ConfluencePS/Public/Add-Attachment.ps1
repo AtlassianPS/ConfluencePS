@@ -6,10 +6,14 @@ function Add-Attachment {
     [OutputType([ConfluencePS.Attachment])]
     param(
         [Parameter( Mandatory = $true )]
-        [uri]$ApiUri,
+        [Uri]$ApiUri,
 
         [Parameter( Mandatory = $false )]
         [PSCredential]$Credential,
+
+        [Parameter( Mandatory = $false )]
+        [String]
+        $PersonalAccessToken,
 
         [Parameter( Mandatory = $false )]
         [ValidateNotNull()]
@@ -26,7 +30,11 @@ function Add-Attachment {
         [Alias('ID')]
         [UInt64]$PageID,
 
-        [Parameter( Mandatory, ValueFromPipeline, ValueFromPipelineByPropertyName )]
+        [Parameter(
+            Mandatory = $true,
+            ValueFromPipeline = $true,
+            ValueFromPipelineByPropertyName = $true
+        )]
         [ValidateScript(
             {
                 if (-not (Test-Path $_ -PathType Leaf)) {

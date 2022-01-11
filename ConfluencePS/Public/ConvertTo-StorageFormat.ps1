@@ -3,10 +3,14 @@ function ConvertTo-StorageFormat {
     [OutputType([String])]
     param (
         [Parameter( Mandatory = $true )]
-        [uri]$ApiUri,
+        [Uri]$ApiUri,
 
         [Parameter( Mandatory = $false )]
         [PSCredential]$Credential,
+
+        [Parameter( Mandatory = $false )]
+        [String]
+        $PersonalAccessToken,
 
         [Parameter( Mandatory = $false )]
         [ValidateNotNull()]
@@ -18,7 +22,7 @@ function ConvertTo-StorageFormat {
             Mandatory = $true,
             ValueFromPipeline = $true
         )]
-        [string[]]$Content
+        [String[]]$Content
     )
 
     BEGIN {

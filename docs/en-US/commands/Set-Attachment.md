@@ -16,7 +16,9 @@ Updates an existing attachment with a new file.
 ## SYNTAX
 
 ```powershell
-Set-ConfluenceAttachment -ApiUri <Uri> -Credential <PSCredential> [-Attachment] <Attachment> -FilePath <String> [-WhatIf] [-Confirm]
+Set-ConfluenceAttachment -ApiUri <Uri> [-Credential <PSCredential>]
+ [-PersonalAccessToken <String>] [-Certificate <X509Certificate>]
+ [-Attachment] <Attachment> -FilePath <String> [-WhatIf] [-Confirm]
 ```
 
 ## DESCRIPTION
@@ -69,6 +71,23 @@ Value can be set persistently with Set-ConfluenceInfo.
 
 ```yaml
 Type: PSCredential
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -PersonalAccessToken
+
+Confluence's Personal Access Token for authentication.
+Value can be set persistently with Set-ConfluenceInfo.
+
+```yaml
+Type: String
 Parameter Sets: (All)
 Aliases:
 
