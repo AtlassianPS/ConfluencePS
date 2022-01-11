@@ -16,7 +16,9 @@ Remove an Attachment.
 ## SYNTAX
 
 ```powershell
-Remove-ConfluenceAttachment -ApiUri <Uri> -Credential <PSCredential> [-Attachment] <Attachment[]> [-WhatIf] [-Confirm]
+Remove-ConfluenceAttachment -ApiUri <Uri> [-Credential <PSCredential>]
+ [-PersonalAccessToken <String>] [-Certificate <X509Certificate>]
+ [-Attachment] <Attachment[]> [-WhatIf] [-Confirm]
 ```
 
 ## DESCRIPTION
@@ -81,6 +83,23 @@ Value can be set persistently with Set-ConfluenceInfo.
 
 ```yaml
 Type: PSCredential
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -PersonalAccessToken
+
+Confluence's Personal Access Token for authentication.
+Value can be set persistently with Set-ConfluenceInfo.
+
+```yaml
+Type: String
 Parameter Sets: (All)
 Aliases:
 

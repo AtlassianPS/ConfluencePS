@@ -3,10 +3,14 @@ function Get-AttachmentFile {
     [OutputType([Bool])]
     param (
         [Parameter( Mandatory = $true )]
-        [uri]$ApiUri,
+        [Uri]$ApiUri,
 
         [Parameter( Mandatory = $false )]
         [PSCredential]$Credential,
+
+        [Parameter( Mandatory = $false )]
+        [String]
+        $PersonalAccessToken,
 
         [Parameter( Mandatory = $false )]
         [ValidateNotNull()]
@@ -59,8 +63,8 @@ function Get-AttachmentFile {
 
         foreach ($_Attachment in $Attachment) {
             $iwParameters['Uri'] = $_Attachment.URL
-            $iwParameters['Headers'] = @{"Accept" = $_Attachment.MediaType}
-            $iwParameters['OutFile'] = if ($Path) {Join-Path -Path $Path -ChildPath $_Attachment.Filename} else {$_Attachment.Filename}
+            $iwParameters['Headers'] = @{"Accept" = $_Attachment.MediaType }
+            $iwParameters['OutFile'] = if ($Path) { Join-Path -Path $Path -ChildPath $_Attachment.Filename } else { $_Attachment.Filename }
 
             $result = Invoke-Method @iwParameters
             (-not $result)

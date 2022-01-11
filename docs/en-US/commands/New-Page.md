@@ -18,13 +18,18 @@ Create a new page on your Confluence instance.
 ### byParameters (Default)
 
 ```powershell
-New-ConfluencePage -ApiUri <Uri> -Credential <PSCredential> -Title <String> [-ParentID <UInt64>] [-Parent <Page>] [-SpaceKey <String>] [-Space <Space>] [-Body <String>] [-Convert] [-WhatIf] [-Confirm]
+New-ConfluencePage -ApiUri <Uri> [-Credential <PSCredential>]
+ [-PersonalAccessToken <String>] [-Certificate <X509Certificate>]
+ -Title <String> [-ParentID <UInt64>] [-Parent <Page>] [-SpaceKey <String>]
+ [-Space <Space>] [-Body <String>] [-Convert] [-WhatIf] [-Confirm]
 ```
 
 ### byObject
 
 ```powershell
-New-ConfluencePage -ApiUri <Uri> -Credential <PSCredential> -InputObject <Page> [-WhatIf] [-Confirm]
+New-ConfluencePage -ApiUri <Uri> [-Credential <PSCredential>]
+ [-PersonalAccessToken <String>] [-Certificate <X509Certificate>]
+ -InputObject <Page> [-WhatIf] [-Confirm]
 ```
 
 ## DESCRIPTION
@@ -128,6 +133,23 @@ Value can be set persistently with Set-ConfluenceInfo.
 
 ```yaml
 Type: PSCredential
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -PersonalAccessToken
+
+Confluence's Personal Access Token for authentication.
+Value can be set persistently with Set-ConfluenceInfo.
+
+```yaml
+Type: String
 Parameter Sets: (All)
 Aliases:
 

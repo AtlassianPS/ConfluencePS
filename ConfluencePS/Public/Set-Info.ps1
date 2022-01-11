@@ -5,13 +5,15 @@ function Set-Info {
         [Parameter(
             HelpMessage = 'Example = https://brianbunke.atlassian.net/wiki (/wiki for Cloud instances)'
         )]
-        [uri]$BaseURi,
+        [Uri]$BaseURi,
 
         [PSCredential]$Credential,
 
+        [String]$PersonalAccessToken,
+
         [UInt32]$PageSize,
 
-        [switch]$PromptCredentials
+        [Switch]$PromptCredentials
     )
 
     BEGIN {
@@ -19,10 +21,10 @@ function Set-Info {
         function Add-ConfluenceDefaultParameter {
             param(
                 [Parameter(Mandatory = $true)]
-                [string]$Command,
+                [String]$Command,
 
                 [Parameter(Mandatory = $true)]
-                [string]$Parameter,
+                [String]$Parameter,
 
                 [Parameter(Mandatory = $true)]
                 $Value
@@ -56,6 +58,11 @@ function Set-Info {
             $parameter = "Credential"
             if ($Credential -and ($command.Parameters.Keys -contains $parameter)) {
                 Add-ConfluenceDefaultParameter -Command $command -Parameter $parameter -Value $Credential
+            }
+
+            $parameter = "PersonalAccessToken"
+            if ($PersonalAccessToken -and ($command.Parameters.Keys -contains $parameter)) {
+                Add-ConfluenceDefaultParameter -Command $command -Parameter $parameter -Value $PersonalAccessToken
             }
 
             $parameter = "PageSize"

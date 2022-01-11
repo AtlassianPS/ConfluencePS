@@ -31,6 +31,9 @@ function Invoke-WebRequest {
         [System.Management.Automation.CredentialAttribute()]
         ${Credential},
 
+        [string]
+        ${PersonalAccessToken},
+
         [switch]
         ${UseDefaultCredentials},
 
@@ -99,6 +102,11 @@ function Invoke-WebRequest {
                 ))
             $PSBoundParameters["Headers"]["Authorization"] = "Basic $($SecureCreds)"
             $null = $PSBoundParameters.Remove("Credential")
+        }
+
+        if ($PersonalAccessToken) {
+            $PSBoundParameters["Headers"]["Authorization"] = "Bearer $PersonalAccessToken"
+            $null = $PSBoundParameters.Remove("PersonalAccessToken")
         }
 
         if ($InFile) {
@@ -296,6 +304,8 @@ if ($PSVersionTable.PSVersion.Major -ge 6) {
         begin {
             if ($Credential -and (-not ($Authentication))) {
                 $PSBoundParameters["Authentication"] = "Basic"
+            } elseif ($PersonalAccessToken -and (-not ($Authentication))) {
+                $PSBoundParameters["Authentication"] = "Bearer"
             }
             if ($InFile) {
                 $multipartContent = [System.Net.Http.MultipartFormDataContent]::new()

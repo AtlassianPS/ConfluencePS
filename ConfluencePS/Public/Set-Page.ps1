@@ -7,10 +7,14 @@ function Set-Page {
     [OutputType([ConfluencePS.Page])]
     param (
         [Parameter( Mandatory = $true )]
-        [uri]$ApiUri,
+        [Uri]$ApiUri,
 
         [Parameter( Mandatory = $false )]
         [PSCredential]$Credential,
+
+        [Parameter( Mandatory = $false )]
+        [String]
+        $PersonalAccessToken,
 
         [Parameter( Mandatory = $false )]
         [ValidateNotNull()]
@@ -35,13 +39,13 @@ function Set-Page {
 
         [Parameter(ParameterSetName = 'byParameters')]
         [ValidateNotNullOrEmpty()]
-        [string]$Title,
+        [String]$Title,
 
         [Parameter(ParameterSetName = 'byParameters')]
-        [string]$Body,
+        [String]$Body,
 
         [Parameter(ParameterSetName = 'byParameters')]
-        [switch]$Convert,
+        [Switch]$Convert,
 
         [Parameter(ParameterSetName = 'byParameters')]
         [ValidateRange(1, [UInt64]::MaxValue)]
