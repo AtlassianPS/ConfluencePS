@@ -28,12 +28,12 @@ catch { }
 
 Set-StrictMode -Version Latest
 
-Import-Module "$PSScriptRoot/Tools/BuildTools.psm1" -Force -ErrorAction Stop
-
 if ($BuildTask -notin @("SetUp", "InstallDependencies")) {
     Import-Module BuildHelpers -Force -ErrorAction Stop
     Invoke-Init
 }
+
+Import-Module "$PSScriptRoot/Tools/BuildTools.psm1" -Force -ErrorAction Stop
 
 #region SetUp
 # Synopsis: Proxy task
