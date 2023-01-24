@@ -87,6 +87,7 @@ function Set-Page {
             }
             version   = [PSObject]@{
                 number = 0
+                minorEdit = $true
             }
             ancestors = @()
         }
