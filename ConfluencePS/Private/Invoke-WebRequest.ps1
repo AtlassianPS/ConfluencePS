@@ -205,6 +205,9 @@ if ($PSVersionTable.PSVersion.Major -ge 6) {
             [System.Management.Automation.CredentialAttribute()]
             ${Credential},
 
+            [string]
+            ${PersonalAccessToken},
+
             [switch]
             ${UseDefaultCredentials},
 
@@ -306,6 +309,8 @@ if ($PSVersionTable.PSVersion.Major -ge 6) {
                 $PSBoundParameters["Authentication"] = "Basic"
             } elseif ($PersonalAccessToken -and (-not ($Authentication))) {
                 $PSBoundParameters["Authentication"] = "Bearer"
+                $PSBoundParameters["Token"] = ConvertTo-SecureString $PersonalAccessToken -AsPlainText -Force
+                $null = $PSBoundParameters.Remove("PersonalAccessToken")
             }
             if ($InFile) {
                 $multipartContent = [System.Net.Http.MultipartFormDataContent]::new()
