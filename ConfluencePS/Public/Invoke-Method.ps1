@@ -249,7 +249,7 @@
 
                 $errorMessages = @()
                 try {
-                    $responseObject = ConvertFrom-Json -InputObject $responseBody -ErrorAction Stop
+                    $responseObject = ConvertFrom-Json -AsHashTable -InputObject $responseBody -ErrorAction Stop
                     if ($responseObject.message) {
                         $errorMessages += [string]$responseObject.message
                     }
