@@ -1,0 +1,19 @@
+name: Notify Homepage on Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    if: ${{ !contains(github.ref_name, 'alpha') && !contains(github.ref_name, 'beta') && !contains(github.ref_name, 'rc') }}
+    steps:
+      - name: Notify homepage to update submodule
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.HOMEPAGE_PAT }}
+          repository: AtlassianPS/AtlassianPS.github.io
+          event-type: module-release
+          client-payload: '{"module": "ConfluencePS", "version": "${{ github.ref_name }}"}'
