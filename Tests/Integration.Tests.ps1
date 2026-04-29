@@ -634,7 +634,8 @@ Describe 'Integration Tests' -Tag Integration {
                 [ConfluencePS.Page]$InputObject,
 
                 $Title,
-                $Body
+                $Body,
+                $VersionMessage
             )
 
             process {
@@ -643,6 +644,9 @@ Describe 'Integration Tests' -Tag Integration {
                 }
                 if ($Body) {
                     $InputObject.Body = $Body
+                }
+                if ($VersionMessage) {
+                    $InputObject.Version.Message = $VersionMessage
                 }
                 $InputObject
             }
@@ -654,12 +658,13 @@ Describe 'Integration Tests' -Tag Integration {
         $Page3 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page from Object"
         $Page4 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page with Parent Object"
         # create some more pages
-        $Page5, $Page6, $Page7, $Page8 = ("Page 5", "Page 6", "Page 7", "Page 8" | New-ConfluencePage -SpaceKey $SpaceKey -Body "<p>Lorem ipsum</p>" -ErrorAction Stop)
+        $Page5, $Page6, $Page7, $Page8, $Page9 = ("Page 5", "Page 6", "Page 7", "Page 8", "Page 9" | New-ConfluencePage -SpaceKey $SpaceKey -Body "<p>Lorem ipsum</p>" -ErrorAction Stop)
         $AllPages = Get-ConfluencePage -SpaceKey $SpaceKey
         $ParentPage = $AllPages | Where-Object {$_.Title -like "*Home"}
 
         $NewTitle6 = "Renamed Page 6"
         $NewTitle7 = "Renamed Page 7"
+        $NewVersionMessage9 = "Updated body content"
         $NewContent1 = "<h1>Bulk Change</h1><p>Changed all bodies in this space at once</p>"
         $NewContent2 = "<h1>Set Body by property</h1>"
         $NewContent3 = "<p>Updated</p>"
@@ -685,6 +690,8 @@ Describe 'Integration Tests' -Tag Integration {
         $SetPage7 = $AllChangedPages | Where-Object {$_.ID -eq $Page7.ID} | Set-PageContent -Title $NewTitle7 | Set-ConfluencePage
         # clear the body of a page
         $SetPage8 = Set-ConfluencePage -PageID $Page8.ID -Body ""
+        # change the version message of a page
+        $SetPage9 = $AllChangedPages | Where-Object {$_.ID -eq $Page9.ID} | Set-PageContent -VersionMessage $NewVersionMessage9 | Set-ConfluencePage
 
         # ASSERT
         It 'returns the correct amount of results' {
@@ -696,6 +703,7 @@ Describe 'Integration Tests' -Tag Integration {
             @($SetPage6).Count | Should Be 1
             @($SetPage7).Count | Should Be 1
             @($SetPage8).Count | Should Be 1
+            @($SetPage9).Count | Should Be 1
             @($AllChangedPages).Count | Should Be 9
         }
         It 'returns an object with specific properties' {
@@ -707,6 +715,7 @@ Describe 'Integration Tests' -Tag Integration {
             $SetPage6 | Should BeOfType [ConfluencePS.Page]
             $SetPage7 | Should BeOfType [ConfluencePS.Page]
             $SetPage8 | Should BeOfType [ConfluencePS.Page]
+            $SetPage9 | Should BeOfType [ConfluencePS.Page]
             $AllChangedPages | Should BeOfType [ConfluencePS.Page]
             ($SetPage1 | Get-Member -MemberType Property).Count | Should Be 9
             ($SetPage2 | Get-Member -MemberType Property).Count | Should Be 9
@@ -716,6 +725,7 @@ Describe 'Integration Tests' -Tag Integration {
             ($SetPage6 | Get-Member -MemberType Property).Count | Should Be 9
             ($SetPage7 | Get-Member -MemberType Property).Count | Should Be 9
             ($SetPage8 | Get-Member -MemberType Property).Count | Should Be 9
+            ($SetPage9 | Get-Member -MemberType Property).Count | Should Be 9
         }
         It 'id is not null or empty' {
             $SetPage1.ID | Should Not BeNullOrEmpty
@@ -726,6 +736,7 @@ Describe 'Integration Tests' -Tag Integration {
             $SetPage6.ID | Should Not BeNullOrEmpty
             $SetPage7.ID | Should Not BeNullOrEmpty
             $SetPage8.ID | Should Not BeNullOrEmpty
+            $SetPage9.ID | Should Not BeNullOrEmpty
         }
         It 'key has the specified value' {
             $SetPage1.Space.Key | Should BeExactly $SpaceKey
@@ -736,6 +747,7 @@ Describe 'Integration Tests' -Tag Integration {
             $SetPage6.Space.Key | Should BeExactly $SpaceKey
             $SetPage7.Space.Key | Should BeExactly $SpaceKey
             $SetPage8.Space.Key | Should BeExactly $SpaceKey
+            $SetPage9.Space.Key | Should BeExactly $SpaceKey
             $AllChangedPages.Space.Key | Should BeExactly (1..9 | ForEach-Object {$SpaceKey})
         }
         It 'title has the specified value' {
@@ -747,6 +759,7 @@ Describe 'Integration Tests' -Tag Integration {
             $SetPage6.Title | Should BeExactly $NewTitle6
             $SetPage7.Title | Should BeExactly $NewTitle7
             $SetPage8.Title | Should BeExactly $Page8.Title
+            $SetPage9.Version.Message | Should BeExactly $NewVersionMessage9
         }
         It 'parentid has the specified value' {
             $SetPage1.Ancestors | Should Not BeNullOrEmpty
@@ -761,6 +774,7 @@ Describe 'Integration Tests' -Tag Integration {
             $SetPage6.Ancestors | Should BeNullOrEmpty
             $SetPage7.Ancestors | Should BeNullOrEmpty
             $SetPage8.Ancestors | Should BeNullOrEmpty
+            $SetPage9.Ancestors | Should BeNullOrEmpty
         }
         It 'body has the specified value' {
             $SetPage1.Body | Should BeExactly $NewContent1
@@ -771,6 +785,7 @@ Describe 'Integration Tests' -Tag Integration {
             $SetPage6.Body | Should BeExactly $NewContent1
             $SetPage7.Body | Should BeExactly $NewContent1
             $SetPage8.Body | Should BeExactly ""
+            $SetPage9.Body | Should BeExactly $NewContent1
         }
         It 'version has the specified value' {
             $SetPage1.Version.Number | Should BeExactly 2
@@ -781,6 +796,7 @@ Describe 'Integration Tests' -Tag Integration {
             $SetPage6.Version.Number | Should BeExactly 3
             $SetPage7.Version.Number | Should BeExactly 3
             $SetPage8.Version.Number | Should BeExactly 3
+            $SetPage9.Version.Number | Should BeExactly 3
         }
     }
 
