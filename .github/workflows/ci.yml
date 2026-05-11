@@ -7,8 +7,18 @@ concurrency:
 on:
   pull_request:
     branches: [master]
+    paths-ignore: &paths-ignore
+      - "CHANGELOG.md"
+      - "LICENSE"
+      - ".github/*.md"
+      - ".github/ISSUE_TEMPLATE/**"
+      - ".github/PULL_REQUEST_TEMPLATE/**"
+      - ".vscode/**"
+      - ".editorconfig"
+      - ".spelling"
   push:
     branches: [master]
+    paths-ignore: *paths-ignore
   workflow_dispatch:
 
 jobs:
@@ -28,7 +38,6 @@ jobs:
         with:
           name: Release
           path: ./Release/
-          overwrite: true
 
   test_windows_ps5:
     name: Test (Windows PS5)
@@ -72,9 +81,8 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: Windows-PS5-Tests
+          name: Windows-PS5-Unit-Tests
           path: Test*.xml
-          overwrite: true
 
   test_pwsh:
     name: Test (${{ matrix.name }})
@@ -111,8 +119,8 @@ jobs:
             Install-Module Pester -RequiredVersion 4.10.1 -Scope CurrentUser -Force -SkipPublisherCheck -ErrorAction Stop
           }
           Import-Module Pester -RequiredVersion 4.10.1 -Force
-          # Documentation-tagged help tests currently depend on PS5-era common
-          # parameter shape; keep pwsh lanes focused on code/test portability.
+          # Legacy ConfluencePS help tests rely on Windows PowerShell-only
+          # common parameter expectations.
           Invoke-Build -Task Test -ExcludeTag "Integration", "Documentation"
         shell: pwsh
 
@@ -120,12 +128,11 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: ${{ matrix.name }}-Tests
+          name: ${{ matrix.name }}-Unit-Tests
           path: Test*.xml
-          overwrite: true
 
-  integration_cloud:
-    name: Integration Tests (Cloud)
+  smoke_tests:
+    name: Smoke Tests
     needs: build
     runs-on: ubuntu-latest
     if: github.event_name != 'pull_request' ||
@@ -145,7 +152,7 @@ jobs:
           name: Release
           path: ./Release/
 
-      - name: Run integration tests
+      - name: Run smoke integration tests
         if: env.WikiURI != '' && env.WikiUser != '' && env.WikiPass != ''
         run: |
           $requiredPesterVersion = [version]'4.10.1'
@@ -167,14 +174,13 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: Integration-Tests
+          name: Smoke-Tests
           path: Test*.xml
-          overwrite: true
 
   ci-required:
     name: CI Result
     if: always()
-    needs: [build, test_windows_ps5, test_pwsh, integration_cloud]
+    needs: [build, test_windows_ps5, test_pwsh, smoke_tests]
     runs-on: ubuntu-latest
     steps:
       - name: Aggregate job results
