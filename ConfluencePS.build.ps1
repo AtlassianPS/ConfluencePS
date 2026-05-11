@@ -7,7 +7,8 @@ param(
     [String[]]$Tag,
     [String[]]$ExcludeTag = @("Integration"),
     [String]$PSGalleryAPIKey,
-    [String]$GithubAccessToken
+    [String]$GithubAccessToken,
+    [String]$VersionToPublish
 )
 
 $WarningPreference = "Continue"
@@ -44,17 +45,7 @@ task SetUp InstallDependencies, Build
 
 # Synopsis: Install all module used for the development of this module
 task InstallDependencies {
-    Install-PSDepend
-    Import-Module PSDepend -Force
-    $parameterPSDepend = @{
-        Path        = "$PSScriptRoot/Tools/build.requirements.psd1"
-        Install     = $true
-        Import      = $false
-        Force       = $true
-        ErrorAction = "Stop"
-    }
-    $null = Invoke-PSDepend @parameterPSDepend
-    Import-Module BuildHelpers -Force
+    Install-Dependency
 }
 
 # Synopsis: Get the next version for the build
@@ -125,6 +116,21 @@ task ShowInfo Init, GetNextVersion, {
 }
 #endregion DebugInformation
 
+#region Lint
+task Lint Init, {
+    $requiredPesterVersion = [version]"4.10.1"
+    $installedPester = Get-Module -ListAvailable -Name Pester | Where-Object { $_.Version -eq $requiredPesterVersion } | Select-Object -First 1
+    Assert-True ($null -ne $installedPester) "Required Pester version 4.10.1 was not found."
+    Import-Module Pester -RequiredVersion 4.10.1 -Force
+
+    $styleResults = Invoke-Pester -Script "$PSScriptRoot/Tests/Style.Tests.ps1" -PassThru
+    Assert-True ($styleResults.FailedCount -eq 0) "$($styleResults.FailedCount) style test(s) failed."
+
+    $pssaResults = Invoke-Pester -Script "$PSScriptRoot/Tests/PSScriptAnalyzer.Tests.ps1" -PassThru
+    Assert-True ($pssaResults.FailedCount -eq 0) "$($pssaResults.FailedCount) analyzer test(s) failed."
+}
+#endregion Lint
+
 #region BuildRelease
 # Synopsis: Build a shippable release
 task Build Init, GenerateExternalHelp, CopyModuleFiles, UpdateManifest, CompileModule, PrepareTests
@@ -191,12 +197,26 @@ task CompileModule Init, {
 
 # Synopsis: Use PlatyPS to generate External-Help
 task GenerateExternalHelp Init, {
-    Import-Module platyPS -Force
-    foreach ($locale in (Get-ChildItem "$env:BHProjectPath/docs" -Attribute Directory)) {
-        New-ExternalHelp -Path "$($locale.FullName)" -OutputPath "$env:BHModulePath/$($locale.Basename)" -Force
-        New-ExternalHelp -Path "$($locale.FullName)/commands" -OutputPath "$env:BHModulePath/$($locale.Basename)" -Force
+    $platyModuleName = if (Get-Module -ListAvailable -Name "Microsoft.PowerShell.PlatyPS") {
+        "Microsoft.PowerShell.PlatyPS"
     }
-    Remove-Module platyPS
+    else {
+        "platyPS"
+    }
+
+    try {
+        Import-Module $platyModuleName -Force -ErrorAction Stop
+        foreach ($locale in (Get-ChildItem "$env:BHProjectPath/docs" -Attribute Directory)) {
+            New-ExternalHelp -Path "$($locale.FullName)" -OutputPath "$env:BHModulePath/$($locale.Basename)" -Force
+            New-ExternalHelp -Path "$($locale.FullName)/commands" -OutputPath "$env:BHModulePath/$($locale.Basename)" -Force
+        }
+    }
+    catch {
+        Write-Warning "Skipping help regeneration because PlatyPS could not be loaded: $($_.Exception.Message)"
+    }
+    finally {
+        Remove-Module $platyModuleName -ErrorAction SilentlyContinue
+    }
 }
 
 # Synopsis: Update the manifest of the module
@@ -228,6 +248,10 @@ task Test Init, {
     Assert-True { Test-Path $env:BHBuildOutput -PathType Container } "Release path must exist"
 
     Remove-Module $env:BHProjectName -ErrorAction SilentlyContinue
+    $requiredPesterVersion = [version]"4.10.1"
+    $installedPester = Get-Module -ListAvailable -Name Pester | Where-Object { $_.Version -eq $requiredPesterVersion } | Select-Object -First 1
+    Assert-True ($null -ne $installedPester) "Required Pester version 4.10.1 was not found."
+    Import-Module Pester -RequiredVersion 4.10.1 -Force
 
     <# $params = @{
         Path    = "$env:BHBuildOutput/$env:BHProjectName"
@@ -258,9 +282,46 @@ task Test Init, {
 }, { Init }
 #endregion
 
+#region Integration
+task TestIntegration Init, {
+    $requiredEnvVars = @("WikiURI", "WikiUser", "WikiPass")
+    $missing = $requiredEnvVars | Where-Object {
+        [string]::IsNullOrEmpty([Environment]::GetEnvironmentVariable($_))
+    }
+    Assert-True ($missing.Count -eq 0) "Required integration environment variable(s) missing: $($missing -join ', ')"
+
+    $requiredPesterVersion = [version]"4.10.1"
+    $installedPester = Get-Module -ListAvailable -Name Pester | Where-Object { $_.Version -eq $requiredPesterVersion } | Select-Object -First 1
+    Assert-True ($null -ne $installedPester) "Required Pester version 4.10.1 was not found."
+    Import-Module Pester -RequiredVersion 4.10.1 -Force
+
+    $integrationScript = "$env:BHBuildOutput/Tests/Integration.Tests.ps1"
+    if (-not (Test-Path $integrationScript)) {
+        $integrationScript = "$env:BHProjectPath/Tests/Integration.Tests.ps1"
+    }
+
+    $parameter = @{
+        Script       = $integrationScript
+        Tag          = @("Integration")
+        Show         = "Fails"
+        PassThru     = $true
+        OutputFile   = "$env:BHProjectPath/Test-Integration.xml"
+        OutputFormat = "NUnitXml"
+    }
+    $testResults = Invoke-Pester @parameter
+    Assert-True ($testResults.FailedCount -eq 0) "$($testResults.FailedCount) integration test(s) failed."
+}
+#endregion Integration
+
 #region Publish
 # Synopsis: Publish a new release on github and the PSGallery
 task Deploy Init, PublishToGallery, TagReplository, UpdateHomepage
+
+# Synopsis: Publish build output to PSGallery (used by release workflow)
+task Publish Init, Package, {
+    Assert-True (-not [String]::IsNullOrEmpty($PSGalleryAPIKey)) "No key for the PSGallery"
+    Publish-Module -Path "$env:BHBuildOutput/$env:BHProjectName" -NuGetApiKey $PSGalleryAPIKey
+}
 
 # Synpsis: Publish the $release to the PSGallery
 task PublishToGallery {

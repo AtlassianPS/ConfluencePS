@@ -1,0 +1,58 @@
+name: Create Release and Publish
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Download artifact from commit that got tagged
+        uses: dawidd6/action-download-artifact@v21
+        with:
+          workflow: ci.yml
+          workflow_conclusion: success
+          commit: ${{ github.sha }}
+          name: Release
+          path: ./Release/
+          if_no_artifact_found: fail
+
+      - uses: ./.github/actions/setup-powershell
+
+      - run: Invoke-Build -Task Publish -VersionToPublish ${{ github.ref_name }} -PSGalleryAPIKey ${{ secrets.PSGALLERY_API_KEY }}
+        shell: pwsh
+
+      - name: Cherry pick CHANGELOG.md
+        id: changelog
+        uses: MatteoCampinoti94/changelog-to-release@v1.0.6
+        with:
+          version-name: ${{ github.ref_name }}
+          configuration: ./.github/changelog.configuration.json
+        if: ${{ hashFiles('CHANGELOG.md') != '' }}
+
+      - name: Create Release and Upload Asset
+        uses: softprops/action-gh-release@v3
+        with:
+          body: ${{ steps.changelog.outputs.body }}
+          files: ./Release/ConfluencePS.zip
+          fail_on_unmatched_files: true
+          draft: false
+          prerelease: ${{ contains(github.ref_name, 'alpha') || contains(github.ref_name, 'beta') || contains(github.ref_name, 'rc') }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Notify homepage to update submodule
+        if: ${{ !contains(github.ref_name, 'alpha') && !contains(github.ref_name, 'beta') && !contains(github.ref_name, 'rc') }}
+        uses: peter-evans/repository-dispatch@v4
+        with:
+          token: ${{ secrets.HOMEPAGE_PAT }}
+          repository: AtlassianPS/AtlassianPS.github.io
+          event-type: module-release
+          client-payload: "{\"module\": \"ConfluencePS\", \"version\": \"${{ github.ref_name }}\"}"

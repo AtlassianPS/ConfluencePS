@@ -1,0 +1,1 @@
+---napplyTo: "ConfluencePS/Public/**/*.ps1,ConfluencePS/Private/**/*.ps1,Tests/**/*.ps1"n---nn- Keep API changes compatible across Confluence Cloud and Data Center.n- Include tests for changed behavior.n- Do not bypass shared build/test tasks; validate with `Invoke-Build -Task Build, Test`.n

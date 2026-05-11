@@ -30,7 +30,10 @@
     Description       = 'PowerShell module to interact with the Atlassian Confluence REST API'
 
     # Minimum version of the Windows PowerShell engine required by this module
-    PowerShellVersion = '3.0'
+    PowerShellVersion = '5.1'
+
+    # Supported PowerShell editions
+    CompatiblePSEditions = @('Desktop', 'Core')
 
     # Name of the Windows PowerShell host required by this module
     # PowerShellHostName = ''

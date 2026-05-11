@@ -1,32 +1,8 @@
-@{
-    PSDependOptions  = @{
-        Target = "CurrentUser"
-    }
-
-    InvokeBuild      = "latest"
-    BuildHelpers     = @{
-        Parameters = @{
-            AllowClobber = $true
-        }
-        Version    = "latest"
-    }
-    Configuration    = @{
-        Parameters = @{
-            AllowClobber = $true
-        }
-        Version    = "latest"
-    }
-    Pester           = @{
-        Parameters = @{
-            SkipPublisherCheck = $true
-        }
-        Version    = "4.10"
-    }
-    platyPS          = "latest"
-    PSScriptAnalyzer = @{
-        Parameters = @{
-            SkipPublisherCheck = $true
-        }
-        Version    = "latest"
-    }
-}
+@(
+    @{ ModuleName = "InvokeBuild"; RequiredVersion = "5.14.23" }
+    @{ ModuleName = "BuildHelpers"; RequiredVersion = "2.0.16" }
+    @{ ModuleName = "Configuration"; RequiredVersion = "1.5.1" }
+    @{ ModuleName = "Pester"; RequiredVersion = "4.10.1" }
+    @{ ModuleName = "Microsoft.PowerShell.PlatyPS"; RequiredVersion = "1.0.1" }
+    @{ ModuleName = "PSScriptAnalyzer"; RequiredVersion = "1.25.0" }
+)

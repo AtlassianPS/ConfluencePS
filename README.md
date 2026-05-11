@@ -5,7 +5,8 @@ permalink: /module/ConfluencePS/
 # [ConfluencePS](https://atlassianps.org/module/ConfluencePS)
 
 [![GitHub release](https://img.shields.io/github/release/AtlassianPS/ConfluencePS.svg?style=for-the-badge)](https://github.com/AtlassianPS/ConfluencePS/releases/latest)
-[![Build Status](https://img.shields.io/vso/build/AtlassianPS/ConfluencePS/12/master.svg?style=for-the-badge)](https://dev.azure.com/AtlassianPS/ConfluencePS/_build/latest?definitionId=12)
+[![CI](https://img.shields.io/github/actions/workflow/status/AtlassianPS/ConfluencePS/ci.yml?branch=master&style=for-the-badge&label=CI)](https://github.com/AtlassianPS/ConfluencePS/actions/workflows/ci.yml)
+[![Integration Tests](https://img.shields.io/github/actions/workflow/status/AtlassianPS/ConfluencePS/integration_tests.yml?branch=master&style=for-the-badge&label=Integration)](https://github.com/AtlassianPS/ConfluencePS/actions/workflows/integration_tests.yml)
 [![PowerShell Gallery](https://img.shields.io/powershellgallery/dt/ConfluencePS.svg?style=for-the-badge)](https://www.powershellgallery.com/packages/ConfluencePS)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg?style=for-the-badge)
 
@@ -26,7 +27,7 @@ Join the conversation on [![SlackLogo][] AtlassianPS.Slack.com](https://atlassia
 
 ### Installation
 
-Install ConfluencePS from the [PowerShell Gallery]! `Install-Module` requires PowerShellGet (included in PS v5, or download for v3/v4 via the gallery link)
+Install ConfluencePS from the [PowerShell Gallery]. Supported runtimes are Windows PowerShell 5.1 and PowerShell 7+.
 
 ```powershell
 # One time only install: (requires an admin PowerShell window)
@@ -64,12 +65,12 @@ Check out our guidelines on [Contributing](https://atlassianps.org/docs/Contribu
 
 |Configuration|Status|
 |-------------|------|
-|Windows Powershell v3|[![Build Status](https://img.shields.io/teamcity/http/build.powershell.org/s/ConfluencePS_TestOnPowerShellV3.svg?label=Build%20Status)](https://build.powershell.org/viewType.html?buildTypeId=ConfluencePS_TestOnPowerShellV3)|
-|Windows Powershell v4|[![Build Status](https://img.shields.io/teamcity/http/build.powershell.org/s/ConfluencePS_TestOnPowerShellV4.svg?label=Build%20Status)](https://build.powershell.org/viewType.html?buildTypeId=ConfluencePS_TestOnPowerShellV4)|
-|Windows Powershell v5.1|[![Build Status](https://img.shields.io/vso/build/AtlassianPS/ConfluencePS/12/master.svg?style=for-the-badge)](https://dev.azure.com/AtlassianPS/ConfluencePS/_build/latest?definitionId=12)|
-|Powershell Core (latest) on Windows|[![Build Status](https://img.shields.io/vso/build/AtlassianPS/ConfluencePS/12/master.svg?style=for-the-badge)](https://dev.azure.com/AtlassianPS/ConfluencePS/_build/latest?definitionId=12)|
-|Powershell Core (latest) on Ubuntu|[![Build Status](https://img.shields.io/vso/build/AtlassianPS/ConfluencePS/12/master.svg?style=for-the-badge)](https://dev.azure.com/AtlassianPS/ConfluencePS/_build/latest?definitionId=12)|
-|Powershell Core (latest) on MacOS|[![Build Status](https://img.shields.io/vso/build/AtlassianPS/ConfluencePS/12/master.svg?style=for-the-badge)](https://dev.azure.com/AtlassianPS/ConfluencePS/_build/latest?definitionId=12)|
+|Windows PowerShell 5.1|[CI](https://github.com/AtlassianPS/ConfluencePS/actions/workflows/ci.yml)|
+|PowerShell 7 on Windows|[CI](https://github.com/AtlassianPS/ConfluencePS/actions/workflows/ci.yml)|
+|PowerShell 7 on Ubuntu|[CI](https://github.com/AtlassianPS/ConfluencePS/actions/workflows/ci.yml)|
+|PowerShell 7 on macOS|[CI](https://github.com/AtlassianPS/ConfluencePS/actions/workflows/ci.yml)|
+|Confluence Cloud integration|[Integration Tests](https://github.com/AtlassianPS/ConfluencePS/actions/workflows/integration_tests.yml)|
+|Confluence Data Center integration|[Integration Tests](https://github.com/AtlassianPS/ConfluencePS/actions/workflows/integration_tests.yml)|
 
 ## Acknowledgements
 

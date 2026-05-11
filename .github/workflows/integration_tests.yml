@@ -1,0 +1,75 @@
+name: Integration Tests
+
+on:
+  schedule:
+    - cron: "0 5 * * *"
+  workflow_dispatch:
+    inputs:
+      track:
+        description: "Which track to run"
+        required: false
+        default: both
+        type: choice
+        options:
+          - cloud
+          - datacenter
+          - both
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  cloud_integration_tests:
+    name: Full Integration Tests (Cloud)
+    if: github.event_name == 'schedule' ||
+      (github.event_name == 'workflow_dispatch' &&
+       (inputs.track == 'cloud' || inputs.track == 'both'))
+    runs-on: ubuntu-latest
+    env:
+      WikiURI: ${{ secrets.WikiURI }}
+      WikiUser: ${{ secrets.WikiUser }}
+      WikiPass: ${{ secrets.WikiPass }}
+      CONFLUENCE_DEPLOYMENT: Cloud
+    steps:
+      - uses: actions/checkout@v6
+      - uses: ./.github/actions/setup-powershell
+
+      - run: |
+          Invoke-Build -Task Clean, Build
+          Invoke-Build -Task TestIntegration -Tag 'Cloud'
+        shell: pwsh
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v7
+        with:
+          name: Cloud-Integration-Tests
+          path: Test-Integration.xml
+        if: always()
+
+  datacenter_integration_tests:
+    name: Full Integration Tests (Data Center)
+    if: github.event_name == 'schedule' ||
+      (github.event_name == 'workflow_dispatch' &&
+       (inputs.track == 'datacenter' || inputs.track == 'both'))
+    runs-on: ubuntu-latest
+    env:
+      WikiURI: ${{ secrets.ConfluenceDCURI }}
+      WikiUser: ${{ secrets.ConfluenceDCUser }}
+      WikiPass: ${{ secrets.ConfluenceDCPass }}
+      CONFLUENCE_DEPLOYMENT: DataCenter
+    steps:
+      - uses: actions/checkout@v6
+      - uses: ./.github/actions/setup-powershell
+
+      - run: |
+          Invoke-Build -Task Clean, Build
+          Invoke-Build -Task TestIntegration -Tag 'DataCenter'
+        shell: pwsh
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v7
+        with:
+          name: DataCenter-Integration-Tests
+          path: Test-Integration.xml
+        if: always()

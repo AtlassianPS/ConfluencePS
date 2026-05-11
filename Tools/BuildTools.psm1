@@ -8,9 +8,6 @@ function Invoke-Init {
     begin {
         Set-BuildEnvironment -BuildOutput '$ProjectPath/Release' -ErrorAction SilentlyContinue
         Add-ToModulePath -Path $env:BHBuildOutput
-
-        git config --global user.email "support@atlassianps.net"
-        git config --global user.name "AtlassianPS Automated User"
     }
 }
 
@@ -56,6 +53,50 @@ function Install-PSDepend {
         else {
             throw "The PowershellGet module is not available."
         }
+    }
+}
+
+function Get-Dependency {
+    [CmdletBinding()]
+    param()
+
+    $RequiredModules = Import-LocalizedData -BaseDirectory $PSScriptRoot -FileName "build.requirements.psd1"
+    $RequiredModules
+}
+
+function Install-Dependency {
+    [CmdletBinding()]
+    param(
+        [ValidateSet("CurrentUser", "AllUsers")]
+        $Scope = "CurrentUser"
+    )
+
+    $RequiredModules = Get-Dependency
+
+    $psGallery = Get-PSRepository -Name PSGallery -ErrorAction SilentlyContinue
+    if (-not $psGallery) {
+        Write-Warning "PSGallery repository is not available; continuing with already installed modules."
+        return
+    }
+
+    $Policy = $psGallery.InstallationPolicy
+    try {
+        Set-PSRepository PSGallery -InstallationPolicy Trusted
+        foreach ($requiredModule in $RequiredModules) {
+            try {
+                Install-Module @requiredModule -Scope $Scope -Repository PSGallery -SkipPublisherCheck -AllowClobber -ErrorAction Stop
+            }
+            catch {
+                Write-Warning "Unable to install module '$($requiredModule.ModuleName)'. Continuing with local copy if available."
+            }
+        }
+    }
+    finally {
+        Set-PSRepository PSGallery -InstallationPolicy $Policy
+    }
+
+    foreach ($requiredModule in $RequiredModules) {
+        Import-Module -Name $requiredModule.ModuleName -RequiredVersion $requiredModule.RequiredVersion -ErrorAction SilentlyContinue
     }
 }
 

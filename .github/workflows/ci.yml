@@ -8,26 +8,49 @@ on:
   pull_request:
     branches: [master]
     paths-ignore: &paths-ignore
+      # Documentation (NOT docs/** - that's PlatyPS source!)
       - "CHANGELOG.md"
       - "LICENSE"
+      # AI assistant instruction files
+      - "AGENTS.md"
+      - "CLAUDE.md"
+      - "GEMINI.md"
+      - ".cursor/**"
+      - ".github/copilot-instructions.md"
+      - ".github/ai-context/**"
+      - ".github/instructions/**"
+      # GitHub/editor meta files
       - ".github/*.md"
       - ".github/ISSUE_TEMPLATE/**"
       - ".github/PULL_REQUEST_TEMPLATE/**"
       - ".vscode/**"
       - ".editorconfig"
       - ".spelling"
+      # Untracked regenerated docs (kept in case they ever land)
+      - "docs-regenerated/**"
   push:
     branches: [master]
     paths-ignore: *paths-ignore
   workflow_dispatch:
 
 jobs:
-  build:
-    name: Build Module
+  lint:
+    name: Lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: AtlassianPS/.github/actions/setup-powershell@master
+      - uses: ./.github/actions/setup-powershell
+
+      - run: Invoke-Build -Task Lint
+        shell: pwsh
+
+  build:
+    name: Build Module
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: ./.github/actions/setup-powershell
 
       - name: Build
         run: Invoke-Build -Task ShowInfo, Clean, Build
@@ -45,13 +68,17 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: AtlassianPS/.github/actions/setup-powershell@master
+      - uses: ./.github/actions/setup-powershell
         with:
           ps-version: "5"
+          # Setup is run below in the powershell (PS 5.1) shell instead of pwsh,
+          # so the Windows PowerShell module path is populated.
           skip-setup: "true"
 
       - name: Setup dependencies
-        run: ./Tools/setup.ps1
+        run: |
+          ./Tools/setup.ps1
+          Invoke-Build -Task ShowInfo
         shell: powershell
 
       - name: Download release artifact
@@ -61,20 +88,7 @@ jobs:
           path: ./Release/
 
       - name: Test
-        run: |
-          $requiredPesterVersion = [version]'4.10.1'
-          $installedPester = Get-Module -ListAvailable -Name Pester |
-            Where-Object { $_.Version -eq $requiredPesterVersion } |
-            Select-Object -First 1
-          if (-not $installedPester) {
-            if (-not (Get-PSRepository -Name PSGallery -ErrorAction SilentlyContinue)) {
-              Register-PSRepository -Default -ErrorAction SilentlyContinue
-            }
-            Set-PSRepository -Name PSGallery -InstallationPolicy Trusted -ErrorAction SilentlyContinue
-            Install-Module Pester -RequiredVersion 4.10.1 -Scope CurrentUser -Force -SkipPublisherCheck -ErrorAction Stop
-          }
-          Import-Module Pester -RequiredVersion 4.10.1 -Force
-          Invoke-Build -Task Test
+        run: Invoke-Build -Task Test
         shell: powershell
 
       - name: Upload unit test results
@@ -97,7 +111,7 @@ jobs:
           - { os: macos-latest, name: "macOS" }
     steps:
       - uses: actions/checkout@v6
-      - uses: AtlassianPS/.github/actions/setup-powershell@master
+      - uses: ./.github/actions/setup-powershell
 
       - name: Download release artifact
         uses: actions/download-artifact@v8
@@ -106,22 +120,7 @@ jobs:
           path: ./Release/
 
       - name: Test
-        run: |
-          $requiredPesterVersion = [version]'4.10.1'
-          $installedPester = Get-Module -ListAvailable -Name Pester |
-            Where-Object { $_.Version -eq $requiredPesterVersion } |
-            Select-Object -First 1
-          if (-not $installedPester) {
-            if (-not (Get-PSRepository -Name PSGallery -ErrorAction SilentlyContinue)) {
-              Register-PSRepository -Default -ErrorAction SilentlyContinue
-            }
-            Set-PSRepository -Name PSGallery -InstallationPolicy Trusted -ErrorAction SilentlyContinue
-            Install-Module Pester -RequiredVersion 4.10.1 -Scope CurrentUser -Force -SkipPublisherCheck -ErrorAction Stop
-          }
-          Import-Module Pester -RequiredVersion 4.10.1 -Force
-          # Legacy ConfluencePS help tests rely on Windows PowerShell-only
-          # common parameter expectations.
-          Invoke-Build -Task Test -ExcludeTag "Integration", "Documentation"
+        run: Invoke-Build -Task Test -ExcludeTag "Integration", "Documentation"
         shell: pwsh
 
       - name: Upload unit test results
@@ -133,8 +132,14 @@ jobs:
 
   smoke_tests:
     name: Smoke Tests
-    needs: build
+    needs: lint
     runs-on: ubuntu-latest
+    # Skip on fork PRs and Dependabot PRs: the Wiki* secrets are not exposed
+    # in those contexts and the smoke run would fail. The ci-required
+    # aggregator below treats skipped jobs as a pass, so fork PRs still get
+    # a green CI Result. First-party PRs and pushes to master gate on the
+    # smoke result, which in turn gates release.yml's artifact download
+    # (workflow_conclusion: success).
     if: github.event_name != 'pull_request' ||
       (github.event.pull_request.head.repo.full_name == github.repository &&
        github.actor != 'dependabot[bot]')
@@ -144,30 +149,11 @@ jobs:
       WikiPass: ${{ secrets.WikiPass }}
     steps:
       - uses: actions/checkout@v6
-      - uses: AtlassianPS/.github/actions/setup-powershell@master
-
-      - name: Download release artifact
-        uses: actions/download-artifact@v8
-        with:
-          name: Release
-          path: ./Release/
+      - uses: ./.github/actions/setup-powershell
 
       - name: Run smoke integration tests
-        if: env.WikiURI != '' && env.WikiUser != '' && env.WikiPass != ''
         run: |
-          $requiredPesterVersion = [version]'4.10.1'
-          $installedPester = Get-Module -ListAvailable -Name Pester |
-            Where-Object { $_.Version -eq $requiredPesterVersion } |
-            Select-Object -First 1
-          if (-not $installedPester) {
-            if (-not (Get-PSRepository -Name PSGallery -ErrorAction SilentlyContinue)) {
-              Register-PSRepository -Default -ErrorAction SilentlyContinue
-            }
-            Set-PSRepository -Name PSGallery -InstallationPolicy Trusted -ErrorAction SilentlyContinue
-            Install-Module Pester -RequiredVersion 4.10.1 -Scope CurrentUser -Force -SkipPublisherCheck -ErrorAction Stop
-          }
-          Import-Module Pester -RequiredVersion 4.10.1 -Force
-          Invoke-Build -Task Test -Tag "Integration" -ExcludeTag ""
+          Invoke-Build -Task TestIntegration -Tag "Cloud"
         shell: pwsh
 
       - name: Upload integration test results
@@ -177,10 +163,19 @@ jobs:
           name: Smoke-Tests
           path: Test*.xml
 
+  # Sentinel job that always runs and aggregates the result of the pipeline.
+  # Branch protection should require ONLY this check (`CI / CI Result`),
+  # not the individual jobs. That way a docs-only PR (where lint/build/test
+  # are skipped via paths-ignore) still produces a green required check
+  # and can be merged. Smoke tests are part of the gate: they run on
+  # first-party PRs and on every push to master, and skip (without failing
+  # the gate) on fork/Dependabot PRs where secrets are not exposed.
+  # release.yml downloads the Release artifact with workflow_conclusion:
+  # success, so any smoke failure here blocks the release.
   ci-required:
     name: CI Result
     if: always()
-    needs: [build, test_windows_ps5, test_pwsh, smoke_tests]
+    needs: [lint, build, test_windows_ps5, test_pwsh, smoke_tests]
     runs-on: ubuntu-latest
     steps:
       - name: Aggregate job results

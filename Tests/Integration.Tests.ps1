@@ -17,7 +17,7 @@ param()
 
 $SpaceID = Get-Random
 
-Describe 'Integration Tests' -Tag Integration {
+Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
 
     BeforeAll {
         Remove-Item -Path Env:\BH*
