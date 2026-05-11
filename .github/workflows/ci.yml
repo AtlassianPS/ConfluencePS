@@ -1,0 +1,155 @@
+name: CI
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+on:
+  pull_request:
+    branches: [master]
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build Module
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: AtlassianPS/.github/actions/setup-powershell@master
+
+      - name: Build
+        run: Invoke-Build -Task ShowInfo, Clean, Build
+        shell: pwsh
+
+      - name: Upload release artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: Release
+          path: ./Release/
+
+  test_windows_ps5:
+    name: Test (Windows PS5)
+    needs: build
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: AtlassianPS/.github/actions/setup-powershell@master
+        with:
+          ps-version: "5"
+          skip-setup: "true"
+
+      - name: Setup dependencies
+        run: ./Tools/setup.ps1
+        shell: powershell
+
+      - name: Download release artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: Release
+          path: ./Release/
+
+      - name: Test
+        run: |
+          Import-Module Pester -RequiredVersion 4.10.1 -Force
+          Invoke-Build -Task Test
+        shell: powershell
+
+      - name: Upload unit test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: Windows-PS5-Tests
+          path: Test*.xml
+
+  test_pwsh:
+    name: Test (${{ matrix.name }})
+    needs: build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: windows-latest, name: "Windows PS7" }
+          - { os: ubuntu-latest, name: "Ubuntu" }
+          - { os: macos-latest, name: "macOS" }
+    steps:
+      - uses: actions/checkout@v6
+      - uses: AtlassianPS/.github/actions/setup-powershell@master
+
+      - name: Download release artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: Release
+          path: ./Release/
+
+      - name: Test
+        run: |
+          Import-Module Pester -RequiredVersion 4.10.1 -Force
+          # Documentation-tagged help tests currently depend on PS5-era common
+          # parameter shape; keep pwsh lanes focused on code/test portability.
+          Invoke-Build -Task Test -ExcludeTag "Integration", "Documentation"
+        shell: pwsh
+
+      - name: Upload unit test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ matrix.name }}-Tests
+          path: Test*.xml
+
+  integration_cloud:
+    name: Integration Tests (Cloud)
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request' ||
+      (github.event.pull_request.head.repo.full_name == github.repository &&
+       github.actor != 'dependabot[bot]' &&
+       secrets.WikiURI != '' &&
+       secrets.WikiUser != '' &&
+       secrets.WikiPass != '')
+    env:
+      WikiURI: ${{ secrets.WikiURI }}
+      WikiUser: ${{ secrets.WikiUser }}
+      WikiPass: ${{ secrets.WikiPass }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: AtlassianPS/.github/actions/setup-powershell@master
+
+      - name: Download release artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: Release
+          path: ./Release/
+
+      - name: Run integration tests
+        run: |
+          Import-Module Pester -RequiredVersion 4.10.1 -Force
+          Invoke-Build -Task Test -Tag "Integration" -ExcludeTag ""
+        shell: pwsh
+
+      - name: Upload integration test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: Integration-Tests
+          path: Test*.xml
+
+  ci-required:
+    name: CI Result
+    if: always()
+    needs: [build, test_windows_ps5, test_pwsh, integration_cloud]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Aggregate job results
+        shell: bash
+        run: |
+          results='${{ toJSON(needs) }}'
+          echo "Job results:"
+          echo "$results"
+          if echo "$results" | grep -E '"result":[[:space:]]*"(failure|cancelled)"' > /dev/null; then
+            echo "::error::One or more required jobs failed or were cancelled."
+            exit 1
+          fi
+          echo "All required jobs passed or were skipped."
