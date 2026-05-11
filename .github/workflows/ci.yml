@@ -52,6 +52,17 @@ jobs:
 
       - name: Test
         run: |
+          $requiredPesterVersion = [version]'4.10.1'
+          $installedPester = Get-Module -ListAvailable -Name Pester |
+            Where-Object { $_.Version -eq $requiredPesterVersion } |
+            Select-Object -First 1
+          if (-not $installedPester) {
+            if (-not (Get-PSRepository -Name PSGallery -ErrorAction SilentlyContinue)) {
+              Register-PSRepository -Default -ErrorAction SilentlyContinue
+            }
+            Set-PSRepository -Name PSGallery -InstallationPolicy Trusted -ErrorAction SilentlyContinue
+            Install-Module Pester -RequiredVersion 4.10.1 -Scope CurrentUser -Force -SkipPublisherCheck -ErrorAction Stop
+          }
           Import-Module Pester -RequiredVersion 4.10.1 -Force
           Invoke-Build -Task Test
         shell: powershell
@@ -86,6 +97,17 @@ jobs:
 
       - name: Test
         run: |
+          $requiredPesterVersion = [version]'4.10.1'
+          $installedPester = Get-Module -ListAvailable -Name Pester |
+            Where-Object { $_.Version -eq $requiredPesterVersion } |
+            Select-Object -First 1
+          if (-not $installedPester) {
+            if (-not (Get-PSRepository -Name PSGallery -ErrorAction SilentlyContinue)) {
+              Register-PSRepository -Default -ErrorAction SilentlyContinue
+            }
+            Set-PSRepository -Name PSGallery -InstallationPolicy Trusted -ErrorAction SilentlyContinue
+            Install-Module Pester -RequiredVersion 4.10.1 -Scope CurrentUser -Force -SkipPublisherCheck -ErrorAction Stop
+          }
           Import-Module Pester -RequiredVersion 4.10.1 -Force
           # Documentation-tagged help tests currently depend on PS5-era common
           # parameter shape; keep pwsh lanes focused on code/test portability.
@@ -123,6 +145,17 @@ jobs:
       - name: Run integration tests
         if: env.WikiURI != '' && env.WikiUser != '' && env.WikiPass != ''
         run: |
+          $requiredPesterVersion = [version]'4.10.1'
+          $installedPester = Get-Module -ListAvailable -Name Pester |
+            Where-Object { $_.Version -eq $requiredPesterVersion } |
+            Select-Object -First 1
+          if (-not $installedPester) {
+            if (-not (Get-PSRepository -Name PSGallery -ErrorAction SilentlyContinue)) {
+              Register-PSRepository -Default -ErrorAction SilentlyContinue
+            }
+            Set-PSRepository -Name PSGallery -InstallationPolicy Trusted -ErrorAction SilentlyContinue
+            Install-Module Pester -RequiredVersion 4.10.1 -Scope CurrentUser -Force -SkipPublisherCheck -ErrorAction Stop
+          }
           Import-Module Pester -RequiredVersion 4.10.1 -Force
           Invoke-Build -Task Test -Tag "Integration" -ExcludeTag ""
         shell: pwsh
