@@ -105,10 +105,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name != 'pull_request' ||
       (github.event.pull_request.head.repo.full_name == github.repository &&
-       github.actor != 'dependabot[bot]' &&
-       secrets.WikiURI != '' &&
-       secrets.WikiUser != '' &&
-       secrets.WikiPass != '')
+       github.actor != 'dependabot[bot]')
     env:
       WikiURI: ${{ secrets.WikiURI }}
       WikiUser: ${{ secrets.WikiUser }}
@@ -124,6 +121,7 @@ jobs:
           path: ./Release/
 
       - name: Run integration tests
+        if: env.WikiURI != '' && env.WikiUser != '' && env.WikiPass != ''
         run: |
           Import-Module Pester -RequiredVersion 4.10.1 -Force
           Invoke-Build -Task Test -Tag "Integration" -ExcludeTag ""
