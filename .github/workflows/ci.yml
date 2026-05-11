@@ -28,6 +28,7 @@ jobs:
         with:
           name: Release
           path: ./Release/
+          overwrite: true
 
   test_windows_ps5:
     name: Test (Windows PS5)
@@ -73,6 +74,7 @@ jobs:
         with:
           name: Windows-PS5-Tests
           path: Test*.xml
+          overwrite: true
 
   test_pwsh:
     name: Test (${{ matrix.name }})
@@ -120,6 +122,7 @@ jobs:
         with:
           name: ${{ matrix.name }}-Tests
           path: Test*.xml
+          overwrite: true
 
   integration_cloud:
     name: Integration Tests (Cloud)
@@ -166,6 +169,7 @@ jobs:
         with:
           name: Integration-Tests
           path: Test*.xml
+          overwrite: true
 
   ci-required:
     name: CI Result
