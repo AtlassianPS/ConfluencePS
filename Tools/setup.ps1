@@ -8,7 +8,7 @@ $psScriptAnalyzerSettingsUri = 'https://raw.githubusercontent.com/AtlassianPS/.g
 $psScriptAnalyzerSettingsSha256 = '89207270e49dd58895d146c7182e661c55c4092f3d3cdc280a4de26f407daa6e'
 $psScriptAnalyzerSettingsPath = Join-Path $PSScriptRoot '..' 'PSScriptAnalyzerSettings.psd1'
 
-function Sync-PSScriptAnalyzerSettings {
+function Sync-PSScriptAnalyzerSetting {
     [CmdletBinding()]
     param()
 
@@ -67,7 +67,7 @@ Install-Module PSDepend -Scope CurrentUser -Force
 Write-Host "Installing InvokeBuild"
 Install-Module InvokeBuild -Scope CurrentUser -Force
 
-Sync-PSScriptAnalyzerSettings
+Sync-PSScriptAnalyzerSetting
 
 Write-Host "Installing Dependencies"
 Invoke-Build -Task InstallDependencies
