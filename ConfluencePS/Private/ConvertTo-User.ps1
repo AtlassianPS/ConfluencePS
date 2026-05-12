@@ -12,15 +12,15 @@ function ConvertTo-User {
         $InputObject
     )
 
-    Process {
+    process {
         foreach ($object in $InputObject) {
             Write-Verbose "[$($MyInvocation.MyCommand.Name)] Converting Object to User"
             [ConfluencePS.User](ConvertTo-Hashtable -InputObject ($object | Select-Object `
-                username,
-                userKey,
-                @{Name = "profilePicture"; Expression = { ConvertTo-Icon $_.profilePicture }},
-                displayname
-            ))
+                        username,
+                    userKey,
+                    @{Name = "profilePicture"; Expression = { ConvertTo-Icon $_.profilePicture } },
+                    displayname
+                ))
         }
     }
 }

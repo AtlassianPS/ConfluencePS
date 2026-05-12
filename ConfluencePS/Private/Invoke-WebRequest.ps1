@@ -136,7 +136,7 @@ Content-Type: application/octet-stream
                 $PSBoundParameters['OutBuffer'] = 1
             }
             $wrappedCmd = $ExecutionContext.InvokeCommand.GetCommand('Microsoft.PowerShell.Utility\Invoke-WebRequest', [System.Management.Automation.CommandTypes]::Cmdlet)
-            $scriptCmd = {& $wrappedCmd @PSBoundParameters }
+            $scriptCmd = { & $wrappedCmd @PSBoundParameters }
             $steppablePipeline = $scriptCmd.GetSteppablePipeline($myInvocation.CommandOrigin)
             $steppablePipeline.Begin($PSCmdlet)
         }
@@ -304,7 +304,8 @@ if ($PSVersionTable.PSVersion.Major -ge 6) {
         begin {
             if ($Credential -and (-not ($Authentication))) {
                 $PSBoundParameters["Authentication"] = "Basic"
-            } elseif ($PersonalAccessToken -and (-not ($Authentication))) {
+            }
+            elseif ($PersonalAccessToken -and (-not ($Authentication))) {
                 $PSBoundParameters["Authentication"] = "Bearer"
             }
             if ($InFile) {
@@ -327,7 +328,7 @@ if ($PSVersionTable.PSVersion.Major -ge 6) {
                     $PSBoundParameters['OutBuffer'] = 1
                 }
                 $wrappedCmd = $ExecutionContext.InvokeCommand.GetCommand('Microsoft.PowerShell.Utility\Invoke-WebRequest', [System.Management.Automation.CommandTypes]::Cmdlet)
-                $scriptCmd = {& $wrappedCmd @PSBoundParameters }
+                $scriptCmd = { & $wrappedCmd @PSBoundParameters }
                 $steppablePipeline = $scriptCmd.GetSteppablePipeline($myInvocation.CommandOrigin)
                 $steppablePipeline.Begin($PSCmdlet)
             }

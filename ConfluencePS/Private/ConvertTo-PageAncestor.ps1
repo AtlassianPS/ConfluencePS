@@ -12,14 +12,14 @@ function ConvertTo-PageAncestor {
         $InputObject
     )
 
-    Process {
+    process {
         foreach ($object in $InputObject) {
             Write-Verbose "[$($MyInvocation.MyCommand.Name)] Converting Object to Page (Ancestor)"
             [ConfluencePS.Page](ConvertTo-Hashtable -InputObject ($object | Select-Object `
-                id,
-                status,
-                title
-            ))
+                        id,
+                    status,
+                    title
+                ))
         }
     }
 }
