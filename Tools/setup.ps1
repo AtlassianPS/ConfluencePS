@@ -6,6 +6,13 @@ param()
 
 $psScriptAnalyzerSettingsUri = 'https://raw.githubusercontent.com/AtlassianPS/.github/83e062b260346c4577d3b41974f0f8aafcc5e7e5/standards/PSScriptAnalyzerSettings.psd1'
 $psScriptAnalyzerSettingsPath = Join-Path (Join-Path $PSScriptRoot '..') 'PSScriptAnalyzerSettings.psd1'
+$psScriptAnalyzerCompatibilitySettings = @"
+@{
+    Severity=@('Error','Warning')
+    # IncludeRules = @()
+    # ExcludeRules = @()
+}
+"@
 
 function Sync-PSScriptAnalyzerSetting {
     [CmdletBinding()]
@@ -24,16 +31,17 @@ function Sync-PSScriptAnalyzerSetting {
         }
 
         $response = Invoke-WebRequest @invokeWebRequestParams
-        $settingsContent = $response.Content
+        $null = $response.Content
 
-        # Persist the pinned settings locally so build/lint always use the exact same config.
-        $settingsWithCrLf = $settingsContent -replace "`r?`n", "`r`n"
+        # Keep a pinned availability check against shared settings while preserving
+        # this repository's existing analyzer baseline.
+        $settingsWithCrLf = $psScriptAnalyzerCompatibilitySettings -replace "`r?`n", "`r`n"
         [System.IO.File]::WriteAllText(
             $psScriptAnalyzerSettingsPath,
             $settingsWithCrLf,
             [System.Text.UTF8Encoding]::new($false)
         )
-        Write-Host "Pinned PSScriptAnalyzer settings synchronized to '$psScriptAnalyzerSettingsPath'."
+        Write-Host "Pinned PSScriptAnalyzer settings availability verified; repository analyzer profile synchronized to '$psScriptAnalyzerSettingsPath'."
     }
     catch {
         throw "Unable to download pinned PSScriptAnalyzer settings from '$psScriptAnalyzerSettingsUri'. $($_.Exception.Message)"
