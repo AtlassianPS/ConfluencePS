@@ -13,6 +13,13 @@
     "powershell.codeFormatting.ignoreOneLineBlock": true,
     "powershell.scriptAnalysis.settingsPath": "PSScriptAnalyzerSettings.psd1",
 
+    "[shellscript]": {
+        "files.eol": "\n"
+    },
+    "files.associations": {
+        "*.ps1.template": "powershell"
+    },
+
     "[markdown]": {
         "editor.tabSize": 2,
         "editor.trimAutoWhitespace": false,

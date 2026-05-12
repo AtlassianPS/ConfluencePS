@@ -7,8 +7,8 @@ concurrency:
 on:
   pull_request:
     branches: [master]
-    paths-ignore: &paths-ignore
-      # Documentation (NOT docs/** - that's PlatyPS source!)
+    paths-ignore:
+      &paths-ignore # Documentation (NOT docs/** - that's PlatyPS source!)
       - "CHANGELOG.md"
       - "LICENSE"
       # AI assistant instruction files
@@ -52,12 +52,10 @@ jobs:
       - uses: actions/checkout@v6
       - uses: AtlassianPS/.github/actions/setup-powershell@master
 
-      - name: Build
-        run: Invoke-Build -Task Clean, Build
+      - run: Invoke-Build -Task Clean, Build
         shell: pwsh
 
-      - name: Upload release artifact
-        uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@v7
         with:
           name: Release
           path: ./Release/
@@ -75,25 +73,22 @@ jobs:
           # so the Windows PowerShell module path is populated.
           skip-setup: "true"
 
-      - name: Setup dependencies
-        run: |
-          ./Tools/setup.ps1
-          Invoke-Build -Task ShowDebugInfo
-        shell: powershell
-
-      - name: Download release artifact
-        uses: actions/download-artifact@v8
+      - uses: actions/download-artifact@v8
         with:
           name: Release
           path: ./Release/
 
-      - name: Test
-        run: Invoke-Build -Task Test
+      - name: Setup
+        shell: powershell
+        run: |
+          ./Tools/setup.ps1
+          Invoke-Build -Task ShowDebugInfo
+
+      - run: Invoke-Build -Task Test
         shell: powershell
 
-      - name: Upload unit test results
+      - uses: actions/upload-artifact@v7
         if: always()
-        uses: actions/upload-artifact@v7
         with:
           name: Windows-PS5-Unit-Tests
           path: Test*.xml
@@ -113,19 +108,16 @@ jobs:
       - uses: actions/checkout@v6
       - uses: AtlassianPS/.github/actions/setup-powershell@master
 
-      - name: Download release artifact
-        uses: actions/download-artifact@v8
+      - uses: actions/download-artifact@v8
         with:
           name: Release
           path: ./Release/
 
-      - name: Test
-        run: Invoke-Build -Task Test -ExcludeTag "Integration", "Documentation"
+      - run: Invoke-Build -Task Test -ExcludeTag "Integration", "Documentation"
         shell: pwsh
 
-      - name: Upload unit test results
+      - uses: actions/upload-artifact@v7
         if: always()
-        uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.name }}-Unit-Tests
           path: Test*.xml
@@ -142,7 +134,7 @@ jobs:
     # (workflow_conclusion: success).
     if: github.event_name != 'pull_request' ||
       (github.event.pull_request.head.repo.full_name == github.repository &&
-       github.actor != 'dependabot[bot]')
+      github.actor != 'dependabot[bot]')
     env:
       WikiURI: ${{ secrets.WikiURI }}
       WikiUser: ${{ secrets.WikiUser }}

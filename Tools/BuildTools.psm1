@@ -1,39 +1,3 @@
-[CmdletBinding()]
-param()
-
-function Invoke-Init {
-    [Alias("Init")]
-    [CmdletBinding()]
-    param()
-    begin {
-        $projectName = "ConfluencePS"
-        $projectRoot = Split-Path -Parent $PSScriptRoot
-
-        $env:BHProjectName = $projectName
-        $env:BHProjectPath = $projectRoot
-        $env:BHModulePath = Join-Path $projectRoot $projectName
-        $env:BHPSModulePath = $env:BHModulePath
-        $env:BHPSModuleManifest = Join-Path $env:BHModulePath "$projectName.psd1"
-        $env:BHBuildOutput = Join-Path $projectRoot 'Release'
-
-        if ($env:GITHUB_ACTIONS) {
-            $env:BHBuildSystem = 'GitHub Actions'
-            $env:BHBranchName = if ($env:GITHUB_HEAD_REF) { $env:GITHUB_HEAD_REF } else { $env:GITHUB_REF_NAME }
-            $env:BHCommitHash = $env:GITHUB_SHA
-            $env:BHBuildNumber = $env:GITHUB_RUN_NUMBER
-        }
-        else {
-            $env:BHBuildSystem = 'Local'
-            $env:BHBranchName = git -C $projectRoot rev-parse --abbrev-ref HEAD 2>$null
-            $env:BHCommitHash = git -C $projectRoot rev-parse HEAD 2>$null
-            $env:BHBuildNumber = '0'
-        }
-        $env:BHCommitMessage = (git -C $projectRoot log -1 --pretty=%B 2>$null) -join "`n"
-
-        Add-ToModulePath -Path $env:BHBuildOutput
-    }
-}
-
 function Assert-True {
     [CmdletBinding( DefaultParameterSetName = 'ByBool' )]
     param(
@@ -54,36 +18,88 @@ function Assert-True {
     }
 }
 
-function LogCall {
-    Assert-True { Test-Path TestDrive:\ } "This function only work inside pester"
-
-    Set-Content -Value "$($MyInvocation.Invocationname) $($MyInvocation.UnBoundArguments -join " ")" -Path "TestDrive:\FunctionCalled.$($MyInvocation.Invocationname).txt" -Force
+function Write-WorkflowCommand {
+    <#
+    .SYNOPSIS
+        Emit a GitHub Actions workflow command on stdout.
+    .DESCRIPTION
+        GitHub Actions workflow commands (e.g. "::error file=...,line=...::msg")
+        must reach the runner's stdout to be intercepted. Write-Output is captured
+        by Invoke-Build's pipeline plumbing, and Write-Host is forbidden by
+        PSScriptAnalyzer's PSAvoidUsingWriteHost rule. This wrapper exists so the
+        suppression can be local and justified.
+    #>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        'PSAvoidUsingWriteHost', '',
+        Justification = 'GitHub Actions workflow commands must reach stdout; Write-Output is captured by Invoke-Build pipelines.'
+    )]
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory, Position = 0)]
+        [String]$Command
+    )
+    Write-Host $Command
 }
 
-function Add-ToModulePath ([String]$Path) {
-    $PSModulePath = $env:PSModulePath -split ([IO.Path]::PathSeparator)
-    if ($Path -notin $PSModulePath) {
-        $PSModulePath += $Path
-        $env:PSModulePath = $PSModulePath -join ([IO.Path]::PathSeparator)
+function Test-ContainsAll {
+    [CmdletBinding()]
+    [OutputType([Boolean])]
+    param(
+        [Parameter(Mandatory)]
+        [String[]]$Haystack,
+        [Parameter(Mandatory)]
+        [String[]]$Needle
+    )
+
+    begin {
+        $result = $Needle | ForEach-Object {
+            if ($Haystack -notcontains $_) {
+                return "missing"
+            }
+        }
+        return -not ($result -eq "missing")
     }
 }
 
-function Install-PSDepend {
-    if (-not (Get-Module PSDepend -ListAvailable)) {
-        if (Get-Module PowershellGet -ListAvailable) {
-            Install-Module PSDepend -Scope CurrentUser -ErrorAction Stop -Verbose
+function Get-HostInformation {
+    [System.Diagnostics.CodeAnalysis.SuppressMessage('PSAvoidUsingEmptyCatchBlock', '')]
+    [OutputType([String], [String])]
+    [CmdletBinding()]
+    param()
+    try {
+        $script:IsWindows = (-not (Get-Variable -Name IsWindows -ErrorAction Ignore)) -or $IsWindows
+        $script:IsLinux = (Get-Variable -Name IsLinux -ErrorAction Ignore) -and $IsLinux
+        $script:IsMacOS = (Get-Variable -Name IsMacOS -ErrorAction Ignore) -and $IsMacOS
+        $script:IsCoreCLR = $PSVersionTable.ContainsKey('PSEdition') -and $PSVersionTable.PSEdition -eq 'Core'
+    }
+    catch {}
+
+    switch ($true) {
+        { $IsWindows } {
+            $OS = "Windows"
+            if (-not ($IsCoreCLR)) {
+                $OSVersion = $PSVersionTable.BuildVersion.ToString()
+            }
         }
-        else {
-            throw "The PowershellGet module is not available."
+        { $IsLinux } {
+            $OS = "Linux"
+        }
+        { $IsMacOs } {
+            $OS = "OSX"
+        }
+        { $IsCoreCLR } {
+            $OSVersion = $PSVersionTable.OS
         }
     }
+
+    return $OS, $OSVersion
 }
 
 function Get-Dependency {
     [CmdletBinding()]
     param()
 
-    $RequiredModules = Import-LocalizedData -BaseDirectory $PSScriptRoot -FileName "build.requirements.psd1"
+    [Microsoft.PowerShell.Commands.ModuleSpecification[]]$RequiredModules = Import-LocalizedData -BaseDirectory $PSScriptRoot -FileName "build.requirements.psd1"
     $RequiredModules
 }
 
@@ -96,240 +112,22 @@ function Install-Dependency {
 
     $RequiredModules = Get-Dependency
 
+    # Ensure PSGallery exists
     $psGallery = Get-PSRepository -Name PSGallery -ErrorAction SilentlyContinue
     if (-not $psGallery) {
-        Write-Warning "PSGallery repository is not available; continuing with already installed modules."
-        return
+        throw "PSGallery repository is not available. Run setup.ps1 first to initialize the PowerShell Gallery."
     }
 
     $Policy = $psGallery.InstallationPolicy
     try {
         Set-PSRepository PSGallery -InstallationPolicy Trusted
-        foreach ($requiredModule in $RequiredModules) {
-            try {
-                Install-Module @requiredModule -Scope $Scope -Repository PSGallery -SkipPublisherCheck -AllowClobber -ErrorAction Stop
-            }
-            catch {
-                Write-Warning "Unable to install module '$($requiredModule.ModuleName)'. Continuing with local copy if available."
-            }
-        }
+        $RequiredModules | Install-Module -Scope $Scope -Repository PSGallery -SkipPublisherCheck -AllowClobber
     }
     finally {
         Set-PSRepository PSGallery -InstallationPolicy $Policy
     }
-
-    foreach ($requiredModule in $RequiredModules) {
-        Import-Module -Name $requiredModule.ModuleName -RequiredVersion $requiredModule.RequiredVersion -ErrorAction SilentlyContinue
-    }
+    $RequiredModules | Import-Module
 }
-
-function Get-AppVeyorBuild {
-    param()
-
-    Assert-True { $env:APPVEYOR_API_TOKEN } "missing api token for AppVeyor."
-    Assert-True { $env:APPVEYOR_ACCOUNT_NAME } "not an appveyor build."
-
-    $invokeRestMethodSplat = @{
-        Uri     = "https://ci.appveyor.com/api/projects/$env:APPVEYOR_ACCOUNT_NAME/$env:APPVEYOR_PROJECT_SLUG"
-        Method  = 'GET'
-        Headers = @{
-            "Authorization" = "Bearer $env:APPVEYOR_API_TOKEN"
-            "Content-type"  = "application/json"
-        }
-    }
-    Invoke-RestMethod @invokeRestMethodSplat
-}
-
-function Get-TravisBuild {
-    param()
-
-    Assert-True { $env:TRAVIS_API_TOKEN } "missing api token for Travis-CI."
-    Assert-True { $env:APPVEYOR_ACCOUNT_NAME } "not an appveyor build."
-
-    $invokeRestMethodSplat = @{
-        Uri     = "https://api.travis-ci.org/builds?limit=10"
-        Method  = 'Get'
-        Headers = @{
-            "Authorization"      = "token $env:TRAVIS_API_TOKEN"
-            "Travis-API-Version" = "3"
-        }
-    }
-    Invoke-RestMethod @invokeRestMethodSplat
-}
-
-function Test-IsLastJob {
-    param()
-
-    if (-not ('AppVeyor' -eq $env:BHBuildSystem)) {
-        return $true
-    }
-    Assert-True { $env:APPVEYOR_JOB_ID } "Invalid Job identifier"
-
-    $buildData = Get-AppVeyorBuild
-    $lastJob = ($buildData.build.jobs | Select-Object -Last 1).jobId
-
-    if ($lastJob -eq $env:APPVEYOR_JOB_ID) {
-        return $true
-    }
-    else {
-        return $false
-    }
-}
-
-function Test-ShouldDeploy {
-    if (-not ($env:ShouldDeploy -eq $true)) {
-        return $false
-    }
-    # only deploy master branch
-    if (-not ('master' -eq $env:BHBranchName)) {
-        return $false
-    }
-    # it cannot be a PR
-    if ($env:APPVEYOR_PULL_REQUEST_NUMBER) {
-        return $false
-    }
-    # only deploy from AppVeyor
-    if (-not ($env:APPVEYOR_JOB_ID)) {
-        return $false
-    }
-    # must be last job of AppVeyor
-    if (-not (Test-IsLastJob)) {
-        return $false
-    }
-    # Travis-CI must be finished (if used)
-    # TODO: (Test-TravisProgress) -and
-    # it cannot have a commit message that contains "skip-deploy"
-    if ($env:BHCommitMessage -like '*skip-deploy*') {
-        return $false
-    }
-
-    return $true
-}
-
-function Publish-GithubRelease {
-    param(
-        [Parameter( Mandatory )]
-        [ValidateNotNullOrEmpty()]
-        [String]$GITHUB_ACCESS_TOKEN,
-        [String]$ProjectOwner = "AtlassianPS",
-        [String]$ReleaseText,
-        [Object]$NextBuildVersion
-    )
-
-    Assert-True { $env:BHProjectName } "Missing AppVeyor's Repo Name"
-
-    $body = @{
-        "tag_name"         = "v$NextBuildVersion"
-        "target_commitish" = "master"
-        "name"             = "v$NextBuildVersion"
-        "body"             = $ReleaseText
-        "draft"            = $false
-        "prerelease"       = $false
-    } | ConvertTo-Json
-
-    $releaseParams = @{
-        Uri         = "https://api.github.com/repos/{0}/{1}/releases" -f $ProjectOwner, $env:BHProjectName
-        Method      = 'POST'
-        Headers     = @{
-            Authorization = 'Basic ' + [Convert]::ToBase64String(
-                [Text.Encoding]::ASCII.GetBytes($GITHUB_ACCESS_TOKEN + ":x-oauth-basic")
-            )
-        }
-        ContentType = 'application/json'
-        Body        = $body
-        ErrorAction = "Stop"
-    }
-    Invoke-RestMethod @releaseParams
-}
-
-function Publish-GithubReleaseArtifact {
-    param(
-        [Parameter( Mandatory )]
-        [ValidateNotNullOrEmpty()]
-        [String]$GITHUB_ACCESS_TOKEN,
-        [uri]$Uri,
-        [String]$Path
-    )
-
-    $body = [System.IO.File]::ReadAllBytes($Path)
-    $assetParams = @{
-        Uri         = $Uri
-        Method      = 'POST'
-        Headers     = @{
-            Authorization = 'Basic ' + [Convert]::ToBase64String(
-                [Text.Encoding]::ASCII.GetBytes($GITHUB_ACCESS_TOKEN + ":x-oauth-basic")
-            )
-        }
-        ContentType = "application/zip"
-        Body        = $body
-    }
-    Invoke-RestMethod @assetParams
-}
-
-function Set-AppVeyorBuildNumber {
-    [System.Diagnostics.CodeAnalysis.SuppressMessage('PSUseShouldProcessForStateChangingFunctions', '')]
-    param()
-
-    Assert-True { $env:APPVEYOR_REPO_NAME } "Is not an AppVeyor Job"
-    Assert-True { $env:APPVEYOR_API_TOKEN } "Is missing AppVeyor's API token"
-
-    $separator = "-"
-    $headers = @{
-        "Authorization" = "Bearer $env:APPVEYOR_API_TOKEN"
-        "Content-type"  = "application/json"
-    }
-    $apiURL = "https://ci.appveyor.com/api/projects/$env:APPVEYOR_ACCOUNT_NAME/$env:APPVEYOR_PROJECT_SLUG"
-    $history = Invoke-RestMethod -Uri "$apiURL/history?recordsNumber=2" -Headers $headers  -Method Get
-    if ($history.builds.Count -eq 2) {
-        $s = Invoke-RestMethod -Uri "$apiURL/settings" -Headers $headers  -Method Get
-        $s.settings.nextBuildNumber = ($s.settings.nextBuildNumber - 1)
-        Invoke-RestMethod -Uri 'https://ci.appveyor.com/api/projects' -Headers $headers  -Body ($s.settings | ConvertTo-Json -Depth 10) -Method Put
-        $previousVersion = $history.builds[1].version
-        if ($previousVersion.IndexOf("$separator") -ne "-1") {$previousVersion = $previousVersion.SubString(0, $previousVersion.IndexOf("$separator"))}
-        Update-AppveyorBuild -Version $previousVersion$separator$((New-Guid).ToString().SubString(0,8))
-    }
-}
-
-#region Old
-# function allJobsFinished {
-#     param()
-
-#     if (-not ('AppVeyor' -eq $env:BHBuildSystem)) {
-#         return $true
-#     }
-#     if (-not ($env:APPVEYOR_API_TOKEN)) {
-#         Write-Warning "Missing `$env:APPVEYOR_API_TOKEN"
-#         return $true
-#     }
-#     if (-not ($env:APPVEYOR_ACCOUNT_NAME)) {
-#         Write-Warning "Missing `$env:APPVEYOR_ACCOUNT_NAME"
-#         return $true
-#     }
-
-#     Test-IsLastJob
-
-#     Write-Host "[IDLE] :: waiting for other jobs to complete"
-
-#     [datetime]$stop = ([datetime]::Now).AddMinutes($env:TimeOutMins)
-
-#     do {
-#         $project = Get-AppVeyorBuild
-#         $continue = @()
-#         $project.build.jobs | Where-Object {$_.jobId -ne $env:APPVEYOR_JOB_ID} | Foreach-Object {
-#             $job = $_
-#             switch -regex ($job.status) {
-#                 "failed" { throw "AppVeyor's Job ($($job.jobId)) failed." }
-#                 "(running|success)" { $continue += $true; continue }
-#                 Default { $continue += $false; Write-Host "new state: $_.status" }
-#             }
-#         }
-#         if ($false -notin $continue) { return $true }
-#         Start-sleep 5
-#     } while (([datetime]::Now) -lt $stop)
-
-#     throw "Test jobs were not finished in $env:TimeOutMins minutes"
-# }
-#endregion Old
 
 function Get-FileEncoding {
     <#
