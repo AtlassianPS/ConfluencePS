@@ -118,16 +118,29 @@ task ShowInfo Init, GetNextVersion, {
 
 #region Lint
 task Lint Init, {
-    $installedPester = Get-Module -ListAvailable -Name Pester |
-        Sort-Object Version -Descending |
+    $requiredPesterVersion = [version]"4.10.1"
+    $legacyPester = Get-Module -ListAvailable -Name Pester |
+        Where-Object { $_.Version -eq $requiredPesterVersion } |
         Select-Object -First 1
-    Assert-True ($null -ne $installedPester) "Pester was not found."
+    if (-not $legacyPester) {
+        if (-not (Get-PSRepository -Name PSGallery -ErrorAction SilentlyContinue)) {
+            Register-PSRepository -Default -ErrorAction SilentlyContinue
+        }
+        Set-PSRepository -Name PSGallery -InstallationPolicy Trusted -ErrorAction SilentlyContinue
+        Install-Module Pester -RequiredVersion 4.10.1 -Scope CurrentUser -Force -SkipPublisherCheck -ErrorAction Stop
+        $legacyPester = Get-Module -ListAvailable -Name Pester |
+            Where-Object { $_.Version -eq $requiredPesterVersion } |
+            Select-Object -First 1
+    }
 
-    $legacyPester = Get-Module -ListAvailable -Name Pester | Where-Object { $_.Version -eq [version]"4.10.1" } | Select-Object -First 1
     if ($legacyPester) {
         Import-Module Pester -RequiredVersion 4.10.1 -Force
     }
     else {
+        $installedPester = Get-Module -ListAvailable -Name Pester |
+            Sort-Object Version -Descending |
+            Select-Object -First 1
+        Assert-True ($null -ne $installedPester) "Pester was not found."
         Import-Module Pester -RequiredVersion $installedPester.Version -Force
     }
 
