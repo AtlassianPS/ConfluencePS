@@ -6,7 +6,30 @@ function Invoke-Init {
     [CmdletBinding()]
     param()
     begin {
-        Set-BuildEnvironment -BuildOutput '$ProjectPath/Release' -ErrorAction SilentlyContinue
+        $projectName = "ConfluencePS"
+        $projectRoot = Split-Path -Parent $PSScriptRoot
+
+        $env:BHProjectName = $projectName
+        $env:BHProjectPath = $projectRoot
+        $env:BHModulePath = Join-Path $projectRoot $projectName
+        $env:BHPSModulePath = $env:BHModulePath
+        $env:BHPSModuleManifest = Join-Path $env:BHModulePath "$projectName.psd1"
+        $env:BHBuildOutput = Join-Path $projectRoot 'Release'
+
+        if ($env:GITHUB_ACTIONS) {
+            $env:BHBuildSystem = 'GitHub Actions'
+            $env:BHBranchName = if ($env:GITHUB_HEAD_REF) { $env:GITHUB_HEAD_REF } else { $env:GITHUB_REF_NAME }
+            $env:BHCommitHash = $env:GITHUB_SHA
+            $env:BHBuildNumber = $env:GITHUB_RUN_NUMBER
+        }
+        else {
+            $env:BHBuildSystem = 'Local'
+            $env:BHBranchName = git -C $projectRoot rev-parse --abbrev-ref HEAD 2>$null
+            $env:BHCommitHash = git -C $projectRoot rev-parse HEAD 2>$null
+            $env:BHBuildNumber = '0'
+        }
+        $env:BHCommitMessage = (git -C $projectRoot log -1 --pretty=%B 2>$null) -join "`n"
+
         Add-ToModulePath -Path $env:BHBuildOutput
     }
 }

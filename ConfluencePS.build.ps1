@@ -32,7 +32,6 @@ Set-StrictMode -Version Latest
 Import-Module "$PSScriptRoot/Tools/BuildTools.psm1" -Force -ErrorAction Stop
 
 if ($BuildTask -notin @("SetUp", "InstallDependencies")) {
-    Import-Module BuildHelpers -Force -ErrorAction Stop
     Invoke-Init
 }
 
@@ -246,12 +245,13 @@ task UpdateManifest GetNextVersion, {
     Import-Module $env:BHPSModuleManifest -Force
     $ModuleAlias = @(Get-Alias | Where-Object {$_.ModuleName -eq "$env:BHProjectName"})
 
-    BuildHelpers\Update-Metadata -Path "$env:BHBuildOutput/$env:BHProjectName/$env:BHProjectName.psd1" -PropertyName ModuleVersion -Value $env:NextBuildVersion
-    # BuildHelpers\Update-Metadata -Path "$env:BHBuildOutput/$env:BHProjectName/$env:BHProjectName.psd1" -PropertyName FileList -Value (Get-ChildItem "$env:BHBuildOutput/$env:BHProjectName" -Recurse).Name
-    BuildHelpers\Set-ModuleFunctions -Name "$env:BHBuildOutput/$env:BHProjectName/$env:BHProjectName.psd1" -FunctionsToExport ([string[]](Get-ChildItem "$env:BHBuildOutput/$env:BHProjectName/Public/*.ps1").BaseName)
-    BuildHelpers\Update-Metadata -Path "$env:BHBuildOutput/$env:BHProjectName/$env:BHProjectName.psd1" -PropertyName AliasesToExport -Value ''
+    $manifestPath = "$env:BHBuildOutput/$env:BHProjectName/$env:BHProjectName.psd1"
+    $moduleFunctions = (Get-ChildItem "$env:BHBuildOutput/$env:BHProjectName/Public/*.ps1").BaseName
+    Metadata\Update-Metadata -Path $manifestPath -PropertyName ModuleVersion -Value $env:NextBuildVersion
+    Metadata\Update-Metadata -Path $manifestPath -PropertyName FunctionsToExport -Value @($moduleFunctions)
+    Metadata\Update-Metadata -Path $manifestPath -PropertyName AliasesToExport -Value ''
     if ($ModuleAlias) {
-        BuildHelpers\Update-Metadata -Path "$env:BHBuildOutput/$env:BHProjectName/$env:BHProjectName.psd1" -PropertyName AliasesToExport -Value @($ModuleAlias.Name)
+        Metadata\Update-Metadata -Path $manifestPath -PropertyName AliasesToExport -Value @($ModuleAlias.Name)
     }
 }
 
