@@ -72,6 +72,14 @@ Check out our guidelines on [Contributing](https://atlassianps.org/docs/Contribu
 |Confluence Cloud integration|[Integration Tests](https://github.com/AtlassianPS/ConfluencePS/actions/workflows/integration_tests.yml)|
 |Confluence Data Center integration|[Integration Tests](https://github.com/AtlassianPS/ConfluencePS/actions/workflows/integration_tests.yml)|
 
+## Supported Confluence versions
+
+|Deployment|Supported versions|Notes|
+|----------|------------------|-----|
+|Confluence Cloud|Atlassian Cloud (current REST API)|Covered by Cloud integration workflow track.|
+|Confluence Data Center|Atlassian-supported Data Center releases|Covered by Data Center integration workflow track.|
+|Confluence Server|Not supported|Confluence Server is end-of-life and outside current support scope.|
+
 ## Acknowledgements
 
 * Thanks to [brianbunke] for getting this module on it's feet

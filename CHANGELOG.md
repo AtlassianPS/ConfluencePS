@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Migrated CI/CD from Azure DevOps to GitHub Actions with JiraPS-aligned workflows (`ci`, `integration_tests`, `release`).
 - Added deterministic build dependency handling and pinned build requirements, including PlatyPS v1 for documentation tooling.
 - Added repository automation and contributor guidance parity files (`AGENTS.md`, Copilot/AI context, Dependabot workflow updates).
+- Added explicit README support policy for Confluence deployment/version targets (Cloud, Data Center, Server EOL status).
 
 ### Breaking
 
