@@ -1,4 +1,4 @@
-function Invoke-Method {
+﻿function Invoke-Method {
     [CmdletBinding(SupportsPaging = $true)]
     [OutputType(
         [PSObject],

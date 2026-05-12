@@ -1,4 +1,4 @@
-function Get-AttachmentFile {
+﻿function Get-AttachmentFile {
     [CmdletBinding()]
     [OutputType([Bool])]
     param (

@@ -1,4 +1,4 @@
-function Add-Attachment {
+﻿function Add-Attachment {
     [CmdletBinding(
         ConfirmImpact = 'Low',
         SupportsShouldProcess = $true

@@ -1,4 +1,4 @@
-function Assert-True {
+﻿function Assert-True {
     [CmdletBinding( DefaultParameterSetName = 'ByBool' )]
     param(
         [Parameter( Position = 0, Mandatory, ParameterSetName = 'ByScriptBlock' )]

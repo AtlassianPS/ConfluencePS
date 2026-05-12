@@ -1,4 +1,4 @@
-[CmdletBinding()]
+﻿[CmdletBinding()]
 param(
     [ValidateSet('None', 'Normal' , 'Detailed', 'Diagnostic')]
     [String] $PesterVerbosity = 'Normal',
@@ -45,6 +45,28 @@ function Initialize-BuildEnvironmentInfo {
     }
     $env:BHCommitMessage = (git -C $env:BHProjectPath log -1 --pretty=%B 2>$null) -join "`n"
 }
+
+function Ensure-PSScriptAnalyzerSettings {
+    $settingsPath = Join-Path $PSScriptRoot 'PSScriptAnalyzerSettings.psd1'
+    if (Test-Path $settingsPath) {
+        return
+    }
+
+    $uri = 'https://raw.githubusercontent.com/AtlassianPS/.github/83e062b260346c4577d3b41974f0f8aafcc5e7e5/standards/PSScriptAnalyzerSettings.psd1'
+    $invokeWebRequestParams = @{
+        Uri         = $uri
+        ErrorAction = 'Stop'
+    }
+    if ($PSVersionTable.PSEdition -eq 'Desktop') {
+        $invokeWebRequestParams.UseBasicParsing = $true
+    }
+
+    $response = Invoke-WebRequest @invokeWebRequestParams
+    $settingsWithCrLf = $response.Content -replace "`r?`n", "`r`n"
+    [System.IO.File]::WriteAllText($settingsPath, $settingsWithCrLf, [System.Text.UTF8Encoding]::new($false))
+}
+
+Ensure-PSScriptAnalyzerSettings
 
 #region HarmonizeVariables
 switch ($true) {
@@ -223,8 +245,8 @@ Task CompileModule {
         $compiled += "`r`n"
     }
 
-    Set-Content -LiteralPath $targetFile -Value $compiled -Encoding UTF8 -Force
-    Remove-Utf8Bom -Path $targetFile
+    $utf8Bom = [System.Text.UTF8Encoding]::new($true)
+    [System.IO.File]::WriteAllText($targetFile, $compiled, $utf8Bom)
 
     "Private", "Public" | ForEach-Object { Remove-Item -Path "$env:BHBuildOutput/$env:BHProjectName/$_" -Recurse -Force }
 }
@@ -237,24 +259,35 @@ Task GenerateExternalHelp -Inputs {
         $localeOut = Join-Path $env:BHModulePath $locale.BaseName
 
         $hasCommandHelp = Get-ChildItem "$($locale.FullName)/commands/*.md" -File -ErrorAction SilentlyContinue |
-            Where-Object { $_.Name -ne 'index.md' } |
+            Where-Object { $_.Name -ne 'index.md' -and $_.Name -notlike 'about_*.md' } |
             Select-Object -First 1
         if ($hasCommandHelp) {
             Join-Path $localeOut "$env:BHProjectName-help.xml"
         }
 
-        Get-ChildItem "$($locale.FullName)/about_*.md" -File -ErrorAction SilentlyContinue |
+        @(
+            Get-ChildItem "$($locale.FullName)/about_*.md" -File -ErrorAction SilentlyContinue
+            Get-ChildItem "$($locale.FullName)/commands/about_*.md" -File -ErrorAction SilentlyContinue
+        ) |
             ForEach-Object { Join-Path $localeOut "$($_.BaseName).help.txt" }
     }
 } {
+    Import-Module Microsoft.PowerShell.PlatyPS -Force
+
     try {
-        Import-Module Microsoft.PowerShell.PlatyPS -Force -ErrorAction Stop
         foreach ($locale in (Get-ChildItem "$env:BHProjectPath/docs" -Attribute Directory)) {
             $outputPath = "$env:BHModulePath/$($locale.Basename)"
             $null = New-Item -ItemType Directory -Path $outputPath -Force
 
+            # Cleanup for older help generation runs that left a nested module folder
+            # under locale output, which can block PlatyPS writes on subsequent runs.
+            $staleNestedPath = Join-Path $outputPath $env:BHProjectName
+            if (Test-Path $staleNestedPath) {
+                Remove-Item $staleNestedPath -Recurse -Force -ErrorAction SilentlyContinue
+            }
+
             $commandHelpFiles = Get-ChildItem "$($locale.FullName)/commands/*.md" -File |
-                Where-Object { $_.Name -ne 'index.md' }
+                Where-Object { $_.Name -ne 'index.md' -and $_.Name -notlike 'about_*.md' }
 
             if ($commandHelpFiles) {
                 $commandHelp = @($commandHelpFiles | Import-MarkdownCommandHelp)
@@ -363,7 +396,10 @@ Task GenerateExternalHelp -Inputs {
             # Copy about topics as help text files. UTF-8 with BOM for PowerShell 5
             # compatibility (matches the CompileModule convention introduced in 3107e3a).
             $utf8Bom = [System.Text.UTF8Encoding]::new($true)
-            Get-ChildItem "$($locale.FullName)/about_*.md" -File | ForEach-Object {
+            @(
+                Get-ChildItem "$($locale.FullName)/about_*.md" -File -ErrorAction SilentlyContinue
+                Get-ChildItem "$($locale.FullName)/commands/about_*.md" -File -ErrorAction SilentlyContinue
+            ) | ForEach-Object {
                 $helpTxtName = $_.BaseName + '.help.txt'
                 $content = [System.IO.File]::ReadAllText($_.FullName)
                 # Tolerate files where the closing `---` is the final line (no trailing newline).
@@ -371,9 +407,6 @@ Task GenerateExternalHelp -Inputs {
                 [System.IO.File]::WriteAllText((Join-Path $outputPath $helpTxtName), $content, $utf8Bom)
             }
         }
-    }
-    catch {
-        Write-Warning "Skipping help regeneration because PlatyPS could not be loaded: $($_.Exception.Message)"
     }
     finally {
         Remove-Module Microsoft.PowerShell.PlatyPS -ErrorAction SilentlyContinue

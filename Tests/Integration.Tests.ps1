@@ -1,4 +1,4 @@
-#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "4.10" }
+﻿#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "4.10" }
 
 [Diagnostics.CodeAnalysis.SuppressMessageAttribute(
     "PSUseDeclaredVarsMoreThanAssigments",

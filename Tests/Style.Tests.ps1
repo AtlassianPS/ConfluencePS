@@ -1,18 +1,22 @@
-#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "4.10" }
+﻿#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "4.10" }
 
-Describe "Validation of code styling" {
-
+Describe "Style rules" -Tag "Unit" {
     BeforeAll {
         . "$PSScriptRoot/Helpers/TestTools.ps1"
-        $script:moduleToTest = Initialize-TestEnvironment -CallerPath $PSScriptRoot
-    }
-    AfterAll {
-        Remove-Module $env:BHProjectName -ErrorAction SilentlyContinue
-        Remove-Item -Path Env:\BH*
-    }
 
-    $docFiles = Get-ChildItem "$PSScriptRoot/.." -Include *.md -Recurse
-    $codeFiles = Get-ChildItem "$PSScriptRoot/.." -Include *.ps1, *.psm1 -Recurse
+        $moduleRoot = Resolve-ProjectRoot
+
+        ${/} = [System.IO.Path]::DirectorySeparatorChar
+
+        # -Force is required so dot-prefixed files (e.g. Tests/.../.template.ps1)
+        # are discovered on Unix-like systems too. Without it, PowerShell hides
+        # them on macOS/Linux but not on Windows, leading to violations that
+        # silently pass locally and only fail on Windows CI.
+        $script:codeFiles = Get-ChildItem $moduleRoot -Include *.ps1, *.psm1 -Recurse -Force |
+            Where-Object { $_.FullName -notlike "*${/}Release${/}*" }
+        $script:docFiles = Get-ChildItem $moduleRoot -Include *.md -Recurse -Force |
+            Where-Object { $_.FullName -notlike "*${/}Release${/}*" }
+    }
 
     It "has no trailing whitespace in code files" {
         $badLines = @(
@@ -29,7 +33,7 @@ Describe "Validation of code styling" {
         )
 
         if ($badLines.Count -gt 0) {
-            throw "The following $($badLines.Count) lines contain trailing whitespace: `r`n`r`n$($badLines -join "`r`n")"
+            throw "The following $($badLines.Count) lines contain trailing whitespace:`n  $($badLines -join "`n  ")"
         }
     }
 
@@ -44,24 +48,25 @@ Describe "Validation of code styling" {
         )
 
         if ($badFiles.Count -gt 0) {
-            throw "The following files do not end with a newline: `r`n`r`n$($badFiles -join "`r`n")"
+            throw "The following files do not end with a newline:`n  $($badFiles -join "`n  ")"
         }
     }
 
-    It "uses UTF-8 for code files" {
+    It "uses UTF-8 with BOM for code files" {
         $badFiles = @(
             foreach ($file in $codeFiles) {
                 $encoding = Get-FileEncoding -Path $file.FullName
-                if ($encoding -and $encoding.encoding -ne "UTF8") {
+                if ($encoding -and $encoding.encoding -ne "UTF8-BOM") {
                     $file.FullName
                 }
             }
         )
 
         if ($badFiles.Count -gt 0) {
-            throw "The following files are not encoded with UTF-8 (no BOM): `r`n`r`n$($badFiles -join "`r`n")"
+            throw "The following files are not encoded with UTF-8 BOM (required for PS v5 compatibility):`n  $($badFiles -join "`n  ")"
         }
     }
+
     It "uses UTF-8 for documentation files" {
         $badFiles = @(
             foreach ($file in $docFiles) {
@@ -73,7 +78,7 @@ Describe "Validation of code styling" {
         )
 
         if ($badFiles.Count -gt 0) {
-            throw "The following files are not encoded with UTF-8 (no BOM): `r`n`r`n$($badFiles -join "`r`n")"
+            throw "The following files are not encoded with UTF-8 (no BOM):`n  $($badFiles -join "`n  ")"
         }
     }
 
@@ -88,22 +93,22 @@ Describe "Validation of code styling" {
         )
 
         if ($badFiles.Count -gt 0) {
-            throw "The following files do not use CRLF as line break: `r`n`r`n$($badFiles -join "`r`n")"
+            throw "The following files do not use CRLF as line break:`n  $($badFiles -join "`n  ")"
         }
     }
 
-    It "uses CRLF as newline character in documentation files" {
+    It "uses LF as newline character in documentation files" {
         $badFiles = @(
             foreach ($file in $docFiles) {
                 $string = [System.IO.File]::ReadAllText($file.FullName)
-                if ($string.Length -gt 0 -and $string -notmatch "\r\n$") {
+                if ($string.Length -gt 0 -and $string -notmatch "\n$") {
                     $file.FullName
                 }
             }
         )
 
         if ($badFiles.Count -gt 0) {
-            throw "The following files do not use CRLF as line break: `r`n`r`n$($badFiles -join "`r`n")"
+            throw "The following files do not use CRLF as line break:`n  $($badFiles -join "`n  ")"
         }
     }
 }

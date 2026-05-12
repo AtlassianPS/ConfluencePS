@@ -1,4 +1,4 @@
-function Remove-Page {
+﻿function Remove-Page {
     [CmdletBinding(
         ConfirmImpact = 'Medium',
         SupportsShouldProcess = $true

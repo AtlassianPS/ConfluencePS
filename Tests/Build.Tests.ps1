@@ -1,4 +1,4 @@
-#requires -modules Metadata
+﻿#requires -modules Metadata
 #requires -modules @{ ModuleName = "Pester"; ModuleVersion = "4.10" }
 
 Describe "Validation of build environment" -Tag Unit {
