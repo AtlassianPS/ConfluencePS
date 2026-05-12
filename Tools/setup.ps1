@@ -1,4 +1,4 @@
-﻿#requires -Module PowerShellGet
+#requires -Module PowerShellGet
 
 [CmdletBinding()]
 [System.Diagnostics.CodeAnalysis.SuppressMessage('PSAvoidUsingWriteHost', '')]
