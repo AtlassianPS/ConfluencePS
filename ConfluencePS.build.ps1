@@ -113,6 +113,7 @@ task ShowInfo Init, GetNextVersion, {
     Write-Build Gray ('OS Version:                 {0}' -f $OSVersion)
     Write-Build Gray
 }
+task ShowDebugInfo ShowInfo
 #endregion DebugInformation
 
 #region Lint

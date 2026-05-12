@@ -53,7 +53,7 @@ jobs:
       - uses: AtlassianPS/.github/actions/setup-powershell@master
 
       - name: Build
-        run: Invoke-Build -Task ShowInfo, Clean, Build
+        run: Invoke-Build -Task Clean, Build
         shell: pwsh
 
       - name: Upload release artifact
@@ -78,7 +78,7 @@ jobs:
       - name: Setup dependencies
         run: |
           ./Tools/setup.ps1
-          Invoke-Build -Task ShowInfo
+          Invoke-Build -Task ShowDebugInfo
         shell: powershell
 
       - name: Download release artifact
