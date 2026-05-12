@@ -9,7 +9,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
-.
+- Migrated CI/CD from Azure DevOps to GitHub Actions with JiraPS-aligned workflows (`ci`, `integration_tests`, `release`).
+- Added deterministic build dependency handling and pinned build requirements, including PlatyPS v1 for documentation tooling.
+- Added repository automation and contributor guidance parity files (`AGENTS.md`, Copilot/AI context, Dependabot workflow updates).
+
+### Breaking
+
+- Raised the minimum supported PowerShell version from `3.0` to `5.1` in the module manifest.
+  - Windows PowerShell `3.0` and `4.0` are no longer supported.
+  - Supported editions are now explicitly `Desktop` and `Core`.
 
 ## [2.5] 2019-03-27
 
