@@ -33,7 +33,7 @@ jobs:
       CONFLUENCE_DEPLOYMENT: Cloud
     steps:
       - uses: actions/checkout@v6
-      - uses: ./.github/actions/setup-powershell
+      - uses: AtlassianPS/.github/actions/setup-powershell@master
 
       - run: |
           Invoke-Build -Task Clean, Build
@@ -60,7 +60,7 @@ jobs:
       CONFLUENCE_DEPLOYMENT: DataCenter
     steps:
       - uses: actions/checkout@v6
-      - uses: ./.github/actions/setup-powershell
+      - uses: AtlassianPS/.github/actions/setup-powershell@master
 
       - run: |
           Invoke-Build -Task Clean, Build

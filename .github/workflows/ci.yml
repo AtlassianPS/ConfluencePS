@@ -39,7 +39,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: ./.github/actions/setup-powershell
+      - uses: AtlassianPS/.github/actions/setup-powershell@master
 
       - run: Invoke-Build -Task Lint
         shell: pwsh
@@ -50,7 +50,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: ./.github/actions/setup-powershell
+      - uses: AtlassianPS/.github/actions/setup-powershell@master
 
       - name: Build
         run: Invoke-Build -Task ShowInfo, Clean, Build
@@ -68,7 +68,7 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: ./.github/actions/setup-powershell
+      - uses: AtlassianPS/.github/actions/setup-powershell@master
         with:
           ps-version: "5"
           # Setup is run below in the powershell (PS 5.1) shell instead of pwsh,
@@ -111,7 +111,7 @@ jobs:
           - { os: macos-latest, name: "macOS" }
     steps:
       - uses: actions/checkout@v6
-      - uses: ./.github/actions/setup-powershell
+      - uses: AtlassianPS/.github/actions/setup-powershell@master
 
       - name: Download release artifact
         uses: actions/download-artifact@v8
@@ -149,7 +149,7 @@ jobs:
       WikiPass: ${{ secrets.WikiPass }}
     steps:
       - uses: actions/checkout@v6
-      - uses: ./.github/actions/setup-powershell
+      - uses: AtlassianPS/.github/actions/setup-powershell@master
 
       - name: Run smoke integration tests
         if: env.WikiURI != '' && env.WikiUser != '' && env.WikiPass != ''
