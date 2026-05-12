@@ -118,10 +118,18 @@ task ShowInfo Init, GetNextVersion, {
 
 #region Lint
 task Lint Init, {
-    $requiredPesterVersion = [version]"4.10.1"
-    $installedPester = Get-Module -ListAvailable -Name Pester | Where-Object { $_.Version -eq $requiredPesterVersion } | Select-Object -First 1
-    Assert-True ($null -ne $installedPester) "Required Pester version 4.10.1 was not found."
-    Import-Module Pester -RequiredVersion 4.10.1 -Force
+    $installedPester = Get-Module -ListAvailable -Name Pester |
+        Sort-Object Version -Descending |
+        Select-Object -First 1
+    Assert-True ($null -ne $installedPester) "Pester was not found."
+
+    $legacyPester = Get-Module -ListAvailable -Name Pester | Where-Object { $_.Version -eq [version]"4.10.1" } | Select-Object -First 1
+    if ($legacyPester) {
+        Import-Module Pester -RequiredVersion 4.10.1 -Force
+    }
+    else {
+        Import-Module Pester -RequiredVersion $installedPester.Version -Force
+    }
 
     $styleResults = Invoke-Pester -Script "$PSScriptRoot/Tests/Style.Tests.ps1" -PassThru
     Assert-True ($styleResults.FailedCount -eq 0) "$($styleResults.FailedCount) style test(s) failed."
