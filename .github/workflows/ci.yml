@@ -152,6 +152,7 @@ jobs:
       - uses: ./.github/actions/setup-powershell
 
       - name: Run smoke integration tests
+        if: env.WikiURI != '' && env.WikiUser != '' && env.WikiPass != ''
         run: |
           Invoke-Build -Task TestIntegration -Tag "Cloud"
         shell: pwsh
