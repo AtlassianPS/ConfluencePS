@@ -1,4 +1,3 @@
-#requires -modules BuildHelpers
 #requires -modules @{ ModuleName = "Pester"; ModuleVersion = "4.10" }
 
 [Diagnostics.CodeAnalysis.SuppressMessageAttribute(
@@ -20,32 +19,12 @@ $SpaceID = Get-Random
 Describe 'Integration Tests' -Tag Integration {
 
     BeforeAll {
-        Remove-Item -Path Env:\BH*
-        $projectRoot = (Resolve-Path "$PSScriptRoot/..").Path
-        if ($projectRoot -like "*Release") {
-            $projectRoot = (Resolve-Path "$projectRoot/..").Path
-        }
-
-        Import-Module BuildHelpers
-        Set-BuildEnvironment -BuildOutput '$ProjectPath/Release' -Path $projectRoot -ErrorAction SilentlyContinue
-
-        $env:BHManifestToTest = $env:BHPSModuleManifest
-        $script:isBuild = $PSScriptRoot -like "$env:BHBuildOutput*"
-        if ($script:isBuild) {
-            $Pattern = [regex]::Escape($env:BHProjectPath)
-
-            $env:BHBuildModuleManifest = $env:BHPSModuleManifest -replace $Pattern, $env:BHBuildOutput
-            $env:BHManifestToTest = $env:BHBuildModuleManifest
-        }
-
-        Import-Module "$env:BHProjectPath/Tools/BuildTools.psm1"
-
-        Remove-Module $env:BHProjectName -ErrorAction SilentlyContinue
+        . "$PSScriptRoot/Helpers/TestTools.ps1"
+        $script:moduleToTest = Initialize-TestEnvironment -CallerPath $PSScriptRoot
         Import-Module $env:BHManifestToTest
     }
     AfterAll {
         Remove-Module $env:BHProjectName -ErrorAction SilentlyContinue
-        Remove-Module BuildHelpers -ErrorAction SilentlyContinue
         Remove-Item -Path Env:\BH*
     }
 
