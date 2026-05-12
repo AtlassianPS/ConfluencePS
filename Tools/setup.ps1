@@ -13,11 +13,9 @@ function Sync-PSScriptAnalyzerSetting {
 
     Write-Host "Syncing PSScriptAnalyzer settings from AtlassianPS/.github"
 
-    $tempPath = Join-Path ([System.IO.Path]::GetTempPath()) "PSScriptAnalyzerSettings.$([System.Guid]::NewGuid().ToString('N')).psd1"
     try {
         $invokeWebRequestParams = @{
             Uri         = $psScriptAnalyzerSettingsUri
-            OutFile     = $tempPath
             ErrorAction = 'Stop'
         }
 
@@ -25,7 +23,8 @@ function Sync-PSScriptAnalyzerSetting {
             $invokeWebRequestParams.UseBasicParsing = $true
         }
 
-        Invoke-WebRequest @invokeWebRequestParams
+        $response = Invoke-WebRequest @invokeWebRequestParams
+        $settingsContent = $response.Content
 
         if ($env:ATLASSIANPS_PSSA_UPDATE_LOCAL -ne '1') {
             Write-Host "Pinned PSScriptAnalyzer settings download succeeded."
@@ -33,7 +32,6 @@ function Sync-PSScriptAnalyzerSetting {
         }
 
         # Keep repo-consistent line endings while still pinning source payload hash.
-        $settingsContent = [System.IO.File]::ReadAllText($tempPath)
         $settingsWithCrLf = $settingsContent -replace "`r?`n", "`r`n"
         [System.IO.File]::WriteAllText(
             $psScriptAnalyzerSettingsPath,
@@ -44,11 +42,6 @@ function Sync-PSScriptAnalyzerSetting {
     catch {
         Write-Warning "Unable to download pinned PSScriptAnalyzer settings from '$psScriptAnalyzerSettingsUri'. Continuing with local settings."
         Write-Warning $_
-    }
-    finally {
-        if (Test-Path -Path $tempPath) {
-            Remove-Item -Path $tempPath -Force -ErrorAction SilentlyContinue
-        }
     }
 }
 
