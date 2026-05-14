@@ -13,6 +13,7 @@
 Release/
 ConfluencePS/en-US/
 Test*.xml
+PSScriptAnalyzerSettings.psd1
 
 #######
 # Excerpts from https://www.gitignore.io

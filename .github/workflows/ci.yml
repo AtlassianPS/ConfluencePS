@@ -1,0 +1,196 @@
+name: CI
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+on:
+  pull_request:
+    branches: [master]
+    paths-ignore: &paths-ignore
+      - "CHANGELOG.md"
+      - "LICENSE"
+      - ".github/*.md"
+      - ".github/ISSUE_TEMPLATE/**"
+      - ".github/PULL_REQUEST_TEMPLATE/**"
+      - ".vscode/**"
+      - ".editorconfig"
+      - ".spelling"
+  push:
+    branches: [master]
+    paths-ignore: *paths-ignore
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build Module
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: AtlassianPS/.github/actions/setup-powershell@master
+
+      - name: Build
+        run: Invoke-Build -Task ShowInfo, Clean, Build
+        shell: pwsh
+
+      - name: Upload release artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: Release
+          path: ./Release/
+
+  test_windows_ps5:
+    name: Test (Windows PS5)
+    needs: build
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: AtlassianPS/.github/actions/setup-powershell@master
+        with:
+          ps-version: "5"
+          skip-setup: "true"
+
+      - name: Setup dependencies
+        run: ./Tools/setup.ps1
+        shell: powershell
+
+      - name: Download release artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: Release
+          path: ./Release/
+
+      - name: Test
+        run: |
+          $requiredPesterVersion = [version]'4.10.1'
+          $installedPester = Get-Module -ListAvailable -Name Pester |
+            Where-Object { $_.Version -eq $requiredPesterVersion } |
+            Select-Object -First 1
+          if (-not $installedPester) {
+            if (-not (Get-PSRepository -Name PSGallery -ErrorAction SilentlyContinue)) {
+              Register-PSRepository -Default -ErrorAction SilentlyContinue
+            }
+            Set-PSRepository -Name PSGallery -InstallationPolicy Trusted -ErrorAction SilentlyContinue
+            Install-Module Pester -RequiredVersion 4.10.1 -Scope CurrentUser -Force -SkipPublisherCheck -ErrorAction Stop
+          }
+          Import-Module Pester -RequiredVersion 4.10.1 -Force
+          Invoke-Build -Task Test
+        shell: powershell
+
+      - name: Upload unit test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: Windows-PS5-Unit-Tests
+          path: Test*.xml
+
+  test_pwsh:
+    name: Test (${{ matrix.name }})
+    needs: build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: windows-latest, name: "Windows PS7" }
+          - { os: ubuntu-latest, name: "Ubuntu" }
+          - { os: macos-latest, name: "macOS" }
+    steps:
+      - uses: actions/checkout@v6
+      - uses: AtlassianPS/.github/actions/setup-powershell@master
+
+      - name: Download release artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: Release
+          path: ./Release/
+
+      - name: Test
+        run: |
+          $requiredPesterVersion = [version]'4.10.1'
+          $installedPester = Get-Module -ListAvailable -Name Pester |
+            Where-Object { $_.Version -eq $requiredPesterVersion } |
+            Select-Object -First 1
+          if (-not $installedPester) {
+            if (-not (Get-PSRepository -Name PSGallery -ErrorAction SilentlyContinue)) {
+              Register-PSRepository -Default -ErrorAction SilentlyContinue
+            }
+            Set-PSRepository -Name PSGallery -InstallationPolicy Trusted -ErrorAction SilentlyContinue
+            Install-Module Pester -RequiredVersion 4.10.1 -Scope CurrentUser -Force -SkipPublisherCheck -ErrorAction Stop
+          }
+          Import-Module Pester -RequiredVersion 4.10.1 -Force
+          # Legacy ConfluencePS help tests rely on Windows PowerShell-only
+          # common parameter expectations.
+          Invoke-Build -Task Test -ExcludeTag "Integration", "Documentation"
+        shell: pwsh
+
+      - name: Upload unit test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ matrix.name }}-Unit-Tests
+          path: Test*.xml
+
+  smoke_tests:
+    name: Smoke Tests
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request' ||
+      (github.event.pull_request.head.repo.full_name == github.repository &&
+       github.actor != 'dependabot[bot]')
+    env:
+      WikiURI: ${{ secrets.WikiURI }}
+      WikiUser: ${{ secrets.WikiUser }}
+      WikiPass: ${{ secrets.WikiPass }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: AtlassianPS/.github/actions/setup-powershell@master
+
+      - name: Download release artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: Release
+          path: ./Release/
+
+      - name: Run smoke integration tests
+        if: env.WikiURI != '' && env.WikiUser != '' && env.WikiPass != ''
+        run: |
+          $requiredPesterVersion = [version]'4.10.1'
+          $installedPester = Get-Module -ListAvailable -Name Pester |
+            Where-Object { $_.Version -eq $requiredPesterVersion } |
+            Select-Object -First 1
+          if (-not $installedPester) {
+            if (-not (Get-PSRepository -Name PSGallery -ErrorAction SilentlyContinue)) {
+              Register-PSRepository -Default -ErrorAction SilentlyContinue
+            }
+            Set-PSRepository -Name PSGallery -InstallationPolicy Trusted -ErrorAction SilentlyContinue
+            Install-Module Pester -RequiredVersion 4.10.1 -Scope CurrentUser -Force -SkipPublisherCheck -ErrorAction Stop
+          }
+          Import-Module Pester -RequiredVersion 4.10.1 -Force
+          Invoke-Build -Task Test -Tag "Integration" -ExcludeTag ""
+        shell: pwsh
+
+      - name: Upload integration test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: Smoke-Tests
+          path: Test*.xml
+
+  ci-required:
+    name: CI Result
+    if: always()
+    needs: [build, test_windows_ps5, test_pwsh, smoke_tests]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Aggregate job results
+        shell: bash
+        run: |
+          results='${{ toJSON(needs) }}'
+          echo "Job results:"
+          echo "$results"
+          if echo "$results" | grep -E '"result":[[:space:]]*"(failure|cancelled)"' > /dev/null; then
+            echo "::error::One or more required jobs failed or were cancelled."
+            exit 1
+          fi
+          echo "All required jobs passed or were skipped."
