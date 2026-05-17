@@ -1,24 +1,28 @@
-#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "4.10" }
+﻿#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "5.7"; MaximumVersion = "5.999" }
 
-Describe "Validation of example codes in the documentation" -Tag Documentation, NotImplemented {
+BeforeDiscovery {
+    . "$PSScriptRoot/Helpers/TestTools.ps1"
 
+    $script:moduleToTest = Initialize-TestEnvironment
+}
+
+Describe "Validation of example codes in the documentation" -Tag Documentation, NotImplemented -Skip {
     BeforeAll {
-        . "$PSScriptRoot/Helpers/TestTools.ps1"
-        $script:moduleToTest = Initialize-TestEnvironment -CallerPath $PSScriptRoot
-        $script:isBuild = $PSScriptRoot -like "*$([System.IO.Path]::DirectorySeparatorChar)Release$([System.IO.Path]::DirectorySeparatorChar)*"
-    }
-    AfterAll {
-        Remove-Module $env:BHProjectName -ErrorAction SilentlyContinue
-        Remove-Item -Path Env:\BH*
+        $script:commands = Get-Command -Module ConfluencePS -CommandType Cmdlet, Function
+        $script:module = Get-Module ConfluencePS
     }
 
-    Assert-True $script:isBuild "Examples can only be tested in the build environment. Please run `Invoke-Build -Task Build`."
+    Describe "Examples" {
+        Describe "Examples for <_.Name>" -ForEach $commands {
+            BeforeAll {
+                $script:command = $_
+                $script:help = Get-Help $command
+            }
 
-    $functions = Get-Command -Module $env:BHProjectName | Get-Help
-    foreach ($function in $functions) {
-        Context "Examples of $($function.Name)" {
-
-
+            # TODO:
+            It "should have examples implemented as tests" {
+                $true | Should -Be $true
+            }
         }
     }
 }

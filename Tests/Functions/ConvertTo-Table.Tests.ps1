@@ -1,4 +1,4 @@
-#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "4.10" }
+﻿#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "5.7"; MaximumVersion = "5.999" }
 
 Describe 'ConvertTo-Table' -Tag Unit {
 
@@ -13,7 +13,9 @@ Describe 'ConvertTo-Table' -Tag Unit {
     }
 
     Context "Sanity checking" {
-        $command = Get-Command -Name ConvertTo-ConfluenceTable
+        BeforeAll {
+            $script:command = Get-Command -Name ConvertTo-ConfluenceTable
+        }
 
         It "has a [System.Object] -Content parameter" {
             $command.Parameters.ContainsKey("Content")
@@ -30,65 +32,23 @@ Describe 'ConvertTo-Table' -Tag Unit {
     }
 
     Context "Behavior checking" {
-
-        #region Mocking
-        # linux and macOS don't have Fake
-        function Get-FakeService {
-            [PSCustomObject]@{
-                Name        = "AppMgmt"
-                DisplayName = "Application Management"
-                Status      = "Running"
-            }
-            [PSCustomObject]@{
-                Name        = "BITS"
-                DisplayName = "Background Intelligent Transfer Service"
-                Status      = "Running"
-            }
-            [PSCustomObject]@{
-                Name        = "Dhcp"
-                DisplayName = "DHCP Client"
-                Status      = "Running"
-            }
-            [PSCustomObject]@{
-                Name        = "DsmSvc"
-                DisplayName = "Device Setup Manager"
-                Status      = "Running"
-            }
-            [PSCustomObject]@{
-                Name        = "EFS"
-                DisplayName = "Encrypting File System (EFS)"
-                Status      = "Running"
-            }
-            [PSCustomObject]@{
-                Name        = "lmhosts"
-                DisplayName = "TCP/IP NetBIOS Helper"
-                Status      = "Running"
-            }
-            [PSCustomObject]@{
-                Name        = "MSDTC"
-                DisplayName = "Distributed Transaction Coordinator"
-                Status      = "Stopped"
-            }
-            [PSCustomObject]@{
-                Name        = "NlaSvc"
-                DisplayName = "Network Location Awareness"
-                Status      = "Stopped"
-            }
-            [PSCustomObject]@{
-                Name        = "PolicyAgent"
-                DisplayName = "IPsec Policy Agent"
-                Status      = "Stopped"
-            }
-            [PSCustomObject]@{
-                Name        = "SessionEnv"
-                DisplayName = "Remote Desktop Configuration"
-                Status      = "Stopped"
-            }
+        BeforeAll {
+            $script:fakeServices = @(
+                [PSCustomObject]@{ Name = "AppMgmt"; DisplayName = "Application Management"; Status = "Running" }
+                [PSCustomObject]@{ Name = "BITS"; DisplayName = "Background Intelligent Transfer Service"; Status = "Running" }
+                [PSCustomObject]@{ Name = "Dhcp"; DisplayName = "DHCP Client"; Status = "Running" }
+                [PSCustomObject]@{ Name = "DsmSvc"; DisplayName = "Device Setup Manager"; Status = "Running" }
+                [PSCustomObject]@{ Name = "EFS"; DisplayName = "Encrypting File System (EFS)"; Status = "Running" }
+                [PSCustomObject]@{ Name = "lmhosts"; DisplayName = "TCP/IP NetBIOS Helper"; Status = "Running" }
+                [PSCustomObject]@{ Name = "MSDTC"; DisplayName = "Distributed Transaction Coordinator"; Status = "Stopped" }
+                [PSCustomObject]@{ Name = "NlaSvc"; DisplayName = "Network Location Awareness"; Status = "Stopped" }
+                [PSCustomObject]@{ Name = "PolicyAgent"; DisplayName = "IPsec Policy Agent"; Status = "Stopped" }
+                [PSCustomObject]@{ Name = "SessionEnv"; DisplayName = "Remote Desktop Configuration"; Status = "Stopped" }
+            )
         }
-        #endregion Mocking
 
         It "creates a table with a header row" {
-            $table = ConvertTo-ConfluenceTable -Content (Get-FakeService)
+            $table = ConvertTo-ConfluenceTable -Content $fakeServices
             $row = $table -split [Environment]::NewLine
 
             $row.Count | Should -Be 12
@@ -112,7 +72,7 @@ Describe 'ConvertTo-Table' -Tag Unit {
         }
 
         It "creates a table without a header row" {
-            $table = ConvertTo-ConfluenceTable (Get-FakeService) -NoHeader
+            $table = ConvertTo-ConfluenceTable $fakeServices -NoHeader
             $row = $table -split [Environment]::NewLine
 
             $row.Count | Should -Be 11
@@ -177,7 +137,7 @@ Describe 'ConvertTo-Table' -Tag Unit {
         }
 
         It "returns a single string object" {
-            $table = ConvertTo-ConfluenceTable (Get-FakeService)
+            $table = ConvertTo-ConfluenceTable $fakeServices
             $row = $table -split [Environment]::NewLine
 
             @($table).Count | Should -Be 1
@@ -185,7 +145,7 @@ Describe 'ConvertTo-Table' -Tag Unit {
         }
 
         It "returns a single table when using the pipeline" {
-            $table = Get-FakeService | ConvertTo-ConfluenceTable
+            $table = $fakeServices | ConvertTo-ConfluenceTable
             $row = $table -split [Environment]::NewLine
 
             $row | Should -HaveCount 12
