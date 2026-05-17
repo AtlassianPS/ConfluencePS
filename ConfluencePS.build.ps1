@@ -125,23 +125,28 @@ Task Lint {
     Remove-Item $env:BHBuildOutput -Force -Recurse -ErrorAction SilentlyContinue
     Remove-Item "Test*.xml" -Force -ErrorAction SilentlyContinue
 
-    $requiredPesterVersion = [version]"4.10.1"
-    $legacyPester = Get-Module -ListAvailable -Name Pester |
-        Where-Object { $_.Version -eq $requiredPesterVersion } |
-        Select-Object -First 1
-    if (-not $legacyPester) {
-        if (-not (Get-PSRepository -Name PSGallery -ErrorAction SilentlyContinue)) {
-            Register-PSRepository -Default -ErrorAction SilentlyContinue
+    $styleConfig = New-PesterConfiguration -Hashtable @{
+        Run    = @{
+            PassThru = $true
+            Path     = "$PSScriptRoot/Tests/Style.Tests.ps1"
         }
-        Set-PSRepository -Name PSGallery -InstallationPolicy Trusted -ErrorAction SilentlyContinue
-        Install-Module Pester -RequiredVersion 4.10.1 -Scope CurrentUser -Force -SkipPublisherCheck -ErrorAction Stop
+        Output = @{
+            Verbosity = $PesterVerbosity
+        }
     }
-    Import-Module Pester -RequiredVersion 4.10.1 -Force
-
-    $styleResults = Invoke-Pester -Script "$PSScriptRoot/Tests/Style.Tests.ps1" -PassThru
+    $styleResults = Invoke-Pester -Configuration $styleConfig
     Assert-True ($styleResults.FailedCount -eq 0) "$($styleResults.FailedCount) style test(s) failed."
 
-    $pssaResults = Invoke-Pester -Script "$PSScriptRoot/Tests/PSScriptAnalyzer.Tests.ps1" -PassThru
+    $pssaConfig = New-PesterConfiguration -Hashtable @{
+        Run    = @{
+            PassThru = $true
+            Path     = "$PSScriptRoot/Tests/PSScriptAnalyzer.Tests.ps1"
+        }
+        Output = @{
+            Verbosity = $PesterVerbosity
+        }
+    }
+    $pssaResults = Invoke-Pester -Configuration $pssaConfig
     Assert-True ($pssaResults.FailedCount -eq 0) "$($pssaResults.FailedCount) analyzer test(s) failed."
 }
 
@@ -456,32 +461,48 @@ Task SetVersion {
 
 Task Test {
     Remove-Module $env:BHProjectName -ErrorAction SilentlyContinue
-    $requiredPesterVersion = [version]"4.10.1"
-    $installedPester = Get-Module -ListAvailable -Name Pester | Where-Object { $_.Version -eq $requiredPesterVersion } | Select-Object -First 1
-    Assert-True ($null -ne $installedPester) "Required Pester version 4.10.1 was not found."
-    Import-Module Pester -RequiredVersion 4.10.1 -Force
 
-    $parameter = @{
-        Script       = "$env:BHBuildOutput/Tests/*"
-        Tag          = $Tag
-        ExcludeTag   = @('Integration')
-        Show         = "Fails"
-        PassThru     = $true
-        OutputFile   = "$env:BHProjectPath/Test-$OS-$($PSVersionTable.PSVersion.ToString()).xml"
-        OutputFormat = "NUnitXml"
+    # Skip the Integration test file at discovery time so normal Test runs do
+    # not execute its setup blocks or require integration credentials.
+    $integrationPath = Join-Path $env:BHBuildOutput 'Tests/Integration.Tests.ps1'
+
+    $pesterConfigHash = @{
+        Run        = @{
+            PassThru    = $true
+            Path        = "$env:BHBuildOutput/Tests"
+            ExcludePath = @($integrationPath)
+        }
+        TestResult = @{
+            Enabled      = $true
+            OutputFormat = 'NUnitXml'
+            OutputPath   = "Test-$OS-$($PSVersionTable.PSVersion.ToString()).xml"
+        }
+        Output     = @{
+            Verbosity = $PesterVerbosity
+        }
+        Filter     = @{
+            ExcludeTag = @('Integration')
+        }
+    }
+
+    if ($Tag) {
+        $pesterConfigHash.Filter.Tag = $Tag
+        $pesterConfigHash.Filter.ExcludeTag = @($pesterConfigHash.Filter.ExcludeTag | Where-Object { $_ -notin $Tag })
+        if ('Integration' -in $Tag) {
+            $pesterConfigHash.Run.ExcludePath = @()
+        }
     }
 
     if ($ExcludeTag) {
-        $parameter.ExcludeTag = @($parameter.ExcludeTag + $ExcludeTag | Select-Object -Unique)
+        $merged = @($pesterConfigHash.Filter.ExcludeTag) + @($ExcludeTag) | Select-Object -Unique
         if ($Tag) {
-            $parameter.ExcludeTag = @($parameter.ExcludeTag | Where-Object { $_ -notin $Tag })
+            $merged = @($merged | Where-Object { $_ -notin $Tag })
         }
-    }
-    if ($Tag -and ('Integration' -in $Tag)) {
-        $parameter.ExcludeTag = @($parameter.ExcludeTag | Where-Object { $_ -ne 'Integration' })
+        $pesterConfigHash.Filter.ExcludeTag = $merged
     }
 
-    $testResults = Invoke-Pester @parameter
+    $pesterConfig = New-PesterConfiguration -Hashtable $pesterConfigHash
+    $testResults = Invoke-Pester -Configuration $pesterConfig
     Assert-True ($testResults.FailedCount -eq 0) "$($testResults.FailedCount) Pester test(s) failed."
 }
 
@@ -500,33 +521,38 @@ For local development: set these environment variables before running integratio
 "@
     }
 
-    $requiredPesterVersion = [version]"4.10.1"
-    $installedPester = Get-Module -ListAvailable -Name Pester | Where-Object { $_.Version -eq $requiredPesterVersion } | Select-Object -First 1
-    Assert-True ($null -ne $installedPester) "Required Pester version 4.10.1 was not found."
-    Import-Module Pester -RequiredVersion 4.10.1 -Force
-
     $integrationScript = "$env:BHBuildOutput/Tests/Integration.Tests.ps1"
     if (-not (Test-Path $integrationScript)) {
         $integrationScript = "$env:BHProjectPath/Tests/Integration.Tests.ps1"
     }
 
-    $parameter = @{
-        Script       = $integrationScript
-        Tag          = @('Integration')
-        Show         = 'Fails'
-        PassThru     = $true
-        OutputFile   = 'Test-Integration.xml'
-        OutputFormat = 'NUnitXml'
+    $pesterConfigHash = @{
+        Run        = @{
+            PassThru = $true
+            Path     = $integrationScript
+        }
+        TestResult = @{
+            Enabled      = $true
+            OutputFormat = 'NUnitXml'
+            OutputPath   = 'Test-Integration.xml'
+        }
+        Output     = @{
+            Verbosity = $PesterVerbosity
+        }
+        Filter     = @{
+            Tag = @('Integration')
+        }
     }
 
     if ($Tag) {
-        $parameter.Tag = $Tag
+        $pesterConfigHash.Filter.Tag = $Tag
     }
     if ($ExcludeTag) {
-        $parameter.ExcludeTag = $ExcludeTag
+        $pesterConfigHash.Filter.ExcludeTag = $ExcludeTag
     }
 
-    $testResults = Invoke-Pester @parameter
+    $pesterConfig = New-PesterConfiguration -Hashtable $pesterConfigHash
+    $testResults = Invoke-Pester -Configuration $pesterConfig
     Assert-True ($testResults.FailedCount -eq 0) "$($testResults.FailedCount) integration test(s) failed."
 }
 
