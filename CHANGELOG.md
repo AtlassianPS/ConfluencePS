@@ -14,12 +14,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Added repository automation and contributor guidance parity files (`AGENTS.md`, Copilot/AI context, Dependabot workflow updates).
 - Added explicit README support policy for Confluence deployment/version targets (Cloud, Data Center, Server EOL status).
 
-### Breaking
-
-- Raised the minimum supported PowerShell version from `3.0` to `5.1` in the module manifest.
-  - Windows PowerShell `3.0` and `4.0` are no longer supported.
-  - Supported editions are now explicitly `Desktop` and `Core`.
-
 ## [2.5] 2019-03-27
 
 ### Added
