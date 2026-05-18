@@ -29,4 +29,7 @@
         }
         Version    = "latest"
     }
+    'AtlassianPS.Standards' = @{
+        Version    = "0.1.2"
+    }
 }

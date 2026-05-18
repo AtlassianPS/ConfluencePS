@@ -36,6 +36,7 @@ Describe "Help tests" -Tag Documentation {
     $DefaultParams = @(
         'Verbose'
         'Debug'
+        'ProgressAction'
         'ErrorAction'
         'WarningAction'
         'InformationAction'
