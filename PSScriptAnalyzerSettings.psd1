@@ -1,4 +1,4 @@
-﻿# From https://github.com/PowerShell/PSScriptAnalyzer/blob/master/Engine/Settings/CodeFormattingStroustrup.psd1
+# From https://github.com/PowerShell/PSScriptAnalyzer/blob/master/Engine/Settings/CodeFormattingStroustrup.psd1
 # Inspired by https://eslint.org/docs/rules/brace-style#stroustrup
 @{
     IncludeRules = @(

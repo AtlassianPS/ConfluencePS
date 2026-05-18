@@ -1,4 +1,4 @@
-function ConvertTo-Space {
+﻿function ConvertTo-Space {
     <#
     .SYNOPSIS
     Extracted the conversion to private function in order to have a single place to

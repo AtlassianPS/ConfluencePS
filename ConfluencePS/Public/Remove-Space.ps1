@@ -1,4 +1,4 @@
-function Remove-Space {
+﻿function Remove-Space {
     [CmdletBinding(
         ConfirmImpact = 'High',
         SupportsShouldProcess = $true

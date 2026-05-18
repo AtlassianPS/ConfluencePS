@@ -1,4 +1,4 @@
-function New-Page {
+﻿function New-Page {
     [CmdletBinding(
         ConfirmImpact = 'Low',
         SupportsShouldProcess = $true,

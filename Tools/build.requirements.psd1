@@ -1,35 +1,7 @@
-@{
-    PSDependOptions  = @{
-        Target = "CurrentUser"
-    }
-
-    InvokeBuild      = "latest"
-    BuildHelpers     = @{
-        Parameters = @{
-            AllowClobber = $true
-        }
-        Version    = "latest"
-    }
-    Configuration    = @{
-        Parameters = @{
-            AllowClobber = $true
-        }
-        Version    = "latest"
-    }
-    Pester           = @{
-        Parameters = @{
-            SkipPublisherCheck = $true
-        }
-        Version    = "4.10"
-    }
-    platyPS          = "latest"
-    PSScriptAnalyzer = @{
-        Parameters = @{
-            SkipPublisherCheck = $true
-        }
-        Version    = "1.25.0"
-    }
-    'AtlassianPS.Standards' = @{
-        Version    = "0.1.2"
-    }
-}
+@(
+    @{ ModuleName = "InvokeBuild"; RequiredVersion = "5.14.23" }
+    @{ ModuleName = "Metadata"; RequiredVersion = "1.5.7" }
+    @{ ModuleName = "Pester"; RequiredVersion = "5.7.1" }
+    @{ ModuleName = "Microsoft.PowerShell.PlatyPS"; RequiredVersion = "1.0.1" }
+    @{ ModuleName = "PSScriptAnalyzer"; RequiredVersion = "1.25.0" }
+)

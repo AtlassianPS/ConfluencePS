@@ -1,4 +1,4 @@
-function ConvertTo-HashTable {
+﻿function ConvertTo-HashTable {
     <#
     .SYNOPSIS
     Converts a PSCustomObject to Hashtable
