@@ -27,7 +27,7 @@
         Parameters = @{
             SkipPublisherCheck = $true
         }
-        Version    = "latest"
+        Version    = "1.25.0"
     }
     'AtlassianPS.Standards' = @{
         Version    = "0.1.2"
