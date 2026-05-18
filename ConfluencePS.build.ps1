@@ -123,6 +123,9 @@ task ShowInfo Init, GetNextVersion, {
     Write-Build Gray ('OS Version:                 {0}' -f $OSVersion)
     Write-Build Gray
 }
+
+# Synopsis: Compatibility alias expected by shared setup action
+task ShowDebugInfo ShowInfo
 #endregion DebugInformation
 
 #region BuildRelease
