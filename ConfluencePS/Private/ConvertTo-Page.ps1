@@ -1,4 +1,4 @@
-function ConvertTo-Page {
+﻿function ConvertTo-Page {
     <#
     .SYNOPSIS
     Extracted the conversion to private function in order to have a single place to
@@ -12,7 +12,7 @@ function ConvertTo-Page {
         $InputObject
     )
 
-    Process {
+    process {
         foreach ($object in $InputObject) {
             Write-Verbose "[$($MyInvocation.MyCommand.Name)] Converting Object to Page"
             [ConfluencePS.Page](ConvertTo-Hashtable -InputObject ($object | Select-Object `
@@ -23,22 +23,22 @@ function ConvertTo-Page {
                             if ($_.space) {
                                 ConvertTo-Space $_.space
                             }
-                            else {$null}
+                            else { $null }
                         }
                     },
                     @{Name = "version"; Expression = {
                             if ($_.version) {
                                 ConvertTo-Version $_.version
                             }
-                            else {$null}
+                            else { $null }
                         }
                     },
-                    @{Name = "body"; Expression = {$_.body.storage.value}},
+                    @{Name = "body"; Expression = { $_.body.storage.value } },
                     @{Name = "ancestors"; Expression = {
                             if ($_.ancestors) {
                                 ConvertTo-PageAncestor $_.ancestors
                             }
-                            else {$null}
+                            else { $null }
                         }
                     },
                     @{Name = "URL"; Expression = {
@@ -47,7 +47,7 @@ function ConvertTo-Page {
                             if ($_._links.webui) {
                                 "{0}{1}" -f $base, $_._links.webui
                             }
-                            else {$null}
+                            else { $null }
                         }
                     },
                     @{Name = "ShortURL"; Expression = {
@@ -56,7 +56,7 @@ function ConvertTo-Page {
                             if ($_._links.tinyui) {
                                 "{0}{1}" -f $base, $_._links.tinyui
                             }
-                            else {$null}
+                            else { $null }
                         }
                     }
                 ))

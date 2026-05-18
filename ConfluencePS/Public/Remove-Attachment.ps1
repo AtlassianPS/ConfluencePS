@@ -1,4 +1,4 @@
-function Remove-Attachment {
+﻿function Remove-Attachment {
     [CmdletBinding(
         ConfirmImpact = 'Medium',
         SupportsShouldProcess = $true

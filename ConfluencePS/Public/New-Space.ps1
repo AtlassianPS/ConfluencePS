@@ -1,4 +1,4 @@
-function New-Space {
+﻿function New-Space {
     [CmdletBinding(
         ConfirmImpact = 'Low',
         SupportsShouldProcess = $true,

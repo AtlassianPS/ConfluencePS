@@ -1,4 +1,4 @@
-function ConvertTo-HTMLEncoded {
+﻿function ConvertTo-HTMLEncoded {
     <#
     .SYNOPSIS
     Encode a string into HTML (eg: &gt; instead of >)

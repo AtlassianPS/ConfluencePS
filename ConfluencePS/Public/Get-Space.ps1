@@ -1,4 +1,4 @@
-function Get-Space {
+﻿function Get-Space {
     [CmdletBinding(
         SupportsPaging = $true
     )]

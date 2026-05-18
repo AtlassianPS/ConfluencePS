@@ -1,4 +1,4 @@
-function Copy-CommonParameter {
+﻿function Copy-CommonParameter {
     <#
     .SYNOPSIS
     This is a helper function to assist in creating a hashtable for splatting parameters to inner function calls.
@@ -31,7 +31,7 @@ function Copy-CommonParameter {
         [string[]]$AdditionalParameter,
 
         [Parameter(Mandatory = $false)]
-        [string[]]$DefaultParameter = @("Credential", "Certificate","PersonalAccessToken")
+        [string[]]$DefaultParameter = @("Credential", "Certificate", "PersonalAccessToken")
     )
 
     [hashtable]$ht = @{}

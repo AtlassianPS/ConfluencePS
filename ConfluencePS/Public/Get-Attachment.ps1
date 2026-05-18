@@ -1,4 +1,4 @@
-function Get-Attachment {
+﻿function Get-Attachment {
     [CmdletBinding( SupportsPaging = $true )]
     [OutputType([ConfluencePS.Attachment])]
     param (
