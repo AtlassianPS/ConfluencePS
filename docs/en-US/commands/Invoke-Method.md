@@ -19,7 +19,7 @@ Invoke a specific call to a Confluence REST Api endpoint
 ```powershell
 Invoke-ConfluenceMethod [-URi] <Uri> [-Method <WebRequestMethod>] [-Body <String>]
  [-RawBody] [-Headers <Hashtable>] [-GetParameters <Hashtable>] [-InFile <String>]
- [-OutFile <String>] [-OutputType <Type>] [-Credential <PSCredential>]
+ [-OutFile <String>] [-TimeoutSec <Int32>] [-OutputType <Type>] [-Credential <PSCredential>]
  [-PersonalAccessToken <String>] [-Certificate <X509Certificate>]
  [-Caller <Object>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
  [<CommonParameters>]
@@ -284,6 +284,24 @@ Aliases:
 Required: False
 Position: Named
 Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -TimeoutSec
+
+Timeout in seconds for the HTTP request.
+
+Set this value to `0` to disable the timeout in `Invoke-WebRequest`.
+
+```yaml
+Type: Int32
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: 100
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
