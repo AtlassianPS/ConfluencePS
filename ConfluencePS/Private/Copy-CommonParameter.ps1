@@ -1,4 +1,4 @@
-function Copy-CommonParameter {
+﻿function Copy-CommonParameter {
     <#
     .SYNOPSIS
     This is a helper function to assist in creating a hashtable for splatting parameters to inner function calls.

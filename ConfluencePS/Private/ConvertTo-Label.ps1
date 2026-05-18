@@ -1,4 +1,4 @@
-function ConvertTo-Label {
+﻿function ConvertTo-Label {
     <#
     .SYNOPSIS
     Extracted the conversion to private function in order to have a single place to

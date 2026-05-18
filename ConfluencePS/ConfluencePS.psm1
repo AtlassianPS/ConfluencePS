@@ -1,4 +1,4 @@
-#region Dependencies
+﻿#region Dependencies
 # Load the ConfluencePS namespace from C#
 if (!("ConfluencePS.Space" -as [Type])) {
     Add-Type -Path (Join-Path $PSScriptRoot ConfluencePS.Types.cs) -ReferencedAssemblies Microsoft.CSharp, Microsoft.PowerShell.Commands.Utility, System.Management.Automation

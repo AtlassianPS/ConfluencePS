@@ -1,18 +1,5 @@
-[CmdletBinding()]
+﻿[CmdletBinding()]
 param()
-
-function Invoke-Init {
-    [Alias("Init")]
-    [CmdletBinding()]
-    param()
-    begin {
-        Set-BuildEnvironment -BuildOutput '$ProjectPath/Release' -ErrorAction SilentlyContinue
-        Add-ToModulePath -Path $env:BHBuildOutput
-
-        git config --global user.email "support@atlassianps.net"
-        git config --global user.name "AtlassianPS Automated User"
-    }
-}
 
 function Assert-True {
     [CmdletBinding( DefaultParameterSetName = 'ByBool' )]
@@ -57,6 +44,40 @@ function Install-PSDepend {
             throw "The PowershellGet module is not available."
         }
     }
+}
+
+function Get-Dependency {
+    [CmdletBinding()]
+    param()
+
+    [Microsoft.PowerShell.Commands.ModuleSpecification[]]$RequiredModules = Import-LocalizedData -BaseDirectory $PSScriptRoot -FileName "build.requirements.psd1"
+    $RequiredModules
+}
+
+function Install-Dependency {
+    [CmdletBinding()]
+    param(
+        [ValidateSet("CurrentUser", "AllUsers")]
+        $Scope = "CurrentUser"
+    )
+
+    $RequiredModules = Get-Dependency
+
+    $psGallery = Get-PSRepository -Name PSGallery -ErrorAction SilentlyContinue
+    if (-not $psGallery) {
+        throw "PSGallery repository is not available. Run setup.ps1 first to initialize the PowerShell Gallery."
+    }
+
+    $Policy = $psGallery.InstallationPolicy
+    try {
+        Set-PSRepository PSGallery -InstallationPolicy Trusted
+        $RequiredModules | Install-Module -Scope $Scope -Repository PSGallery -SkipPublisherCheck -AllowClobber
+    }
+    finally {
+        Set-PSRepository PSGallery -InstallationPolicy $Policy
+    }
+
+    $RequiredModules | Import-Module
 }
 
 function Get-AppVeyorBuild {

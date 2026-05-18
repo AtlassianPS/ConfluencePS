@@ -1,4 +1,4 @@
-function Test-Captcha {
+﻿function Test-Captcha {
     [CmdletBinding()]
     param(
         # Response of Invoke-WebRequest
