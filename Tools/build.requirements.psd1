@@ -22,7 +22,12 @@
         }
         Version    = "4.10"
     }
-    platyPS          = "latest"
+    'Microsoft.PowerShell.PlatyPS' = @{
+        Parameters = @{
+            AllowClobber = $true
+        }
+        Version    = "1.0.1"
+    }
     PSScriptAnalyzer = @{
         Parameters = @{
             SkipPublisherCheck = $true
