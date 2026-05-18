@@ -46,7 +46,11 @@ Describe "General project validation" -Tag Unit {
             }
 
             It "is loaded in the module" {
-                $commandInModule = $module.Invoke({ Get-Command -Name $args[0] -ErrorAction SilentlyContinue }, $functionName)
+                $commandInModule = $module.Invoke({
+                        param($name)
+                        Get-Command -Name $name -CommandType Function -ErrorAction SilentlyContinue |
+                            Where-Object { $_.ModuleName -eq 'ConfluencePS' }
+                    }, $functionName)
 
                 $commandInModule | Should -Not -BeNullOrEmpty -Because "private function '$functionName' should be loaded"
             }

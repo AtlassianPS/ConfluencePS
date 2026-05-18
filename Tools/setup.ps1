@@ -3,39 +3,16 @@
 [CmdletBinding()]
 param()
 
-$psScriptAnalyzerSettingsUri = 'https://raw.githubusercontent.com/AtlassianPS/.github/83e062b260346c4577d3b41974f0f8aafcc5e7e5/standards/PSScriptAnalyzerSettings.psd1'
 $psScriptAnalyzerSettingsPath = Join-Path (Join-Path $PSScriptRoot '..') 'PSScriptAnalyzerSettings.psd1'
 function Sync-PSScriptAnalyzerSetting {
     [CmdletBinding()]
     param()
 
-    Write-Host "Syncing PSScriptAnalyzer settings from AtlassianPS/.github"
-
-    try {
-        $invokeWebRequestParams = @{
-            Uri         = $psScriptAnalyzerSettingsUri
-            ErrorAction = 'Stop'
-        }
-
-        if ($PSVersionTable.PSEdition -eq 'Desktop') {
-            $invokeWebRequestParams.UseBasicParsing = $true
-        }
-
-        $response = Invoke-WebRequest @invokeWebRequestParams
-        $settingsContent = $response.Content
-
-        # Persist the pinned settings locally so build/lint always use the exact same config.
-        $settingsWithCrLf = $settingsContent -replace "`r?`n", "`r`n"
-        [System.IO.File]::WriteAllText(
-            $psScriptAnalyzerSettingsPath,
-            $settingsWithCrLf,
-            [System.Text.UTF8Encoding]::new($false)
-        )
-        Write-Host "Pinned PSScriptAnalyzer settings synchronized to '$psScriptAnalyzerSettingsPath'."
+    if (-not (Test-Path $psScriptAnalyzerSettingsPath)) {
+        throw "Missing pinned PSScriptAnalyzer settings file at '$psScriptAnalyzerSettingsPath'."
     }
-    catch {
-        throw "Unable to download pinned PSScriptAnalyzer settings from '$psScriptAnalyzerSettingsUri'. $($_.Exception.Message)"
-    }
+
+    Write-Host "Using pinned PSScriptAnalyzer settings from '$psScriptAnalyzerSettingsPath'."
 }
 
 Write-Output "Installing PackageProvider NuGet"

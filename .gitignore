@@ -7,7 +7,6 @@
 Release/
 ConfluencePS/en-US/
 Test*.xml
-PSScriptAnalyzerSettings.psd1
 
 # Ignore backup files from Pester migration
 *.bak

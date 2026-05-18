@@ -143,8 +143,18 @@ jobs:
       - uses: actions/checkout@v6
       - uses: AtlassianPS/.github/actions/setup-powershell@master
 
+      - name: Validate smoke secret configuration
+        run: |
+          if (
+            [string]::IsNullOrWhiteSpace($env:WikiURI) -or
+            [string]::IsNullOrWhiteSpace($env:WikiUser) -or
+            [string]::IsNullOrWhiteSpace($env:WikiPass)
+          ) {
+            throw "Smoke tests require WikiURI, WikiUser, and WikiPass secrets in first-party CI."
+          }
+        shell: pwsh
+
       - name: Run smoke integration tests
-        if: env.WikiURI != '' && env.WikiUser != '' && env.WikiPass != ''
         run: |
           Invoke-Build -Task TestIntegration -Tag "Cloud"
         shell: pwsh

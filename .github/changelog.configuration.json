@@ -1,3 +1,9 @@
 {
-    "emojisPrefix": false
+    "emojisPrefix": true,
+    "emojis": {
+        "changed": "⚙️",
+        "added": "🚀",
+        "fixed": "🔧",
+        "removed": "❌"
+    }
 }
