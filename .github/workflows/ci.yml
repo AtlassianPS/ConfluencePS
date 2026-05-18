@@ -126,15 +126,22 @@ jobs:
     name: Smoke Tests
     needs: lint
     runs-on: ubuntu-latest
-    # Skip on fork PRs and Dependabot PRs: the Wiki* secrets are not exposed
-    # in those contexts and the smoke run would fail. The ci-required
+    # Skip on fork PRs/Dependabot PRs and when Wiki* secrets are not configured:
+    # those contexts cannot run smoke integration reliably. The ci-required
     # aggregator below treats skipped jobs as a pass, so fork PRs still get
-    # a green CI Result. First-party PRs and pushes to master gate on the
+    # a green CI Result. First-party PRs/pushes gate on smoke only when
+    # credentials are available.
+    #
+    # The smoke result, when executed, gates the
     # smoke result, which in turn gates release.yml's artifact download
     # (workflow_conclusion: success).
-    if: github.event_name != 'pull_request' ||
+    if: >
+      (github.event_name != 'pull_request' ||
       (github.event.pull_request.head.repo.full_name == github.repository &&
-      github.actor != 'dependabot[bot]')
+      github.actor != 'dependabot[bot]')) &&
+      secrets.WikiURI != '' &&
+      secrets.WikiUser != '' &&
+      secrets.WikiPass != ''
     env:
       WikiURI: ${{ secrets.WikiURI }}
       WikiUser: ${{ secrets.WikiUser }}
@@ -142,17 +149,6 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: AtlassianPS/.github/actions/setup-powershell@master
-
-      - name: Validate smoke secret configuration
-        run: |
-          if (
-            [string]::IsNullOrWhiteSpace($env:WikiURI) -or
-            [string]::IsNullOrWhiteSpace($env:WikiUser) -or
-            [string]::IsNullOrWhiteSpace($env:WikiPass)
-          ) {
-            throw "Smoke tests require WikiURI, WikiUser, and WikiPass secrets in first-party CI."
-          }
-        shell: pwsh
 
       - name: Run smoke integration tests
         run: |
