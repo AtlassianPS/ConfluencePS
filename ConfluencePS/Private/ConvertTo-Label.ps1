@@ -12,14 +12,14 @@ function ConvertTo-Label {
         $InputObject
     )
 
-    Process {
+    process {
         foreach ($object in $InputObject) {
             Write-Verbose "[$($MyInvocation.MyCommand.Name)] Converting Object to Label"
             [ConfluencePS.Label](ConvertTo-Hashtable -InputObject ($object | Select-Object `
-                id,
-                name,
-                prefix
-            ))
+                        id,
+                    name,
+                    prefix
+                ))
         }
     }
 }
