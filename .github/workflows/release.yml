@@ -1,0 +1,84 @@
+name: Create Release and Publish
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Tag to release (for manual reruns)"
+        required: true
+        type: string
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.release_tag || github.ref_name }}
+
+      - name: Resolve release ref
+        id: release_ref
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            release_tag="${{ inputs.release_tag }}"
+          else
+            release_tag="${{ github.ref_name }}"
+          fi
+
+          release_sha="$(git rev-list -n 1 "$release_tag")"
+          echo "release_tag=$release_tag" >> "$GITHUB_OUTPUT"
+          echo "release_sha=$release_sha" >> "$GITHUB_OUTPUT"
+
+      - name: Download artifact from tagged commit CI run
+        uses: dawidd6/action-download-artifact@v21
+        with:
+          workflow: ci.yml
+          workflow_conclusion: success
+          commit: ${{ steps.release_ref.outputs.release_sha }}
+          name: Release
+          path: ./Release/
+          if_no_artifact_found: fail
+
+      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@v0.1.2
+
+      - name: Publish to PowerShell Gallery
+        shell: pwsh
+        run: |
+          Import-Module AtlassianPS.Standards -RequiredVersion 0.1.2 -ErrorAction Stop
+          Publish-AtlassianPSModuleRelease -BuildOutputPath ./Release -ModuleName ConfluencePS -ApiKey ${{ secrets.PSGALLERY_API_KEY }}
+
+      - name: Package release zip
+        shell: pwsh
+        run: |
+          Import-Module AtlassianPS.Standards -RequiredVersion 0.1.2 -ErrorAction Stop
+          $null = New-AtlassianPSModulePackage -BuildOutputPath ./Release -ModuleName ConfluencePS
+
+      - name: Create Release and Upload Asset
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ steps.release_ref.outputs.release_tag }}
+          name: ${{ steps.release_ref.outputs.release_tag }}
+          files: ./Release/ConfluencePS.zip
+          fail_on_unmatched_files: true
+          draft: false
+          prerelease: ${{ contains(steps.release_ref.outputs.release_tag, 'alpha') || contains(steps.release_ref.outputs.release_tag, 'beta') || contains(steps.release_ref.outputs.release_tag, 'rc') }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Notify homepage to update submodule
+        if: ${{ !contains(steps.release_ref.outputs.release_tag, 'alpha') && !contains(steps.release_ref.outputs.release_tag, 'beta') && !contains(steps.release_ref.outputs.release_tag, 'rc') }}
+        uses: peter-evans/repository-dispatch@v4
+        with:
+          token: ${{ secrets.HOMEPAGE_PAT }}
+          repository: AtlassianPS/AtlassianPS.github.io
+          event-type: module-release
+          client-payload: "{\"module\": \"ConfluencePS\", \"version\": \"${{ steps.release_ref.outputs.release_tag }}\"}"
