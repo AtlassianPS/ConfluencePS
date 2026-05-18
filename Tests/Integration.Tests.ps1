@@ -14,11 +14,10 @@ param()
 # Pester integration/acceptance tests to use during module development. Dave Wyatt's five-part series:
 # http://blogs.technet.com/b/heyscriptingguy/archive/2015/12/14/what-is-pester-and-why-should-i-care.aspx
 
-$SpaceID = Get-Random
-
 Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
 
     BeforeAll {
+        $script:SpaceID = Get-Random
         . "$PSScriptRoot/Helpers/TestTools.ps1"
         $script:moduleToTest = Initialize-TestEnvironment -CallerPath $PSScriptRoot
         Import-Module $env:BHManifestToTest
@@ -29,13 +28,13 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
     }
 
     Context 'Set-ConfluenceInfo' {
-        # ARRANGE
-        # Could be a long one-liner, but breaking down for readability
-        $Pass = ConvertTo-SecureString -AsPlainText -Force -String $env:WikiPass
-        $Cred = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList ($env:WikiUser, $Pass)
+        BeforeAll {
+            # Could be a long one-liner, but breaking down for readability
+            $pass = ConvertTo-SecureString -AsPlainText -Force -String $env:WikiPass
+            $cred = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList ($env:WikiUser, $pass)
 
-        # ACT
-        Set-ConfluenceInfo -BaseURI $env:WikiURI -Credential $Cred
+            Set-ConfluenceInfo -BaseURI $env:WikiURI -Credential $cred
+        }
 
         # ASSERT
         It 'credentials are stored' {
@@ -49,43 +48,56 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
     }
 
     Context 'New-ConfluenceSpace' {
-        # ARRANGE
-        # We don't want warnings on the screen
-        $WarningPreference = 'SilentlyContinue'
+        BeforeAll {
+            # We don't want warnings on the screen
+            $script:originalWarningPreference = $WarningPreference
+            $WarningPreference = 'SilentlyContinue'
 
-        # Set up test values:
-        $Key1 = "PESTER$SpaceID"
-        $Key2 = "PESTER1$SpaceID"
-        $Name1 = "Pester Test Space"
-        $Name2 = "Second Pester Space"
-        $Description = "<p>A nice description</p>"
-        $Icon = [ConfluencePS.Icon] @{
-            path      = "/images/logo/default-space-logo-256.png"
-            width     = 48
-            height    = 48
-            isDefault = $False
-        }
-        $Space1 = [ConfluencePS.Space]@{
-            Key         = $Key1
-            Name        = $Name1
-            Description = $Description
-        }
-        # $Space3
-        # Ensure the space doesn't already exist
-        { Get-ConfluenceSpace -Key $Key1 -ErrorAction Stop } | Should -Throw
+            # Set up test values:
+            $script:Key1 = "PESTER$SpaceID"
+            $script:Key2 = "PESTER1$SpaceID"
+            $script:Name1 = "Pester Test Space"
+            $script:Name2 = "Second Pester Space"
+            $script:Description = "<p>A nice description</p>"
+            $script:Icon = [ConfluencePS.Icon] @{
+                path      = "/images/logo/default-space-logo-256.png"
+                width     = 48
+                height    = 48
+                isDefault = $False
+            }
+            $script:Space1 = [ConfluencePS.Space]@{
+                Key         = $Key1
+                Name        = $Name1
+                Description = $Description
+            }
 
-        # ACT
-        Get-ConfluenceSpace|Where-Object {
-            $_.Name -in @($Name1,$Name2)
-        }| ForEach-Object {
-            Write-Warning "Removing space: $($_.Name) $($_.key)"
-            Remove-ConfluenceSpace $_.Key -Force -ErrorAction Stop
-        }
+            $script:spaceAlreadyExisted = $false
+            try {
+                $null = Get-ConfluenceSpace -Key $Key1 -ErrorAction Stop
+                $script:spaceAlreadyExisted = $true
+            }
+            catch {
+                # Expected for fresh test runs.
+            }
 
-        $NewSpace1 = $Space1 | New-ConfluenceSpace -ErrorAction Stop
-        $NewSpace2 = New-ConfluenceSpace -Key $Key2 -Name $Name2 -Description $Description -ErrorAction Stop
+            Get-ConfluenceSpace | Where-Object {
+                $_.Name -in @($Name1, $Name2)
+            } | ForEach-Object {
+                Write-Warning "Removing space: $($_.Name) $($_.key)"
+                Remove-ConfluenceSpace $_.Key -Force -ErrorAction Stop
+            }
+
+            $script:NewSpace1 = $Space1 | New-ConfluenceSpace -ErrorAction Stop
+            $script:NewSpace2 = New-ConfluenceSpace -Key $Key2 -Name $Name2 -Description $Description -ErrorAction Stop
+        }
+        AfterAll {
+            $WarningPreference = $script:originalWarningPreference
+        }
 
         # ASSERT
+        It 'space does not exist before creation' {
+            $spaceAlreadyExisted | Should -Be $false
+        }
         It 'returns an object with specific properties' {
             $NewSpace1 | Should -BeOfType [ConfluencePS.Space]
             $NewSpace2 | Should -BeOfType [ConfluencePS.Space]
@@ -127,11 +139,16 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
         $Name2 = "Second Pester Space"
         $Description = "<p>A nice description</p>"
 
-        # ACT
+        BeforeAll {
+
+            # ACT
         $AllSpaces = Get-ConfluenceSpace
         $GetSpace1 = Get-ConfluenceSpace -Key $Key1
         $GetSpace2 = Get-ConfluenceSpace | Where-Object {$_.Name -like '*ter test sp*'}
         $GetSpace3 = Get-ConfluenceSpace @($Key1, $Key2)
+
+        }
+
 
         # ASSERT
         It 'returns an object with specific properties' {
@@ -214,10 +231,15 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
         $InputString = "Hi Pester!"
         $OutputString = "<p>Hi Pester!</p>"
 
-        # ACT
+        BeforeAll {
+
+            # ACT
         $result1 = $inputString | ConvertTo-ConfluenceStorageFormat
         $result2 = ConvertTo-ConfluenceStorageFormat -Content $inputString
         $result3 = ConvertTo-ConfluenceStorageFormat -Content $inputString, $inputString
+
+        }
+
 
         # ASSERT
         It 'returns a string' {
@@ -238,27 +260,31 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             * Space may not be empty when no parent is provided
         #>
 
-        # ARRANGE
-        $SpaceKey = "PESTER$SpaceID"
-        $parentPage = Get-ConfluencePage -Title "Pester Test Space Home" -SpaceKey $SpaceKey -ErrorAction Stop
-        $Title1 = "Pester New Page Piped"
-        $Title2 = "Pester New Page Orphan"
-        $Title3 = "Pester New Page from Object"
-        $Title4 = "Pester New Page with Parent Object"
-        $RawContent = "Hi Pester!👋"
-        $FormattedContent = "<p>Hi Pester!</p><p>👋</p>"
-        $pageObject = New-Object -TypeName ConfluencePS.Page -Property @{
-            Title     = $Title3
-            Body      = $FormattedContent
-            Ancestors = @($parentPage)
-            Space     = New-Object -TypeName ConfluencePS.Space -Property @{key = $SpaceKey}
+        BeforeAll {
+            # ARRANGE
+            $script:SpaceKey = "PESTER$SpaceID"
+            $script:parentPage = Get-ConfluencePage -Title "Pester Test Space Home" -SpaceKey $SpaceKey -ErrorAction Stop
+            $script:Title1 = "Pester New Page Piped"
+            $script:Title2 = "Pester New Page Orphan"
+            $script:Title3 = "Pester New Page from Object"
+            $script:Title4 = "Pester New Page with Parent Object"
+            $script:RawContent = "Hi Pester!👋"
+            $script:FormattedContent = "<p>Hi Pester!</p><p>👋</p>"
+            $script:pageObject = New-Object -TypeName ConfluencePS.Page -Property @{
+                Title     = $Title3
+                Body      = $FormattedContent
+                Ancestors = @($parentPage)
+                Space     = New-Object -TypeName ConfluencePS.Space -Property @{key = $SpaceKey}
+            }
+
+            # ACT
+            $script:NewPage1 = $Title1 | New-ConfluencePage -ParentID $parentPage.ID -ErrorAction Stop
+            $script:NewPage2 = New-ConfluencePage -Title $Title2 -SpaceKey $SpaceKey -Body $RawContent -Convert -ErrorAction Stop
+            $script:NewPage3 = $pageObject | New-ConfluencePage -ErrorAction Stop
+            $script:NewPage4 = New-ConfluencePage -Title $Title4 -Parent $parentPage -ErrorAction Stop
+
         }
 
-        # ACT
-        $NewPage1 = $Title1 | New-ConfluencePage -ParentID $parentPage.ID -ErrorAction Stop
-        $NewPage2 = New-ConfluencePage -Title $Title2 -SpaceKey $SpaceKey -Body $RawContent -Convert -ErrorAction Stop
-        $NewPage3 = $pageObject | New-ConfluencePage -ErrorAction Stop
-        $NewPage4 = New-ConfluencePage -Title $Title4 -Parent $parentPage -ErrorAction Stop
 
         # ASSERT
         It 'returns an object with specific properties' {
@@ -325,31 +351,35 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
     }
 
     Context 'Get-ConfluencePage' {
-        # ARRANGE
-        $SpaceKey = "PESTER$SpaceID"
-        $Title1 = "Pester New Page from Object"
-        $Title2 = "Pester New Page Orphan"
-        $Title3 = "Pester Test Space Home"
-        $Title4 = "orphan"
-        $Title5 = "*orphan"
-        $Query = "space=PESTER$SpaceID and title~`"*Object`""
-        $ContentRaw = "<p>Hi Pester!👋</p>"
-        $ContentFormatted = "<p>Hi Pester!</p><p>👋</p>"
-        (Get-ConfluenceSpace -SpaceKey $SpaceKey).Homepage | Add-ConfluenceLabel -Label "important" -ErrorAction Stop
-        Start-Sleep -Seconds 20 # Delay to allow DB index to update
+        BeforeAll {
+            # ARRANGE
+            $script:SpaceKey = "PESTER$SpaceID"
+            $script:Title1 = "Pester New Page from Object"
+            $script:Title2 = "Pester New Page Orphan"
+            $script:Title3 = "Pester Test Space Home"
+            $script:Title4 = "orphan"
+            $script:Title5 = "*orphan"
+            $script:Query = "space=PESTER$SpaceID and title~`"*Object`""
+            $script:ContentRaw = "<p>Hi Pester!👋</p>"
+            $script:ContentFormatted = "<p>Hi Pester!</p><p>👋</p>"
+            (Get-ConfluenceSpace -SpaceKey $SpaceKey).Homepage | Add-ConfluenceLabel -Label "important" -ErrorAction Stop
+            Start-Sleep -Seconds 20 # Delay to allow DB index to update
 
-        # ACT
-        $GetTitle1 = Get-ConfluencePage -Title $Title1.ToLower() -SpaceKey $SpaceKey -PageSize 200 -ErrorAction SilentlyContinue
-        $GetTitle2 = Get-ConfluencePage -Title $Title2 -SpaceKey $SpaceKey -ErrorAction SilentlyContinue
-        $GetPartial = Get-ConfluencePage -Title $Title4 -SpaceKey $SpaceKey -ErrorAction SilentlyContinue
-        $GetWildcard = Get-ConfluencePage -Title $Title5 -SpaceKey $SpaceKey -ErrorAction SilentlyContinue
-        $GetID1 = Get-ConfluencePage -PageID $GetTitle1.ID -ErrorAction SilentlyContinue
-        $GetID2 = Get-ConfluencePage -PageID $GetTitle2.ID -ErrorAction SilentlyContinue
-        $GetKeys = Get-ConfluencePage -SpaceKey $SpaceKey -ErrorAction SilentlyContinue | Sort-Object ID
-        $GetByLabel = Get-ConfluencePage -Label "important" -ErrorAction SilentlyContinue
-        $GetByQuery = Get-ConfluencePage -Query $query -ErrorAction SilentlyContinue
-        $GetSpacePage = Get-ConfluencePage -Space (Get-ConfluenceSpace -SpaceKey $SpaceKey) -ErrorAction SilentlyContinue
-        $GetSpacePiped = Get-ConfluenceSpace -SpaceKey $SpaceKey | Get-ConfluencePage -ErrorAction SilentlyContinue
+            # ACT
+            $script:GetTitle1 = Get-ConfluencePage -Title $Title1.ToLower() -SpaceKey $SpaceKey -PageSize 200 -ErrorAction SilentlyContinue
+            $script:GetTitle2 = Get-ConfluencePage -Title $Title2 -SpaceKey $SpaceKey -ErrorAction SilentlyContinue
+            $script:GetPartial = Get-ConfluencePage -Title $Title4 -SpaceKey $SpaceKey -ErrorAction SilentlyContinue
+            $script:GetWildcard = Get-ConfluencePage -Title $Title5 -SpaceKey $SpaceKey -ErrorAction SilentlyContinue
+            $script:GetID1 = Get-ConfluencePage -PageID $GetTitle1.ID -ErrorAction SilentlyContinue
+            $script:GetID2 = Get-ConfluencePage -PageID $GetTitle2.ID -ErrorAction SilentlyContinue
+            $script:GetKeys = Get-ConfluencePage -SpaceKey $SpaceKey -ErrorAction SilentlyContinue | Sort-Object ID
+            $script:GetByLabel = Get-ConfluencePage -Label "important" -ErrorAction SilentlyContinue
+            $script:GetByQuery = Get-ConfluencePage -Query $query -ErrorAction SilentlyContinue
+            $script:GetSpacePage = Get-ConfluencePage -Space (Get-ConfluenceSpace -SpaceKey $SpaceKey) -ErrorAction SilentlyContinue
+            $script:GetSpacePiped = Get-ConfluenceSpace -SpaceKey $SpaceKey | Get-ConfluencePage -ErrorAction SilentlyContinue
+
+        }
+
 
         # ASSERT
         It 'returns the correct amount of results' {
@@ -466,17 +496,21 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
     }
 
     Context 'Add-ConfluenceLabel' {
-        # ARRANGE
-        $SpaceKey = "PESTER$SpaceID"
-        $Page1 = Get-ConfluencePage -Title "Pester New Page Piped" -SpaceKey $SpaceKey -ErrorAction Stop
-        $Label1 = "pestera", "pesterb", "pesterc"
-        $Label2 = "pesterall"
-        $PartialLabel = "pest"
+        BeforeAll {
+            # ARRANGE
+            $script:SpaceKey = "PESTER$SpaceID"
+            $script:Page1 = Get-ConfluencePage -Title "Pester New Page Piped" -SpaceKey $SpaceKey -ErrorAction Stop
+            $script:Label1 = "pestera", "pesterb", "pesterc"
+            $script:Label2 = "pesterall"
+            $script:PartialLabel = "pest"
 
-        # ACT
-        $NewLabel1 = Add-ConfluenceLabel -Label $Label1 -PageID $Page1.ID -ErrorAction SilentlyContinue
-        $NewLabel2 = Get-ConfluencePage -SpaceKey $SpaceKey | Add-ConfluenceLabel -Label $Label2 -ErrorAction SilentlyContinue
-        $NewLabel3 = (Get-ConfluenceSpace -SpaceKey $SpaceKey).Homepage | Get-ConfluenceLabel | Add-ConfluenceLabel -PageID $Page1.ID -ErrorAction SilentlyContinue
+            # ACT
+            $script:NewLabel1 = Add-ConfluenceLabel -Label $Label1 -PageID $Page1.ID -ErrorAction SilentlyContinue
+            $script:NewLabel2 = Get-ConfluencePage -SpaceKey $SpaceKey | Add-ConfluenceLabel -Label $Label2 -ErrorAction SilentlyContinue
+            $script:NewLabel3 = (Get-ConfluenceSpace -SpaceKey $SpaceKey).Homepage | Get-ConfluenceLabel | Add-ConfluenceLabel -PageID $Page1.ID -ErrorAction SilentlyContinue
+
+        }
+
 
         # ASSERT
         It 'returns the correct amount of results' {
@@ -511,17 +545,21 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
     }
 
     Context 'Set-ConfluenceLabel' {
-        # ARRANGE
-        $SpaceKey = "PESTER$SpaceID"
-        $Title1 = "Pester New Page from Object"
-        $Label1 = @("overwrite", "remove")
-        $Label2 = "final"
-        $Page1 = Get-ConfluencePage -Title $Title1 -SpaceKey $SpaceKey -ErrorAction SilentlyContinue
-        $Before1 = $Page1 | Get-ConfluenceLabel
+        BeforeAll {
+            # ARRANGE
+            $script:SpaceKey = "PESTER$SpaceID"
+            $script:Title1 = "Pester New Page from Object"
+            $script:Label1 = @("overwrite", "remove")
+            $script:Label2 = "final"
+            $script:Page1 = Get-ConfluencePage -Title $Title1 -SpaceKey $SpaceKey -ErrorAction SilentlyContinue
+            $script:Before1 = $Page1 | Get-ConfluenceLabel
 
-        # ACT
-        $After1 = Set-ConfluenceLabel -PageID $Page1.ID -Label $Label1 -ErrorAction Stop
-        $After2 = $Page1 | Set-ConfluenceLabel -Label $Label2 -ErrorAction Stop
+            # ACT
+            $script:After1 = Set-ConfluenceLabel -PageID $Page1.ID -Label $Label1 -ErrorAction Stop
+            $script:After2 = $Page1 | Set-ConfluenceLabel -Label $Label2 -ErrorAction Stop
+
+        }
+
 
         # ASSERT
         It 'returns the correct amount of results' {
@@ -551,15 +589,19 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
     }
 
     Context 'Get-ConfluenceLabel' {
-        # ARRANGE
-        $SpaceKey = "PESTER$SpaceID"
-        $patternLabel1 = "pester[abc]$"
-        $patternLabel2 = "(pest|import|fin)"
-        $Page = Get-ConfluencePage -Title "Pester New Page Piped" -SpaceKey $SpaceKey
+        BeforeAll {
+            # ARRANGE
+            $script:SpaceKey = "PESTER$SpaceID"
+            $script:patternLabel1 = "pester[abc]$"
+            $script:patternLabel2 = "(pest|import|fin)"
+            $script:Page = Get-ConfluencePage -Title "Pester New Page Piped" -SpaceKey $SpaceKey
 
-        # ACT
-        $GetPageLabel1 = Get-ConfluenceLabel -PageID $Page.ID
-        $GetPageLabel2 = Get-ConfluencePage -SpaceKey $SpaceKey | Get-ConfluenceLabel
+            # ACT
+            $script:GetPageLabel1 = Get-ConfluenceLabel -PageID $Page.ID
+            $script:GetPageLabel2 = Get-ConfluencePage -SpaceKey $SpaceKey | Get-ConfluenceLabel
+
+        }
+
 
         # ASSERT
         It 'returns the correct amount of results' {
@@ -627,43 +669,47 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             }
         }
 
-        $SpaceKey = "PESTER$SpaceID"
-        $Page1 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page Piped"
-        $Page2 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page Orphan"
-        $Page3 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page from Object"
-        $Page4 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page with Parent Object"
-        # create some more pages
-        $Page5, $Page6, $Page7, $Page8 = ("Page 5", "Page 6", "Page 7", "Page 8" | New-ConfluencePage -SpaceKey $SpaceKey -Body "<p>Lorem ipsum</p>" -ErrorAction Stop)
-        $AllPages = Get-ConfluencePage -SpaceKey $SpaceKey
-        $ParentPage = $AllPages | Where-Object {$_.Title -like "*Home"}
+        BeforeAll {
+            $script:SpaceKey = "PESTER$SpaceID"
+            $script:Page1 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page Piped"
+            $script:Page2 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page Orphan"
+            $script:Page3 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page from Object"
+            $script:Page4 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page with Parent Object"
+            # create some more pages
+            $script:Page5, $script:Page6, $script:Page7, $script:Page8 = ("Page 5", "Page 6", "Page 7", "Page 8" | New-ConfluencePage -SpaceKey $SpaceKey -Body "<p>Lorem ipsum</p>" -ErrorAction Stop)
+            $script:AllPages = Get-ConfluencePage -SpaceKey $SpaceKey
+            $script:ParentPage = $AllPages | Where-Object { $_.Title -like "*Home" }
 
-        $NewTitle6 = "Renamed Page 6"
-        $NewTitle7 = "Renamed Page 7"
-        $NewContent1 = "<h1>Bulk Change</h1><p>Changed all bodies in this space at once</p>"
-        $NewContent2 = "<h1>Set Body by property</h1>"
-        $NewContent3 = "<p>Updated</p>"
-        $RawContent3 = "Updated"
+            $script:NewTitle6 = "Renamed Page 6"
+            $script:NewTitle7 = "Renamed Page 7"
+            $script:NewContent1 = "<h1>Bulk Change</h1><p>Changed all bodies in this space at once</p>"
+            $script:NewContent2 = "<h1>Set Body by property</h1>"
+            $script:NewContent3 = "<p>Updated</p>"
+            $script:RawContent3 = "Updated"
 
-        # ACT
-        # change the body of all pages - all pages should have version 2
-        $AllChangedPages = $AllPages | Set-PageContent -Body $NewContent1 | Set-ConfluencePage -ErrorAction Stop
-        # set the body of a page to the same value as it already had - should remain on verion 2
-        $SetPage1 = $Page1.ID | Set-ConfluencePage -Body $NewContent1 -ErrorAction Stop
-        # change the body of a page by property - this page should have version 3
-        $SetPage2 = $Page2.ID | Set-ConfluencePage -Body $NewContent2 -ErrorAction Stop
-        # make a non-relevant change just to bump page version
-        $SetPage3 = $Page3.ID | Set-ConfluencePage -Body "..."
-        # change the title of a page by property - this page should have version 4
-        $SetPage3 = $Page3.ID | Set-ConfluencePage -Body $RawContent3 -Convert
-        # change the parent page by object
-        $SetPage4 = Set-ConfluencePage -PageID $Page4.ID -Parent $Page3
-        # change the parent page by pageid
-        $SetPage5 = Set-ConfluencePage -PageID $Page5.ID -ParentID $Page4.ID
-        # change the title of a page
-        $SetPage6 = $Page6.ID | Set-ConfluencePage -Title $NewTitle6
-        $SetPage7 = $AllChangedPages | Where-Object {$_.ID -eq $Page7.ID} | Set-PageContent -Title $NewTitle7 | Set-ConfluencePage
-        # clear the body of a page
-        $SetPage8 = Set-ConfluencePage -PageID $Page8.ID -Body ""
+            # ACT
+            # change the body of all pages - all pages should have version 2
+            $script:AllChangedPages = $AllPages | Set-PageContent -Body $NewContent1 | Set-ConfluencePage -ErrorAction Stop
+            # set the body of a page to the same value as it already had - should remain on verion 2
+            $script:SetPage1 = $Page1.ID | Set-ConfluencePage -Body $NewContent1 -ErrorAction Stop
+            # change the body of a page by property - this page should have version 3
+            $script:SetPage2 = $Page2.ID | Set-ConfluencePage -Body $NewContent2 -ErrorAction Stop
+            # make a non-relevant change just to bump page version
+            $script:SetPage3 = $Page3.ID | Set-ConfluencePage -Body "..."
+            # change the title of a page by property - this page should have version 4
+            $script:SetPage3 = $Page3.ID | Set-ConfluencePage -Body $RawContent3 -Convert
+            # change the parent page by object
+            $script:SetPage4 = Set-ConfluencePage -PageID $Page4.ID -Parent $Page3
+            # change the parent page by pageid
+            $script:SetPage5 = Set-ConfluencePage -PageID $Page5.ID -ParentID $Page4.ID
+            # change the title of a page
+            $script:SetPage6 = $Page6.ID | Set-ConfluencePage -Title $NewTitle6
+            $script:SetPage7 = $AllChangedPages | Where-Object { $_.ID -eq $Page7.ID } | Set-PageContent -Title $NewTitle7 | Set-ConfluencePage
+            # clear the body of a page
+            $script:SetPage8 = Set-ConfluencePage -PageID $Page8.ID -Body ""
+
+        }
+
 
         # ASSERT
         It 'returns the correct amount of results' {
@@ -766,9 +812,14 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
     Context 'Get-ConfluenceChildPage' {
         # ARRANGE
 
-        # ACT
+        BeforeAll {
+
+            # ACT
         $ChildPages = (Get-ConfluenceSpace -SpaceKey "PESTER$SpaceID").Homepage | Get-ConfluenceChildPage
         $DesendantPages = (Get-ConfluenceSpace -SpaceKey "PESTER$SpaceID").Homepage | Get-ConfluenceChildPage -Recurse
+
+        }
+
 
         # ASSERT
         It 'returns the correct amount of results' {
@@ -784,28 +835,30 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
     Context 'Add-ConfluenceAttachment' {
         # ARRANGE
         BeforeAll {
-            $originalWarningPreference = $WarningPreference
+            $script:originalWarningPreference = $WarningPreference
             $WarningPreference = 'SilentlyContinue'
+            $script:SpaceKey = "PESTER$SpaceID"
+            $script:Page1 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page Piped" -ErrorAction Stop
+            $script:Page2 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page Orphan" -ErrorAction Stop
+            $script:Page3 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page from Object" -ErrorAction Stop
+            $script:Page4 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page with Parent Object" -ErrorAction Stop
+            $script:TextFile = Get-Item -Path "$PSScriptRoot/resources/Test.txt"
+            $script:ImageFile = Get-Item -Path "$PSScriptRoot/resources/Test.png"
+            $script:ExcelFile = Get-Item -Path "$PSScriptRoot/resources/Test.xlsx"
+
+            # ACT
+            $script:result1 = Add-ConfluenceAttachment -PageId $Page1.Id -FilePath $TextFile.FullName -ErrorAction Stop
+            $script:result2 = Add-ConfluenceAttachment -PageId $Page1.Id -FilePath $ImageFile.FullName, $ExcelFile.FullName -ErrorAction Stop
+            $script:result3 = Add-ConfluenceAttachment $Page2.Id -FilePath $TextFile.FullName -ErrorAction Stop
+            $script:result4 = $Page2 | Add-ConfluenceAttachment -FilePath $ImageFile.FullName -ErrorAction Stop
+            $script:result5 = $Page3 | Add-ConfluenceAttachment -FilePath $ImageFile.FullName, $ExcelFile.FullName -ErrorAction Stop
+            $script:result6 = $TextFile, $ImageFile, $ExcelFile | Add-ConfluenceAttachment -PageId $Page4.Id -ErrorAction Stop
+
         }
         AfterAll {
-            $WarningPreference = $originalWarningPreference
+            $WarningPreference = $script:originalWarningPreference
         }
-        $SpaceKey = "PESTER$SpaceID"
-        $Page1 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page Piped" -ErrorAction Stop
-        $Page2 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page Orphan" -ErrorAction Stop
-        $Page3 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page from Object" -ErrorAction Stop
-        $Page4 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page with Parent Object" -ErrorAction Stop
-        $TextFile = Get-Item -Path "$PSScriptRoot/resources/Test.txt"
-        $ImageFile = Get-Item -Path "$PSScriptRoot/resources/Test.png"
-        $ExcelFile = Get-Item -Path "$PSScriptRoot/resources/Test.xlsx"
 
-        # ACT
-        $result1 = Add-ConfluenceAttachment -PageId $Page1.Id -FilePath $TextFile.FullName -ErrorAction Stop
-        $result2 = Add-ConfluenceAttachment -PageId $Page1.Id -FilePath $ImageFile.FullName, $ExcelFile.FullName -ErrorAction Stop
-        $result3 = Add-ConfluenceAttachment $Page2.Id -FilePath $TextFile.FullName -ErrorAction Stop
-        $result4 = $Page2 | Add-ConfluenceAttachment -FilePath $ImageFile.FullName -ErrorAction Stop
-        $result5 = $Page3 | Add-ConfluenceAttachment -FilePath $ImageFile.FullName, $ExcelFile.FullName -ErrorAction Stop
-        $result6 = $TextFile, $ImageFile, $ExcelFile | Add-ConfluenceAttachment -PageId $Page4.Id -ErrorAction Stop
 
         # ASSERT
         It 'attaches a file to a page' {
@@ -863,19 +916,23 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
     }
 
     Context 'Get-ConfluenceAttachment' {
-        # ARRANGE
-        $SpaceKey = "PESTER$SpaceID"
-        $Page1 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page Piped" -ErrorAction Stop
-        $Page2 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page Orphan" -ErrorAction Stop
-        $Page3 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page from Object" -ErrorAction Stop
-        $Page4 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page with Parent Object" -ErrorAction Stop
+        BeforeAll {
+            # ARRANGE
+            $script:SpaceKey = "PESTER$SpaceID"
+            $script:Page1 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page Piped" -ErrorAction Stop
+            $script:Page2 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page Orphan" -ErrorAction Stop
+            $script:Page3 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page from Object" -ErrorAction Stop
+            $script:Page4 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page with Parent Object" -ErrorAction Stop
 
-        # ACT
-        $result1 = Get-ConfluenceAttachment -PageId $Page1.Id -ErrorAction Stop
-        $result2 = Get-ConfluenceAttachment -PageId $Page2.Id, $Page3.Id -ErrorAction Stop
-        $result3 = $Page3, $Page4 | Get-ConfluenceAttachment -ErrorAction Stop
-        $result4 = $Page1, $Page2, $Page3, $Page4 | Get-ConfluenceAttachment -FileNameFilter "Test.xlsx" -ErrorAction Stop
-        $result5 = $Page1, $Page2, $Page3, $Page4 | Get-ConfluenceAttachment -MediaTypeFilter "text/plain" -ErrorAction Stop
+            # ACT
+            $script:result1 = Get-ConfluenceAttachment -PageId $Page1.Id -ErrorAction Stop
+            $script:result2 = Get-ConfluenceAttachment -PageId $Page2.Id, $Page3.Id -ErrorAction Stop
+            $script:result3 = $Page3, $Page4 | Get-ConfluenceAttachment -ErrorAction Stop
+            $script:result4 = $Page1, $Page2, $Page3, $Page4 | Get-ConfluenceAttachment -FileNameFilter "Test.xlsx" -ErrorAction Stop
+            $script:result5 = $Page1, $Page2, $Page3, $Page4 | Get-ConfluenceAttachment -MediaTypeFilter "text/plain" -ErrorAction Stop
+
+        }
+
 
         # ASSERT
         It 'retrieves the Attachments of a Page' {
@@ -911,23 +968,25 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
         # ARRANGE
         BeforeAll {
             Push-Location -Path "TestDrive:\"
+            $null = New-Item -Path "TestDrive:\Folder1" -ItemType Directory
+            $null = New-Item -Path "TestDrive:\Folder2" -ItemType Directory
+            $null = New-Item -Path "TestDrive:\Folder3" -ItemType Directory
+            $script:SpaceKey = "PESTER$SpaceID"
+            $script:Page1 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page Piped" -ErrorAction Stop
+            $script:Page2 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page Orphan" -ErrorAction Stop
+            $script:Attachments = $Page1, $Page2 | Get-ConfluenceAttachment -ErrorAction Stop
+
+            # ACT
+            $script:result1 = Get-ConfluenceAttachmentFile -Attachment $Attachments[0] -Path "TestDrive:\Folder1" -ErrorAction Stop
+            $script:result2 = Get-ConfluenceAttachmentFile $Attachments[-1] -ErrorAction Stop
+            $script:result3 = Get-ConfluenceAttachmentFile -Attachment $Attachments -Path "TestDrive:\Folder2" -ErrorAction Stop
+            $script:result4 = $Attachments | Get-ConfluenceAttachmentFile -Path "TestDrive:\Folder3" -ErrorAction Stop
+
         }
         AfterAll {
             Pop-Location
         }
-        $null = New-Item -Path "TestDrive:\Folder1" -ItemType Directory
-        $null = New-Item -Path "TestDrive:\Folder2" -ItemType Directory
-        $null = New-Item -Path "TestDrive:\Folder3" -ItemType Directory
-        $SpaceKey = "PESTER$SpaceID"
-        $Page1 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page Piped" -ErrorAction Stop
-        $Page2 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page Orphan" -ErrorAction Stop
-        $Attachments = $Page1, $Page2 | Get-ConfluenceAttachment -ErrorAction Stop
 
-        # ACT
-        $result1 = Get-ConfluenceAttachmentFile -Attachment $Attachments[0] -Path "TestDrive:\Folder1" -ErrorAction Stop
-        $result2 = Get-ConfluenceAttachmentFile $Attachments[-1] -ErrorAction Stop
-        $result3 = Get-ConfluenceAttachmentFile -Attachment $Attachments -Path "TestDrive:\Folder2" -ErrorAction Stop
-        $result4 = $Attachments | Get-ConfluenceAttachmentFile -Path "TestDrive:\Folder3" -ErrorAction Stop
 
         # ASSERT
         It 'downloads an Attachment to a specific Path' {
@@ -962,16 +1021,20 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
     }
 
     Context 'Set-ConfluenceAttachment' {
-        # ARRANGE
-        $SpaceKey = "PESTER$SpaceID"
-        $Page1 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page Piped" -ErrorAction Stop
-        $Attachment = $Page1 | Get-ConfluenceAttachment -FileNameFilter "Test.txt" -ErrorAction Stop
-        $TextFile = Get-Item -Path "$PSScriptRoot/resources/Test.txt"
+        BeforeAll {
+            # ARRANGE
+            $script:SpaceKey = "PESTER$SpaceID"
+            $script:Page1 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page Piped" -ErrorAction Stop
+            $script:Attachment = $Page1 | Get-ConfluenceAttachment -FileNameFilter "Test.txt" -ErrorAction Stop
+            $script:TextFile = Get-Item -Path "$PSScriptRoot/resources/Test.txt"
 
-        # ACT
-        $result1 = Set-ConfluenceAttachment -Attachment $Attachment -FilePath $TextFile.FullName -ErrorAction Stop
-        $result2 = Set-ConfluenceAttachment $Attachment -FilePath $TextFile.FullName -ErrorAction Stop
-        $result3 = $Attachment | Set-ConfluenceAttachment -FilePath $TextFile.FullName -ErrorAction Stop
+            # ACT
+            $script:result1 = Set-ConfluenceAttachment -Attachment $Attachment -FilePath $TextFile.FullName -ErrorAction Stop
+            $script:result2 = Set-ConfluenceAttachment $Attachment -FilePath $TextFile.FullName -ErrorAction Stop
+            $script:result3 = $Attachment | Set-ConfluenceAttachment -FilePath $TextFile.FullName -ErrorAction Stop
+
+        }
+
 
         # ASSERT
         It 'updates an Attachment' {
@@ -1012,28 +1075,30 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
     Context 'Remove-ConfluenceAttachment' {
         # ARRANGE
         BeforeAll {
-            $originalWarningPreference = $WarningPreference
+            $script:originalWarningPreference = $WarningPreference
             $WarningPreference = 'SilentlyContinue'
+            $script:SpaceKey = "PESTER$SpaceID"
+            $script:Page1 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page Piped" -ErrorAction Stop
+            $script:Page2 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page Orphan" -ErrorAction Stop
+            $script:Page3 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page from Object" -ErrorAction Stop
+            $script:preAttachments1 = Get-ConfluenceAttachment -PageId $Page1.Id -ErrorAction Stop
+            $script:preAttachments2 = Get-ConfluenceAttachment -PageId $Page2.Id -ErrorAction Stop
+            $script:preAttachments3 = Get-ConfluenceAttachment -PageId $Page3.Id -ErrorAction Stop
+
+            # ACT
+            Remove-ConfluenceAttachment -Attachment $preAttachments1[0] -ErrorAction Stop
+            Remove-ConfluenceAttachment $preAttachments2 -ErrorAction Stop
+            $preAttachments3 | Remove-ConfluenceAttachment -ErrorAction Stop
+
+            $script:postAttachments1 = Get-ConfluenceAttachment -PageId $Page1.Id -ErrorAction SilentlyContinue
+            $script:postAttachments2 = Get-ConfluenceAttachment -PageId $Page2.Id -ErrorAction SilentlyContinue
+            $script:postAttachments3 = Get-ConfluenceAttachment -PageId $Page3.Id -ErrorAction SilentlyContinue
+
         }
         AfterAll {
-            $WarningPreference = $originalWarningPreference
+            $WarningPreference = $script:originalWarningPreference
         }
-        $SpaceKey = "PESTER$SpaceID"
-        $Page1 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page Piped" -ErrorAction Stop
-        $Page2 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page Orphan" -ErrorAction Stop
-        $Page3 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page from Object" -ErrorAction Stop
-        $preAttachments1 = Get-ConfluenceAttachment -PageId $Page1.Id -ErrorAction Stop
-        $preAttachments2 = Get-ConfluenceAttachment -PageId $Page2.Id -ErrorAction Stop
-        $preAttachments3 = Get-ConfluenceAttachment -PageId $Page3.Id -ErrorAction Stop
 
-        # ACT
-        Remove-ConfluenceAttachment -Attachment $preAttachments1[0] -ErrorAction Stop
-        Remove-ConfluenceAttachment $preAttachments2 -ErrorAction Stop
-        $preAttachments3 | Remove-ConfluenceAttachment -ErrorAction Stop
-
-        $postAttachments1 = Get-ConfluenceAttachment -PageId $Page1.Id -ErrorAction SilentlyContinue
-        $postAttachments2 = Get-ConfluenceAttachment -PageId $Page2.Id -ErrorAction SilentlyContinue
-        $postAttachments3 = Get-ConfluenceAttachment -PageId $Page3.Id -ErrorAction SilentlyContinue
 
         # ASSERT
         It 'removes an Attachment' {
@@ -1052,19 +1117,23 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
     }
 
     Context 'Remove-ConfluenceLabel' {
-        # ARRANGE
-        $SpaceKey = "PESTER$SpaceID"
-        $Label1 = "pesterc"
-        $Page1 = Get-ConfluencePage -Title 'Pester New Page Piped' -SpaceKey $SpaceKey -ErrorAction Stop
-        $Page2 = (Get-ConfluenceSpace -SpaceKey $SpaceKey).Homepage
+        BeforeAll {
+            # ARRANGE
+            $script:SpaceKey = "PESTER$SpaceID"
+            $script:Label1 = "pesterc"
+            $script:Page1 = Get-ConfluencePage -Title 'Pester New Page Piped' -SpaceKey $SpaceKey -ErrorAction Stop
+            $script:Page2 = (Get-ConfluenceSpace -SpaceKey $SpaceKey).Homepage
 
-        # ACT
-        $Before1 = $Page1 | Get-ConfluenceLabel -ErrorAction SilentlyContinue
-        $Before2 = $Page2 | Get-ConfluenceLabel -ErrorAction SilentlyContinue
-        Remove-ConfluenceLabel -Label $Label1 -PageID $Page1.ID -ErrorAction SilentlyContinue
-        $Page2 | Remove-ConfluenceLabel -ErrorAction SilentlyContinue
-        $After1 = $Page1 | Get-ConfluenceLabel -ErrorAction SilentlyContinue
-        $After2 = $Page2 | Get-ConfluenceLabel -ErrorAction SilentlyContinue
+            # ACT
+            $script:Before1 = $Page1 | Get-ConfluenceLabel -ErrorAction SilentlyContinue
+            $script:Before2 = $Page2 | Get-ConfluenceLabel -ErrorAction SilentlyContinue
+            Remove-ConfluenceLabel -Label $Label1 -PageID $Page1.ID -ErrorAction SilentlyContinue
+            $Page2 | Remove-ConfluenceLabel -ErrorAction SilentlyContinue
+            $script:After1 = $Page1 | Get-ConfluenceLabel -ErrorAction SilentlyContinue
+            $script:After2 = $Page2 | Get-ConfluenceLabel -ErrorAction SilentlyContinue
+
+        }
+
 
         # ASSERT
         It 'page has one label less' {
@@ -1078,16 +1147,20 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
     }
 
     Context 'Remove-ConfluencePage' {
-        # ARRANGE
-        $SpaceKey = "PESTER$SpaceID"
-        $Title = "Pester New Page Orphan"
-        $PageID = Get-ConfluencePage -Title $Title -SpaceKey $SpaceKey -ErrorAction Stop
-        $Before = Get-ConfluencePage -SpaceKey $SpaceKey -ErrorAction Stop
+        BeforeAll {
+            # ARRANGE
+            $script:SpaceKey = "PESTER$SpaceID"
+            $script:Title = "Pester New Page Orphan"
+            $script:PageID = Get-ConfluencePage -Title $Title -SpaceKey $SpaceKey -ErrorAction Stop
+            $script:Before = Get-ConfluencePage -SpaceKey $SpaceKey -ErrorAction Stop
 
-        # ACT
-        Remove-ConfluencePage -PageID $PageID.ID -ErrorAction SilentlyContinue
-        Get-ConfluencePage -SpaceKey $SpaceKey | Remove-ConfluencePage -ErrorAction SilentlyContinue
-        $After = Get-ConfluencePage -SpaceKey $SpaceKey -ErrorAction SilentlyContinue
+            # ACT
+            Remove-ConfluencePage -PageID $PageID.ID -ErrorAction SilentlyContinue
+            Get-ConfluencePage -SpaceKey $SpaceKey | Remove-ConfluencePage -ErrorAction SilentlyContinue
+            $script:After = Get-ConfluencePage -SpaceKey $SpaceKey -ErrorAction SilentlyContinue
+
+        }
+
 
         # ASSERT
         It 'has pages before' {
@@ -1099,17 +1172,27 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
     }
 
     Context 'Remove-ConfluenceSpace' {
-        # ARRANGE
-        # We don't want warnings on the screen
-        $WarningPreference = 'SilentlyContinue'
+        BeforeAll {
+            # We don't want warnings on the screen
+            $script:originalWarningPreference = $WarningPreference
+            $WarningPreference = 'SilentlyContinue'
+        }
+        AfterAll {
+            $WarningPreference = $script:originalWarningPreference
+        }
 
-        # ACT
+        BeforeAll {
+
+            # ACT
         Remove-ConfluenceSpace -Key "PESTER$SpaceID" -Force -ErrorAction Stop
         "PESTER1$SpaceID" | Remove-ConfluenceSpace -Force -ErrorAction Stop
 
+        }
+
+
         # ASSERT
-        Start-Sleep -Seconds 20
         It 'space is no longer available' {
+            Start-Sleep -Seconds 20
             { Get-ConfluenceSpace -Key "PESTER$SpaceID" -ErrorAction Stop } | Should -Throw
             { Get-ConfluenceSpace -Key "PESTER1$SpaceID" -ErrorAction Stop } | Should -Throw
         }

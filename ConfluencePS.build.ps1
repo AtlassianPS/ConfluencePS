@@ -48,22 +48,7 @@ function Initialize-BuildEnvironmentInfo {
 
 function Ensure-PSScriptAnalyzerSettings {
     $settingsPath = Join-Path $PSScriptRoot 'PSScriptAnalyzerSettings.psd1'
-    if (Test-Path $settingsPath) {
-        return
-    }
-
-    $uri = 'https://raw.githubusercontent.com/AtlassianPS/.github/83e062b260346c4577d3b41974f0f8aafcc5e7e5/standards/PSScriptAnalyzerSettings.psd1'
-    $invokeWebRequestParams = @{
-        Uri         = $uri
-        ErrorAction = 'Stop'
-    }
-    if ($PSVersionTable.PSEdition -eq 'Desktop') {
-        $invokeWebRequestParams.UseBasicParsing = $true
-    }
-
-    $response = Invoke-WebRequest @invokeWebRequestParams
-    $settingsWithCrLf = $response.Content -replace "`r?`n", "`r`n"
-    [System.IO.File]::WriteAllText($settingsPath, $settingsWithCrLf, [System.Text.UTF8Encoding]::new($false))
+    Assert-True (Test-Path $settingsPath) "Missing PSScriptAnalyzer settings at '$settingsPath'. Run ./Tools/setup.ps1 or restore the file."
 }
 
 Ensure-PSScriptAnalyzerSettings
