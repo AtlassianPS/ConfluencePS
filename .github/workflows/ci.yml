@@ -126,22 +126,15 @@ jobs:
     name: Smoke Tests
     needs: lint
     runs-on: ubuntu-latest
-    # Skip on fork PRs/Dependabot PRs and when Wiki* secrets are not configured:
-    # those contexts cannot run smoke integration reliably. The ci-required
+    # Skip on fork PRs and Dependabot PRs: the Wiki* secrets are not exposed
+    # in those contexts and the smoke run would fail. The ci-required
     # aggregator below treats skipped jobs as a pass, so fork PRs still get
-    # a green CI Result. First-party PRs/pushes gate on smoke only when
-    # credentials are available.
-    #
-    # The smoke result, when executed, gates the
+    # a green CI Result. First-party PRs and pushes to master gate on the
     # smoke result, which in turn gates release.yml's artifact download
     # (workflow_conclusion: success).
-    if: >
-      (github.event_name != 'pull_request' ||
+    if: github.event_name != 'pull_request' ||
       (github.event.pull_request.head.repo.full_name == github.repository &&
-      github.actor != 'dependabot[bot]')) &&
-      secrets.WikiURI != '' &&
-      secrets.WikiUser != '' &&
-      secrets.WikiPass != ''
+      github.actor != 'dependabot[bot]')
     env:
       WikiURI: ${{ secrets.WikiURI }}
       WikiUser: ${{ secrets.WikiUser }}
@@ -150,13 +143,30 @@ jobs:
       - uses: actions/checkout@v6
       - uses: AtlassianPS/.github/actions/setup-powershell@master
 
+      - name: Check smoke secret configuration
+        id: smoke_secrets
+        shell: pwsh
+        run: |
+          if (
+            [string]::IsNullOrWhiteSpace($env:WikiURI) -or
+            [string]::IsNullOrWhiteSpace($env:WikiUser) -or
+            [string]::IsNullOrWhiteSpace($env:WikiPass)
+          ) {
+            "ready=false" >> $env:GITHUB_OUTPUT
+            Write-Warning "Skipping smoke tests because WikiURI/WikiUser/WikiPass are not configured."
+          }
+          else {
+            "ready=true" >> $env:GITHUB_OUTPUT
+          }
+
       - name: Run smoke integration tests
+        if: steps.smoke_secrets.outputs.ready == 'true'
         run: |
           Invoke-Build -Task TestIntegration -Tag "Cloud"
         shell: pwsh
 
       - name: Upload integration test results
-        if: always()
+        if: always() && steps.smoke_secrets.outputs.ready == 'true'
         uses: actions/upload-artifact@v7
         with:
           name: Smoke-Tests
