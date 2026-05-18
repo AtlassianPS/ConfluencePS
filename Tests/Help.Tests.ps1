@@ -56,6 +56,20 @@ Describe "Help tests" -Tag "Documentation", "Build" {
             'WhatIf'
             'Confirm'
         )
+
+        $script:aboutTopics = @(
+            foreach ($localeDir in (Get-ChildItem "$projectRoot/docs" -Directory -ErrorAction SilentlyContinue)) {
+                @(
+                    Get-ChildItem "$($localeDir.FullName)/about_*.md" -File -ErrorAction SilentlyContinue
+                    Get-ChildItem "$($localeDir.FullName)/commands/about_*.md" -File -ErrorAction SilentlyContinue
+                ) | ForEach-Object {
+                    @{
+                        Locale    = $localeDir.BaseName
+                        TopicName = $_.BaseName
+                    }
+                }
+            }
+        )
     }
 
     Describe "Public Functions" {
@@ -223,6 +237,21 @@ Describe "Help tests" -Tag "Documentation", "Build" {
                     }
                 }
             }
+        }
+    }
+
+    Context "About topics" -Skip:(-not $isRunningInReleaseFolder) {
+        BeforeAll {
+            $script:releaseModulePath = Split-Path $moduleToTest -Parent
+        }
+
+        It "has at least one about topic markdown source" {
+            $aboutTopics.Count | Should -BeGreaterThan 0
+        }
+
+        It "includes generated help for <_.TopicName> (<_.Locale>)" -ForEach $aboutTopics {
+            $expectedHelpPath = Join-Path (Join-Path $releaseModulePath $_.Locale) "$($_.TopicName).help.txt"
+            Test-Path $expectedHelpPath | Should -Be $true -Because "about markdown topics must be packaged into release help output"
         }
     }
 }

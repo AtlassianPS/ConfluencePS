@@ -39,7 +39,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@v0.1.2
+      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@064643a6dfc2fbc00d332fc0b950375dbf87a291
 
       - run: Invoke-Build -Task Lint
         shell: pwsh
@@ -50,7 +50,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: AtlassianPS/.github/actions/setup-powershell@master
+      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@064643a6dfc2fbc00d332fc0b950375dbf87a291
 
       - run: Invoke-Build -Task Clean, Build
         shell: pwsh
@@ -66,7 +66,7 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@v0.1.2
+      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@064643a6dfc2fbc00d332fc0b950375dbf87a291
         with:
           ps-version: "5"
           # Setup is run below in the powershell (PS 5.1) shell instead of pwsh,
@@ -106,7 +106,7 @@ jobs:
           - { os: macos-latest, name: "macOS" }
     steps:
       - uses: actions/checkout@v6
-      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@v0.1.2
+      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@064643a6dfc2fbc00d332fc0b950375dbf87a291
 
       - uses: actions/download-artifact@v8
         with:
@@ -141,35 +141,26 @@ jobs:
       WikiPass: ${{ secrets.WikiPass }}
     steps:
       - uses: actions/checkout@v6
-      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@v0.1.2
+      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@064643a6dfc2fbc00d332fc0b950375dbf87a291
 
-      - name: Detect smoke secret configuration
-        id: smoke_secrets
+      - name: Validate smoke secret configuration
         run: |
-          $hasSecrets = -not (
-            [string]::IsNullOrWhiteSpace($env:WikiURI) -or
-            [string]::IsNullOrWhiteSpace($env:WikiUser) -or
-            [string]::IsNullOrWhiteSpace($env:WikiPass)
-          )
-          "has_secrets=$($hasSecrets.ToString().ToLowerInvariant())" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
-
           if (
             [string]::IsNullOrWhiteSpace($env:WikiURI) -or
             [string]::IsNullOrWhiteSpace($env:WikiUser) -or
             [string]::IsNullOrWhiteSpace($env:WikiPass)
           ) {
-            Write-Warning "Skipping smoke tests because WikiURI, WikiUser, or WikiPass is not configured."
+            throw "Smoke tests require WikiURI, WikiUser, and WikiPass secrets in first-party CI."
           }
         shell: pwsh
 
       - name: Run smoke integration tests
-        if: steps.smoke_secrets.outputs.has_secrets == 'true'
         run: |
           Invoke-Build -Task TestIntegration -Tag "Cloud"
         shell: pwsh
 
       - name: Upload integration test results
-        if: always() && steps.smoke_secrets.outputs.has_secrets == 'true'
+        if: always()
         uses: actions/upload-artifact@v7
         with:
           name: Smoke-Tests

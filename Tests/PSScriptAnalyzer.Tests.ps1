@@ -28,7 +28,6 @@ Describe "PSScriptAnalyzer Tests" -Tag Unit {
     }
     AfterAll {
         Remove-Module $env:BHProjectName -ErrorAction SilentlyContinue
-        Remove-Item -Path Env:\BH* -ErrorAction SilentlyContinue
     }
 
     Context "<_>" -ForEach $scripts {

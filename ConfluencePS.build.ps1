@@ -184,6 +184,8 @@ Task RemoveOrphanedExternalHelp {
 
         Get-ChildItem (Join-Path $localeDocs 'about_*.md') -File -ErrorAction SilentlyContinue |
             ForEach-Object { $null = $expected.Add("$($_.BaseName).help.txt") }
+        Get-ChildItem (Join-Path $localeDocs 'commands/about_*.md') -File -ErrorAction SilentlyContinue |
+            ForEach-Object { $null = $expected.Add("$($_.BaseName).help.txt") }
 
         Get-ChildItem $localeDir.FullName -File -ErrorAction SilentlyContinue |
             Where-Object { -not $expected.Contains($_.Name) } |
