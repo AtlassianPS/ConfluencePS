@@ -90,6 +90,21 @@ namespace ConfluencePS.Tests {
             } -Exactly -Times 1 -Scope It
         }
 
+        It "handles success payloads with duplicate JSON key casing" {
+            if (-not (Get-Command ConvertFrom-Json).Parameters.ContainsKey("AsHashtable")) {
+                Set-ItResult -Skipped -Because "ConvertFrom-Json -AsHashtable is unavailable in this PowerShell version."
+                return
+            }
+
+            Mock Invoke-WebRequest -ModuleName ConfluencePS {
+                New-FakeWebResponse -StatusCode 200 -Json '{"results":[{"id":1,"subType":"page","subtype":"page"}]}'
+            }
+
+            { $null = Invoke-Method -Uri "https://example.com/wiki/rest/api/content" -ErrorAction Stop } | Should -Not -Throw
+
+            Should -Invoke -CommandName Invoke-WebRequest -ModuleName ConfluencePS -Exactly -Times 1 -Scope It
+        }
+
         It "retries once on HTTP 429 and continues successfully" {
             $script:invokeCount = 0
             Mock Invoke-WebRequest -ModuleName ConfluencePS {
