@@ -35,6 +35,13 @@ Invoke-Build -Task Build, Test
 
 Integration runs require `WikiURI`, `WikiUser`, and `WikiPass` environment variables.
 
+## Common Mistakes
+
+- Running full `Invoke-Build -Task Build, Test` for every tiny edit. Use targeted `Invoke-Pester` first.
+- Skipping the full `Invoke-Build -Task Build, Test` gate before commit/PR finalization.
+- Running `Invoke-Build -Task TestIntegration` without `WikiURI`, `WikiUser`, and `WikiPass`.
+- Editing command docs without running `Invoke-Pester -Path 'Tests/Help.Tests.ps1'`.
+
 ## Source and Test Layout
 
 - Public cmdlets: `ConfluencePS/Public/*.ps1`

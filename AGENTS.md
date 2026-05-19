@@ -68,6 +68,33 @@ Invoke-Build -Task TestIntegration -Tag DataCenter
 Invoke-Build -Task Build, Test
 ```
 
+### Testing During Development
+
+> **Rule**: Run the smallest relevant test loop after each change, then run the full suite before finalizing.
+
+| What changed | Test command |
+|---|---|
+| Any code file (`.ps1`, `.psm1`) | `Invoke-Build -Task Lint` |
+| Function/helper behavior | `Invoke-Pester -Path 'Tests/Functions/<RelatedFile>.Tests.ps1'` |
+| Test file under `Tests/` | `Invoke-Pester -Path '<path-to-that-test-file>'` |
+| Documentation/help under `docs/**` | `Invoke-Pester -Path 'Tests/Help.Tests.ps1'` |
+| Build/test plumbing | `Invoke-Pester -Path 'Tests/Build.Tests.ps1'` |
+
+Examples:
+
+```powershell
+# After editing ConfluencePS/Public/Invoke-Method.ps1
+Invoke-Build -Task Lint
+Invoke-Pester -Path 'Tests/Functions/Invoke-Method.Tests.ps1'
+
+# After editing docs/en-US/commands/Set-Info.md
+Invoke-Build -Task Lint
+Invoke-Pester -Path 'Tests/Help.Tests.ps1'
+```
+
+Before committing: run full `Invoke-Build -Task Build, Test`.  
+Before merging: ensure the Windows PowerShell 5.1 CI test job is green.
+
 ## Confluence Compatibility Guardrails
 
 - For Cloud tenants, `Set-Info -BaseUri` must include `/wiki` (for example `https://tenant.atlassian.net/wiki`).
