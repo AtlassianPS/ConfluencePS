@@ -10,6 +10,10 @@ BeforeDiscovery {
 InModuleScope ConfluencePS {
     Describe "Invoke-Method" -Tag 'Unit' {
         BeforeAll {
+            if (-not ("System.Net.Http.HttpResponseMessage" -as [Type])) {
+                Add-Type -AssemblyName System.Net.Http
+            }
+
             if (-not ("ConfluencePS.Tests.FakeHttpException" -as [Type])) {
                 Add-Type -TypeDefinition @"
 namespace ConfluencePS.Tests {
@@ -34,7 +38,7 @@ namespace ConfluencePS.Tests {
                 )
 
                 [PSCustomObject]@{
-                    StatusCode       = [System.Net.HttpStatusCode]$StatusCode
+                    StatusCode       = [System.Enum]::ToObject([System.Net.HttpStatusCode], $StatusCode)
                     Content          = $Json
                     RawContentStream = [System.IO.MemoryStream]::new([System.Text.Encoding]::UTF8.GetBytes($Json))
                     Headers          = $Headers
