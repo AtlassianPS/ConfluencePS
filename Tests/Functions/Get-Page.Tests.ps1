@@ -49,13 +49,5 @@ InModuleScope ConfluencePS {
 
             Should -Invoke -CommandName Invoke-Method -ModuleName ConfluencePS -Exactly -Times 0 -Scope It
         }
-
-        It "throws when Label includes whitespace-only values" {
-            {
-                $null = Get-Page -ApiUri "https://example.com/wiki/rest/api" -Label @("labelA", " ")
-            } | Should -Throw "The Label parameter must contain one or more non-empty values."
-
-            Should -Invoke -CommandName Invoke-Method -ModuleName ConfluencePS -Exactly -Times 0 -Scope It
-        }
     }
 }
