@@ -9,7 +9,7 @@
 2. **Keep REST calls behind ConfluencePS abstractions**: command implementations should route HTTP work through `Invoke-Method` (and its wrapper stack), not ad-hoc web calls.
 3. **Preserve compatibility**: keep existing Cloud/Data Center behavior and public cmdlet parameter/output contracts unless the task explicitly changes them.
 4. **Instruction-only changes still require local validation**: `.github/workflows/ci.yml` path filters can skip AI-instruction-only updates.
-5. **Do not finalize on red builds**: run `Invoke-Build -Task Lint` and `Invoke-Build -Task Build, Test` before completion.
+5. **Use the right test loop**: use targeted `Invoke-Pester` during iteration, then run full `Invoke-Build -Task Build, Test` before completion.
 6. **Keep tests and docs aligned with behavior**: update focused tests in `Tests/`, docs in `docs/en-US/`, and `CHANGELOG.md` for user-visible changes.
 
 ## AI Tool Compatibility
@@ -44,21 +44,28 @@ Invoke-Build -Task Build, Test
 Focused validation while iterating:
 
 ```powershell
-# Unit-focused test pass
-Invoke-Build -Task Test -Tag Unit
+# After changing one function/helper, run the matching test file directly
+Invoke-Build -Task Lint
+Invoke-Pester -Path 'Tests/Functions/Invoke-Method.Tests.ps1'
 
-# Help/docs checks (Help.Tests.ps1 and doc-related coverage)
+# After changing docs/help, run help tests directly
+Invoke-Build -Task Lint
+Invoke-Pester -Path 'Tests/Help.Tests.ps1'
+```
+
+Broader validation:
+
+```powershell
+# Optional broader pass while iterating
+Invoke-Build -Task Test -Tag Unit
 Invoke-Build -Task Test -Tag Documentation
 
 # Integration tests (requires WikiURI/WikiUser/WikiPass)
 Invoke-Build -Task TestIntegration -Tag Cloud
 Invoke-Build -Task TestIntegration -Tag DataCenter
-```
 
-Single-test loop while iterating:
-
-```powershell
-Invoke-Pester -Path 'Tests/ConfluencePS.Tests.ps1'
+# Required before commit/PR finalization
+Invoke-Build -Task Build, Test
 ```
 
 ## Confluence Compatibility Guardrails

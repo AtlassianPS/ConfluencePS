@@ -15,6 +15,6 @@ This file applies to all `.ps1` files. It references shared rules.
 3. **Page body format** — keep page payloads in `body.storage.value` with `representation = 'storage'`.
 4. **Content conversion** — use `ConvertTo-StorageFormat` for wiki-style content conversion.
 5. **REST calls** — route command-level HTTP interactions through `Invoke-Method`.
-6. **Tests required** — update tests for behavior changes and run `Invoke-Build -Task Lint` plus `Invoke-Build -Task Build, Test`.
+6. **Tests required** — during iteration run targeted `Invoke-Pester -Path '<affected test file>'`; before finalizing run `Invoke-Build -Task Lint` plus full `Invoke-Build -Task Build, Test`.
 
 For full rules, read `.github/ai-context/powershell-rules.md`.

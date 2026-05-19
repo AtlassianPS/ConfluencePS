@@ -15,11 +15,22 @@ Invoke-Build -Task Build, Test
 Focused validation while iterating:
 
 ```powershell
-Invoke-Pester -Path 'Tests/ConfluencePS.Tests.ps1'
+# After changing one function/helper, run the matching test file directly
+Invoke-Build -Task Lint
+Invoke-Pester -Path 'Tests/Functions/Invoke-Method.Tests.ps1'
+
+# After changing docs/help, run help tests directly
+Invoke-Build -Task Lint
+Invoke-Pester -Path 'Tests/Help.Tests.ps1'
+
+# Optional broader pass while iterating
 Invoke-Build -Task Test -Tag Unit
 Invoke-Build -Task Test -Tag Documentation
 Invoke-Build -Task TestIntegration -Tag Cloud
 Invoke-Build -Task TestIntegration -Tag DataCenter
+
+# Required before commit/PR finalization
+Invoke-Build -Task Build, Test
 ```
 
 Integration runs require `WikiURI`, `WikiUser`, and `WikiPass` environment variables.

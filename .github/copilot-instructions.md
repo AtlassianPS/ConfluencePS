@@ -11,8 +11,9 @@ GitHub Copilot should treat these files as canonical:
 2. Route command-level HTTP interactions through `Invoke-Method`.
 3. Preserve Cloud/Data Center compatibility and existing cmdlet contracts (`/wiki` for Cloud `Set-Info -BaseUri`).
 4. Instruction-only changes may be skipped by CI path filters; run local validation anyway.
-5. Run `Invoke-Build -Task Lint` and `Invoke-Build -Task Build, Test` before finalizing.
-6. For behavior changes, update targeted tests in `Tests/` and docs in `docs/en-US/`.
+5. During iteration, run targeted tests directly with `Invoke-Pester -Path '<affected test file>'`.
+6. Before finalizing, run `Invoke-Build -Task Lint` and full `Invoke-Build -Task Build, Test`.
+7. For behavior changes, update targeted tests in `Tests/` and docs in `docs/en-US/`.
 
 ## File Locations
 
