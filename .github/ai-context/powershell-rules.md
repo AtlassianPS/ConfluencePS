@@ -65,6 +65,12 @@ Integration runs require `WikiURI`, `WikiUser`, and `WikiPass` environment varia
 - Use `ConvertTo-StorageFormat` when converting wiki-style markup in `New-Page` / `Set-Page`.
 - Preserve page version increment behavior when updating pages.
 
+## Supported API Reference Versions
+
+- Cloud (supported research target): Confluence Cloud REST API (`/wiki/rest/api`): https://developer.atlassian.com/cloud/confluence/rest/
+- Data Center/Server (supported research target): Confluence Server REST API (`/rest/api`): https://docs.atlassian.com/ConfluenceServer/rest/latest/
+- Before adopting an endpoint/field, verify behavior against both references unless the task is explicitly Cloud-only or Data Center-only.
+
 ## Coding Conventions
 
 - Prefer self-explanatory names and small functions.

@@ -102,6 +102,12 @@ Before merging: ensure the Windows PowerShell 5.1 CI test job is green.
 - Use `ConvertTo-StorageFormat` when converting wiki-style input to storage format in page create/update flows.
 - Preserve page update version increments in `Set-Page` (`version.number` advances from current page version).
 
+### Supported API References (Cloud + Data Center)
+
+- Cloud track: Confluence Cloud REST API documentation (`/wiki/rest/api` surface): https://developer.atlassian.com/cloud/confluence/rest/
+- Data Center/Server track: Confluence Server REST API documentation (`/rest/api` surface): https://docs.atlassian.com/ConfluenceServer/rest/latest/
+- When researching or implementing API changes, verify both tracks and avoid Cloud-only endpoint assumptions unless the change explicitly scopes Cloud.
+
 ## CI/CD Alignment
 
 - `.github/workflows/ci.yml` is the required PR/push quality gate.
