@@ -58,5 +58,5 @@ Integration runs require `WikiURI`, `WikiUser`, and `WikiPass` environment varia
 
 - User-facing command docs belong in `docs/en-US/commands/*.md`.
 - Include changelog updates for user-visible behavior changes.
-- `.github/workflows/instruction-validation.yml` is the required CI gate for instruction-only changes.
-- Run local validation before opening/updating PRs, even when CI enforcement exists.
+- `.github/workflows/ci.yml` path filters can skip instruction-only changes.
+- Run local validation before opening/updating PRs when changing instruction files.

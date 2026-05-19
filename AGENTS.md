@@ -8,7 +8,7 @@
 1. **One functionality per commit**: implementation, tests, docs, and changelog move together.
 2. **Keep REST calls behind ConfluencePS abstractions**: command implementations should route HTTP work through `Invoke-Method` (and its wrapper stack), not ad-hoc web calls.
 3. **Preserve compatibility**: keep existing Cloud/Data Center behavior and public cmdlet parameter/output contracts unless the task explicitly changes them.
-4. **Instruction-only changes must pass dedicated CI validation**: `.github/workflows/instruction-validation.yml` is the required gate for AI-instruction-only changes.
+4. **Instruction-only changes still require local validation**: `.github/workflows/ci.yml` path filters can skip AI-instruction-only updates.
 5. **Do not finalize on red builds**: run `Invoke-Build -Task Lint` and `Invoke-Build -Task Build, Test` before completion.
 6. **Keep tests and docs aligned with behavior**: update focused tests in `Tests/`, docs in `docs/en-US/`, and `CHANGELOG.md` for user-visible changes.
 
@@ -71,9 +71,8 @@ Invoke-Pester -Path 'Tests/ConfluencePS.Tests.ps1'
 ## CI/CD Alignment
 
 - `.github/workflows/ci.yml` is the required PR/push quality gate.
-- `.github/workflows/instruction-validation.yml` is required for instruction-only changes.
 - `.github/workflows/release.yml` publishes tagged releases.
-- Even with CI enforcement, run local validation before opening/updating a PR.
+- For instruction-only changes, run local validation before opening/updating a PR.
 
 ## Instruction Maintenance
 
