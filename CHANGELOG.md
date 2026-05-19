@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- Added Confluence Data Center integration-test infrastructure: `docker-compose.yml` (moveworkforward `atlas-run-standalone` image), `Tools/Wait-ConfluenceServer.ps1`, and `StartConfluenceDocker` / `StopConfluenceDocker` build tasks.
+- Added `.github/workflows/integration_tests.yml` with parallel Cloud and Dockerized Data Center tracks (nightly schedule + manual dispatch input).
+
 ### Changed
 
 - Migrated `Tools/setup.ps1` and `Tools/update.dependencies.ps1` to shared `AtlassianPS.Standards` bootstrap/update commands with deterministic standards-version resolution from `Tools/build.requirements.psd1`.
