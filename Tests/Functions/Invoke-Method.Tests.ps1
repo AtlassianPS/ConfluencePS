@@ -37,8 +37,10 @@ namespace ConfluencePS.Tests {
                     [hashtable]$Headers = @{}
                 )
 
+                $statusCodeEnum = [System.Enum]::ToObject([System.Net.HttpStatusCode], $StatusCode)
+
                 [PSCustomObject]@{
-                    StatusCode       = [System.Enum]::ToObject([System.Net.HttpStatusCode], $StatusCode)
+                    StatusCode       = $statusCodeEnum
                     Content          = $Json
                     RawContentStream = [System.IO.MemoryStream]::new([System.Text.Encoding]::UTF8.GetBytes($Json))
                     Headers          = $Headers
