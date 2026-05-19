@@ -15,6 +15,7 @@ Invoke-Build -Task Build, Test
 Focused validation while iterating:
 
 ```powershell
+Invoke-Pester -Path 'Tests/ConfluencePS.Tests.ps1'
 Invoke-Build -Task Test -Tag Unit
 Invoke-Build -Task Test -Tag Documentation
 Invoke-Build -Task TestIntegration -Tag Cloud
@@ -38,6 +39,14 @@ Integration runs require `WikiURI`, `WikiUser`, and `WikiPass` environment varia
 - Do not add ad-hoc `Invoke-RestMethod`/`Invoke-WebRequest` calls in cmdlet implementations.
 - Keep authentication, pagination, and error-handling patterns aligned with existing commands.
 
+## Confluence Compatibility Guardrails
+
+- Keep Cloud/Data Center behavior compatible unless the change explicitly scopes one deployment type.
+- For Cloud tenants, `Set-Info -BaseUri` must include `/wiki`.
+- For page writes, keep the request shape rooted at `body.storage.value` and `representation = 'storage'`.
+- Use `ConvertTo-StorageFormat` when converting wiki-style markup in `New-Page` / `Set-Page`.
+- Preserve page version increment behavior when updating pages.
+
 ## Coding Conventions
 
 - Prefer self-explanatory names and small functions.
@@ -49,4 +58,5 @@ Integration runs require `WikiURI`, `WikiUser`, and `WikiPass` environment varia
 
 - User-facing command docs belong in `docs/en-US/commands/*.md`.
 - Include changelog updates for user-visible behavior changes.
-- `.github/workflows/ci.yml` ignores many instruction files via `paths-ignore`; instruction updates still need local build/test validation.
+- `.github/workflows/instruction-validation.yml` is the required CI gate for instruction-only changes.
+- Run local validation before opening/updating PRs, even when CI enforcement exists.

@@ -9,8 +9,8 @@ GitHub Copilot should treat these files as canonical:
 
 1. One functionality per commit (code + tests + docs + changelog).
 2. Route command-level HTTP interactions through `Invoke-Method`.
-3. Preserve Cloud/Data Center compatibility and existing cmdlet contracts.
-4. Instruction-file edits are path-ignored in CI; run local validation anyway.
+3. Preserve Cloud/Data Center compatibility and existing cmdlet contracts (`/wiki` for Cloud `Set-Info -BaseUri`).
+4. Instruction-only changes must pass `.github/workflows/instruction-validation.yml`; run local validation anyway.
 5. Run `Invoke-Build -Task Lint` and `Invoke-Build -Task Build, Test` before finalizing.
 6. For behavior changes, update targeted tests in `Tests/` and docs in `docs/en-US/`.
 

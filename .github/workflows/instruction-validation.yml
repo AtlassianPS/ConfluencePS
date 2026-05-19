@@ -1,0 +1,46 @@
+name: Instruction Validation
+
+on:
+  pull_request:
+    branches: [master]
+    paths:
+      - "AGENTS.md"
+      - "CLAUDE.md"
+      - "GEMINI.md"
+      - ".cursor/**"
+      - ".github/copilot-instructions.md"
+      - ".github/ai-context/**"
+      - ".github/instructions/**"
+      - ".github/workflows/instruction-validation.yml"
+  push:
+    branches: [master]
+    paths:
+      - "AGENTS.md"
+      - "CLAUDE.md"
+      - "GEMINI.md"
+      - ".cursor/**"
+      - ".github/copilot-instructions.md"
+      - ".github/ai-context/**"
+      - ".github/instructions/**"
+      - ".github/workflows/instruction-validation.yml"
+  workflow_dispatch:
+
+jobs:
+  validate-instructions:
+    name: Validate Instructions
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@064643a6dfc2fbc00d332fc0b950375dbf87a291
+
+      - name: Setup dependencies
+        shell: pwsh
+        run: ./Tools/setup.ps1
+
+      - name: Lint
+        shell: pwsh
+        run: Invoke-Build -Task Lint
+
+      - name: Build and test
+        shell: pwsh
+        run: Invoke-Build -Task Build, Test
