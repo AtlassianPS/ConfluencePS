@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - `Invoke-Method` now handles JSON payloads with duplicate key casing (for example `subType` and `subtype`) without failing parsing (#216, [@codethief])
 
+### Fixed
+
+- Fixed `-Label` parsing for the Get-ConfluencePage cmdlet (#193 [@claudiospizzi])
+
 ## [2.5] 2019-03-27
 
 ### Added
