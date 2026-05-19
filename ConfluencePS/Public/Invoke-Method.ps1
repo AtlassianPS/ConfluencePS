@@ -88,6 +88,7 @@
         # load DefaultParameters for Invoke-WebRequest
         # as the global PSDefaultParameterValues is not used
         $PSDefaultParameterValues = $global:PSDefaultParameterValues
+        $convertFromJsonSupportsAsHashtable = (Get-Command -Name ConvertFrom-Json).Parameters.ContainsKey("AsHashtable")
 
         $splatParameters = Copy-CommonParameter -InputObject $PSBoundParameters -AdditionalParameter @("Uri", "Method", "InFile", "OutFile")
         $splatParameters['Headers'] = $_headers
@@ -249,7 +250,15 @@
 
                 $errorMessages = @()
                 try {
-                    $responseObject = ConvertFrom-Json -AsHashTable -InputObject $responseBody -ErrorAction Stop
+                    $convertFromJsonParameters = @{
+                        InputObject = $responseBody
+                        ErrorAction = 'Stop'
+                    }
+                    if ($convertFromJsonSupportsAsHashtable) {
+                        $convertFromJsonParameters['AsHashtable'] = $true
+                    }
+
+                    $responseObject = ConvertFrom-Json @convertFromJsonParameters
                     if ($responseObject.message) {
                         $errorMessages += [string]$responseObject.message
                     }
@@ -288,7 +297,23 @@
                 if ($webResponse.Content) {
                     try {
                         # API returned a Content: lets work with it
-                        $response = ConvertFrom-Json ([Text.Encoding]::UTF8.GetString($webResponse.RawContentStream.ToArray()))
+                        $jsonResponseBody = [Text.Encoding]::UTF8.GetString($webResponse.RawContentStream.ToArray())
+                        $convertFromJsonParameters = @{
+                            InputObject = $jsonResponseBody
+                            ErrorAction = 'Stop'
+                        }
+                        try {
+                            $response = ConvertFrom-Json @convertFromJsonParameters
+                        }
+                        catch {
+                            if (-not $convertFromJsonSupportsAsHashtable) {
+                                throw
+                            }
+
+                            # Confluence occasionally sends duplicate keys that differ only by case.
+                            $convertFromJsonParameters['AsHashtable'] = $true
+                            $response = ConvertFrom-Json @convertFromJsonParameters
+                        }
 
                         if ($null -ne $response.errors) {
                             Write-Verbose "[$($MyInvocation.MyCommand.Name)] An error response was received from; resolving"
@@ -303,7 +328,14 @@
                             }
                             # None paginated results / first page of pagination
                             $result = $response
-                            if (($response) -and ($response | Get-Member -Name results)) {
+                            $hasResults = $false
+                            if ($response -is [System.Collections.IDictionary]) {
+                                $hasResults = $response.Contains("results")
+                            }
+                            elseif (($response) -and ($response | Get-Member -Name results)) {
+                                $hasResults = $true
+                            }
+                            if ($hasResults) {
                                 $result = $response.results
                             }
                             if ($OutputType) {
