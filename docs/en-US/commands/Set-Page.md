@@ -90,7 +90,8 @@ Set-ConfluencePage -InputObject $page
 $page | Set-ConfluencePage
 ```
 
-For existing wiki page 123456, update its title and add a version mesage of "Updated page title!"
+For existing wiki page 123456, update its title and add a version message of "Updated page title!"
+When using `-InputObject`, `Version.Message` is sent when provided.
 
 ## PARAMETERS
 

@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
-- `Set-ConfluencePage` now forwards `Version.Message` when updating pages via `-InputObject` / pipeline (#207, #231, [@JoseAPortilloJSC])
+- `Set-ConfluencePage` now forwards `Version.Message` for `-InputObject` / pipeline updates when provided (#207, #231, [@JoseAPortilloJSC])
 
 ## [2.5] 2019-03-27
 

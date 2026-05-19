@@ -95,7 +95,9 @@
             "byObject" {
                 $iwParameters["Uri"] = $resourceApi -f $InputObject.ID
                 $Content.version.number = ++$InputObject.Version.Number
-                $Content.version.message = $InputObject.Version.Message
+                if ($null -ne $InputObject.Version.Message) {
+                    $Content.version.message = $InputObject.Version.Message
+                }
                 $Content.title = $InputObject.Title
                 $Content.body.storage.value = $InputObject.Body
                 # if ($InputObject.Ancestors) {
