@@ -65,8 +65,6 @@
     BEGIN {
         Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function started"
 
-        Set-TlsLevel -Tls12
-
         # Sanitize double slash `//`
         # Happens when the BaseUri is the domain name
         # [Uri]"http://google.com" vs [Uri]"http://google.com/foo"
@@ -350,8 +348,6 @@
     }
 
     END {
-        Set-TlsLevel -Revert
-
         Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function ended"
     }
 }

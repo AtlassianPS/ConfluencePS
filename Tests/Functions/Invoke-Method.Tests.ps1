@@ -41,7 +41,6 @@ namespace ConfluencePS.Tests {
                 }
             }
 
-            Mock Set-TlsLevel -ModuleName ConfluencePS {}
             Mock Test-Captcha -ModuleName ConfluencePS {}
             Mock Start-Sleep -ModuleName ConfluencePS {}
         }
