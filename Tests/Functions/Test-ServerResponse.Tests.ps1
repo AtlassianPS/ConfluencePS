@@ -10,6 +10,10 @@ BeforeDiscovery {
 InModuleScope ConfluencePS {
     Describe "Test-ServerResponse" -Tag 'Unit' {
         BeforeAll {
+            if (-not ("System.Net.Http.HttpResponseMessage" -as [Type])) {
+                Add-Type -AssemblyName System.Net.Http
+            }
+
             Mock Start-Sleep -ModuleName ConfluencePS {}
         }
 
@@ -33,7 +37,9 @@ InModuleScope ConfluencePS {
         }
 
         It "uses Retry-After from HttpResponseHeaders RetryAfter property" {
-            $response = [System.Net.Http.HttpResponseMessage]::new([System.Net.HttpStatusCode]::TooManyRequests)
+            $response = [System.Net.Http.HttpResponseMessage]::new(
+                [System.Enum]::ToObject([System.Net.HttpStatusCode], 429)
+            )
             $response.Headers.RetryAfter = [System.Net.Http.Headers.RetryConditionHeaderValue]::new([TimeSpan]::FromSeconds(90))
 
             $result = Test-ServerResponse -InputObject $response -Method Get -RetryCount 0 -MaxRetries 3

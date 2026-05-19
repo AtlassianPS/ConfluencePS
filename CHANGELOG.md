@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
-.
+- `Set-ConfluencePage` now forwards `Version.Message` for `-InputObject` / pipeline updates when provided (#207, #231, [@JoseAPortilloJSC])
 
 ## [2.5] 2019-03-27
 
@@ -195,6 +195,7 @@ No changelog available for version `1.0` of ConfluencePS. `1.0` was created in l
 [@FelixMelchert]: https://github.com/FelixMelchert
 [@jkknorr]: https://github.com/jkknorr
 [@JohnAdders]: https://github.com/JohnAdders
+[@JoseAPortilloJSC]: https://github.com/JoseAPortilloJSC
 [@kittholland]: https://github.com/kittholland
 [@LiamLeane]: https://github.com/LiamLeane
 [@lipkau]: https://github.com/lipkau

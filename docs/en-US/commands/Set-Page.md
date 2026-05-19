@@ -77,8 +77,21 @@ Set-ConfluencePage -InputObject $page
 $page | Set-ConfluencePage
 ```
 
-Two different methods to set a new parent page using a `ConfluencePS.Page`
-object.
+For existing wiki page 123456, update its title.
+
+### -------------------------- EXAMPLE 5 --------------------------
+
+```powershell
+$page = Get-ConfluencePage -PageID 123456
+$page.Title = "New Title"
+$page.Version.Message = "Updated page title!"
+
+Set-ConfluencePage -InputObject $page
+$page | Set-ConfluencePage
+```
+
+For existing wiki page 123456, update its title and add a version message of "Updated page title!"
+When using `-InputObject`, `Version.Message` is sent when provided.
 
 ## PARAMETERS
 
