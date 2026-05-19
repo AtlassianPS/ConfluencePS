@@ -66,6 +66,8 @@
             Mandatory = $true,
             ParameterSetName = "byLabel"
         )]
+        [ValidateNotNullOrEmpty()]
+        [ValidateCount(1, [Int32]::MaxValue)]
         [String[]]$Label,
 
         [Parameter(
@@ -140,8 +142,13 @@
             "byLabel" {
                 $iwParameters["Uri"] = $resourceApi -f "/search"
 
+                $labelValues = @($Label | ForEach-Object { "$_".Trim() })
+                if (($labelValues.Count -eq 0) -or @($labelValues | Where-Object { $_.Length -eq 0 }).Count) {
+                    throw "The Label parameter must contain one or more non-empty values."
+                }
+
                 $CQLparameters = @("type=page")
-                $Label | ForEach-Object { $CQLparameters += "label=$_" }
+                $labelValues | ForEach-Object { $CQLparameters += "label=$_" }
                 if ($SpaceKey) { $CQLparameters += "space=$SpaceKey" }
                 $cqlQuery = ConvertTo-URLEncoded ($CQLparameters -join (" AND "))
 

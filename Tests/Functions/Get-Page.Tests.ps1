@@ -32,10 +32,30 @@ InModuleScope ConfluencePS {
             [System.Net.WebUtility]::UrlDecode($script:lastCql) | Should -Be "type=page AND label=labelA AND label=labelB"
         }
 
+        It "builds one label clause for a single byLabel value" {
+            $null = Get-Page -ApiUri "https://example.com/wiki/rest/api" -Label @("labelA")
+
+            [System.Net.WebUtility]::UrlDecode($script:lastCql) | Should -Be "type=page AND label=labelA"
+        }
+
         It "appends space filtering to multi-label byLabel queries" {
             $null = Get-Page -ApiUri "https://example.com/wiki/rest/api" -SpaceKey "HOTH" -Label @("labelA", "labelB")
 
             [System.Net.WebUtility]::UrlDecode($script:lastCql) | Should -Be "type=page AND label=labelA AND label=labelB AND space=HOTH"
+        }
+
+        It "throws when Label is an empty array" {
+            { $null = Get-Page -ApiUri "https://example.com/wiki/rest/api" -Label @() } | Should -Throw
+
+            Should -Invoke -CommandName Invoke-Method -ModuleName ConfluencePS -Exactly -Times 0 -Scope It
+        }
+
+        It "throws when Label includes whitespace-only values" {
+            {
+                $null = Get-Page -ApiUri "https://example.com/wiki/rest/api" -Label @("labelA", " ")
+            } | Should -Throw "The Label parameter must contain one or more non-empty values."
+
+            Should -Invoke -CommandName Invoke-Method -ModuleName ConfluencePS -Exactly -Times 0 -Scope It
         }
     }
 }
