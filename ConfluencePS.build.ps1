@@ -10,14 +10,6 @@ param(
     [String]$GithubAccessToken
 )
 
-$WarningPreference = "Continue"
-if ($PSBoundParameters.ContainsKey('Verbose')) {
-    $VerbosePreference = "Continue"
-}
-if ($PSBoundParameters.ContainsKey('Debug')) {
-    $DebugPreference = "Continue"
-}
-
 try {
     $script:IsWindows = (-not (Get-Variable -Name IsWindows -ErrorAction Ignore)) -or $IsWindows
     $script:IsLinux = (Get-Variable -Name IsLinux -ErrorAction Ignore) -and $IsLinux
