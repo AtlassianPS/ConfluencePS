@@ -93,6 +93,14 @@ namespace ConfluencePS.Tests {
         }
 
         It "allows unencrypted authentication for HTTP requests" {
+            if (
+                ($PSVersionTable.PSVersion.Major -lt 6) -or
+                (-not (Get-Command Invoke-WebRequest).Parameters.ContainsKey("AllowUnencryptedAuthentication"))
+            ) {
+                Set-ItResult -Skipped -Because "AllowUnencryptedAuthentication is unavailable in this PowerShell version."
+                return
+            }
+
             $securePassword = ConvertTo-SecureString -AsPlainText -Force -String "password"
             $credential = [pscredential]::new("user", $securePassword)
 
@@ -104,6 +112,14 @@ namespace ConfluencePS.Tests {
         }
 
         It "does not set unencrypted authentication for HTTPS requests" {
+            if (
+                ($PSVersionTable.PSVersion.Major -lt 6) -or
+                (-not (Get-Command Invoke-WebRequest).Parameters.ContainsKey("AllowUnencryptedAuthentication"))
+            ) {
+                Set-ItResult -Skipped -Because "AllowUnencryptedAuthentication is unavailable in this PowerShell version."
+                return
+            }
+
             $securePassword = ConvertTo-SecureString -AsPlainText -Force -String "password"
             $credential = [pscredential]::new("user", $securePassword)
 

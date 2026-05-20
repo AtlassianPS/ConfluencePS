@@ -38,7 +38,7 @@ jobs:
 
       - name: Run Cloud-tagged integration tests
         run: |
-          Invoke-Build -Task TestIntegration -Tag 'Cloud' -PesterVerbosity Detailed
+          Invoke-Build -Task TestIntegration -Tag 'Smoke' -PesterVerbosity Detailed
         shell: pwsh
 
       - name: Upload integration test results
