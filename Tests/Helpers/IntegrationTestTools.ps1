@@ -1,6 +1,5 @@
 ﻿$script:_CachedIntegrationEnv = $null
 $script:_EnvLoaded = $false
-$script:_IntegrationHelpersPath = if ($PSScriptRoot) { $PSScriptRoot } else { Split-Path -Parent $MyInvocation.MyCommand.Path }
 
 function Read-DotEnvFile {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'Loading .env into process-scoped environment variables is intentional and idempotent')]
@@ -100,10 +99,12 @@ function Initialize-IntegrationEnvironment {
         return $script:_CachedIntegrationEnv
     }
 
-    if ([string]::IsNullOrWhiteSpace($script:_IntegrationHelpersPath)) {
-        throw "Could not resolve integration helper path."
+    $projectRoot = if (-not [string]::IsNullOrWhiteSpace($env:BHProjectPath)) {
+        $env:BHProjectPath
     }
-    $projectRoot = (Resolve-Path (Join-Path $script:_IntegrationHelpersPath '../..')).Path
+    else {
+        (Get-Location).Path
+    }
     $envFile = Join-Path $projectRoot '.env'
     if (Test-Path $envFile) {
         Read-DotEnvFile -Path $envFile
