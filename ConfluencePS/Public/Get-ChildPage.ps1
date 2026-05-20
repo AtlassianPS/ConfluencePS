@@ -59,7 +59,7 @@
         }
 
         $iwParameters = Copy-CommonParameter -InputObject $PSBoundParameters
-        $iwParameters['Uri'] = if ($Recurse.IsPresent) { "$ApiUri/content/{0}/descendant/page" -f $PageID } else { "$ApiUri/content/{0}/child/page" -f $PageID }
+        $iwParameters['Uri'] = "$ApiUri/content/{0}/child/page" -f $PageID
         $iwParameters['Method'] = 'Get'
         $iwParameters['GetParameters'] = @{
             expand = "space,version,body.storage,ancestors"
@@ -76,7 +76,31 @@
             $iwParameters[$_] = $PSCmdlet.PagingParameters.$_
         }
 
-        Invoke-Method @iwParameters
+        if (-not $Recurse.IsPresent) {
+            Invoke-Method @iwParameters
+            return
+        }
+
+        $allPages = New-Object System.Collections.Generic.List[ConfluencePS.Page]
+        $pagesToVisit = New-Object System.Collections.Generic.Queue[UInt64]
+        $pagesToVisit.Enqueue($PageID)
+
+        while ($pagesToVisit.Count -gt 0) {
+            $currentPageId = $pagesToVisit.Dequeue()
+            $iwParameters['Uri'] = "$ApiUri/content/{0}/child/page" -f $currentPageId
+            $childPages = @(Invoke-Method @iwParameters)
+
+            foreach ($childPage in $childPages) {
+                if (-not $childPage) {
+                    continue
+                }
+
+                $allPages.Add($childPage)
+                $pagesToVisit.Enqueue($childPage.ID)
+            }
+        }
+
+        $allPages
     }
 
     END {

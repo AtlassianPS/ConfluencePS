@@ -32,39 +32,6 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
         Remove-Item -Path Env:\BH*
     }
 
-    function Set-PageContent {
-        [Diagnostics.CodeAnalysis.SuppressMessageAttribute(
-            'PSUseShouldProcessForStateChangingFunctions',
-            '',
-            Scope = '*'
-        )]
-        [CmdletBinding()]
-        param (
-            [Parameter(
-                Mandatory = $true,
-                ValueFromPipeline = $true
-            )]
-            [ConfluencePS.Page]$InputObject,
-
-            $Title,
-            $Body,
-            $VersionMessage
-        )
-
-        process {
-            if ($Title) {
-                $InputObject.Title = $Title
-            }
-            if ($Body) {
-                $InputObject.Body = $Body
-            }
-            if ($VersionMessage) {
-                $InputObject.Version.Message = $VersionMessage
-            }
-            $InputObject
-        }
-    }
-
     Context 'Set-ConfluenceInfo' {
         BeforeAll {
             # Could be a long one-liner, but breaking down for readability
@@ -706,7 +673,10 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
 
             # ACT
             # change the body of all pages - all pages should have version 2
-            $script:AllChangedPages = $AllPages | Set-PageContent -Body $NewContent1 | Set-ConfluencePage -ErrorAction Stop
+            $script:AllChangedPages = $AllPages | ForEach-Object {
+                $_.Body = $NewContent1
+                $_
+            } | Set-ConfluencePage -ErrorAction Stop
             # set the body of a page to the same value as it already had - should remain on verion 2
             $script:SetPage1 = $Page1.ID | Set-ConfluencePage -Body $NewContent1 -ErrorAction Stop
             # change the body of a page by property - this page should have version 3
@@ -721,11 +691,17 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             $script:SetPage5 = Set-ConfluencePage -PageID $Page5.ID -ParentID $Page4.ID -ErrorAction Stop
             # change the title of a page
             $script:SetPage6 = $Page6.ID | Set-ConfluencePage -Title $NewTitle6 -ErrorAction Stop
-            $script:SetPage7 = $AllChangedPages | Where-Object { $_.ID -eq $Page7.ID } | Set-PageContent -Title $NewTitle7 | Set-ConfluencePage -ErrorAction Stop
+            $script:SetPage7 = $AllChangedPages | Where-Object { $_.ID -eq $Page7.ID } | ForEach-Object {
+                $_.Title = $NewTitle7
+                $_
+            } | Set-ConfluencePage -ErrorAction Stop
             # clear the body of a page
             $script:SetPage8 = Set-ConfluencePage -PageID $Page8.ID -Body "" -ErrorAction Stop
             # change the version message of a page
-            $script:SetPage9 = $AllChangedPages | Where-Object { $_.ID -eq $Page9.ID } | Set-PageContent -VersionMessage $NewVersionMessage9 | Set-ConfluencePage -ErrorAction Stop
+            $script:SetPage9 = $AllChangedPages | Where-Object { $_.ID -eq $Page9.ID } | ForEach-Object {
+                $_.Version.Message = $NewVersionMessage9
+                $_
+            } | Set-ConfluencePage -ErrorAction Stop
 
         }
 
