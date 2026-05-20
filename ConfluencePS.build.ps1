@@ -498,11 +498,8 @@ Task Test {
 
 # Synopsis: Run integration tests against live Confluence (Cloud or Data Center)
 Task TestIntegration {
-    $testToolsPath = Join-Path $env:BHProjectPath 'Tests/Helpers/TestTools.ps1'
     $integrationToolsPath = Join-Path $env:BHProjectPath 'Tests/Helpers/IntegrationTestTools.ps1'
-    Assert-True (Test-Path $testToolsPath) "Integration helper not found: $testToolsPath"
     Assert-True (Test-Path $integrationToolsPath) "Integration helper not found: $integrationToolsPath"
-    . $testToolsPath
     . $integrationToolsPath
     $null = Initialize-IntegrationEnvironment
 

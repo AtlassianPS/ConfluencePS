@@ -625,7 +625,7 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
         }
     }
 
-    Context 'Set-ConfluencePage' -Skip:((if ($env:CI_CONFLUENCE_TYPE -eq 'DataCenter') { $env:CI_CONFLUENCE_URL } else { $env:CONFLUENCE_CLOUD_URL }) -like 'http://localhost*') {
+    Context 'Set-ConfluencePage' -Skip:($env:CI_CONFLUENCE_URL -like 'http://localhost*' -or $env:CONFLUENCE_CLOUD_URL -like 'http://localhost*') {
         <# TODO:
         * Title may not be empty
         * fails when version is 1 larger than current version
