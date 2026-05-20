@@ -29,6 +29,9 @@ jobs:
        (inputs.track == 'cloud' || inputs.track == 'both'))
     runs-on: ubuntu-latest
     env:
+      CONFLUENCE_CLOUD_URL: ${{ vars.CONFLUENCE_CLOUD_URL }}
+      ATLASSIAN_CLOUD_USER: ${{ vars.ATLASSIAN_CLOUD_USER }}
+      ATLASSIAN_CLOUD_PAT: ${{ secrets.ATLASSIAN_CLOUD_PAT }}
       WikiURI: ${{ vars.CONFLUENCE_CLOUD_URL }}
       WikiUser: ${{ vars.ATLASSIAN_CLOUD_USER }}
       WikiPass: ${{ secrets.ATLASSIAN_CLOUD_PAT }}

@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - `Set-ConfluencePage` now forwards `Version.Message` for `-InputObject` / pipeline updates when provided (#207, #231, [@JoseAPortilloJSC])
 - CI smoke tests now run the dedicated `Smoke` integration tag and fail fast when required Confluence Cloud integration settings are missing.
 - `integration_tests.yml` now runs real Cloud and Data Center integration jobs (instead of a scaffold marker), matching the JiraPS track model.
+- Integration cloud checks now use `CONFLUENCE_CLOUD_URL`, `ATLASSIAN_CLOUD_USER`, and `ATLASSIAN_CLOUD_PAT` as the required workflow variables, while keeping `Wiki*` compatibility for existing tests/tasks.
 
 ### Fixed
 
