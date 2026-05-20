@@ -42,12 +42,11 @@ jobs:
           Invoke-Build -Task TestIntegration -Tag 'Cloud' -PesterVerbosity Detailed
         shell: pwsh
 
-      - name: Upload integration test results
-        if: always()
-        uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@v7
         with:
           name: Cloud-Integration-Tests
           path: Test-Integration.xml
+        if: always()
 
   datacenter_integration_tests:
     name: Data Center Integration Tests (Dockerized Confluence)
@@ -80,24 +79,22 @@ jobs:
           Invoke-Build -Task TestIntegration -Tag 'DataCenter' -PesterVerbosity Detailed
         shell: pwsh
 
-      - name: Upload integration test results
-        if: always()
-        uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@v7
         with:
           name: DataCenter-Integration-Tests
           path: Test-Integration.xml
+        if: always()
 
       - name: Capture Confluence container logs for debugging
         if: always()
         run: docker compose logs confluence > confluence-container.log
         shell: bash
 
-      - name: Upload Confluence container logs
-        if: always()
-        uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@v7
         with:
           name: DataCenter-Confluence-Container-Logs
           path: confluence-container.log
+        if: always()
 
       - name: Tear down Confluence Data Center container
         if: always()
