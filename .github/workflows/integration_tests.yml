@@ -61,6 +61,7 @@ jobs:
       CI_CONFLUENCE_URL: http://localhost:1990/confluence
       CI_CONFLUENCE_USER: admin
       CI_CONFLUENCE_PASSWORD: admin
+      CONFLUENCE_ALLOW_UNENCRYPTED_AUTH: "true"
     steps:
       - uses: actions/checkout@v6
 
