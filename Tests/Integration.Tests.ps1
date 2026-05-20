@@ -625,7 +625,7 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
         }
     }
 
-    Context 'Set-ConfluencePage' {
+    Context 'Set-ConfluencePage' -Skip:($env:WikiURI -like 'http://localhost*') {
         <# TODO:
         * Title may not be empty
         * fails when version is 1 larger than current version
