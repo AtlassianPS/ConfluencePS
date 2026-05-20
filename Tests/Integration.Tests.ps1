@@ -32,6 +32,39 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
         Remove-Item -Path Env:\BH*
     }
 
+    function Set-PageContent {
+        [Diagnostics.CodeAnalysis.SuppressMessageAttribute(
+            'PSUseShouldProcessForStateChangingFunctions',
+            '',
+            Scope = '*'
+        )]
+        [CmdletBinding()]
+        param (
+            [Parameter(
+                Mandatory = $true,
+                ValueFromPipeline = $true
+            )]
+            [ConfluencePS.Page]$InputObject,
+
+            $Title,
+            $Body,
+            $VersionMessage
+        )
+
+        process {
+            if ($Title) {
+                $InputObject.Title = $Title
+            }
+            if ($Body) {
+                $InputObject.Body = $Body
+            }
+            if ($VersionMessage) {
+                $InputObject.Version.Message = $VersionMessage
+            }
+            $InputObject
+        }
+    }
+
     Context 'Set-ConfluenceInfo' {
         BeforeAll {
             # Could be a long one-liner, but breaking down for readability
@@ -651,40 +684,6 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
         * Title may not be empty
         * fails when version is 1 larger than current version
         #>
-
-        # ARRANGE
-        function Set-PageContent {
-            [Diagnostics.CodeAnalysis.SuppressMessageAttribute(
-                'PSUseShouldProcessForStateChangingFunctions',
-                '',
-                Scope = '*'
-            )]
-            [CmdletBinding()]
-            param (
-                [Parameter(
-                    Mandatory = $true,
-                    ValueFromPipeline = $true
-                )]
-                [ConfluencePS.Page]$InputObject,
-
-                $Title,
-                $Body,
-                $VersionMessage
-            )
-
-            process {
-                if ($Title) {
-                    $InputObject.Title = $Title
-                }
-                if ($Body) {
-                    $InputObject.Body = $Body
-                }
-                if ($VersionMessage) {
-                    $InputObject.Version.Message = $VersionMessage
-                }
-                $InputObject
-            }
-        }
 
         BeforeAll {
             $script:SpaceKey = "PESTER$SpaceID"
