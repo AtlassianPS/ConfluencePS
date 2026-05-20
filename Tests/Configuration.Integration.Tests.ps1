@@ -4,16 +4,16 @@ param()
 
 BeforeDiscovery {
     . "$PSScriptRoot/Helpers/TestTools.ps1"
-    . "$PSScriptRoot/Helpers/IntegrationTestTools.ps1"
     $script:moduleToTest = Initialize-TestEnvironment -CallerPath $PSScriptRoot
-    $script:DeploymentType = Get-ConfluenceIntegrationDeploymentType
-    $script:RequiredEnvironmentVariables = Get-ConfluenceIntegrationRequiredVariables -DeploymentType $script:DeploymentType
 }
 
 Describe "Integration Test Configuration" -Tag 'Integration', 'Smoke', 'Cloud', 'DataCenter' {
     BeforeAll {
         Import-Module $env:BHManifestToTest -Force
+        . "$PSScriptRoot/Helpers/IntegrationTestTools.ps1"
 
+        $script:DeploymentType = Get-ConfluenceIntegrationDeploymentType
+        $script:RequiredEnvironmentVariables = Get-ConfluenceIntegrationRequiredVariables -DeploymentType $script:DeploymentType
         $script:IntegrationEnvironment = Initialize-IntegrationEnvironment
         $script:IsIntegrationEnvironmentConfigured = $null -ne $script:IntegrationEnvironment
 
@@ -29,8 +29,8 @@ Describe "Integration Test Configuration" -Tag 'Integration', 'Smoke', 'Cloud', 
     }
 
     Context "Required Environment Variables" {
-        foreach ($requiredVariable in $script:RequiredEnvironmentVariables) {
-            It "$requiredVariable is configured" {
+        It "all required variables are configured for the selected track" {
+            foreach ($requiredVariable in $script:RequiredEnvironmentVariables) {
                 $value = [Environment]::GetEnvironmentVariable($requiredVariable)
                 $value | Should -Not -BeNullOrEmpty -Because "$requiredVariable must be configured for the $script:DeploymentType integration track"
             }
