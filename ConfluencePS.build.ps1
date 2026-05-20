@@ -449,15 +449,18 @@ Task SetVersion {
 Task Test {
     Remove-Module $env:BHProjectName -ErrorAction SilentlyContinue
 
-    # Skip the Integration test file at discovery time so normal Test runs do
+    # Skip integration test files at discovery time so normal Test runs do
     # not execute its setup blocks or require integration credentials.
-    $integrationPath = Join-Path $env:BHBuildOutput 'Tests/Integration.Tests.ps1'
+    $integrationPaths = @(
+        (Join-Path $env:BHBuildOutput 'Tests/Integration.Tests.ps1')
+        (Join-Path $env:BHBuildOutput 'Tests/Configuration.Integration.Tests.ps1')
+    )
 
     $pesterConfigHash = @{
         Run        = @{
             PassThru    = $true
             Path        = "$env:BHBuildOutput/Tests"
-            ExcludePath = @($integrationPath)
+            ExcludePath = $integrationPaths
         }
         TestResult = @{
             Enabled      = $true
@@ -508,15 +511,23 @@ For local development: set these environment variables before running integratio
 "@
     }
 
-    $integrationScript = "$env:BHBuildOutput/Tests/Integration.Tests.ps1"
-    if (-not (Test-Path $integrationScript)) {
-        $integrationScript = "$env:BHProjectPath/Tests/Integration.Tests.ps1"
+    $integrationScripts = @(
+        (Join-Path $env:BHBuildOutput 'Tests/Configuration.Integration.Tests.ps1')
+        (Join-Path $env:BHBuildOutput 'Tests/Integration.Tests.ps1')
+    ) | Where-Object { Test-Path $_ }
+
+    if (-not $integrationScripts) {
+        $integrationScripts = @(
+            (Join-Path $env:BHProjectPath 'Tests/Configuration.Integration.Tests.ps1')
+            (Join-Path $env:BHProjectPath 'Tests/Integration.Tests.ps1')
+        ) | Where-Object { Test-Path $_ }
     }
+    Assert-True ($integrationScripts.Count -gt 0) 'No integration test files were found.'
 
     $pesterConfigHash = @{
         Run        = @{
             PassThru = $true
-            Path     = $integrationScript
+            Path     = $integrationScripts
         }
         TestResult = @{
             Enabled      = $true
