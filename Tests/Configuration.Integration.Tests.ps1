@@ -1,4 +1,4 @@
-﻿#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "5.7"; MaximumVersion = "5.999" }
+﻿﻿#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "5.7"; MaximumVersion = "5.999" }
 
 [Diagnostics.CodeAnalysis.SuppressMessageAttribute(
     "PSAvoidUsingConvertToSecureStringWithPlainText",
@@ -18,21 +18,21 @@ $script:RequiredEnvironmentVariables = @(
     'WikiPass'
 )
 
-function Test-IntegrationEnvironmentConfigured {
-    [CmdletBinding()]
-    [OutputType([bool])]
-    param()
-
-    $missing = $script:RequiredEnvironmentVariables | Where-Object {
-        [string]::IsNullOrWhiteSpace([Environment]::GetEnvironmentVariable($_))
-    }
-
-    return $missing.Count -eq 0
-}
-
 Describe "Integration Test Configuration" -Tag 'Integration', 'Smoke', 'Cloud' {
     BeforeAll {
         Import-Module $env:BHManifestToTest -Force
+
+        $script:IsIntegrationEnvironmentConfigured = @(
+            $script:RequiredEnvironmentVariables | Where-Object {
+                [string]::IsNullOrWhiteSpace([Environment]::GetEnvironmentVariable($_))
+            }
+        ).Count -eq 0
+
+        if ($script:IsIntegrationEnvironmentConfigured) {
+            $secureToken = ConvertTo-SecureString -String $env:WikiPass -AsPlainText -Force
+            $script:Credential = [System.Management.Automation.PSCredential]::new($env:WikiUser, $secureToken)
+            $script:ApiUri = '{0}/rest/api' -f $env:WikiURI.TrimEnd('/')
+        }
     }
 
     AfterAll {
@@ -57,24 +57,13 @@ Describe "Integration Test Configuration" -Tag 'Integration', 'Smoke', 'Cloud' {
     }
 
     Context "Cloud Connectivity" {
-        BeforeAll {
-            if (-not (Test-IntegrationEnvironmentConfigured)) {
-                return
-            }
-
-            $secureToken = ConvertTo-SecureString -String $env:WikiPass -AsPlainText -Force
-            $credential = [System.Management.Automation.PSCredential]::new($env:WikiUser, $secureToken)
-
-            Set-ConfluenceInfo -BaseURI $env:WikiURI -Credential $credential
-        }
-
         It "can authenticate and query Confluence Cloud" {
-            if (-not (Test-IntegrationEnvironmentConfigured)) {
+            if (-not $script:IsIntegrationEnvironmentConfigured) {
                 Set-ItResult -Skipped -Because "Environment not configured"
                 return
             }
 
-            { Get-ConfluenceSpace -ErrorAction Stop | Select-Object -First 1 | Out-Null } | Should -Not -Throw
+            { Get-ConfluenceSpace -ApiUri $script:ApiUri -Credential $script:Credential -ErrorAction Stop | Select-Object -First 1 | Out-Null } | Should -Not -Throw
         }
     }
 }

@@ -92,6 +92,28 @@ namespace ConfluencePS.Tests {
             } -Exactly -Times 1 -Scope It
         }
 
+        It "allows unencrypted authentication for HTTP requests" {
+            $securePassword = ConvertTo-SecureString -AsPlainText -Force -String "password"
+            $credential = [pscredential]::new("user", $securePassword)
+
+            $null = Invoke-Method -Uri "http://example.com/wiki/rest/api/content" -Credential $credential -ErrorAction Stop
+
+            Should -Invoke -CommandName Invoke-WebRequest -ModuleName ConfluencePS -ParameterFilter {
+                $AllowUnencryptedAuthentication
+            } -Exactly -Times 1 -Scope It
+        }
+
+        It "does not set unencrypted authentication for HTTPS requests" {
+            $securePassword = ConvertTo-SecureString -AsPlainText -Force -String "password"
+            $credential = [pscredential]::new("user", $securePassword)
+
+            $null = Invoke-Method -Uri "https://example.com/wiki/rest/api/content" -Credential $credential -ErrorAction Stop
+
+            Should -Invoke -CommandName Invoke-WebRequest -ModuleName ConfluencePS -ParameterFilter {
+                -not $AllowUnencryptedAuthentication
+            } -Exactly -Times 1 -Scope It
+        }
+
         It "handles success payloads with duplicate JSON key casing" {
             if (-not (Get-Command ConvertFrom-Json).Parameters.ContainsKey("AsHashtable")) {
                 Set-ItResult -Skipped -Because "ConvertFrom-Json -AsHashtable is unavailable in this PowerShell version."

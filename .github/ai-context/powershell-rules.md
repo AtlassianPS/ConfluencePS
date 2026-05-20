@@ -28,6 +28,8 @@ Invoke-Build -Task Test -Tag Unit
 Invoke-Build -Task Test -Tag Documentation
 Invoke-Build -Task TestIntegration -Tag Cloud
 Invoke-Build -Task TestIntegration -Tag DataCenter
+Invoke-Build -Task StartConfluenceDocker
+Invoke-Build -Task StopConfluenceDocker
 
 # Required before commit/PR finalization
 Invoke-Build -Task Build, Test
@@ -83,4 +85,5 @@ Integration runs require `WikiURI`, `WikiUser`, and `WikiPass` environment varia
 - User-facing command docs belong in `docs/en-US/commands/*.md`.
 - Include changelog updates for user-visible behavior changes.
 - `.github/workflows/ci.yml` path filters can skip instruction-only changes.
+- `.github/workflows/integration_tests.yml` is the full-suite Cloud/Data Center integration workflow (nightly + manual).
 - Run local validation before opening/updating PRs when changing instruction files.

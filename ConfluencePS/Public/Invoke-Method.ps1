@@ -99,6 +99,13 @@
         if ($TimeoutSec -gt 0) {
             $splatParameters["TimeoutSec"] = $TimeoutSec
         }
+        if (
+            ($PSVersionTable.PSVersion.Major -ge 6) -and
+            ($Uri.Scheme -eq "http") -and
+            ($Credential -or $PersonalAccessToken)
+        ) {
+            $splatParameters["AllowUnencryptedAuthentication"] = $true
+        }
 
         #add 'start' query parameter if Paging with Skip is being used
         if (($PSCmdlet.PagingParameters) -and ($PSCmdlet.PagingParameters.Skip)) {

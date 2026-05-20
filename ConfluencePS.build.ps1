@@ -554,6 +554,42 @@ For local development: set these environment variables before running integratio
     Assert-True ($testResults.FailedCount -eq 0) "$($testResults.FailedCount) integration test(s) failed."
 }
 
+# Synopsis: Start the local Confluence Data Center Docker container for integration tests
+Task StartConfluenceDocker {
+    if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
+        throw "Docker is required for the Data Center integration track. See https://docs.docker.com/get-docker/."
+    }
+
+    $composeFile = Join-Path $env:BHProjectPath 'docker-compose.yml'
+    Assert-True (Test-Path $composeFile) "docker-compose.yml not found at $composeFile"
+    Write-Build Gray "Starting Confluence Data Center container via $composeFile..."
+    Invoke-BuildExec { docker compose -f $composeFile up -d }
+
+    if (-not $env:WikiURI) {
+        $env:WikiURI = 'http://localhost:1990/confluence'
+    }
+    if (-not $env:WikiUser) {
+        $env:WikiUser = 'admin'
+    }
+    if (-not $env:WikiPass) {
+        $env:WikiPass = 'admin'
+    }
+
+    & (Join-Path $env:BHProjectPath 'Tools/Wait-ConfluenceServer.ps1')
+}
+
+# Synopsis: Stop the local Confluence Data Center Docker container
+Task StopConfluenceDocker {
+    if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
+        throw "Docker is required for the Data Center integration track. See https://docs.docker.com/get-docker/."
+    }
+
+    $composeFile = Join-Path $env:BHProjectPath 'docker-compose.yml'
+    Assert-True (Test-Path $composeFile) "docker-compose.yml not found at $composeFile"
+    Write-Build Gray "Stopping Confluence Data Center container ($composeFile)..."
+    Invoke-BuildExec { docker compose -f $composeFile down -v }
+}
+
 Task Publish SetVersion, SignCode, Package, {
     Assert-True (-not [String]::IsNullOrEmpty($PSGalleryAPIKey)) "No key for the PSGallery"
 
