@@ -1,4 +1,4 @@
-function Set-Label {
+﻿function Set-Label {
     [CmdletBinding(
         ConfirmImpact = 'Low',
         SupportsShouldProcess = $true

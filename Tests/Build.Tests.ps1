@@ -1,52 +1,39 @@
-#requires -modules BuildHelpers
-#requires -modules Configuration
-#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "4.10" }
+﻿#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "5.7"; MaximumVersion = "5.999" }
 
 Describe "Validation of build environment" -Tag Unit {
-
     BeforeAll {
-        Remove-Item -Path Env:\BH*
-        $projectRoot = (Resolve-Path "$PSScriptRoot/..").Path
-        if ($projectRoot -like "*Release") {
-            $projectRoot = (Resolve-Path "$projectRoot/..").Path
+        . "$PSScriptRoot/Helpers/TestTools.ps1"
+
+        $script:moduleToTest = Initialize-TestEnvironment
+        $script:moduleRoot = Resolve-ProjectRoot
+    }
+
+    Context "Compiled module" {
+        It "has a UTF-8 BOM on the compiled .psm1" {
+            $modulePath = Split-Path $moduleToTest -Parent
+            $psm1Path = Join-Path $modulePath "$((Get-Item $modulePath).Name).psm1"
+            $bytes = [System.IO.File]::ReadAllBytes($psm1Path)
+            $bytes.Count | Should -BeGreaterThan 3
+            $bytes[0] | Should -Be 0xEF
+            $bytes[1] | Should -Be 0xBB
+            $bytes[2] | Should -Be 0xBF
         }
-
-        Import-Module BuildHelpers
-        Set-BuildEnvironment -BuildOutput '$ProjectPath/Release' -Path $projectRoot -ErrorAction SilentlyContinue
-
-        $env:BHManifestToTest = $env:BHPSModuleManifest
-        $script:isBuild = $PSScriptRoot -like "$env:BHBuildOutput*"
-        if ($script:isBuild) {
-            $Pattern = [regex]::Escape($env:BHProjectPath)
-
-            $env:BHBuildModuleManifest = $env:BHPSModuleManifest -replace $Pattern, $env:BHBuildOutput
-            $env:BHManifestToTest = $env:BHBuildModuleManifest
-        }
-
-        Import-Module "$env:BHProjectPath/Tools/BuildTools.psm1"
-
-        Remove-Module $env:BHProjectName -ErrorAction SilentlyContinue
-        # Import-Module $env:BHManifestToTest
-    }
-    AfterAll {
-        Remove-Module $env:BHProjectName -ErrorAction SilentlyContinue
-        Remove-Module BuildHelpers -ErrorAction SilentlyContinue
-        Remove-Item -Path Env:\BH*
-    }
-
-    $changelogFile = if ($script:isBuild) {
-        "$env:BHBuildOutput/$env:BHProjectName/CHANGELOG.md"
-    }
-    else {
-        "$env:BHProjectPath/CHANGELOG.md"
     }
 
     Context "CHANGELOG" {
+        BeforeAll {
+            $changelogFile = "$moduleRoot/CHANGELOG.md"
 
-        foreach ($line in (Get-Content $changelogFile)) {
-            if ($line -match "(?:##|\<h2.*?\>)\s*\[(?<Version>(\d+\.?){1,2})\]") {
-                $changelogVersion = $matches.Version
-                break
+            if (-not (Test-Path $changelogFile)) {
+                throw "CHANGELOG.md file not found in the module root directory."
+            }
+
+            $script:changelogVersion = $null
+            foreach ($line in (Get-Content $changelogFile)) {
+                if ($line -match "(?:##|\<h2.*?\>)\s*\[?(?<Version>\d+(?:\.\d+){1,2})\]?(\-(?<Prerelease>(?:alpha|beta|rc)\d*))?") {
+                    $changelogVersion = $matches.Version
+                    break
+                }
             }
         }
 
@@ -55,12 +42,12 @@ Describe "Validation of build environment" -Tag Unit {
         }
 
         It "has a valid version in the changelog" {
-            $changelogVersion            | Should -Not -BeNullOrEmpty
+            $changelogVersion             | Should -Not -BeNullOrEmpty
             [Version]($changelogVersion)  | Should -BeOfType [Version]
         }
 
         It "has a version changelog that matches the manifest version" {
-            (Metadata\Import-Metadata -Path $env:BHManifestToTest).ModuleVersion | Should -BeLike "$changelogVersion*"
+            Metadata\Get-Metadata -Path $moduleToTest -PropertyName ModuleVersion | Should -BeLike "$changelogVersion*"
         }
     }
 }

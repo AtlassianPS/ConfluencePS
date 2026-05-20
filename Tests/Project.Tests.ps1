@@ -1,111 +1,70 @@
-#requires -modules BuildHelpers
-#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "4.10" }
+﻿#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "5.7"; MaximumVersion = "5.999" }
+
+BeforeDiscovery {
+    . "$PSScriptRoot/Helpers/TestTools.ps1"
+
+    $script:moduleToTest = Initialize-TestEnvironment
+    $script:moduleRoot = Resolve-ProjectRoot
+
+    Import-Module $moduleToTest -Force -ErrorAction Stop
+}
 
 Describe "General project validation" -Tag Unit {
+    BeforeDiscovery {
+        $script:module = Get-Module 'ConfluencePS'
 
-    BeforeAll {
-        Remove-Item -Path Env:\BH*
-        $projectRoot = (Resolve-Path "$PSScriptRoot/..").Path
-        if ($projectRoot -like "*Release") {
-            $projectRoot = (Resolve-Path "$projectRoot/..").Path
-        }
+        $script:publicFunctionFiles = (Get-ChildItem "$moduleRoot/ConfluencePS/Public/*.ps1").BaseName
+        $script:privateFunctionFiles = (Get-ChildItem "$moduleRoot/ConfluencePS/Private/*.ps1").BaseName
+        $script:expectedPublicExportNames = @($publicFunctionFiles | ForEach-Object { $_ -replace "\-", "-$($module.Prefix)" })
 
-        Import-Module BuildHelpers
-        Set-BuildEnvironment -BuildOutput '$ProjectPath/Release' -Path $projectRoot -ErrorAction SilentlyContinue
-
-        $env:BHManifestToTest = $env:BHPSModuleManifest
-        $script:isBuild = $PSScriptRoot -like "$env:BHBuildOutput*"
-        if ($script:isBuild) {
-            $Pattern = [regex]::Escape($env:BHProjectPath)
-
-            $env:BHBuildModuleManifest = $env:BHPSModuleManifest -replace $Pattern, $env:BHBuildOutput
-            $env:BHManifestToTest = $env:BHBuildModuleManifest
-        }
-
-        Import-Module "$env:BHProjectPath/Tools/BuildTools.psm1"
-
-        Remove-Module $env:BHProjectName -ErrorAction SilentlyContinue
-        Import-Module $env:BHManifestToTest
-    }
-    AfterAll {
-        Remove-Module $env:BHProjectName -ErrorAction SilentlyContinue
-        Remove-Module BuildHelpers -ErrorAction SilentlyContinue
-        Remove-Item -Path Env:\BH*
+        # Source manifests use wildcard exports. Trust the module's actual resolved
+        # exports from import-time instead of static manifest metadata.
+        $script:exportedFunctionNames = @($script:module.ExportedFunctions.Keys)
     }
 
-    $module = Get-Module $env:BHProjectName
-    $testFiles = Get-ChildItem $PSScriptRoot -Include "*.Tests.ps1" -Recurse
+    Describe "Public functions" {
+        Context "Function <_>" -ForEach $publicFunctionFiles {
+            BeforeAll {
+                $script:functionName = $_
+                $script:expectedExportName = $functionName -replace "\-", "-$($module.Prefix)"
+            }
 
-    Context "Public functions" {
-        $publicFunctions = (Get-ChildItem "$env:BHModulePath/Public/*.ps1").BaseName
-
-        foreach ($function in $publicFunctions) {
-
-            # TODO
-            # It "has a test file for $function" {
-            #     $expectedTestFile = "$function.Unit.Tests.ps1"
-
-            #     $testFiles.Name | Should -Contain $expectedTestFile
-            # }
-
-            It "exports $function" {
-                $expectedFunctionName = $function -replace "\-", "-$($module.Prefix)"
-
-                $module.ExportedCommands.keys | Should -Contain $expectedFunctionName
+            It "is exported" {
+                $exportedFunctionNames | Should -Contain $expectedExportName
             }
         }
     }
 
-    Context "Private functions" {
-        $privateFunctions = (Get-ChildItem "$env:BHModulePath/Private/*.ps1").BaseName
+    Describe "Private functions" {
+        It "has private functions" {
+            $privateFunctionFiles.Count | Should -BeGreaterThan 0
+        }
 
-        foreach ($function in $privateFunctions) {
+        Context "Function <_>" -ForEach $privateFunctionFiles {
+            BeforeAll {
+                $script:functionName = $_
+            }
 
-            # TODO
-            # It "has a test file for $function" {
-            #     $expectedTestFile = "$function.Unit.Tests.ps1"
+            It "is loaded in the module" {
+                $commandInModule = $module.Invoke({
+                        param($name)
+                        Get-Command -Name $name -CommandType Function -ErrorAction SilentlyContinue |
+                            Where-Object { $_.ModuleName -eq 'ConfluencePS' }
+                    }, $functionName)
 
-            #     $testFiles.Name | Should -Contain $expectedTestFile
-            # }
+                $commandInModule | Should -Not -BeNullOrEmpty -Because "private function '$functionName' should be loaded"
+            }
 
-            It "does not export $function" {
-                $expectedFunctionName = $function -replace "\-", "-$($module.Prefix)"
-
-                $module.ExportedCommands.keys | Should -Not -Contain $expectedFunctionName
+            It "is not exported" {
+                $exportedFunctionNames | Should -Not -Contain $functionName
             }
         }
     }
 
-    <#
-    Context "Classes" {
-
-        foreach ($class in ([AtlassianPS.ServerData].Assembly.GetTypes() | Where-Object IsClass)) {
-            It "has a test file for $class" {
-                $expectedTestFile = "$class.Unit.Tests.ps1"
-                $testFiles.Name | Should -Contain $expectedTestFile
-            }
-        }
-    }
-
-    Context "Enumeration" {
-
-        foreach ($enum in ([AtlassianPS.ServerData].Assembly.GetTypes() | Where-Object IsEnum)) {
-            It "has a test file for $enum" {
-                $expectedTestFile = "$enum.Unit.Tests.ps1"
-                $testFiles.Name | Should -Contain $expectedTestFile
-            }
-        }
-    }
-#>
-
-    Context "Project stucture" {
-        $publicFunctions = (Get-Module -Name $env:BHProjectName).ExportedCommands.Keys
-
-        It "has all the public functions as a file in '$env:BHProjectName/Public'" {
-            foreach ($function in $publicFunctions) {
-                $function = $function.Replace((Get-Module -Name $env:BHProjectName).Prefix, '')
-
-                (Get-ChildItem "$env:BHModulePath/Public").BaseName | Should -Contain $function
+    Describe "Project stucture" {
+        It "only exports functions from the Public folder" {
+            foreach ($exportedFunctionName in $exportedFunctionNames) {
+                $expectedPublicExportNames | Should -Contain $exportedFunctionName -Because "exported function '$exportedFunctionName' should have a corresponding file in ConfluencePS/Public/"
             }
         }
     }

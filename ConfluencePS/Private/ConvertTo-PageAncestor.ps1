@@ -1,4 +1,4 @@
-function ConvertTo-PageAncestor {
+﻿function ConvertTo-PageAncestor {
     <#
     .SYNOPSIS
     Extracted the conversion to private function in order to have a single place to

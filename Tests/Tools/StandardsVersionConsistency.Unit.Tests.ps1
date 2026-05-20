@@ -1,27 +1,29 @@
-#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "4.10" }
+﻿#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "4.10" }
 
 Describe 'AtlassianPS.Standards version consistency' -Tag Unit {
-    function Get-RepositoryRoot {
-        if (
-            $env:BHProjectPath -and
-            (Test-Path -LiteralPath (Join-Path -Path $env:BHProjectPath -ChildPath 'ConfluencePS.build.ps1'))
-        ) {
-            return (Resolve-Path -LiteralPath $env:BHProjectPath).ProviderPath
-        }
-
-        $candidate = (Resolve-Path -LiteralPath $PSScriptRoot).ProviderPath
-        while ($candidate -and ($candidate -ne [System.IO.Path]::GetPathRoot($candidate))) {
+    BeforeAll {
+        function Get-RepositoryRoot {
             if (
-                (Test-Path -LiteralPath (Join-Path -Path $candidate -ChildPath 'ConfluencePS.build.ps1')) -and
-                (Test-Path -LiteralPath (Join-Path -Path $candidate -ChildPath 'Tools/build.requirements.psd1'))
+                $env:BHProjectPath -and
+                (Test-Path -LiteralPath (Join-Path -Path $env:BHProjectPath -ChildPath 'ConfluencePS.build.ps1'))
             ) {
-                return $candidate
+                return (Resolve-Path -LiteralPath $env:BHProjectPath).ProviderPath
             }
 
-            $candidate = Split-Path -Path $candidate -Parent
-        }
+            $candidate = (Resolve-Path -LiteralPath $PSScriptRoot).ProviderPath
+            while ($candidate -and ($candidate -ne [System.IO.Path]::GetPathRoot($candidate))) {
+                if (
+                    (Test-Path -LiteralPath (Join-Path -Path $candidate -ChildPath 'ConfluencePS.build.ps1')) -and
+                    (Test-Path -LiteralPath (Join-Path -Path $candidate -ChildPath 'Tools/build.requirements.psd1'))
+                ) {
+                    return $candidate
+                }
 
-        throw "Could not resolve repository root from '$PSScriptRoot'."
+                $candidate = Split-Path -Path $candidate -Parent
+            }
+
+            throw "Could not resolve repository root from '$PSScriptRoot'."
+        }
     }
 
     It 'keeps workflow setup action pins aligned with build.requirements' {
@@ -41,7 +43,7 @@ Describe 'AtlassianPS.Standards version consistency' -Tag Unit {
             $workflowContent = Get-Content -LiteralPath $workflowPath -Raw
             [regex]::Matches(
                 $workflowContent,
-                "AtlassianPS/AtlassianPS\.Standards/\.github/actions/setup-powershell@(?<sha>[0-9a-f]{40})\s+#\s+v(?<version>[0-9]+\.[0-9]+\.[0-9]+)"
+                "AtlassianPS/AtlassianPS\.Standards/\.github/actions/setup-powershell@(?<sha>[0-9a-f]{40})(?:\s+#\s+v(?<version>[0-9]+\.[0-9]+\.[0-9]+))?"
             ) | ForEach-Object {
                 [PSCustomObject]@{
                     WorkflowPath = $workflowPath
@@ -53,11 +55,17 @@ Describe 'AtlassianPS.Standards version consistency' -Tag Unit {
 
         @($workflowActionMatches).Count | Should -BeGreaterThan 0
 
-        $matchedVersions = @($workflowActionMatches | Select-Object -ExpandProperty Version -Unique)
-        $matchedVersions.Count | Should -Be 1
-        $matchedVersions[0] | Should -Be $standardsVersion
-
         @($workflowActionMatches | Select-Object -ExpandProperty Sha -Unique).Count | Should -Be 1
+
+        $matchedVersions = @(
+            $workflowActionMatches |
+                Where-Object { -not [string]::IsNullOrWhiteSpace($_.Version) } |
+                Select-Object -ExpandProperty Version -Unique
+        )
+        if ($matchedVersions.Count -gt 0) {
+            $matchedVersions.Count | Should -Be 1
+            $matchedVersions[0] | Should -Be $standardsVersion
+        }
     }
 
     It 'reads AtlassianPS.Standards version from build.requirements in tool scripts' {

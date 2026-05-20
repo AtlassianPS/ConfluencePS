@@ -1,4 +1,4 @@
-function Get-Page {
+﻿function Get-Page {
     [CmdletBinding(
         SupportsPaging = $true,
         DefaultParameterSetName = "byId"
@@ -66,6 +66,7 @@ function Get-Page {
             Mandatory = $true,
             ParameterSetName = "byLabel"
         )]
+        [ValidateNotNullOrEmpty()]
         [String[]]$Label,
 
         [Parameter(
@@ -140,7 +141,8 @@ function Get-Page {
             "byLabel" {
                 $iwParameters["Uri"] = $resourceApi -f "/search"
 
-                $CQLparameters = @("type=page", "label=$Label")
+                $CQLparameters = @("type=page")
+                $Label | ForEach-Object { $CQLparameters += "label=$_" }
                 if ($SpaceKey) { $CQLparameters += "space=$SpaceKey" }
                 $cqlQuery = ConvertTo-URLEncoded ($CQLparameters -join (" AND "))
 

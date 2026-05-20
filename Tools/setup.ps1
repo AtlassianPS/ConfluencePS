@@ -1,4 +1,4 @@
-#requires -Module PowerShellGet
+﻿#requires -Module PowerShellGet
 
 [CmdletBinding()]
 param(
@@ -41,7 +41,6 @@ if ($isWindowsPowerShell) {
     if ($requiresNuGetBootstrap) {
         Install-PackageProvider -Name 'NuGet' -MinimumVersion '2.8.5.201' -Scope CurrentUser -Force -ErrorAction Stop
     }
-
 }
 
 $psGalleryRepository = Get-PSRepository -Name 'PSGallery' -ErrorAction SilentlyContinue

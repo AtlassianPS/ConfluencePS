@@ -1,4 +1,4 @@
-function ConvertFrom-HTMLEncoded {
+﻿function ConvertFrom-HTMLEncoded {
     <#
     .SYNOPSIS
     Decode a HTML encoded string

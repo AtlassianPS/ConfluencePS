@@ -1,0 +1,26 @@
+name: Integration Tests
+
+on:
+  schedule:
+    - cron: "0 5 * * *"
+  workflow_dispatch:
+    inputs:
+      track:
+        description: "Which integration track to run"
+        required: false
+        default: both
+        type: choice
+        options:
+          - cloud
+          - datacenter
+          - both
+
+jobs:
+  scaffold:
+    name: Integration Scaffold
+    runs-on: ubuntu-latest
+    steps:
+      - name: Scaffold marker
+        run: |
+          echo "Integration workflow scaffold on master."
+          echo "Full Cloud/DataCenter implementation lives on feature branches until merged."

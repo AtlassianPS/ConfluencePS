@@ -1,4 +1,4 @@
-function Invoke-Method {
+﻿function Invoke-Method {
     [CmdletBinding(SupportsPaging = $true)]
     [OutputType(
         [PSObject],
@@ -32,6 +32,9 @@ function Invoke-Method {
         [String]$InFile,
 
         [String]$OutFile,
+
+        [ValidateRange(0, [Int32]::MaxValue)]
+        [Int32]$TimeoutSec = 100,
 
         [ValidateSet(
             [ConfluencePS.Page],
@@ -85,6 +88,7 @@ function Invoke-Method {
         # load DefaultParameters for Invoke-WebRequest
         # as the global PSDefaultParameterValues is not used
         $PSDefaultParameterValues = $global:PSDefaultParameterValues
+        $convertFromJsonSupportsAsHashtable = (Get-Command -Name ConvertFrom-Json).Parameters.ContainsKey("AsHashtable")
 
         $splatParameters = Copy-CommonParameter -InputObject $PSBoundParameters -AdditionalParameter @("Uri", "Method", "InFile", "OutFile")
         $splatParameters['Headers'] = $_headers
@@ -92,6 +96,9 @@ function Invoke-Method {
         $splatParameters['UseBasicParsing'] = $true
         $splatParameters['ErrorAction'] = 'Stop'
         $splatParameters['Verbose'] = $false     # Overwrites verbose output
+        if ($TimeoutSec -gt 0) {
+            $splatParameters["TimeoutSec"] = $TimeoutSec
+        }
 
         #add 'start' query parameter if Paging with Skip is being used
         if (($PSCmdlet.PagingParameters) -and ($PSCmdlet.PagingParameters.Skip)) {
@@ -126,23 +133,94 @@ function Invoke-Method {
         # Invoke the API
         Write-Verbose "[$($MyInvocation.MyCommand.Name)] Invoking method $Method to URI $URi"
         Write-Verbose "[$($MyInvocation.MyCommand.Name)] Invoke-WebRequest with: $(([PSCustomObject]$splatParameters) | Out-String)"
-        try {
-            $webResponse = Invoke-WebRequest @splatParameters
-        }
-        catch {
-            Write-Verbose "[$($MyInvocation.MyCommand.Name)] Failed to get an answer from the server"
-            $webResponse = $_
-            if ($webResponse.ErrorDetails) {
-                # In PowerShellCore (v6+), the response body is available as string
-                $responseBody = $webResponse.ErrorDetails.Message
+        $webException = $null
+        $retryCount = 0
+        $maxRetries = 3
+        $getResponseBody = {
+            param($Response)
+
+            if (-not $Response) {
+                return $null
             }
-            else {
-                $webResponse = $webResponse.Exception.Response
+
+            if ($Response.Content) {
+                if ($Response.Content -is [string]) {
+                    return [string]$Response.Content
+                }
+
+                if ($Response.Content -is [System.Net.Http.HttpContent]) {
+                    try {
+                        return $Response.Content.ReadAsStringAsync().GetAwaiter().GetResult()
+                    }
+                    catch {
+                    }
+                }
+
+                if ($Response.Content.PSObject.Methods.Name -contains "ReadAsStringAsync") {
+                    try {
+                        return $Response.Content.ReadAsStringAsync().GetAwaiter().GetResult()
+                    }
+                    catch {
+                    }
+                }
             }
+
+            if (($Response | Get-Member -Name "RawContentStream") -and $Response.RawContentStream) {
+                try {
+                    return [Text.Encoding]::UTF8.GetString($Response.RawContentStream.ToArray())
+                }
+                catch {
+                }
+            }
+
+            if ($Response | Get-Member -Name "GetResponseStream") {
+                try {
+                    $readStream = New-Object -TypeName System.IO.StreamReader -ArgumentList ($Response.GetResponseStream())
+                    $body = $readStream.ReadToEnd()
+                    $readStream.Close()
+                    return $body
+                }
+                catch {
+                }
+            }
+
+            return $null
         }
 
-        # Test response Headers if Confluence requires a CAPTCHA
-        Test-Captcha -InputObject $webResponse
+        do {
+            $responseBody = $null
+
+            try {
+                $webResponse = Invoke-WebRequest @splatParameters
+                $webException = $null
+            }
+            catch {
+                Write-Verbose "[$($MyInvocation.MyCommand.Name)] Failed to get an answer from the server"
+                $webException = $_
+                if ($webException.ErrorDetails) {
+                    # In PowerShellCore (v6+), the response body is available as string
+                    $responseBody = $webException.ErrorDetails.Message
+                }
+                $webResponse = $webException.Exception.Response
+
+                if (-not $webResponse) {
+                    throw $webException
+                }
+
+                if (-not $responseBody) {
+                    $responseBody = & $getResponseBody $webResponse
+                }
+            }
+
+            # Test response Headers if Confluence requires a CAPTCHA
+            Test-Captcha -InputObject $webResponse
+
+            $shouldRetry = Test-ServerResponse -InputObject $webResponse -Method $Method -RetryCount $retryCount -MaxRetries $maxRetries
+            if ($shouldRetry) {
+                $retryCount++
+            }
+        }
+        while ($shouldRetry)
 
         Write-Debug "[$($MyInvocation.MyCommand.Name)] Executed WebRequest. Access `$webResponse to see details"
 
@@ -156,11 +234,8 @@ function Invoke-Method {
             if ($statusCode.value__ -ge 400) {
                 Write-Warning "Confluence returned HTTP error $($statusCode.value__) - $($statusCode)"
 
-                if ((!($responseBody)) -and ($webResponse | Get-Member -Name "GetResponseStream")) {
-                    # Retrieve body of HTTP response - this contains more useful information about exactly why the error occurred
-                    $readStream = New-Object -TypeName System.IO.StreamReader -ArgumentList ($webResponse.GetResponseStream())
-                    $responseBody = $readStream.ReadToEnd()
-                    $readStream.Close()
+                if (-not $responseBody) {
+                    $responseBody = & $getResponseBody $webResponse
                 }
 
                 Write-Verbose "[$($MyInvocation.MyCommand.Name)] Retrieved body of HTTP response for more information about the error (`$responseBody)"
@@ -173,27 +248,72 @@ function Invoke-Method {
                     $responseBody
                 )
 
+                $errorMessages = @()
                 try {
-                    $responseObject = ConvertFrom-Json -InputObject $responseBody -ErrorAction Stop
-                    if ($responseObject.message) {
-                        $errorItem.ErrorDetails = $responseObject.message
+                    $convertFromJsonParameters = @{
+                        InputObject = $responseBody
+                        ErrorAction = 'Stop'
                     }
-                    else {
-                        $errorItem.ErrorDetails = "An unknown error ocurred."
+                    if ($convertFromJsonSupportsAsHashtable) {
+                        $convertFromJsonParameters['AsHashtable'] = $true
                     }
 
+                    $responseObject = ConvertFrom-Json @convertFromJsonParameters
+                    if ($responseObject.message) {
+                        $errorMessages += [string]$responseObject.message
+                    }
+                    if ($responseObject.errorMessages) {
+                        $errorMessages += @($responseObject.errorMessages | ForEach-Object { [string]$_ })
+                    }
+                    if ($responseObject.errors) {
+                        if ($responseObject.errors -is [hashtable]) {
+                            $errorMessages += @($responseObject.errors.Values | ForEach-Object { [string]$_ })
+                        }
+                        elseif (($responseObject.errors -is [System.Management.Automation.PSObject]) -and ($responseObject.errors -isnot [string])) {
+                            $errorMessages += @($responseObject.errors.PSObject.Properties | ForEach-Object { [string]$_.Value })
+                        }
+                        else {
+                            $errorMessages += @($responseObject.errors | ForEach-Object { [string]$_ })
+                        }
+                    }
                 }
                 catch {
-                    $errorItem.ErrorDetails = "An unknown error ocurred."
+                    # Fall back to raw response body below.
                 }
 
+                if ($errorMessages.Count -eq 0) {
+                    if ($responseBody) {
+                        $errorMessages = @([string]$responseBody)
+                    }
+                    else {
+                        $errorMessages = @("An unknown error occurred.")
+                    }
+                }
+
+                $errorItem.ErrorDetails = [System.Management.Automation.ErrorDetails]::new(($errorMessages -join [Environment]::NewLine))
                 $Caller.WriteError($errorItem)
             }
             else {
                 if ($webResponse.Content) {
                     try {
                         # API returned a Content: lets work with it
-                        $response = ConvertFrom-Json ([Text.Encoding]::UTF8.GetString($webResponse.RawContentStream.ToArray()))
+                        $jsonResponseBody = [Text.Encoding]::UTF8.GetString($webResponse.RawContentStream.ToArray())
+                        $convertFromJsonParameters = @{
+                            InputObject = $jsonResponseBody
+                            ErrorAction = 'Stop'
+                        }
+                        try {
+                            $response = ConvertFrom-Json @convertFromJsonParameters
+                        }
+                        catch {
+                            if (-not $convertFromJsonSupportsAsHashtable) {
+                                throw
+                            }
+
+                            # Confluence occasionally sends duplicate keys that differ only by case.
+                            $convertFromJsonParameters['AsHashtable'] = $true
+                            $response = ConvertFrom-Json @convertFromJsonParameters
+                        }
 
                         if ($null -ne $response.errors) {
                             Write-Verbose "[$($MyInvocation.MyCommand.Name)] An error response was received from; resolving"
@@ -208,7 +328,14 @@ function Invoke-Method {
                             }
                             # None paginated results / first page of pagination
                             $result = $response
-                            if (($response) -and ($response | Get-Member -Name results)) {
+                            $hasResults = $false
+                            if ($response -is [System.Collections.IDictionary]) {
+                                $hasResults = $response.Contains("results")
+                            }
+                            elseif (($response) -and ($response | Get-Member -Name results)) {
+                                $hasResults = $true
+                            }
+                            if ($hasResults) {
                                 $result = $response.results
                             }
                             if ($OutputType) {
@@ -229,7 +356,7 @@ function Invoke-Method {
                                 $script:PSDefaultParameterValues.Remove("$($MyInvocation.MyCommand.Name):GetParameters")
                                 $script:PSDefaultParameterValues.Remove("$($MyInvocation.MyCommand.Name):IncludeTotalCount")
 
-                                $parameters = Copy-CommonParameter -InputObject $PSBoundParameters -AdditionalParameter @("Method", "Headers", "OutputType")
+                                $parameters = Copy-CommonParameter -InputObject $PSBoundParameters -AdditionalParameter @("Method", "Headers", "OutputType", "TimeoutSec")
                                 $parameters['Uri'] = "{0}{1}" -f $response._links.base, $response._links.next
 
                                 Write-Verbose "NEXT PAGE: $($parameters["Uri"])"

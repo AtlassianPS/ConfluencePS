@@ -1,4 +1,4 @@
-function Remove-InvalidFileCharacter {
+﻿function Remove-InvalidFileCharacter {
     <#
     .SYNOPSIS
         Replace any invalid filename characters from a string with underscores

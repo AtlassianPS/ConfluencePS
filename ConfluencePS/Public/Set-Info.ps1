@@ -1,4 +1,4 @@
-function Set-Info {
+﻿function Set-Info {
     [CmdletBinding()]
     [System.Diagnostics.CodeAnalysis.SuppressMessage('PSUseShouldProcessForStateChangingFunctions', '')]
     param (

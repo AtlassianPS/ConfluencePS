@@ -1,4 +1,4 @@
-function ConvertTo-Version {
+﻿function ConvertTo-Version {
     <#
     .SYNOPSIS
     Extracted the conversion to private function in order to have a single place to

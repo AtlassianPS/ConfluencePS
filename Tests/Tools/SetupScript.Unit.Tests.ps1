@@ -1,48 +1,50 @@
-#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "4.10" }
+﻿#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "4.10" }
 
 Describe 'Tools/setup.ps1' -Tag Unit {
-    function Get-RepositoryRoot {
-        if (
-            $env:BHProjectPath -and
-            (Test-Path -LiteralPath (Join-Path -Path $env:BHProjectPath -ChildPath 'ConfluencePS.build.ps1'))
-        ) {
-            return (Resolve-Path -LiteralPath $env:BHProjectPath).ProviderPath
-        }
-
-        $candidate = (Resolve-Path -LiteralPath $PSScriptRoot).ProviderPath
-        while ($candidate -and ($candidate -ne [System.IO.Path]::GetPathRoot($candidate))) {
+    BeforeAll {
+        function Get-RepositoryRoot {
             if (
-                (Test-Path -LiteralPath (Join-Path -Path $candidate -ChildPath 'ConfluencePS.build.ps1')) -and
-                (Test-Path -LiteralPath (Join-Path -Path $candidate -ChildPath 'Tools/setup.ps1'))
+                $env:BHProjectPath -and
+                (Test-Path -LiteralPath (Join-Path -Path $env:BHProjectPath -ChildPath 'ConfluencePS.build.ps1'))
             ) {
-                return $candidate
+                return (Resolve-Path -LiteralPath $env:BHProjectPath).ProviderPath
             }
 
-            $candidate = Split-Path -Path $candidate -Parent
+            $candidate = (Resolve-Path -LiteralPath $PSScriptRoot).ProviderPath
+            while ($candidate -and ($candidate -ne [System.IO.Path]::GetPathRoot($candidate))) {
+                if (
+                    (Test-Path -LiteralPath (Join-Path -Path $candidate -ChildPath 'ConfluencePS.build.ps1')) -and
+                    (Test-Path -LiteralPath (Join-Path -Path $candidate -ChildPath 'Tools/setup.ps1'))
+                ) {
+                    return $candidate
+                }
+
+                $candidate = Split-Path -Path $candidate -Parent
+            }
+
+            throw "Could not resolve repository root from '$PSScriptRoot'."
         }
 
-        throw "Could not resolve repository root from '$PSScriptRoot'."
-    }
+        function Assert-ThrowsMessage {
+            param(
+                [Parameter(Mandatory)]
+                [ScriptBlock]$ScriptBlock,
 
-    function Assert-ThrowsMessage {
-        param(
-            [Parameter(Mandatory)]
-            [ScriptBlock]$ScriptBlock,
+                [Parameter(Mandatory)]
+                [String]$MessagePattern
+            )
 
-            [Parameter(Mandatory)]
-            [String]$MessagePattern
-        )
+            $capturedError = $null
+            try {
+                & $ScriptBlock
+            }
+            catch {
+                $capturedError = $_
+            }
 
-        $capturedError = $null
-        try {
-            & $ScriptBlock
+            $capturedError | Should -Not -BeNullOrEmpty
+            $capturedError.Exception.Message | Should -Match $MessagePattern
         }
-        catch {
-            $capturedError = $_
-        }
-
-        $capturedError | Should -Not -BeNullOrEmpty
-        $capturedError.Exception.Message | Should -Match $MessagePattern
     }
 
     It 'delegates dependency install and analyzer settings sync to shared standards commands' {

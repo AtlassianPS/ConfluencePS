@@ -11,6 +11,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Migrated `Tools/setup.ps1` and `Tools/update.dependencies.ps1` to shared `AtlassianPS.Standards` bootstrap/update commands with deterministic standards-version resolution from `Tools/build.requirements.psd1`.
 - Replaced legacy PSDepend hashtable dependencies with pinned array requirements and aligned workflow setup action usage to the pinned standards action release.
+- `Set-ConfluencePage` now forwards `Version.Message` for `-InputObject` / pipeline updates when provided (#207, #231, [@JoseAPortilloJSC])
+
+### Fixed
+
+- `Invoke-Method` now handles JSON payloads with duplicate key casing (for example `subType` and `subtype`) without failing parsing (#216, [@codethief])
+
+### Fixed
+
+- Fixed `-Label` parsing for the Get-ConfluencePage cmdlet (#193 [@claudiospizzi])
 
 ## [2.5] 2019-03-27
 
@@ -196,6 +205,7 @@ No changelog available for version `1.0` of ConfluencePS. `1.0` was created in l
 [@FelixMelchert]: https://github.com/FelixMelchert
 [@jkknorr]: https://github.com/jkknorr
 [@JohnAdders]: https://github.com/JohnAdders
+[@JoseAPortilloJSC]: https://github.com/JoseAPortilloJSC
 [@kittholland]: https://github.com/kittholland
 [@LiamLeane]: https://github.com/LiamLeane
 [@lipkau]: https://github.com/lipkau
