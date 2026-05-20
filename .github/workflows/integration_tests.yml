@@ -29,6 +29,7 @@ jobs:
        (inputs.track == 'cloud' || inputs.track == 'both'))
     runs-on: ubuntu-latest
     env:
+      CI_CONFLUENCE_TYPE: Cloud
       CONFLUENCE_CLOUD_URL: ${{ vars.CONFLUENCE_CLOUD_URL }}
       ATLASSIAN_CLOUD_USER: ${{ vars.ATLASSIAN_CLOUD_USER }}
       ATLASSIAN_CLOUD_PAT: ${{ secrets.ATLASSIAN_CLOUD_PAT }}
@@ -56,9 +57,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 75
     env:
-      CONFLUENCE_CLOUD_URL: http://localhost:1990/confluence
-      ATLASSIAN_CLOUD_USER: admin
-      ATLASSIAN_CLOUD_PAT: admin
+      CI_CONFLUENCE_TYPE: DataCenter
+      CI_CONFLUENCE_URL: http://localhost:1990/confluence
+      CI_CONFLUENCE_USER: admin
+      CI_CONFLUENCE_PASSWORD: admin
     steps:
       - uses: actions/checkout@v6
 

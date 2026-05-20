@@ -60,7 +60,7 @@ Broader validation:
 Invoke-Build -Task Test -Tag Unit
 Invoke-Build -Task Test -Tag Documentation
 
-# Integration tests (requires CONFLUENCE_CLOUD_URL/ATLASSIAN_CLOUD_USER/ATLASSIAN_CLOUD_PAT)
+# Integration tests (copy .env.example to .env first)
 Invoke-Build -Task TestIntegration -Tag Cloud
 Invoke-Build -Task TestIntegration -Tag DataCenter
 

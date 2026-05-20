@@ -19,7 +19,12 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
     BeforeAll {
         $script:SpaceID = Get-Random
         . "$PSScriptRoot/Helpers/TestTools.ps1"
+        . "$PSScriptRoot/Helpers/IntegrationTestTools.ps1"
         $script:moduleToTest = Initialize-TestEnvironment -CallerPath $PSScriptRoot
+        $script:integrationEnvironment = Initialize-IntegrationEnvironment
+        if (-not $script:integrationEnvironment) {
+            throw "Integration environment not configured. Copy .env.example to .env and configure required variables."
+        }
         Import-Module $env:BHManifestToTest
     }
     AfterAll {
@@ -30,10 +35,10 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
     Context 'Set-ConfluenceInfo' {
         BeforeAll {
             # Could be a long one-liner, but breaking down for readability
-            $pass = ConvertTo-SecureString -AsPlainText -Force -String $env:ATLASSIAN_CLOUD_PAT
-            $cred = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList ($env:ATLASSIAN_CLOUD_USER, $pass)
+            $pass = ConvertTo-SecureString -AsPlainText -Force -String $script:integrationEnvironment.Password
+            $cred = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList ($script:integrationEnvironment.Username, $pass)
 
-            Set-ConfluenceInfo -BaseURI $env:CONFLUENCE_CLOUD_URL -Credential $cred
+            Set-ConfluenceInfo -BaseURI $script:integrationEnvironment.CloudUrl -Credential $cred
         }
 
         # ASSERT
@@ -620,7 +625,7 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
         }
     }
 
-    Context 'Set-ConfluencePage' -Skip:($env:CONFLUENCE_CLOUD_URL -like 'http://localhost*') {
+    Context 'Set-ConfluencePage' -Skip:((if ($env:CI_CONFLUENCE_TYPE -eq 'DataCenter') { $env:CI_CONFLUENCE_URL } else { $env:CONFLUENCE_CLOUD_URL }) -like 'http://localhost*') {
         <# TODO:
         * Title may not be empty
         * fails when version is 1 larger than current version

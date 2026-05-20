@@ -4,33 +4,23 @@ param()
 
 BeforeDiscovery {
     . "$PSScriptRoot/Helpers/TestTools.ps1"
+    . "$PSScriptRoot/Helpers/IntegrationTestTools.ps1"
     $script:moduleToTest = Initialize-TestEnvironment -CallerPath $PSScriptRoot
+    $script:DeploymentType = Get-ConfluenceIntegrationDeploymentType
+    $script:RequiredEnvironmentVariables = Get-ConfluenceIntegrationRequiredVariables -DeploymentType $script:DeploymentType
 }
 
-$script:RequiredEnvironmentVariables = @(
-    'CONFLUENCE_CLOUD_URL'
-    'ATLASSIAN_CLOUD_USER'
-    'ATLASSIAN_CLOUD_PAT'
-)
-
-Describe "Integration Test Configuration" -Tag 'Integration', 'Smoke', 'Cloud' {
+Describe "Integration Test Configuration" -Tag 'Integration', 'Smoke', 'Cloud', 'DataCenter' {
     BeforeAll {
         Import-Module $env:BHManifestToTest -Force
 
-        $script:CloudUrl = [Environment]::GetEnvironmentVariable('CONFLUENCE_CLOUD_URL')
-        $script:CloudUser = [Environment]::GetEnvironmentVariable('ATLASSIAN_CLOUD_USER')
-        $script:CloudPat = [Environment]::GetEnvironmentVariable('ATLASSIAN_CLOUD_PAT')
-
-        $script:IsIntegrationEnvironmentConfigured = @(
-            $script:RequiredEnvironmentVariables | Where-Object {
-                [string]::IsNullOrWhiteSpace([Environment]::GetEnvironmentVariable($_))
-            }
-        ).Count -eq 0
+        $script:IntegrationEnvironment = Initialize-IntegrationEnvironment
+        $script:IsIntegrationEnvironmentConfigured = $null -ne $script:IntegrationEnvironment
 
         if ($script:IsIntegrationEnvironmentConfigured) {
-            $secureToken = ConvertTo-SecureString -String $script:CloudPat -AsPlainText -Force
-            $script:Credential = [System.Management.Automation.PSCredential]::new($script:CloudUser, $secureToken)
-            $script:ApiUri = '{0}/rest/api' -f $script:CloudUrl.TrimEnd('/')
+            $secureToken = ConvertTo-SecureString -String $script:IntegrationEnvironment.Password -AsPlainText -Force
+            $script:Credential = [System.Management.Automation.PSCredential]::new($script:IntegrationEnvironment.Username, $secureToken)
+            $script:ApiUri = '{0}/rest/api' -f $script:IntegrationEnvironment.CloudUrl.TrimEnd('/')
         }
     }
 
@@ -39,24 +29,16 @@ Describe "Integration Test Configuration" -Tag 'Integration', 'Smoke', 'Cloud' {
     }
 
     Context "Required Environment Variables" {
-        It "CONFLUENCE_CLOUD_URL is configured" {
-            $value = [Environment]::GetEnvironmentVariable('CONFLUENCE_CLOUD_URL')
-            $value | Should -Not -BeNullOrEmpty -Because "CONFLUENCE_CLOUD_URL variable must be configured in repository settings"
-        }
-
-        It "ATLASSIAN_CLOUD_USER is configured" {
-            $value = [Environment]::GetEnvironmentVariable('ATLASSIAN_CLOUD_USER')
-            $value | Should -Not -BeNullOrEmpty -Because "ATLASSIAN_CLOUD_USER variable must be configured in repository settings"
-        }
-
-        It "ATLASSIAN_CLOUD_PAT is configured" {
-            $value = [Environment]::GetEnvironmentVariable('ATLASSIAN_CLOUD_PAT')
-            $value | Should -Not -BeNullOrEmpty -Because "ATLASSIAN_CLOUD_PAT secret must be configured in repository settings"
+        foreach ($requiredVariable in $script:RequiredEnvironmentVariables) {
+            It "$requiredVariable is configured" {
+                $value = [Environment]::GetEnvironmentVariable($requiredVariable)
+                $value | Should -Not -BeNullOrEmpty -Because "$requiredVariable must be configured for the $script:DeploymentType integration track"
+            }
         }
     }
 
-    Context "Cloud Connectivity" {
-        It "can authenticate and query Confluence Cloud" {
+    Context "Integration Connectivity" {
+        It "can authenticate and query Confluence" {
             if (-not $script:IsIntegrationEnvironmentConfigured) {
                 Set-ItResult -Skipped -Because "Environment not configured"
                 return
