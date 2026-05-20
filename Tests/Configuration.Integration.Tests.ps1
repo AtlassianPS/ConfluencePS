@@ -8,14 +8,29 @@ BeforeDiscovery {
 }
 
 $script:RequiredEnvironmentVariables = @(
-    'WikiURI'
-    'WikiUser'
-    'WikiPass'
+    'CONFLUENCE_CLOUD_URL'
+    'ATLASSIAN_CLOUD_USER'
+    'ATLASSIAN_CLOUD_PAT'
 )
 
 Describe "Integration Test Configuration" -Tag 'Integration', 'Smoke', 'Cloud' {
     BeforeAll {
         Import-Module $env:BHManifestToTest -Force
+
+        $script:CloudUrl = [Environment]::GetEnvironmentVariable('CONFLUENCE_CLOUD_URL')
+        if ([string]::IsNullOrWhiteSpace($script:CloudUrl)) {
+            $script:CloudUrl = [Environment]::GetEnvironmentVariable('WikiURI')
+        }
+
+        $script:CloudUser = [Environment]::GetEnvironmentVariable('ATLASSIAN_CLOUD_USER')
+        if ([string]::IsNullOrWhiteSpace($script:CloudUser)) {
+            $script:CloudUser = [Environment]::GetEnvironmentVariable('WikiUser')
+        }
+
+        $script:CloudPat = [Environment]::GetEnvironmentVariable('ATLASSIAN_CLOUD_PAT')
+        if ([string]::IsNullOrWhiteSpace($script:CloudPat)) {
+            $script:CloudPat = [Environment]::GetEnvironmentVariable('WikiPass')
+        }
 
         $script:IsIntegrationEnvironmentConfigured = @(
             $script:RequiredEnvironmentVariables | Where-Object {
@@ -24,9 +39,9 @@ Describe "Integration Test Configuration" -Tag 'Integration', 'Smoke', 'Cloud' {
         ).Count -eq 0
 
         if ($script:IsIntegrationEnvironmentConfigured) {
-            $secureToken = ConvertTo-SecureString -String $env:WikiPass -AsPlainText -Force
-            $script:Credential = [System.Management.Automation.PSCredential]::new($env:WikiUser, $secureToken)
-            $script:ApiUri = '{0}/rest/api' -f $env:WikiURI.TrimEnd('/')
+            $secureToken = ConvertTo-SecureString -String $script:CloudPat -AsPlainText -Force
+            $script:Credential = [System.Management.Automation.PSCredential]::new($script:CloudUser, $secureToken)
+            $script:ApiUri = '{0}/rest/api' -f $script:CloudUrl.TrimEnd('/')
         }
     }
 
@@ -35,19 +50,19 @@ Describe "Integration Test Configuration" -Tag 'Integration', 'Smoke', 'Cloud' {
     }
 
     Context "Required Environment Variables" {
-        It "WikiURI is configured" {
-            $value = [Environment]::GetEnvironmentVariable('WikiURI')
-            $value | Should -Not -BeNullOrEmpty -Because "WikiURI secret must be configured in repository settings"
+        It "CONFLUENCE_CLOUD_URL is configured" {
+            $value = [Environment]::GetEnvironmentVariable('CONFLUENCE_CLOUD_URL')
+            $value | Should -Not -BeNullOrEmpty -Because "CONFLUENCE_CLOUD_URL variable must be configured in repository settings"
         }
 
-        It "WikiUser is configured" {
-            $value = [Environment]::GetEnvironmentVariable('WikiUser')
-            $value | Should -Not -BeNullOrEmpty -Because "WikiUser secret must be configured in repository settings"
+        It "ATLASSIAN_CLOUD_USER is configured" {
+            $value = [Environment]::GetEnvironmentVariable('ATLASSIAN_CLOUD_USER')
+            $value | Should -Not -BeNullOrEmpty -Because "ATLASSIAN_CLOUD_USER variable must be configured in repository settings"
         }
 
-        It "WikiPass is configured" {
-            $value = [Environment]::GetEnvironmentVariable('WikiPass')
-            $value | Should -Not -BeNullOrEmpty -Because "WikiPass secret must be configured in repository settings"
+        It "ATLASSIAN_CLOUD_PAT is configured" {
+            $value = [Environment]::GetEnvironmentVariable('ATLASSIAN_CLOUD_PAT')
+            $value | Should -Not -BeNullOrEmpty -Because "ATLASSIAN_CLOUD_PAT secret must be configured in repository settings"
         }
     }
 

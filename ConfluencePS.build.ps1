@@ -498,6 +498,16 @@ Task Test {
 
 # Synopsis: Run integration tests against live Confluence (Cloud or Data Center)
 Task TestIntegration {
+    if (-not $env:WikiURI -and $env:CONFLUENCE_CLOUD_URL) {
+        $env:WikiURI = $env:CONFLUENCE_CLOUD_URL
+    }
+    if (-not $env:WikiUser -and $env:ATLASSIAN_CLOUD_USER) {
+        $env:WikiUser = $env:ATLASSIAN_CLOUD_USER
+    }
+    if (-not $env:WikiPass -and $env:ATLASSIAN_CLOUD_PAT) {
+        $env:WikiPass = $env:ATLASSIAN_CLOUD_PAT
+    }
+
     $requiredEnvVars = @('WikiURI', 'WikiUser', 'WikiPass')
     $missing = $requiredEnvVars | Where-Object {
         [string]::IsNullOrEmpty([Environment]::GetEnvironmentVariable($_))
