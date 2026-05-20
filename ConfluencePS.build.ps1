@@ -44,17 +44,8 @@ task SetUp InstallDependencies, Build
 
 # Synopsis: Install all module used for the development of this module
 task InstallDependencies {
-    Install-PSDepend
-    Import-Module PSDepend -Force
-    $parameterPSDepend = @{
-        Path        = "$PSScriptRoot/Tools/build.requirements.psd1"
-        Install     = $true
-        Import      = $false
-        Force       = $true
-        ErrorAction = "Stop"
-    }
-    $null = Invoke-PSDepend @parameterPSDepend
-    Import-Module BuildHelpers -Force
+    & "$PSScriptRoot/Tools/setup.ps1"
+    Import-Module BuildHelpers -Force -ErrorAction Stop
 }
 
 # Synopsis: Get the next version for the build
