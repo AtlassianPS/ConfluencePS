@@ -1,7 +1,6 @@
-﻿. "$PSScriptRoot/TestTools.ps1"
-
-$script:_CachedIntegrationEnv = $null
+﻿$script:_CachedIntegrationEnv = $null
 $script:_EnvLoaded = $false
+$script:_IntegrationHelpersPath = Split-Path -Parent $PSCommandPath
 
 function Read-DotEnvFile {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'Loading .env into process-scoped environment variables is intentional and idempotent')]
@@ -101,7 +100,7 @@ function Initialize-IntegrationEnvironment {
         return $script:_CachedIntegrationEnv
     }
 
-    $projectRoot = Resolve-ProjectRoot
+    $projectRoot = (Resolve-Path (Join-Path $script:_IntegrationHelpersPath '../..')).Path
     $envFile = Join-Path $projectRoot '.env'
     if (Test-Path $envFile) {
         Read-DotEnvFile -Path $envFile
