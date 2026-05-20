@@ -669,6 +669,7 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             $script:NewContent1 = "<h1>Bulk Change</h1><p>Changed all bodies in this space at once</p>"
             $script:NewContent2 = "<h1>Set Body by property</h1>"
             $script:NewContent3 = "<p>Updated</p>"
+            $script:NewContent9 = "<h1>Bulk Change</h1><p>Changed all bodies in this space at once</p><p>Updated body for version message test</p>"
             $script:RawContent3 = "Updated"
 
             # ACT
@@ -699,6 +700,7 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             $script:SetPage8 = Set-ConfluencePage -PageID $Page8.ID -Body "" -ErrorAction Stop
             # change the version message of a page
             $script:SetPage9 = $AllChangedPages | Where-Object { $_.ID -eq $Page9.ID } | ForEach-Object {
+                $_.Body = $NewContent9
                 $_.Version.Message = $NewVersionMessage9
                 $_
             } | Set-ConfluencePage -ErrorAction Stop
@@ -798,7 +800,7 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             $SetPage6.Body | Should -BeExactly $NewContent1
             $SetPage7.Body | Should -BeExactly $NewContent1
             $SetPage8.Body | Should -BeExactly ""
-            $SetPage9.Body | Should -BeExactly $NewContent1
+            $SetPage9.Body | Should -BeExactly $NewContent9
         }
         It 'version has the specified value' {
             $SetPage1.Version.Number | Should -BeExactly 2
