@@ -185,9 +185,9 @@ phases:
 
   - powershell: 'Invoke-Build -Task Test -Tag "Integration" -ExcludeTag ""'
     env:
-        WikiURI: WikiURI
-        WikiUser: WikiUser
-        WikiPass: WikiPass
+        CONFLUENCE_CLOUD_URL: CONFLUENCE_CLOUD_URL
+        ATLASSIAN_CLOUD_USER: ATLASSIAN_CLOUD_USER
+        ATLASSIAN_CLOUD_PAT: ATLASSIAN_CLOUD_PAT
     displayName: Test
 
   - task: PublishTestResults@2

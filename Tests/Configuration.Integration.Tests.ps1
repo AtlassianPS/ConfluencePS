@@ -18,19 +18,8 @@ Describe "Integration Test Configuration" -Tag 'Integration', 'Smoke', 'Cloud' {
         Import-Module $env:BHManifestToTest -Force
 
         $script:CloudUrl = [Environment]::GetEnvironmentVariable('CONFLUENCE_CLOUD_URL')
-        if ([string]::IsNullOrWhiteSpace($script:CloudUrl)) {
-            $script:CloudUrl = [Environment]::GetEnvironmentVariable('WikiURI')
-        }
-
         $script:CloudUser = [Environment]::GetEnvironmentVariable('ATLASSIAN_CLOUD_USER')
-        if ([string]::IsNullOrWhiteSpace($script:CloudUser)) {
-            $script:CloudUser = [Environment]::GetEnvironmentVariable('WikiUser')
-        }
-
         $script:CloudPat = [Environment]::GetEnvironmentVariable('ATLASSIAN_CLOUD_PAT')
-        if ([string]::IsNullOrWhiteSpace($script:CloudPat)) {
-            $script:CloudPat = [Environment]::GetEnvironmentVariable('WikiPass')
-        }
 
         $script:IsIntegrationEnvironmentConfigured = @(
             $script:RequiredEnvironmentVariables | Where-Object {
