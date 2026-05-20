@@ -498,16 +498,25 @@ Task Test {
 
 # Synopsis: Run integration tests against live Confluence (Cloud or Data Center)
 Task TestIntegration {
-    $requiredEnvVars = @('CONFLUENCE_CLOUD_URL', 'ATLASSIAN_CLOUD_USER', 'ATLASSIAN_CLOUD_PAT')
+    $testToolsPath = Join-Path $env:BHProjectPath 'Tests/Helpers/TestTools.ps1'
+    $integrationToolsPath = Join-Path $env:BHProjectPath 'Tests/Helpers/IntegrationTestTools.ps1'
+    Assert-True (Test-Path $testToolsPath) "Integration helper not found: $testToolsPath"
+    Assert-True (Test-Path $integrationToolsPath) "Integration helper not found: $integrationToolsPath"
+    . $testToolsPath
+    . $integrationToolsPath
+    $null = Initialize-IntegrationEnvironment
+
+    $deploymentType = Get-ConfluenceIntegrationDeploymentType
+    $requiredEnvVars = Get-ConfluenceIntegrationRequiredVariables -DeploymentType $deploymentType
     $missing = $requiredEnvVars | Where-Object {
         [string]::IsNullOrEmpty([Environment]::GetEnvironmentVariable($_))
     }
     if ($missing) {
         throw @"
-Required environment variables for integration tests are not set: $($missing -join ', ')
+Required environment variables for the $deploymentType integration test track are not set: $($missing -join ', ')
 
-For CI: configure these as repository secrets under Settings -> Secrets and variables -> Actions.
-For local development: set these environment variables before running integration tests.
+For CI: configure these as repository secrets (Cloud) or workflow env vars (DataCenter) under Settings -> Secrets and variables -> Actions.
+For local development: copy .env.example to .env and configure the required variables.
 "@
     }
 
@@ -565,14 +574,17 @@ Task StartConfluenceDocker {
     Write-Build Gray "Starting Confluence Data Center container via $composeFile..."
     Invoke-BuildExec { docker compose -f $composeFile up -d }
 
-    if (-not $env:CONFLUENCE_CLOUD_URL) {
-        $env:CONFLUENCE_CLOUD_URL = 'http://localhost:1990/confluence'
+    if (-not $env:CI_CONFLUENCE_TYPE) {
+        $env:CI_CONFLUENCE_TYPE = 'DataCenter'
     }
-    if (-not $env:ATLASSIAN_CLOUD_USER) {
-        $env:ATLASSIAN_CLOUD_USER = 'admin'
+    if (-not $env:CI_CONFLUENCE_URL) {
+        $env:CI_CONFLUENCE_URL = 'http://localhost:1990/confluence'
     }
-    if (-not $env:ATLASSIAN_CLOUD_PAT) {
-        $env:ATLASSIAN_CLOUD_PAT = 'admin'
+    if (-not $env:CI_CONFLUENCE_USER) {
+        $env:CI_CONFLUENCE_USER = 'admin'
+    }
+    if (-not $env:CI_CONFLUENCE_PASSWORD) {
+        $env:CI_CONFLUENCE_PASSWORD = 'admin'
     }
 
     & (Join-Path $env:BHProjectPath 'Tools/Wait-ConfluenceServer.ps1')

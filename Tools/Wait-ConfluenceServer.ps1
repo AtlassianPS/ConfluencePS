@@ -12,13 +12,13 @@
     that runs before any module command execution.
 
 .PARAMETER Url
-    Base URL for Confluence. Defaults to $env:CONFLUENCE_CLOUD_URL or http://localhost:1990/confluence.
+    Base URL for Confluence. Defaults to $env:CI_CONFLUENCE_URL or http://localhost:1990/confluence.
 
 .PARAMETER User
-    Username for readiness probes. Defaults to $env:ATLASSIAN_CLOUD_USER or 'admin'.
+    Username for readiness probes. Defaults to $env:CI_CONFLUENCE_USER or 'admin'.
 
 .PARAMETER Password
-    Password for readiness probes. Defaults to $env:ATLASSIAN_CLOUD_PAT or 'admin'.
+    Password for readiness probes. Defaults to $env:CI_CONFLUENCE_PASSWORD or 'admin'.
 
 .PARAMETER TimeoutSeconds
     Maximum wait duration before failing. Defaults to 1500 seconds.
@@ -33,13 +33,13 @@
 [CmdletBinding()]
 param(
     [Parameter()]
-    [string]$Url = $(if ($env:CONFLUENCE_CLOUD_URL) { $env:CONFLUENCE_CLOUD_URL } else { 'http://localhost:1990/confluence' }),
+    [string]$Url = $(if ($env:CI_CONFLUENCE_URL) { $env:CI_CONFLUENCE_URL } else { 'http://localhost:1990/confluence' }),
 
     [Parameter()]
-    [string]$User = $(if ($env:ATLASSIAN_CLOUD_USER) { $env:ATLASSIAN_CLOUD_USER } else { 'admin' }),
+    [string]$User = $(if ($env:CI_CONFLUENCE_USER) { $env:CI_CONFLUENCE_USER } else { 'admin' }),
 
     [Parameter()]
-    [string]$Password = $(if ($env:ATLASSIAN_CLOUD_PAT) { $env:ATLASSIAN_CLOUD_PAT } else { 'admin' }),
+    [string]$Password = $(if ($env:CI_CONFLUENCE_PASSWORD) { $env:CI_CONFLUENCE_PASSWORD } else { 'admin' }),
 
     [Parameter()]
     [int]$TimeoutSeconds = 1500,
@@ -91,8 +91,8 @@ if (-not $ready) {
 Write-Host "==> Confluence is reachable at $baseUrl"
 
 if ($env:GITHUB_ENV) {
-    Add-Content -Path $env:GITHUB_ENV -Value "CONFLUENCE_CLOUD_URL=$baseUrl"
-    Add-Content -Path $env:GITHUB_ENV -Value "ATLASSIAN_CLOUD_USER=$User"
-    Add-Content -Path $env:GITHUB_ENV -Value "ATLASSIAN_CLOUD_PAT=$Password"
-    Write-Host "==> Exported CONFLUENCE_CLOUD_URL/ATLASSIAN_CLOUD_USER/ATLASSIAN_CLOUD_PAT to GITHUB_ENV"
+    Add-Content -Path $env:GITHUB_ENV -Value "CI_CONFLUENCE_URL=$baseUrl"
+    Add-Content -Path $env:GITHUB_ENV -Value "CI_CONFLUENCE_USER=$User"
+    Add-Content -Path $env:GITHUB_ENV -Value "CI_CONFLUENCE_PASSWORD=$Password"
+    Write-Host "==> Exported CI_CONFLUENCE_URL/CI_CONFLUENCE_USER/CI_CONFLUENCE_PASSWORD to GITHUB_ENV"
 }

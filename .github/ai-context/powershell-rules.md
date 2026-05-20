@@ -35,13 +35,15 @@ Invoke-Build -Task StopConfluenceDocker
 Invoke-Build -Task Build, Test
 ```
 
-Integration runs require `CONFLUENCE_CLOUD_URL`, `ATLASSIAN_CLOUD_USER`, and `ATLASSIAN_CLOUD_PAT` environment variables.
+Integration runs load values from `.env` automatically (copy from `.env.example`).
+Cloud track requires `CONFLUENCE_CLOUD_URL`, `ATLASSIAN_CLOUD_USER`, and `ATLASSIAN_CLOUD_PAT`.
+DataCenter track requires `CI_CONFLUENCE_TYPE=DataCenter`, `CI_CONFLUENCE_URL`, `CI_CONFLUENCE_USER`, and `CI_CONFLUENCE_PASSWORD`.
 
 ## Common Mistakes
 
 - Running full `Invoke-Build -Task Build, Test` for every tiny edit. Use targeted `Invoke-Pester` first.
 - Skipping the full `Invoke-Build -Task Build, Test` gate before commit/PR finalization.
-- Running `Invoke-Build -Task TestIntegration` without `CONFLUENCE_CLOUD_URL`, `ATLASSIAN_CLOUD_USER`, and `ATLASSIAN_CLOUD_PAT`.
+- Running `Invoke-Build -Task TestIntegration` without copying `.env.example` to `.env` and setting track-specific variables.
 - Editing command docs without running `Invoke-Pester -Path 'Tests/Help.Tests.ps1'`.
 
 ## Source and Test Layout
