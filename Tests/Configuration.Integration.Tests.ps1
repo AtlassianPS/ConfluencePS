@@ -47,4 +47,46 @@ Describe "Integration Test Configuration" -Tag 'Integration', 'Smoke', 'Cloud', 
             { Get-ConfluenceSpace -ApiUri $script:ApiUri -Credential $script:Credential -ErrorAction Stop | Select-Object -First 1 | Out-Null } | Should -Not -Throw
         }
     }
+
+    Context "Smoke Read Coverage" {
+        BeforeAll {
+            if ($script:IsIntegrationEnvironmentConfigured) {
+                $script:SmokeSpace = Get-ConfluenceSpace -ApiUri $script:ApiUri -Credential $script:Credential -ErrorAction Stop |
+                    Select-Object -First 1
+                Set-ConfluenceInfo -BaseUri $script:IntegrationEnvironment.CloudUrl -Credential $script:Credential
+            }
+        }
+
+        It "returns at least one accessible space" {
+            if (-not $script:IsIntegrationEnvironmentConfigured) {
+                Set-ItResult -Skipped -Because "Environment not configured"
+                return
+            }
+
+            $script:SmokeSpace | Should -Not -BeNullOrEmpty
+            $script:SmokeSpace.Key | Should -Not -BeNullOrEmpty
+        }
+
+        It "can query spaces using defaults configured by Set-ConfluenceInfo" {
+            if (-not $script:IsIntegrationEnvironmentConfigured) {
+                Set-ItResult -Skipped -Because "Environment not configured"
+                return
+            }
+
+            { Get-ConfluenceSpace -ErrorAction Stop | Select-Object -First 1 | Out-Null } | Should -Not -Throw
+        }
+
+        It "can query pages from an accessible space" {
+            if (-not $script:IsIntegrationEnvironmentConfigured) {
+                Set-ItResult -Skipped -Because "Environment not configured"
+                return
+            }
+            if (-not $script:SmokeSpace) {
+                Set-ItResult -Skipped -Because "No accessible Confluence space was returned"
+                return
+            }
+
+            { Get-ConfluencePage -SpaceKey $script:SmokeSpace.Key -ErrorAction Stop | Select-Object -First 1 | Out-Null } | Should -Not -Throw
+        }
+    }
 }
