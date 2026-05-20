@@ -498,17 +498,7 @@ Task Test {
 
 # Synopsis: Run integration tests against live Confluence (Cloud or Data Center)
 Task TestIntegration {
-    if (-not $env:WikiURI -and $env:CONFLUENCE_CLOUD_URL) {
-        $env:WikiURI = $env:CONFLUENCE_CLOUD_URL
-    }
-    if (-not $env:WikiUser -and $env:ATLASSIAN_CLOUD_USER) {
-        $env:WikiUser = $env:ATLASSIAN_CLOUD_USER
-    }
-    if (-not $env:WikiPass -and $env:ATLASSIAN_CLOUD_PAT) {
-        $env:WikiPass = $env:ATLASSIAN_CLOUD_PAT
-    }
-
-    $requiredEnvVars = @('WikiURI', 'WikiUser', 'WikiPass')
+    $requiredEnvVars = @('CONFLUENCE_CLOUD_URL', 'ATLASSIAN_CLOUD_USER', 'ATLASSIAN_CLOUD_PAT')
     $missing = $requiredEnvVars | Where-Object {
         [string]::IsNullOrEmpty([Environment]::GetEnvironmentVariable($_))
     }
@@ -575,14 +565,14 @@ Task StartConfluenceDocker {
     Write-Build Gray "Starting Confluence Data Center container via $composeFile..."
     Invoke-BuildExec { docker compose -f $composeFile up -d }
 
-    if (-not $env:WikiURI) {
-        $env:WikiURI = 'http://localhost:1990/confluence'
+    if (-not $env:CONFLUENCE_CLOUD_URL) {
+        $env:CONFLUENCE_CLOUD_URL = 'http://localhost:1990/confluence'
     }
-    if (-not $env:WikiUser) {
-        $env:WikiUser = 'admin'
+    if (-not $env:ATLASSIAN_CLOUD_USER) {
+        $env:ATLASSIAN_CLOUD_USER = 'admin'
     }
-    if (-not $env:WikiPass) {
-        $env:WikiPass = 'admin'
+    if (-not $env:ATLASSIAN_CLOUD_PAT) {
+        $env:ATLASSIAN_CLOUD_PAT = 'admin'
     }
 
     & (Join-Path $env:BHProjectPath 'Tools/Wait-ConfluenceServer.ps1')

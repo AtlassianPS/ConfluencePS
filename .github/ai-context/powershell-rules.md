@@ -35,13 +35,13 @@ Invoke-Build -Task StopConfluenceDocker
 Invoke-Build -Task Build, Test
 ```
 
-Integration runs require `WikiURI`, `WikiUser`, and `WikiPass` environment variables.
+Integration runs require `CONFLUENCE_CLOUD_URL`, `ATLASSIAN_CLOUD_USER`, and `ATLASSIAN_CLOUD_PAT` environment variables.
 
 ## Common Mistakes
 
 - Running full `Invoke-Build -Task Build, Test` for every tiny edit. Use targeted `Invoke-Pester` first.
 - Skipping the full `Invoke-Build -Task Build, Test` gate before commit/PR finalization.
-- Running `Invoke-Build -Task TestIntegration` without `WikiURI`, `WikiUser`, and `WikiPass`.
+- Running `Invoke-Build -Task TestIntegration` without `CONFLUENCE_CLOUD_URL`, `ATLASSIAN_CLOUD_USER`, and `ATLASSIAN_CLOUD_PAT`.
 - Editing command docs without running `Invoke-Pester -Path 'Tests/Help.Tests.ps1'`.
 
 ## Source and Test Layout

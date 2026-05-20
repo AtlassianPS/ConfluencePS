@@ -30,10 +30,10 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
     Context 'Set-ConfluenceInfo' {
         BeforeAll {
             # Could be a long one-liner, but breaking down for readability
-            $pass = ConvertTo-SecureString -AsPlainText -Force -String $env:WikiPass
-            $cred = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList ($env:WikiUser, $pass)
+            $pass = ConvertTo-SecureString -AsPlainText -Force -String $env:ATLASSIAN_CLOUD_PAT
+            $cred = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList ($env:ATLASSIAN_CLOUD_USER, $pass)
 
-            Set-ConfluenceInfo -BaseURI $env:WikiURI -Credential $cred
+            Set-ConfluenceInfo -BaseURI $env:CONFLUENCE_CLOUD_URL -Credential $cred
         }
 
         # ASSERT
@@ -620,7 +620,7 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
         }
     }
 
-    Context 'Set-ConfluencePage' -Skip:($env:WikiURI -like 'http://localhost*') {
+    Context 'Set-ConfluencePage' -Skip:($env:CONFLUENCE_CLOUD_URL -like 'http://localhost*') {
         <# TODO:
         * Title may not be empty
         * fails when version is 1 larger than current version
