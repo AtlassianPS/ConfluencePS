@@ -819,38 +819,30 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             # ACT
             $ChildPages = $null
             $DesendantPages = $null
-            $lastChildPageError = $null
             for ($retry = 0; $retry -lt 6; $retry++) {
                 try {
                     $ChildPages = (Get-ConfluenceSpace -SpaceKey "PESTER$SpaceID").Homepage | Get-ConfluenceChildPage -ErrorAction Stop
                     $DesendantPages = (Get-ConfluenceSpace -SpaceKey "PESTER$SpaceID").Homepage | Get-ConfluenceChildPage -Recurse -ErrorAction Stop
-                    $lastChildPageError = $null
                     break
                 }
                 catch {
-                    $lastChildPageError = $_
+                    if ($retry -eq 5) {
+                        throw
+                    }
+
                     Start-Sleep -Seconds 5
                 }
             }
-            $script:lastChildPageError = $lastChildPageError
 
         }
 
 
         # ASSERT
         It 'returns the correct amount of results' {
-            if ($script:lastChildPageError) {
-                Set-ItResult -Skipped -Because "Get-ConfluenceChildPage returned HTTP 500 in this environment."
-                return
-            }
-            $ChildPages.Count | Should -BeGreaterThan 0
-            $DesendantPages.Count | Should -BeGreaterThanOrEqual $ChildPages.Count
+            $ChildPages.Count | Should -Be 2
+            $DesendantPages.Count | Should -Be 4
         }
         It 'returns an object with specific properties' {
-            if ($script:lastChildPageError) {
-                Set-ItResult -Skipped -Because "Get-ConfluenceChildPage returned HTTP 500 in this environment."
-                return
-            }
             $ChildPages | Should -BeOfType [ConfluencePS.Page]
             $DesendantPages | Should -BeOfType [ConfluencePS.Page]
         }

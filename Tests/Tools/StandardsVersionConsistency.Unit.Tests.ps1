@@ -67,11 +67,11 @@ Describe 'AtlassianPS.Standards version consistency' -Tag Unit {
             $workflowContent = Get-Content -LiteralPath $workflowPath -Raw
             [regex]::Matches(
                 $workflowContent,
-                "AtlassianPS/AtlassianPS\.Standards/\.github/actions/setup-powershell@(?<sha>[0-9a-f]{40})(?:\s+#\s+v(?<version>[0-9]+\.[0-9]+\.[0-9]+))?"
+                "AtlassianPS/AtlassianPS\.Standards/\.github/actions/setup-powershell@(?<ref>[^\s#]+)(?:\s+#\s+v(?<version>[0-9]+\.[0-9]+\.[0-9]+))?"
             ) | ForEach-Object {
                 [PSCustomObject]@{
                     WorkflowPath = $workflowPath
-                    Sha          = $_.Groups['sha'].Value
+                    Ref          = $_.Groups['ref'].Value
                     Version      = $_.Groups['version'].Value
                 }
             }
@@ -79,17 +79,17 @@ Describe 'AtlassianPS.Standards version consistency' -Tag Unit {
 
         @($workflowActionMatches).Count | Should -BeGreaterThan 0
 
-        @($workflowActionMatches | Select-Object -ExpandProperty Sha -Unique).Count | Should -Be 1
+        @($workflowActionMatches | Where-Object { $_.Ref -notmatch '^[0-9a-f]{40}$' }).Count | Should -Be 0
+        @($workflowActionMatches | Where-Object { [string]::IsNullOrWhiteSpace($_.Version) }).Count | Should -Be 0
+
+        @($workflowActionMatches | Select-Object -ExpandProperty Ref -Unique).Count | Should -Be 1
 
         $matchedVersions = @(
             $workflowActionMatches |
-                Where-Object { -not [string]::IsNullOrWhiteSpace($_.Version) } |
                 Select-Object -ExpandProperty Version -Unique
         )
-        if ($matchedVersions.Count -gt 0) {
-            $matchedVersions.Count | Should -Be 1
-            $matchedVersions[0] | Should -Be $standardsVersion
-        }
+        $matchedVersions.Count | Should -Be 1
+        $matchedVersions[0] | Should -Be $standardsVersion
     }
 
     It 'reads AtlassianPS.Standards version from build.requirements in tool scripts' {

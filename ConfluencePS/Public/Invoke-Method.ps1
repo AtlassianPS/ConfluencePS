@@ -102,7 +102,8 @@
         if (
             ($PSVersionTable.PSVersion.Major -ge 6) -and
             ($Uri.Scheme -eq "http") -and
-            ($Credential -or $PersonalAccessToken)
+            ($Credential -or $PersonalAccessToken) -and
+            ($Uri.Host -in @("localhost", "127.0.0.1", "::1"))
         ) {
             $splatParameters["AllowUnencryptedAuthentication"] = $true
         }

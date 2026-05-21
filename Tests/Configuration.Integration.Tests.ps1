@@ -57,6 +57,18 @@ Describe "Integration Test Configuration" -Tag 'Integration', 'Smoke', 'Cloud', 
             }
         }
 
+        It "sets default connection values for Confluence commands" {
+            if (-not $script:IsIntegrationEnvironmentConfigured) {
+                Set-ItResult -Skipped -Because "Environment not configured"
+                return
+            }
+
+            $global:PSDefaultParameterValues["Get-ConfluenceSpace:ApiUri"] | Should -BeExactly $script:ApiUri
+            $global:PSDefaultParameterValues["Get-ConfluenceSpace:Credential"] | Should -BeOfType [PSCredential]
+            $global:PSDefaultParameterValues["Get-ConfluencePage:ApiUri"] | Should -BeExactly $script:ApiUri
+            $global:PSDefaultParameterValues["Get-ConfluencePage:Credential"] | Should -BeOfType [PSCredential]
+        }
+
         It "resolves an accessible space when one is available" {
             if (-not $script:IsIntegrationEnvironmentConfigured) {
                 Set-ItResult -Skipped -Because "Environment not configured"
@@ -79,6 +91,15 @@ Describe "Integration Test Configuration" -Tag 'Integration', 'Smoke', 'Cloud', 
             }
 
             { Get-ConfluenceSpace -ErrorAction Stop | Select-Object -First 1 | Out-Null } | Should -Not -Throw
+        }
+
+        It "can execute a CQL page query using configured defaults" {
+            if (-not $script:IsIntegrationEnvironmentConfigured) {
+                Set-ItResult -Skipped -Because "Environment not configured"
+                return
+            }
+
+            { Get-ConfluencePage -Query "type=page order by lastmodified desc" -PageSize 1 -ErrorAction Stop | Out-Null } | Should -Not -Throw
         }
 
         It "can query pages from an accessible space" {
