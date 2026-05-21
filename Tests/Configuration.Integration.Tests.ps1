@@ -99,7 +99,7 @@ Describe "Integration Test Configuration" -Tag 'Integration', 'Smoke', 'Cloud', 
                 return
             }
 
-            { Get-ConfluencePage -Query "type=page order by lastmodified desc" -PageSize 1 -ErrorAction Stop | Out-Null } | Should -Not -Throw
+            { Get-ConfluencePage -Query "type=page" -PageSize 1 -ErrorAction Stop | Out-Null } | Should -Not -Throw
         }
 
         It "can query pages from an accessible space" {
