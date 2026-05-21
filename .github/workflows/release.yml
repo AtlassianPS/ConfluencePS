@@ -48,23 +48,24 @@ jobs:
           path: ./Release/
           if_no_artifact_found: fail
 
-      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@v0.1.2
+      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@9a9367e22847bd24f86208ed2d98d207b0e2a3b3 # v0.1.6
 
-      - name: Publish to PowerShell Gallery
+      - run: Invoke-Build -Task Publish -VersionToPublish ${{ steps.release_ref.outputs.release_tag }}
+          -PSGalleryAPIKey ${{ secrets.PSGALLERY_API_KEY }}
         shell: pwsh
-        run: |
-          Import-Module AtlassianPS.Standards -RequiredVersion 0.1.2 -ErrorAction Stop
-          Publish-AtlassianPSModuleRelease -BuildOutputPath ./Release -ModuleName ConfluencePS -ApiKey ${{ secrets.PSGALLERY_API_KEY }}
 
-      - name: Package release zip
-        shell: pwsh
-        run: |
-          Import-Module AtlassianPS.Standards -RequiredVersion 0.1.2 -ErrorAction Stop
-          $null = New-AtlassianPSModulePackage -BuildOutputPath ./Release -ModuleName ConfluencePS
+      - name: Cherry pick CHANGELOG.md
+        id: changelog
+        uses: MatteoCampinoti94/changelog-to-release@v1.0.6
+        with:
+          version-name: ${{ steps.release_ref.outputs.release_tag }}
+          configuration: ./.github/changelog.configuration.json
+        if: ${{ hashFiles('CHANGELOG.md') != '' }}
 
       - name: Create Release and Upload Asset
         uses: softprops/action-gh-release@v3
         with:
+          body: ${{ steps.changelog.outputs.body }}
           tag_name: ${{ steps.release_ref.outputs.release_tag }}
           name: ${{ steps.release_ref.outputs.release_tag }}
           files: ./Release/ConfluencePS.zip

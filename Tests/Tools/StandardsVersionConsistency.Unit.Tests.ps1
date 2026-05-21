@@ -30,11 +30,13 @@ Describe 'AtlassianPS.Standards version consistency' -Tag Unit {
         $projectRoot = Get-RepositoryRoot
 
         $buildRequirementsPath = Join-Path -Path $projectRoot -ChildPath 'Tools/build.requirements.psd1'
-        $buildRequirements = Import-PowerShellDataFile -Path $buildRequirementsPath
-        $standardsRequirement = $buildRequirements |
-            Where-Object { $_.ModuleName -eq 'AtlassianPS.Standards' } |
-            Select-Object -First 1
-        $standardsVersion = [string] $standardsRequirement.RequiredVersion
+        $buildRequirementsContent = Get-Content -LiteralPath $buildRequirementsPath -Raw
+        $standardsVersionMatch = [regex]::Match(
+            $buildRequirementsContent,
+            'ModuleName\s*=\s*["'']AtlassianPS\.Standards["'']\s*;\s*RequiredVersion\s*=\s*["''](?<version>[^"'']+)["'']'
+        )
+        $standardsVersionMatch.Success | Should -BeTrue
+        $standardsVersion = $standardsVersionMatch.Groups['version'].Value
 
         $workflowPaths = Get-ChildItem -Path (Join-Path -Path $projectRoot -ChildPath '.github/workflows') -File -Filter '*.yml' |
             Select-Object -ExpandProperty FullName
@@ -43,7 +45,7 @@ Describe 'AtlassianPS.Standards version consistency' -Tag Unit {
             $workflowContent = Get-Content -LiteralPath $workflowPath -Raw
             [regex]::Matches(
                 $workflowContent,
-                "AtlassianPS/AtlassianPS\.Standards/\.github/actions/setup-powershell@(?<sha>[0-9a-f]{40})(?:\s+#\s+v(?<version>[0-9]+\.[0-9]+\.[0-9]+))?"
+                "AtlassianPS/AtlassianPS\.Standards/\.github/actions/setup-powershell@(?<sha>[0-9a-f]{40})\s+#\s+v(?<version>[0-9]+\.[0-9]+\.[0-9]+)"
             ) | ForEach-Object {
                 [PSCustomObject]@{
                     WorkflowPath = $workflowPath
@@ -55,17 +57,8 @@ Describe 'AtlassianPS.Standards version consistency' -Tag Unit {
 
         @($workflowActionMatches).Count | Should -BeGreaterThan 0
 
+        ($workflowActionMatches | Select-Object -ExpandProperty Version -Unique) | Should -Be @($standardsVersion)
         @($workflowActionMatches | Select-Object -ExpandProperty Sha -Unique).Count | Should -Be 1
-
-        $matchedVersions = @(
-            $workflowActionMatches |
-                Where-Object { -not [string]::IsNullOrWhiteSpace($_.Version) } |
-                Select-Object -ExpandProperty Version -Unique
-        )
-        if ($matchedVersions.Count -gt 0) {
-            $matchedVersions.Count | Should -Be 1
-            $matchedVersions[0] | Should -Be $standardsVersion
-        }
     }
 
     It 'reads AtlassianPS.Standards version from build.requirements in tool scripts' {

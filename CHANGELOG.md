@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Migrated `Tools/setup.ps1` and `Tools/update.dependencies.ps1` to shared `AtlassianPS.Standards` bootstrap/update commands with deterministic standards-version resolution from `Tools/build.requirements.psd1`.
 - Replaced legacy PSDepend hashtable dependencies with pinned array requirements and aligned workflow setup action usage to the pinned standards action release.
+- Aligned release workflow setup/import steps to `AtlassianPS.Standards` `0.1.6`.
+- Aligned release pipeline to JiraPS publish contract (`Invoke-Build -Task Publish`) and changelog-driven release body generation.
+- Added `changelog-to-release` configuration wiring and enforced first-party smoke credential validation while keeping fork/Dependabot PR smoke skipped.
 - `Set-ConfluencePage` now forwards `Version.Message` for `-InputObject` / pipeline updates when provided (#207, #231, [@JoseAPortilloJSC])
 
 ### Fixed
