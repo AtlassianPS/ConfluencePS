@@ -129,9 +129,9 @@ jobs:
     # Skip on fork PRs and Dependabot PRs: the shared cloud PAT secret is not exposed
     # in those contexts and the smoke run would fail. The ci-required
     # aggregator below treats skipped jobs as a pass, so fork PRs still get
-    # a green CI Result. First-party PRs and pushes to master gate on the
-    # smoke result, which in turn gates release.yml's artifact download
-    # (workflow_conclusion: success).
+    # a green CI Result. First-party PRs and pushes to master require smoke
+    # credentials and a successful smoke run, which in turn gates release.yml's
+    # artifact download (workflow_conclusion: success).
     if: github.event_name != 'pull_request' ||
       (github.event.pull_request.head.repo.full_name == github.repository &&
       github.actor != 'dependabot[bot]')
@@ -143,33 +143,24 @@ jobs:
       - uses: actions/checkout@v6
       - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@9a9367e22847bd24f86208ed2d98d207b0e2a3b3 # v0.1.6
 
-      - name: Detect smoke secret configuration
-        id: smoke_secrets
+      - name: Validate smoke secret configuration
         run: |
-          $hasSecrets = -not (
-            [string]::IsNullOrWhiteSpace($env:WikiURI) -or
-            [string]::IsNullOrWhiteSpace($env:WikiUser) -or
-            [string]::IsNullOrWhiteSpace($env:WikiPass)
-          )
-          "has_secrets=$($hasSecrets.ToString().ToLowerInvariant())" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
-
           if (
             [string]::IsNullOrWhiteSpace($env:WikiURI) -or
             [string]::IsNullOrWhiteSpace($env:WikiUser) -or
             [string]::IsNullOrWhiteSpace($env:WikiPass)
           ) {
-            Write-Warning "Skipping smoke tests because WikiURI, WikiUser, or WikiPass is not configured."
+            throw "Smoke tests require WikiURI, WikiUser, and WikiPass in first-party runs."
           }
         shell: pwsh
 
       - name: Run smoke integration tests
-        if: steps.smoke_secrets.outputs.has_secrets == 'true'
         run: |
           Invoke-Build -Task TestIntegration -Tag "Cloud"
         shell: pwsh
 
       - name: Upload integration test results
-        if: always() && steps.smoke_secrets.outputs.has_secrets == 'true'
+        if: always()
         uses: actions/upload-artifact@v7
         with:
           name: Smoke-Tests

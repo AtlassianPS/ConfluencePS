@@ -59,6 +59,7 @@ jobs:
         uses: MatteoCampinoti94/changelog-to-release@v1.0.6
         with:
           version-name: ${{ steps.release_ref.outputs.release_tag }}
+          configuration: ./.github/changelog.configuration.json
         if: ${{ hashFiles('CHANGELOG.md') != '' }}
 
       - name: Create Release and Upload Asset
