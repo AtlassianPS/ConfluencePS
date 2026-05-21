@@ -58,17 +58,17 @@
             $PageID = $InputObject.ID
         }
 
-        $iwParameters = Copy-CommonParameter -InputObject $PSBoundParameters
-        $iwParameters['Uri'] = if ($Recurse.IsPresent) { "$ApiUri/content/{0}/descendant/page" -f $PageID } else { "$ApiUri/content/{0}/child/page" -f $PageID }
-        $iwParameters['Method'] = 'Get'
-        $iwParameters['GetParameters'] = @{
+        $baseGetParameters = @{
             expand = "space,version,body.storage,ancestors"
             limit  = $PageSize
         }
         if ($ExcludePageBody) {
-            $iwParameters.GetParameters.expand = "space,version,ancestors"
+            $baseGetParameters.expand = "space,version,ancestors"
         }
 
+        $iwParameters = Copy-CommonParameter -InputObject $PSBoundParameters
+        $iwParameters['Method'] = 'Get'
+        $iwParameters['GetParameters'] = $baseGetParameters
         $iwParameters['OutputType'] = [ConfluencePS.Page]
 
         # Paging
@@ -76,7 +76,75 @@
             $iwParameters[$_] = $PSCmdlet.PagingParameters.$_
         }
 
-        Invoke-Method @iwParameters
+        if (-not $Recurse.IsPresent) {
+            $iwParameters['Uri'] = "$ApiUri/content/{0}/child/page" -f $PageID
+            Invoke-Method @iwParameters
+            return
+        }
+
+        # Prefer the native descendant endpoint to preserve paging semantics and minimize API calls.
+        $iwParameters['Uri'] = "$ApiUri/content/{0}/descendant/page" -f $PageID
+        try {
+            Invoke-Method @iwParameters
+            return
+        }
+        catch {
+            $isRecoverableServerResponse = $false
+            if (($_.FullyQualifiedErrorId -match 'InvalidResponse\.Status(500|502|503|504)') -or
+                (($_.Exception -is [System.ArgumentException]) -and ($_.Exception.Message -eq 'Invalid Server Response'))) {
+                $isRecoverableServerResponse = $true
+            }
+
+            if (-not $isRecoverableServerResponse) {
+                throw
+            }
+
+            Write-Warning "Confluence descendant endpoint is unstable; falling back to iterative child-page traversal."
+        }
+
+        # Fallback: breadth-first traversal via child/page, then apply paging globally.
+        $fallbackParameters = Copy-CommonParameter -InputObject $PSBoundParameters
+        $fallbackParameters['Method'] = 'Get'
+        $fallbackParameters['GetParameters'] = $baseGetParameters
+        $fallbackParameters['OutputType'] = [ConfluencePS.Page]
+        $fallbackParameters.Remove('IncludeTotalCount') | Out-Null
+        $fallbackParameters.Remove('First') | Out-Null
+        $fallbackParameters.Remove('Skip') | Out-Null
+
+        $allPages = New-Object System.Collections.Generic.List[ConfluencePS.Page]
+        $visitedPageIds = New-Object System.Collections.Generic.HashSet[UInt64]
+        $pagesToVisit = New-Object System.Collections.Generic.Queue[UInt64]
+        $pagesToVisit.Enqueue($PageID)
+
+        while ($pagesToVisit.Count -gt 0) {
+            $currentPageId = $pagesToVisit.Dequeue()
+            $fallbackParameters['Uri'] = "$ApiUri/content/{0}/child/page" -f $currentPageId
+            $childPages = @(Invoke-Method @fallbackParameters)
+
+            foreach ($childPage in $childPages) {
+                if ((-not $childPage) -or (-not $visitedPageIds.Add($childPage.ID))) {
+                    continue
+                }
+
+                $allPages.Add($childPage)
+                $pagesToVisit.Enqueue($childPage.ID)
+            }
+        }
+
+        if ($PSCmdlet.PagingParameters.IncludeTotalCount) {
+            [double]$accuracy = 0.0
+            $PSCmdlet.PagingParameters.NewTotalCount($allPages.Count, $accuracy)
+        }
+
+        $pagedResults = @($allPages)
+        if ($PSBoundParameters.ContainsKey('Skip')) {
+            $pagedResults = @($pagedResults | Select-Object -Skip $PSCmdlet.PagingParameters.Skip)
+        }
+        if ($PSBoundParameters.ContainsKey('First')) {
+            $pagedResults = @($pagedResults | Select-Object -First $PSCmdlet.PagingParameters.First)
+        }
+
+        $pagedResults
     }
 
     END {

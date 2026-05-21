@@ -238,9 +238,9 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             $script:OutputString = "<p>Hi Pester!</p>"
 
             # ACT
-            $result1 = $InputString | ConvertTo-ConfluenceStorageFormat
-            $result2 = ConvertTo-ConfluenceStorageFormat -Content $InputString
-            $result3 = ConvertTo-ConfluenceStorageFormat -Content $InputString, $InputString
+            $result1 = $script:InputString | ConvertTo-ConfluenceStorageFormat
+            $result2 = ConvertTo-ConfluenceStorageFormat -Content $script:InputString
+            $result3 = ConvertTo-ConfluenceStorageFormat -Content $script:InputString, $script:InputString
 
         }
 
@@ -252,9 +252,9 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             $result3 | Should -BeOfType [String]
         }
         It 'output matches the expected string' {
-            $result1 | Should -BeExactly $OutputString
-            $result2 | Should -BeExactly $OutputString
-            $result3 | Should -BeExactly @($OutputString, $OutputString)
+            $result1 | Should -BeExactly $script:OutputString
+            $result2 | Should -BeExactly $script:OutputString
+            $result3 | Should -BeExactly @($script:OutputString, $script:OutputString)
         }
     }
 
@@ -367,6 +367,7 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             $script:ContentRaw = "<p>Hi Pester!👋</p>"
             $script:ContentFormatted = "<p>Hi Pester!</p><p>👋</p>"
             (Get-ConfluenceSpace -SpaceKey $SpaceKey).Homepage | Add-ConfluenceLabel -Label "important" -ErrorAction Stop
+            Start-Sleep -Seconds 20 # Delay to allow DB index to update
 
             # ACT
             $script:GetTitle1 = Get-ConfluencePage -Title $Title1.ToLower() -SpaceKey $SpaceKey -PageSize 200 -ErrorAction SilentlyContinue
@@ -376,16 +377,17 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             $script:GetID1 = Get-ConfluencePage -PageID $GetTitle1.ID -ErrorAction SilentlyContinue
             $script:GetID2 = Get-ConfluencePage -PageID $GetTitle2.ID -ErrorAction SilentlyContinue
             $script:GetKeys = Get-ConfluencePage -SpaceKey $SpaceKey -ErrorAction SilentlyContinue | Sort-Object ID
-            $script:GetByLabel = $null
-            for ($retry = 0; $retry -lt 18; $retry++) {
+            $script:GetByLabel = @()
+            $script:GetByQuery = @()
+            for ($retry = 0; $retry -lt 6; $retry++) {
                 $script:GetByLabel = Get-ConfluencePage -Label "important" -ErrorAction SilentlyContinue
-                if (@($GetByLabel).Count -ge 1) {
+                $script:GetByQuery = Get-ConfluencePage -Query $query -ErrorAction SilentlyContinue
+                if ((@($GetByLabel).Count -ge 1) -and (@($GetByQuery).Count -eq 2)) {
                     break
                 }
 
                 Start-Sleep -Seconds 5
             }
-            $script:GetByQuery = Get-ConfluencePage -Query $query -ErrorAction SilentlyContinue
             $script:GetSpacePage = Get-ConfluencePage -Space (Get-ConfluenceSpace -SpaceKey $SpaceKey) -ErrorAction SilentlyContinue
             $script:GetSpacePiped = Get-ConfluenceSpace -SpaceKey $SpaceKey | Get-ConfluencePage -ErrorAction SilentlyContinue
 
@@ -658,8 +660,8 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             $script:Page4 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page with Parent Object"
             # create some more pages
             $script:Page5, $script:Page6, $script:Page7, $script:Page8, $script:Page9 = ("Page 5", "Page 6", "Page 7", "Page 8", "Page 9" | New-ConfluencePage -SpaceKey $SpaceKey -Body "<p>Lorem ipsum</p>" -ErrorAction Stop)
-            $script:AllPages = Get-ConfluencePage -SpaceKey $SpaceKey
-            $script:ParentPage = $AllPages | Where-Object { $_.Title -like "*Home" }
+            $script:AllPages = Get-ConfluencePage -SpaceKey $SpaceKey | Where-Object { $_.Title -notlike "*Home" }
+            $script:ParentPage = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester Test Space Home" -ErrorAction Stop
 
             $script:NewTitle6 = "Renamed Page 6"
             $script:NewTitle7 = "Renamed Page 7"
@@ -667,6 +669,7 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             $script:NewContent1 = "<h1>Bulk Change</h1><p>Changed all bodies in this space at once</p>"
             $script:NewContent2 = "<h1>Set Body by property</h1>"
             $script:NewContent3 = "<p>Updated</p>"
+            $script:NewContent9 = "<h1>Bulk Change</h1><p>Changed all bodies in this space at once</p><p>Updated body for version message test</p>"
             $script:RawContent3 = "Updated"
 
             # ACT
@@ -680,26 +683,27 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             # change the body of a page by property - this page should have version 3
             $script:SetPage2 = $Page2.ID | Set-ConfluencePage -Body $NewContent2 -ErrorAction Stop
             # make a non-relevant change just to bump page version
-            $script:SetPage3 = $Page3.ID | Set-ConfluencePage -Body "..."
+            $script:SetPage3 = $Page3.ID | Set-ConfluencePage -Body "..." -ErrorAction Stop
             # change the title of a page by property - this page should have version 4
-            $script:SetPage3 = $Page3.ID | Set-ConfluencePage -Body $RawContent3 -Convert
+            $script:SetPage3 = $Page3.ID | Set-ConfluencePage -Body $RawContent3 -Convert -ErrorAction Stop
             # change the parent page by object
-            $script:SetPage4 = Set-ConfluencePage -PageID $Page4.ID -Parent $Page3
+            $script:SetPage4 = Set-ConfluencePage -PageID $Page4.ID -Parent $Page3 -ErrorAction Stop
             # change the parent page by pageid
-            $script:SetPage5 = Set-ConfluencePage -PageID $Page5.ID -ParentID $Page4.ID
+            $script:SetPage5 = Set-ConfluencePage -PageID $Page5.ID -ParentID $Page4.ID -ErrorAction Stop
             # change the title of a page
-            $script:SetPage6 = $Page6.ID | Set-ConfluencePage -Title $NewTitle6
+            $script:SetPage6 = $Page6.ID | Set-ConfluencePage -Title $NewTitle6 -ErrorAction Stop
             $script:SetPage7 = $AllChangedPages | Where-Object { $_.ID -eq $Page7.ID } | ForEach-Object {
                 $_.Title = $NewTitle7
                 $_
-            } | Set-ConfluencePage
+            } | Set-ConfluencePage -ErrorAction Stop
             # clear the body of a page
-            $script:SetPage8 = Set-ConfluencePage -PageID $Page8.ID -Body ""
+            $script:SetPage8 = Set-ConfluencePage -PageID $Page8.ID -Body "" -ErrorAction Stop
             # change the version message of a page
             $script:SetPage9 = $AllChangedPages | Where-Object { $_.ID -eq $Page9.ID } | ForEach-Object {
+                $_.Body = $NewContent9
                 $_.Version.Message = $NewVersionMessage9
                 $_
-            } | Set-ConfluencePage
+            } | Set-ConfluencePage -ErrorAction Stop
 
         }
 
@@ -759,7 +763,7 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             $SetPage7.Space.Key | Should -BeExactly $SpaceKey
             $SetPage8.Space.Key | Should -BeExactly $SpaceKey
             $SetPage9.Space.Key | Should -BeExactly $SpaceKey
-            ($AllChangedPages.Space.Key | Select-Object -Unique) | Should -BeExactly $SpaceKey
+            $AllChangedPages.Space.Key | Should -BeExactly (1..9 | ForEach-Object {$SpaceKey})
         }
         It 'title has the specified value' {
             $SetPage1.Title | Should -BeExactly $Page1.Title
@@ -796,7 +800,7 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             $SetPage6.Body | Should -BeExactly $NewContent1
             $SetPage7.Body | Should -BeExactly $NewContent1
             $SetPage8.Body | Should -BeExactly ""
-            $SetPage9.Body | Should -BeExactly $NewContent1
+            $SetPage9.Body | Should -BeExactly $NewContent9
         }
         It 'version has the specified value' {
             $SetPage1.Version.Number | Should -BeExactly 2
@@ -817,32 +821,38 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
         BeforeAll {
 
             # ACT
-            $ChildPages = $null
-            $DesendantPages = $null
-            for ($retry = 0; $retry -lt 6; $retry++) {
+            $script:ChildPages = @()
+            $script:DesendantPages = @()
+            $lastChildPageError = $null
+            for ($retry = 0; $retry -lt 12; $retry++) {
                 try {
-                    $ChildPages = (Get-ConfluenceSpace -SpaceKey "PESTER$SpaceID").Homepage | Get-ConfluenceChildPage -ErrorAction Stop
-                    $DesendantPages = (Get-ConfluenceSpace -SpaceKey "PESTER$SpaceID").Homepage | Get-ConfluenceChildPage -Recurse -ErrorAction Stop
+                    $script:ChildPages = (Get-ConfluenceSpace -SpaceKey "PESTER$SpaceID").Homepage | Get-ConfluenceChildPage -ErrorAction Stop
+                    $script:DesendantPages = (Get-ConfluenceSpace -SpaceKey "PESTER$SpaceID").Homepage | Get-ConfluenceChildPage -Recurse -ErrorAction Stop
+                    $lastChildPageError = $null
                     break
                 }
                 catch {
-                    if ($retry -eq 5) {
-                        throw
-                    }
-
+                    $lastChildPageError = $_
                     Start-Sleep -Seconds 5
                 }
             }
+            $script:lastChildPageError = $lastChildPageError
 
         }
 
 
         # ASSERT
         It 'returns the correct amount of results' {
+            if ($script:lastChildPageError) {
+                throw $script:lastChildPageError
+            }
             $ChildPages.Count | Should -Be 2
             $DesendantPages.Count | Should -Be 4
         }
         It 'returns an object with specific properties' {
+            if ($script:lastChildPageError) {
+                throw $script:lastChildPageError
+            }
             $ChildPages | Should -BeOfType [ConfluencePS.Page]
             $DesendantPages | Should -BeOfType [ConfluencePS.Page]
         }

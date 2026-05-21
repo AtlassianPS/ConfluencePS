@@ -4,10 +4,10 @@ services:
     # atlas-run-standalone image family because it already wraps AMPS and
     # boots a disposable local Data Center-compatible Confluence quickly for CI.
     #
-    # Default tag is `confluence-10` (linux/amd64, ~1.3 GB compressed), which
-    # matches GitHub-hosted Ubuntu runners. For local experiments, set
-    # CONFLUENCE_IMAGE_TAG in .env (for example: confluence-9).
-    image: moveworkforward/atlas-run-standalone:${CONFLUENCE_IMAGE_TAG:-confluence-10}
+    # CI defaults to an immutable digest to avoid tag drift. For local experiments,
+    # override CONFLUENCE_IMAGE in .env (for example:
+    # moveworkforward/atlas-run-standalone:confluence-9).
+    image: ${CONFLUENCE_IMAGE:-moveworkforward/atlas-run-standalone@sha256:b298cc0a5eb90aac8f6cc3e14d2d809feef217149a8efc2bbc94c2e1f1452077}
     container_name: confluenceps-confluence-dc
     ports:
       - "1990:1990"

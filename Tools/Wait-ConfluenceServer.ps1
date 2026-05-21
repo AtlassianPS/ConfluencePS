@@ -70,7 +70,11 @@ while ((Get-Date) -lt $deadline) {
     $attempt++
     try {
         $response = Invoke-RestMethod -Uri $spaceApiUrl -Method Get -Headers $headers -TimeoutSec 15
-        if ($null -ne $response) {
+        if (
+            ($null -ne $response) -and
+            ($response.PSObject.Properties.Name -contains 'results') -and
+            ($null -ne $response.results)
+        ) {
             $ready = $true
             break
         }
