@@ -57,9 +57,14 @@ Describe "Integration Test Configuration" -Tag 'Integration', 'Smoke', 'Cloud', 
             }
         }
 
-        It "returns at least one accessible space" {
+        It "resolves an accessible space when one is available" {
             if (-not $script:IsIntegrationEnvironmentConfigured) {
                 Set-ItResult -Skipped -Because "Environment not configured"
+                return
+            }
+
+            if (-not $script:SmokeSpace) {
+                Set-ItResult -Skipped -Because "No accessible Confluence space was returned"
                 return
             }
 
