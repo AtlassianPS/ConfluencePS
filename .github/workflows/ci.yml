@@ -39,7 +39,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@064643a6dfc2fbc00d332fc0b950375dbf87a291
+      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@9a9367e22847bd24f86208ed2d98d207b0e2a3b3
 
       - run: Invoke-Build -Task Lint
         shell: pwsh
@@ -50,7 +50,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@064643a6dfc2fbc00d332fc0b950375dbf87a291
+      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@9a9367e22847bd24f86208ed2d98d207b0e2a3b3
 
       - run: Invoke-Build -Task Clean, Build
         shell: pwsh
@@ -66,7 +66,7 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@064643a6dfc2fbc00d332fc0b950375dbf87a291
+      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@9a9367e22847bd24f86208ed2d98d207b0e2a3b3
         with:
           ps-version: "5"
           # Setup is run below in the powershell (PS 5.1) shell instead of pwsh,
@@ -106,7 +106,7 @@ jobs:
           - { os: macos-latest, name: "macOS" }
     steps:
       - uses: actions/checkout@v6
-      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@064643a6dfc2fbc00d332fc0b950375dbf87a291
+      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@9a9367e22847bd24f86208ed2d98d207b0e2a3b3
 
       - uses: actions/download-artifact@v8
         with:
@@ -141,7 +141,7 @@ jobs:
       WikiPass: ${{ secrets.ATLASSIAN_CLOUD_PAT }}
     steps:
       - uses: actions/checkout@v6
-      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@064643a6dfc2fbc00d332fc0b950375dbf87a291
+      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@9a9367e22847bd24f86208ed2d98d207b0e2a3b3
 
       - name: Detect smoke secret configuration
         id: smoke_secrets
