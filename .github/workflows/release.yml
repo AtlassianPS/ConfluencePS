@@ -50,9 +50,17 @@ jobs:
 
       - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@9a9367e22847bd24f86208ed2d98d207b0e2a3b3 # v0.1.6
 
-      - run: Invoke-Build -Task Publish -VersionToPublish ${{ steps.release_ref.outputs.release_tag }}
-          -PSGalleryAPIKey ${{ secrets.PSGALLERY_API_KEY }}
+      - name: Publish to PowerShell Gallery
         shell: pwsh
+        run: |
+          Import-Module AtlassianPS.Standards -RequiredVersion 0.1.6 -ErrorAction Stop
+          Publish-AtlassianPSModuleRelease -BuildOutputPath ./Release -ModuleName ConfluencePS -ApiKey ${{ secrets.PSGALLERY_API_KEY }}
+
+      - name: Package release zip
+        shell: pwsh
+        run: |
+          Import-Module AtlassianPS.Standards -RequiredVersion 0.1.6 -ErrorAction Stop
+          $null = New-AtlassianPSModulePackage -BuildOutputPath ./Release -ModuleName ConfluencePS
 
       - name: Create Release and Upload Asset
         uses: softprops/action-gh-release@v3
