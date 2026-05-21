@@ -1,6 +1,6 @@
 # Integration and smoke coverage assessment
 
-Scope: `confluence-integration-smoke` baseline, evaluated from branch `confluence-integration-smoke-coverage-eval`.
+Scope: `confluence-integration-smoke`, implemented and re-evaluated on branch `confluence-integration-smoke-coverage-eval`.
 
 ## What currently runs
 
@@ -12,36 +12,29 @@ Scope: `confluence-integration-smoke` baseline, evaluated from branch `confluenc
 
 ## Current coverage summary
 
-- Integration suite breadth: `Tests/Integration.Tests.ps1` contains **101** assertions across **19** cmdlet-focused contexts.
-- Smoke suite breadth: `Tests/Configuration.Integration.Tests.ps1` contains **5** assertions under one `Smoke`-tagged describe block.
+- Integration suite breadth: `Tests/Integration.Tests.ps1` contains **105** assertions across **21** cmdlet-focused contexts.
+- Smoke suite breadth: `Tests/Configuration.Integration.Tests.ps1` contains **9** assertions under one `Smoke`-tagged describe block.
 - Public cmdlets in module: **21**.
-- Public cmdlets without dedicated integration context coverage: **2** (`ConvertTo-Table`, `Invoke-Method`).
+- Public cmdlets without dedicated integration context coverage: **0**.
 
-## Gaps: what should be tested and is not yet
+## Implemented in this branch
 
-### Missing integration coverage
+1. Added integration coverage for `Invoke-ConfluenceMethod`:
+   - direct API call with `GetParameters`
+   - typed output conversion to `ConfluencePS.Space`
+2. Added integration coverage for `ConvertTo-ConfluenceTable`:
+   - table markup assertions
+   - end-to-end compatibility check by creating and reading a real page using converted table storage markup
+3. Added smoke write-path coverage:
+   - page create/update checks
+   - label add/remove lifecycle
+   - attachment add/remove lifecycle
+   - cleanup logic for disposable smoke page
 
-1. `Invoke-Method` has unit tests, but no integration assertions validating real API execution paths (status handling, pagination/expand behavior, and response shaping against live Confluence).
-2. `ConvertTo-Table` has unit tests, but no integration assertions proving output remains compatible when embedded in real page create/update flows.
-
-### Missing smoke coverage
-
-Smoke currently validates configuration and read-path connectivity only. It does **not** yet cover critical write-path sanity checks that catch permission/scope regressions early.
-
-Recommended smoke additions (small, fast, low-risk):
-
-1. Minimal page write/read/delete cycle (`New-ConfluencePage`, `Get-ConfluencePage`, `Remove-ConfluencePage`) in a disposable test location.
-2. Label lifecycle sanity (`Add-ConfluenceLabel`, `Get-ConfluenceLabel`, `Remove-ConfluenceLabel`) on that page.
-3. Attachment lifecycle sanity (`Add-ConfluenceAttachment`, `Get-ConfluenceAttachment`, `Remove-ConfluenceAttachment`) using a tiny local file.
-4. `Set-ConfluencePage` update sanity (single body update and version increment check).
-
-### Track-specific blind spot
+## Remaining gap
 
 - `Set-ConfluencePage` integration context is skipped for localhost-based runs, leaving Data Center coverage weaker for that path in current automation.
 
-## Prioritized next steps
+## Prioritized next step
 
-1. Add integration contexts for `Invoke-Method` and `ConvertTo-Table`.
-2. Add a dedicated smoke write-path context that performs one lightweight create/update/delete round trip.
-3. Add a Data Center-safe variant for the `Set-ConfluencePage` integration path (or an equivalent Data Center write-path assertion).
-
+1. Add a Data Center-safe variant for the `Set-ConfluencePage` integration path (or an equivalent Data Center write-path assertion) that can run against localhost Docker reliably.
