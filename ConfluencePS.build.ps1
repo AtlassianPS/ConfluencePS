@@ -449,15 +449,18 @@ Task SetVersion {
 Task Test {
     Remove-Module $env:BHProjectName -ErrorAction SilentlyContinue
 
-    # Skip the Integration test file at discovery time so normal Test runs do
+    # Skip integration test files at discovery time so normal Test runs do
     # not execute its setup blocks or require integration credentials.
-    $integrationPath = Join-Path $env:BHBuildOutput 'Tests/Integration.Tests.ps1'
+    $integrationPaths = @(
+        (Join-Path $env:BHBuildOutput 'Tests/Integration.Tests.ps1')
+        (Join-Path $env:BHBuildOutput 'Tests/Configuration.Integration.Tests.ps1')
+    )
 
     $pesterConfigHash = @{
         Run        = @{
             PassThru    = $true
             Path        = "$env:BHBuildOutput/Tests"
-            ExcludePath = @($integrationPath)
+            ExcludePath = $integrationPaths
         }
         TestResult = @{
             Enabled      = $true
@@ -495,28 +498,42 @@ Task Test {
 
 # Synopsis: Run integration tests against live Confluence (Cloud or Data Center)
 Task TestIntegration {
-    $requiredEnvVars = @('WikiURI', 'WikiUser', 'WikiPass')
+    $integrationToolsPath = Join-Path $env:BHProjectPath 'Tests/Helpers/IntegrationTestTools.ps1'
+    Assert-True (Test-Path $integrationToolsPath) "Integration helper not found: $integrationToolsPath"
+    . $integrationToolsPath
+    $null = Initialize-IntegrationEnvironment
+
+    $deploymentType = Get-ConfluenceIntegrationDeploymentType
+    $requiredEnvVars = Get-ConfluenceIntegrationRequiredVariables -DeploymentType $deploymentType
     $missing = $requiredEnvVars | Where-Object {
         [string]::IsNullOrEmpty([Environment]::GetEnvironmentVariable($_))
     }
     if ($missing) {
         throw @"
-Required environment variables for integration tests are not set: $($missing -join ', ')
+Required environment variables for the $deploymentType integration test track are not set: $($missing -join ', ')
 
-For CI: configure these as repository secrets under Settings -> Secrets and variables -> Actions.
-For local development: set these environment variables before running integration tests.
+For CI: configure these as repository secrets (Cloud) or workflow env vars (DataCenter) under Settings -> Secrets and variables -> Actions.
+For local development: copy .env.example to .env and configure the required variables.
 "@
     }
 
-    $integrationScript = "$env:BHBuildOutput/Tests/Integration.Tests.ps1"
-    if (-not (Test-Path $integrationScript)) {
-        $integrationScript = "$env:BHProjectPath/Tests/Integration.Tests.ps1"
+    $integrationScripts = @(
+        (Join-Path $env:BHBuildOutput 'Tests/Configuration.Integration.Tests.ps1')
+        (Join-Path $env:BHBuildOutput 'Tests/Integration.Tests.ps1')
+    ) | Where-Object { Test-Path $_ }
+
+    if (-not $integrationScripts) {
+        $integrationScripts = @(
+            (Join-Path $env:BHProjectPath 'Tests/Configuration.Integration.Tests.ps1')
+            (Join-Path $env:BHProjectPath 'Tests/Integration.Tests.ps1')
+        ) | Where-Object { Test-Path $_ }
     }
+    Assert-True ($integrationScripts.Count -gt 0) 'No integration test files were found.'
 
     $pesterConfigHash = @{
         Run        = @{
             PassThru = $true
-            Path     = $integrationScript
+            Path     = $integrationScripts
         }
         TestResult = @{
             Enabled      = $true
@@ -541,6 +558,45 @@ For local development: set these environment variables before running integratio
     $pesterConfig = New-PesterConfiguration -Hashtable $pesterConfigHash
     $testResults = Invoke-Pester -Configuration $pesterConfig
     Assert-True ($testResults.FailedCount -eq 0) "$($testResults.FailedCount) integration test(s) failed."
+}
+
+# Synopsis: Start the local Confluence Data Center Docker container for integration tests
+Task StartConfluenceDocker {
+    if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
+        throw "Docker is required for the Data Center integration track. See https://docs.docker.com/get-docker/."
+    }
+
+    $composeFile = Join-Path $env:BHProjectPath 'docker-compose.yml'
+    Assert-True (Test-Path $composeFile) "docker-compose.yml not found at $composeFile"
+    Write-Build Gray "Starting Confluence Data Center container via $composeFile..."
+    Invoke-BuildExec { docker compose -f $composeFile up -d }
+
+    if (-not $env:CI_CONFLUENCE_TYPE) {
+        $env:CI_CONFLUENCE_TYPE = 'DataCenter'
+    }
+    if (-not $env:CI_CONFLUENCE_URL) {
+        $env:CI_CONFLUENCE_URL = 'http://localhost:1990/confluence'
+    }
+    if (-not $env:CI_CONFLUENCE_USER) {
+        $env:CI_CONFLUENCE_USER = 'admin'
+    }
+    if (-not $env:CI_CONFLUENCE_PASSWORD) {
+        $env:CI_CONFLUENCE_PASSWORD = 'admin'
+    }
+
+    & (Join-Path $env:BHProjectPath 'Tools/Wait-ConfluenceServer.ps1')
+}
+
+# Synopsis: Stop the local Confluence Data Center Docker container
+Task StopConfluenceDocker {
+    if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
+        throw "Docker is required for the Data Center integration track. See https://docs.docker.com/get-docker/."
+    }
+
+    $composeFile = Join-Path $env:BHProjectPath 'docker-compose.yml'
+    Assert-True (Test-Path $composeFile) "docker-compose.yml not found at $composeFile"
+    Write-Build Gray "Stopping Confluence Data Center container ($composeFile)..."
+    Invoke-BuildExec { docker compose -f $composeFile down -v }
 }
 
 Task Publish SetVersion, SignCode, Package, {

@@ -39,7 +39,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@064643a6dfc2fbc00d332fc0b950375dbf87a291
+      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@9a9367e22847bd24f86208ed2d98d207b0e2a3b3 # v0.1.6
 
       - run: Invoke-Build -Task Lint
         shell: pwsh
@@ -50,7 +50,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@064643a6dfc2fbc00d332fc0b950375dbf87a291
+      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@9a9367e22847bd24f86208ed2d98d207b0e2a3b3 # v0.1.6
 
       - run: Invoke-Build -Task Clean, Build
         shell: pwsh
@@ -66,7 +66,7 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@064643a6dfc2fbc00d332fc0b950375dbf87a291
+      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@9a9367e22847bd24f86208ed2d98d207b0e2a3b3 # v0.1.6
         with:
           ps-version: "5"
           # Setup is run below in the powershell (PS 5.1) shell instead of pwsh,
@@ -106,7 +106,7 @@ jobs:
           - { os: macos-latest, name: "macOS" }
     steps:
       - uses: actions/checkout@v6
-      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@064643a6dfc2fbc00d332fc0b950375dbf87a291
+      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@9a9367e22847bd24f86208ed2d98d207b0e2a3b3 # v0.1.6
 
       - uses: actions/download-artifact@v8
         with:
@@ -136,44 +136,25 @@ jobs:
       (github.event.pull_request.head.repo.full_name == github.repository &&
       github.actor != 'dependabot[bot]')
     env:
-      WikiURI: ${{ vars.CONFLUENCE_CLOUD_URL }}
-      WikiUser: ${{ vars.ATLASSIAN_CLOUD_USER }}
-      WikiPass: ${{ secrets.ATLASSIAN_CLOUD_PAT }}
+      CI_CONFLUENCE_TYPE: Cloud
+      CONFLUENCE_CLOUD_URL: ${{ vars.CONFLUENCE_CLOUD_URL }}
+      ATLASSIAN_CLOUD_USER: ${{ vars.ATLASSIAN_CLOUD_USER }}
+      ATLASSIAN_CLOUD_PAT: ${{ secrets.ATLASSIAN_CLOUD_PAT }}
     steps:
       - uses: actions/checkout@v6
-      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@064643a6dfc2fbc00d332fc0b950375dbf87a291
-
-      - name: Detect smoke secret configuration
-        id: smoke_secrets
-        run: |
-          $hasSecrets = -not (
-            [string]::IsNullOrWhiteSpace($env:WikiURI) -or
-            [string]::IsNullOrWhiteSpace($env:WikiUser) -or
-            [string]::IsNullOrWhiteSpace($env:WikiPass)
-          )
-          "has_secrets=$($hasSecrets.ToString().ToLowerInvariant())" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
-
-          if (
-            [string]::IsNullOrWhiteSpace($env:WikiURI) -or
-            [string]::IsNullOrWhiteSpace($env:WikiUser) -or
-            [string]::IsNullOrWhiteSpace($env:WikiPass)
-          ) {
-            Write-Warning "Skipping smoke tests because WikiURI, WikiUser, or WikiPass is not configured."
-          }
-        shell: pwsh
+      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@9a9367e22847bd24f86208ed2d98d207b0e2a3b3 # v0.1.6
 
       - name: Run smoke integration tests
-        if: steps.smoke_secrets.outputs.has_secrets == 'true'
         run: |
-          Invoke-Build -Task TestIntegration -Tag "Cloud"
+          Invoke-Build -Task TestIntegration -Tag "Smoke" -PesterVerbosity Detailed
         shell: pwsh
 
       - name: Upload integration test results
-        if: always() && steps.smoke_secrets.outputs.has_secrets == 'true'
+        if: always()
         uses: actions/upload-artifact@v7
         with:
           name: Smoke-Tests
-          path: Test*.xml
+          path: Test-Integration.xml
 
   # Sentinel job that always runs and aggregates the result of the pipeline.
   # Branch protection should require ONLY this check (`CI / CI Result`),

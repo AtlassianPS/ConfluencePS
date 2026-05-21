@@ -1,5 +1,7 @@
 name: Integration Tests
 
+# Cloud + Data Center tracks share this workflow's nightly cron and manual
+# dispatch but run independently in parallel jobs.
 on:
   schedule:
     - cron: "0 5 * * *"
@@ -15,12 +17,88 @@ on:
           - datacenter
           - both
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
-  scaffold:
-    name: Integration Scaffold
+  cloud_integration_tests:
+    name: Full Integration Tests (Cloud)
+    if: (github.event_name == 'schedule' && github.repository == 'AtlassianPS/ConfluencePS') ||
+      (github.event_name == 'workflow_dispatch' &&
+       (inputs.track == 'cloud' || inputs.track == 'both'))
     runs-on: ubuntu-latest
+    env:
+      CI_CONFLUENCE_TYPE: Cloud
+      CONFLUENCE_CLOUD_URL: ${{ vars.CONFLUENCE_CLOUD_URL }}
+      ATLASSIAN_CLOUD_USER: ${{ vars.ATLASSIAN_CLOUD_USER }}
+      ATLASSIAN_CLOUD_PAT: ${{ secrets.ATLASSIAN_CLOUD_PAT }}
     steps:
-      - name: Scaffold marker
+      - uses: actions/checkout@v6
+      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@9a9367e22847bd24f86208ed2d98d207b0e2a3b3 # v0.1.6
+
+      - name: Run Cloud-tagged integration tests
         run: |
-          echo "Integration workflow scaffold on master."
-          echo "Full Cloud/DataCenter implementation lives on feature branches until merged."
+          Invoke-Build -Task TestIntegration -Tag 'Cloud' -PesterVerbosity Detailed
+        shell: pwsh
+
+      - name: Upload integration test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: Cloud-Integration-Tests
+          path: Test-Integration.xml
+
+  datacenter_integration_tests:
+    name: Data Center Integration Tests (Dockerized Confluence)
+    if: (github.event_name == 'schedule' && github.repository == 'AtlassianPS/ConfluencePS') ||
+      (github.event_name == 'workflow_dispatch' &&
+       (inputs.track == 'datacenter' || inputs.track == 'both'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    env:
+      CI_CONFLUENCE_TYPE: DataCenter
+      CI_CONFLUENCE_URL: http://localhost:1990/confluence
+      CI_CONFLUENCE_USER: admin
+      CI_CONFLUENCE_PASSWORD: admin
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Start Confluence Data Center container
+        run: docker compose up -d
+        shell: bash
+
+      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@9a9367e22847bd24f86208ed2d98d207b0e2a3b3 # v0.1.6
+
+      - name: Wait for Confluence to become reachable
+        run: ./Tools/Wait-ConfluenceServer.ps1 -TimeoutSeconds 1500
+        shell: pwsh
+
+      - name: Run DataCenter-tagged integration tests
+        run: |
+          Invoke-Build -Task TestIntegration -Tag 'DataCenter' -PesterVerbosity Detailed
+        shell: pwsh
+
+      - name: Upload integration test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: DataCenter-Integration-Tests
+          path: Test-Integration.xml
+
+      - name: Capture Confluence container logs for debugging
+        if: always()
+        run: docker compose logs confluence > confluence-container.log
+        shell: bash
+
+      - name: Upload Confluence container logs
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: DataCenter-Confluence-Container-Logs
+          path: confluence-container.log
+
+      - name: Tear down Confluence Data Center container
+        if: always()
+        run: docker compose down -v
+        shell: bash

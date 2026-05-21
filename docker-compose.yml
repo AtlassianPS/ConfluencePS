@@ -1,0 +1,17 @@
+services:
+  confluence:
+    # Mirrors the JiraPS Server-track approach: use the moveworkforward
+    # atlas-run-standalone image family because it already wraps AMPS and
+    # boots a disposable local Data Center-compatible Confluence quickly for CI.
+    #
+    # Default tag is `confluence-10` (linux/amd64, ~1.3 GB compressed), which
+    # matches GitHub-hosted Ubuntu runners. For local experiments, set
+    # CONFLUENCE_IMAGE_TAG in .env (for example: confluence-9).
+    image: moveworkforward/atlas-run-standalone:${CONFLUENCE_IMAGE_TAG:-confluence-10}
+    container_name: confluenceps-confluence-dc
+    ports:
+      - "1990:1990"
+    # Keep the AMPS process alive in detached mode (`docker compose up -d`).
+    tty: true
+    stdin_open: true
+    # Readiness is owned by Tools/Wait-ConfluenceServer.ps1.

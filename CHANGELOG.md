@@ -12,6 +12,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Migrated `Tools/setup.ps1` and `Tools/update.dependencies.ps1` to shared `AtlassianPS.Standards` bootstrap/update commands with deterministic standards-version resolution from `Tools/build.requirements.psd1`.
 - Replaced legacy PSDepend hashtable dependencies with pinned array requirements and aligned workflow setup action usage to the pinned standards action release.
 - `Set-ConfluencePage` now forwards `Version.Message` for `-InputObject` / pipeline updates when provided (#207, #231, [@JoseAPortilloJSC])
+- CI smoke tests now run the dedicated `Smoke` integration tag and fail fast when required Confluence Cloud integration settings are missing.
+- `integration_tests.yml` now runs real Cloud and Data Center integration jobs (instead of a scaffold marker), matching the JiraPS track model.
+- Integration test setup now follows the JiraPS `.env.example` model, including automatic `.env` loading and explicit Cloud (`CONFLUENCE_CLOUD_URL`, `ATLASSIAN_CLOUD_USER`, `ATLASSIAN_CLOUD_PAT`) vs DataCenter (`CI_CONFLUENCE_*`) track variable contracts.
 
 ### Fixed
 

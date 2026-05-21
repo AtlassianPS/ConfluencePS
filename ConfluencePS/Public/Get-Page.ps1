@@ -144,9 +144,7 @@
                 $CQLparameters = @("type=page")
                 $Label | ForEach-Object { $CQLparameters += "label=$_" }
                 if ($SpaceKey) { $CQLparameters += "space=$SpaceKey" }
-                $cqlQuery = ConvertTo-URLEncoded ($CQLparameters -join (" AND "))
-
-                $iwParameters["GetParameters"]["cql"] = $cqlQuery
+                $iwParameters["GetParameters"]["cql"] = ($CQLparameters -join " AND ")
 
                 Invoke-Method @iwParameters
                 break
@@ -154,8 +152,7 @@
             "byQuery" {
                 $iwParameters["Uri"] = $resourceApi -f "/search"
 
-                $cqlQuery = ConvertTo-URLEncoded $Query
-                $iwParameters["GetParameters"]["cql"] = "type=page AND $cqlQuery"
+                $iwParameters["GetParameters"]["cql"] = "type=page AND $Query"
 
                 Invoke-Method @iwParameters
             }

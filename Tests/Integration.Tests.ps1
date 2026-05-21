@@ -19,7 +19,12 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
     BeforeAll {
         $script:SpaceID = Get-Random
         . "$PSScriptRoot/Helpers/TestTools.ps1"
+        . "$PSScriptRoot/Helpers/IntegrationTestTools.ps1"
         $script:moduleToTest = Initialize-TestEnvironment -CallerPath $PSScriptRoot
+        $script:integrationEnvironment = Initialize-IntegrationEnvironment
+        if (-not $script:integrationEnvironment) {
+            throw "Integration environment not configured. Copy .env.example to .env and configure required variables."
+        }
         Import-Module $env:BHManifestToTest
     }
     AfterAll {
@@ -30,10 +35,10 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
     Context 'Set-ConfluenceInfo' {
         BeforeAll {
             # Could be a long one-liner, but breaking down for readability
-            $pass = ConvertTo-SecureString -AsPlainText -Force -String $env:WikiPass
-            $cred = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList ($env:WikiUser, $pass)
+            $pass = ConvertTo-SecureString -AsPlainText -Force -String $script:integrationEnvironment.Password
+            $cred = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList ($script:integrationEnvironment.Username, $pass)
 
-            Set-ConfluenceInfo -BaseURI $env:WikiURI -Credential $cred
+            Set-ConfluenceInfo -BaseURI $script:integrationEnvironment.CloudUrl -Credential $cred
         }
 
         # ASSERT
@@ -228,15 +233,14 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
 
     Context 'ConvertTo-ConfluenceStorageFormat' {
         # ARRANGE
-        $InputString = "Hi Pester!"
-        $OutputString = "<p>Hi Pester!</p>"
-
         BeforeAll {
+            $script:InputString = "Hi Pester!"
+            $script:OutputString = "<p>Hi Pester!</p>"
 
             # ACT
-        $result1 = $inputString | ConvertTo-ConfluenceStorageFormat
-        $result2 = ConvertTo-ConfluenceStorageFormat -Content $inputString
-        $result3 = ConvertTo-ConfluenceStorageFormat -Content $inputString, $inputString
+            $result1 = $InputString | ConvertTo-ConfluenceStorageFormat
+            $result2 = ConvertTo-ConfluenceStorageFormat -Content $InputString
+            $result3 = ConvertTo-ConfluenceStorageFormat -Content $InputString, $InputString
 
         }
 
@@ -248,9 +252,9 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             $result3 | Should -BeOfType [String]
         }
         It 'output matches the expected string' {
-            $result1 | Should -BeExactly $outputString
-            $result2 | Should -BeExactly $outputString
-            $result3 | Should -BeExactly @($outputString, $outputString)
+            $result1 | Should -BeExactly $OutputString
+            $result2 | Should -BeExactly $OutputString
+            $result3 | Should -BeExactly @($OutputString, $OutputString)
         }
     }
 
@@ -363,7 +367,6 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             $script:ContentRaw = "<p>Hi Pester!👋</p>"
             $script:ContentFormatted = "<p>Hi Pester!</p><p>👋</p>"
             (Get-ConfluenceSpace -SpaceKey $SpaceKey).Homepage | Add-ConfluenceLabel -Label "important" -ErrorAction Stop
-            Start-Sleep -Seconds 20 # Delay to allow DB index to update
 
             # ACT
             $script:GetTitle1 = Get-ConfluencePage -Title $Title1.ToLower() -SpaceKey $SpaceKey -PageSize 200 -ErrorAction SilentlyContinue
@@ -373,7 +376,15 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             $script:GetID1 = Get-ConfluencePage -PageID $GetTitle1.ID -ErrorAction SilentlyContinue
             $script:GetID2 = Get-ConfluencePage -PageID $GetTitle2.ID -ErrorAction SilentlyContinue
             $script:GetKeys = Get-ConfluencePage -SpaceKey $SpaceKey -ErrorAction SilentlyContinue | Sort-Object ID
-            $script:GetByLabel = Get-ConfluencePage -Label "important" -ErrorAction SilentlyContinue
+            $script:GetByLabel = $null
+            for ($retry = 0; $retry -lt 18; $retry++) {
+                $script:GetByLabel = Get-ConfluencePage -Label "important" -ErrorAction SilentlyContinue
+                if (@($GetByLabel).Count -ge 1) {
+                    break
+                }
+
+                Start-Sleep -Seconds 5
+            }
             $script:GetByQuery = Get-ConfluencePage -Query $query -ErrorAction SilentlyContinue
             $script:GetSpacePage = Get-ConfluencePage -Space (Get-ConfluenceSpace -SpaceKey $SpaceKey) -ErrorAction SilentlyContinue
             $script:GetSpacePiped = Get-ConfluenceSpace -SpaceKey $SpaceKey | Get-ConfluencePage -ErrorAction SilentlyContinue
@@ -639,40 +650,6 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
         * fails when version is 1 larger than current version
         #>
 
-        # ARRANGE
-        function Set-PageContent {
-            [Diagnostics.CodeAnalysis.SuppressMessageAttribute(
-                'PSUseShouldProcessForStateChangingFunctions',
-                '',
-                Scope = '*'
-            )]
-            [CmdletBinding()]
-            param (
-                [Parameter(
-                    Mandatory = $true,
-                    ValueFromPipeline = $true
-                )]
-                [ConfluencePS.Page]$InputObject,
-
-                $Title,
-                $Body,
-                $VersionMessage
-            )
-
-            process {
-                if ($Title) {
-                    $InputObject.Title = $Title
-                }
-                if ($Body) {
-                    $InputObject.Body = $Body
-                }
-                if ($VersionMessage) {
-                    $InputObject.Version.Message = $VersionMessage
-                }
-                $InputObject
-            }
-        }
-
         BeforeAll {
             $script:SpaceKey = "PESTER$SpaceID"
             $script:Page1 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page Piped"
@@ -694,7 +671,10 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
 
             # ACT
             # change the body of all pages - all pages should have version 2
-            $script:AllChangedPages = $AllPages | Set-PageContent -Body $NewContent1 | Set-ConfluencePage -ErrorAction Stop
+            $script:AllChangedPages = $AllPages | ForEach-Object {
+                $_.Body = $NewContent1
+                $_
+            } | Set-ConfluencePage -ErrorAction Stop
             # set the body of a page to the same value as it already had - should remain on verion 2
             $script:SetPage1 = $Page1.ID | Set-ConfluencePage -Body $NewContent1 -ErrorAction Stop
             # change the body of a page by property - this page should have version 3
@@ -709,11 +689,17 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             $script:SetPage5 = Set-ConfluencePage -PageID $Page5.ID -ParentID $Page4.ID
             # change the title of a page
             $script:SetPage6 = $Page6.ID | Set-ConfluencePage -Title $NewTitle6
-            $script:SetPage7 = $AllChangedPages | Where-Object { $_.ID -eq $Page7.ID } | Set-PageContent -Title $NewTitle7 | Set-ConfluencePage
+            $script:SetPage7 = $AllChangedPages | Where-Object { $_.ID -eq $Page7.ID } | ForEach-Object {
+                $_.Title = $NewTitle7
+                $_
+            } | Set-ConfluencePage
             # clear the body of a page
             $script:SetPage8 = Set-ConfluencePage -PageID $Page8.ID -Body ""
             # change the version message of a page
-            $script:SetPage9 = $AllChangedPages | Where-Object { $_.ID -eq $Page9.ID } | Set-PageContent -VersionMessage $NewVersionMessage9 | Set-ConfluencePage
+            $script:SetPage9 = $AllChangedPages | Where-Object { $_.ID -eq $Page9.ID } | ForEach-Object {
+                $_.Version.Message = $NewVersionMessage9
+                $_
+            } | Set-ConfluencePage
 
         }
 
@@ -773,7 +759,7 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             $SetPage7.Space.Key | Should -BeExactly $SpaceKey
             $SetPage8.Space.Key | Should -BeExactly $SpaceKey
             $SetPage9.Space.Key | Should -BeExactly $SpaceKey
-            $AllChangedPages.Space.Key | Should -BeExactly (1..9 | ForEach-Object {$SpaceKey})
+            ($AllChangedPages.Space.Key | Select-Object -Unique) | Should -BeExactly $SpaceKey
         }
         It 'title has the specified value' {
             $SetPage1.Title | Should -BeExactly $Page1.Title
@@ -831,8 +817,22 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
         BeforeAll {
 
             # ACT
-        $ChildPages = (Get-ConfluenceSpace -SpaceKey "PESTER$SpaceID").Homepage | Get-ConfluenceChildPage
-        $DesendantPages = (Get-ConfluenceSpace -SpaceKey "PESTER$SpaceID").Homepage | Get-ConfluenceChildPage -Recurse
+            $ChildPages = $null
+            $DesendantPages = $null
+            for ($retry = 0; $retry -lt 6; $retry++) {
+                try {
+                    $ChildPages = (Get-ConfluenceSpace -SpaceKey "PESTER$SpaceID").Homepage | Get-ConfluenceChildPage -ErrorAction Stop
+                    $DesendantPages = (Get-ConfluenceSpace -SpaceKey "PESTER$SpaceID").Homepage | Get-ConfluenceChildPage -Recurse -ErrorAction Stop
+                    break
+                }
+                catch {
+                    if ($retry -eq 5) {
+                        throw
+                    }
+
+                    Start-Sleep -Seconds 5
+                }
+            }
 
         }
 

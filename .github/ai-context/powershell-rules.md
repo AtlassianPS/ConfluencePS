@@ -28,18 +28,22 @@ Invoke-Build -Task Test -Tag Unit
 Invoke-Build -Task Test -Tag Documentation
 Invoke-Build -Task TestIntegration -Tag Cloud
 Invoke-Build -Task TestIntegration -Tag DataCenter
+Invoke-Build -Task StartConfluenceDocker
+Invoke-Build -Task StopConfluenceDocker
 
 # Required before commit/PR finalization
 Invoke-Build -Task Build, Test
 ```
 
-Integration runs require `WikiURI`, `WikiUser`, and `WikiPass` environment variables.
+Integration runs load values from `.env` automatically (copy from `.env.example`).
+Cloud track requires `CONFLUENCE_CLOUD_URL`, `ATLASSIAN_CLOUD_USER`, and `ATLASSIAN_CLOUD_PAT`.
+DataCenter track requires `CI_CONFLUENCE_TYPE=DataCenter`, `CI_CONFLUENCE_URL`, `CI_CONFLUENCE_USER`, and `CI_CONFLUENCE_PASSWORD`.
 
 ## Common Mistakes
 
 - Running full `Invoke-Build -Task Build, Test` for every tiny edit. Use targeted `Invoke-Pester` first.
 - Skipping the full `Invoke-Build -Task Build, Test` gate before commit/PR finalization.
-- Running `Invoke-Build -Task TestIntegration` without `WikiURI`, `WikiUser`, and `WikiPass`.
+- Running `Invoke-Build -Task TestIntegration` without copying `.env.example` to `.env` and setting track-specific variables.
 - Editing command docs without running `Invoke-Pester -Path 'Tests/Help.Tests.ps1'`.
 
 ## Source and Test Layout
@@ -83,4 +87,5 @@ Integration runs require `WikiURI`, `WikiUser`, and `WikiPass` environment varia
 - User-facing command docs belong in `docs/en-US/commands/*.md`.
 - Include changelog updates for user-visible behavior changes.
 - `.github/workflows/ci.yml` path filters can skip instruction-only changes.
+- `.github/workflows/integration_tests.yml` is the full-suite Cloud/Data Center integration workflow (nightly + manual).
 - Run local validation before opening/updating PRs when changing instruction files.
