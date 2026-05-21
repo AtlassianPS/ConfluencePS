@@ -22,10 +22,50 @@ $projectRoot = (Resolve-Path -LiteralPath (Join-Path -Path $PSScriptRoot -ChildP
 $buildRequirementsPath = Join-Path -Path $projectRoot -ChildPath 'Tools/build.requirements.psd1'
 $manifestPath = Join-Path -Path $projectRoot -ChildPath 'ConfluencePS/ConfluencePS.psd1'
 
+function Get-BuildRequirementsFromDataFile {
+    [CmdletBinding()]
+    [OutputType([Object[]])]
+    param(
+        [Parameter(Mandatory)]
+        [ValidateNotNullOrEmpty()]
+        [String]$Path
+    )
+
+    $tokens = $null
+    $parseErrors = $null
+    $ast = [System.Management.Automation.Language.Parser]::ParseFile($Path, [ref]$tokens, [ref]$parseErrors)
+    if ($parseErrors -and $parseErrors.Count -gt 0) {
+        throw "Unable to parse data file '$Path': $($parseErrors[0].Message)"
+    }
+
+    if (-not $ast.EndBlock -or $ast.EndBlock.Statements.Count -eq 0) {
+        throw "Data file '$Path' does not contain a supported data expression."
+    }
+
+    $statement = $ast.EndBlock.Statements[0]
+    if ($statement -isnot [System.Management.Automation.Language.PipelineAst]) {
+        throw "Data file '$Path' does not contain a supported data expression."
+    }
+
+    $pipelineElement = $statement.PipelineElements[0]
+    if ($pipelineElement -isnot [System.Management.Automation.Language.CommandExpressionAst]) {
+        throw "Data file '$Path' does not contain a supported data expression."
+    }
+
+    return @($pipelineElement.Expression.SafeGetValue())
+}
+
 $buildRequirements = Import-PowerShellDataFile -Path $buildRequirementsPath
 $standardsRequirement = $buildRequirements |
     Where-Object { $_.ModuleName -eq 'AtlassianPS.Standards' } |
     Select-Object -First 1
+
+if (-not $standardsRequirement -or -not $standardsRequirement.RequiredVersion) {
+    $buildRequirements = Get-BuildRequirementsFromDataFile -Path $buildRequirementsPath
+    $standardsRequirement = $buildRequirements |
+        Where-Object { $_.ModuleName -eq 'AtlassianPS.Standards' } |
+        Select-Object -First 1
+}
 
 if (-not $standardsRequirement -or -not $standardsRequirement.RequiredVersion) {
     throw "Could not resolve AtlassianPS.Standards required version from '$buildRequirementsPath'."

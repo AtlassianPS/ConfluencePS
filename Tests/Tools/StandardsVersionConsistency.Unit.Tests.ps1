@@ -34,7 +34,31 @@ Describe 'AtlassianPS.Standards version consistency' -Tag Unit {
         $standardsRequirement = $buildRequirements |
             Where-Object { $_.ModuleName -eq 'AtlassianPS.Standards' } |
             Select-Object -First 1
+
+        if (-not $standardsRequirement -or -not $standardsRequirement.RequiredVersion) {
+            $tokens = $null
+            $parseErrors = $null
+            $ast = [System.Management.Automation.Language.Parser]::ParseFile($buildRequirementsPath, [ref]$tokens, [ref]$parseErrors)
+            if ($parseErrors -and $parseErrors.Count -gt 0) {
+                throw "Unable to parse build requirements file '$buildRequirementsPath': $($parseErrors[0].Message)"
+            }
+
+            $statement = $ast.EndBlock.Statements[0]
+            if (
+                $statement -isnot [System.Management.Automation.Language.PipelineAst] -or
+                $statement.PipelineElements[0] -isnot [System.Management.Automation.Language.CommandExpressionAst]
+            ) {
+                throw "Build requirements file '$buildRequirementsPath' does not contain a supported data expression."
+            }
+
+            $buildRequirements = @($statement.PipelineElements[0].Expression.SafeGetValue())
+            $standardsRequirement = $buildRequirements |
+                Where-Object { $_.ModuleName -eq 'AtlassianPS.Standards' } |
+                Select-Object -First 1
+        }
+
         $standardsVersion = [string] $standardsRequirement.RequiredVersion
+        $standardsVersion | Should -Not -BeNullOrEmpty
 
         $workflowPaths = Get-ChildItem -Path (Join-Path -Path $projectRoot -ChildPath '.github/workflows') -File -Filter '*.yml' |
             Select-Object -ExpandProperty FullName
