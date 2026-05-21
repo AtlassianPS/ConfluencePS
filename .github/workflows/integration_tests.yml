@@ -75,6 +75,7 @@ jobs:
         shell: pwsh
 
       - name: Run DataCenter-tagged integration tests
+        timeout-minutes: 60
         run: |
           Invoke-Build -Task TestIntegration -Tag 'DataCenter' -PesterVerbosity Detailed
         shell: pwsh
