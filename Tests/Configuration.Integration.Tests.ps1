@@ -221,11 +221,11 @@ Describe "Integration Test Configuration" -Tag 'Integration', 'Smoke', 'Cloud', 
             $addedAttachment | Should -Not -BeNullOrEmpty
 
             $attachmentsAfterAdd = Get-ConfluenceAttachment -PageID $script:SmokeWritePage.ID -ErrorAction Stop
-            @($attachmentsAfterAdd | Where-Object { $_.Filename -eq $smokeAttachmentName }).Count | Should -BeGreaterThan 0
+            @($attachmentsAfterAdd | Where-Object { $_.Title -eq $smokeAttachmentName }).Count | Should -BeGreaterThan 0
 
             $null = Remove-ConfluenceAttachment -Attachment $addedAttachment -Confirm:$false -ErrorAction Stop
             $attachmentsAfterRemove = Get-ConfluenceAttachment -PageID $script:SmokeWritePage.ID -ErrorAction Stop
-            @($attachmentsAfterRemove | Where-Object { $_.Filename -eq $smokeAttachmentName }).Count | Should -Be 0
+            @($attachmentsAfterRemove | Where-Object { $_.Title -eq $smokeAttachmentName }).Count | Should -Be 0
         }
     }
 }
