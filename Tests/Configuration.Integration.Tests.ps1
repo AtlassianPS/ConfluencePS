@@ -120,6 +120,7 @@ Describe "Integration Test Configuration" -Tag 'Integration', 'Smoke', 'Cloud', 
         BeforeAll {
             $script:SmokeWriteReady = $false
             $script:SmokeWritePage = $null
+            $script:SmokeWriteSpace = $null
             $script:SmokeWriteSkipReason = $null
             $script:SmokeWriteLabel = "smoke-write-$([Guid]::NewGuid().ToString('N').Substring(0, 8))"
 
@@ -129,22 +130,12 @@ Describe "Integration Test Configuration" -Tag 'Integration', 'Smoke', 'Cloud', 
             }
 
             Set-ConfluenceInfo -BaseUri $script:IntegrationEnvironment.CloudUrl -Credential $script:Credential
-            $script:SmokeWriteSpace = Get-ConfluenceSpace -ApiUri $script:ApiUri -Credential $script:Credential -ErrorAction Stop |
-                Select-Object -First 1
-
-            if (-not $script:SmokeWriteSpace) {
-                $script:SmokeWriteSkipReason = "No accessible Confluence space was returned"
-                return
-            }
-
+            $script:SmokeWriteSpaceKey = "SMOKE$([Guid]::NewGuid().ToString('N').Substring(0, 8))".ToUpperInvariant()
             $script:SmokeWriteTitle = "ConfluencePS Smoke Write $([Guid]::NewGuid().ToString('N').Substring(0, 12))"
-            try {
-                $script:SmokeWritePage = New-ConfluencePage -Title $script:SmokeWriteTitle -SpaceKey $script:SmokeWriteSpace.Key -Body "<p>ConfluencePS smoke create</p>" -ErrorAction Stop
-                $script:SmokeWriteReady = $true
-            }
-            catch {
-                $script:SmokeWriteSkipReason = "Could not create smoke-write page in space '$($script:SmokeWriteSpace.Key)': $($_.Exception.Message)"
-            }
+
+            $script:SmokeWriteSpace = New-ConfluenceSpace -Key $script:SmokeWriteSpaceKey -Name "ConfluencePS Smoke Write $($script:SmokeWriteSpaceKey)" -Description "Disposable smoke-test space" -ErrorAction Stop
+            $script:SmokeWritePage = New-ConfluencePage -Title $script:SmokeWriteTitle -SpaceKey $script:SmokeWriteSpace.Key -Body "<p>ConfluencePS smoke create</p>" -ErrorAction Stop
+            $script:SmokeWriteReady = $true
         }
 
         AfterAll {
@@ -156,12 +147,23 @@ Describe "Integration Test Configuration" -Tag 'Integration', 'Smoke', 'Cloud', 
                     Write-Warning "Failed to remove smoke-write page $($script:SmokeWritePage.ID): $($_.Exception.Message)"
                 }
             }
+            if ($script:SmokeWriteSpace) {
+                try {
+                    Remove-ConfluenceSpace -Key $script:SmokeWriteSpace.Key -Force -ErrorAction Stop
+                }
+                catch {
+                    Write-Warning "Failed to remove smoke-write space $($script:SmokeWriteSpace.Key): $($_.Exception.Message)"
+                }
+            }
         }
 
         It "can create a page in a writable space" {
             if (-not $script:SmokeWriteReady) {
-                Set-ItResult -Skipped -Because $script:SmokeWriteSkipReason
-                return
+                if ($script:SmokeWriteSkipReason) {
+                    Set-ItResult -Skipped -Because $script:SmokeWriteSkipReason
+                    return
+                }
+                throw "Smoke write setup did not create a writable disposable space and page."
             }
 
             $script:SmokeWritePage | Should -BeOfType [ConfluencePS.Page]
@@ -171,8 +173,11 @@ Describe "Integration Test Configuration" -Tag 'Integration', 'Smoke', 'Cloud', 
 
         It "can update the smoke-write page body" {
             if (-not $script:SmokeWriteReady) {
-                Set-ItResult -Skipped -Because $script:SmokeWriteSkipReason
-                return
+                if ($script:SmokeWriteSkipReason) {
+                    Set-ItResult -Skipped -Because $script:SmokeWriteSkipReason
+                    return
+                }
+                throw "Smoke write setup did not create a writable disposable space and page."
             }
 
             $script:UpdatedSmokeWritePage = Set-ConfluencePage -PageID $script:SmokeWritePage.ID -Body "<p>ConfluencePS smoke updated</p>" -ErrorAction Stop
@@ -184,23 +189,29 @@ Describe "Integration Test Configuration" -Tag 'Integration', 'Smoke', 'Cloud', 
 
         It "supports label add/remove lifecycle on the smoke-write page" {
             if (-not $script:SmokeWriteReady) {
-                Set-ItResult -Skipped -Because $script:SmokeWriteSkipReason
-                return
+                if ($script:SmokeWriteSkipReason) {
+                    Set-ItResult -Skipped -Because $script:SmokeWriteSkipReason
+                    return
+                }
+                throw "Smoke write setup did not create a writable disposable space and page."
             }
 
             $null = Add-ConfluenceLabel -PageID $script:SmokeWritePage.ID -Label $script:SmokeWriteLabel -ErrorAction Stop
             $labelsAfterAdd = Get-ConfluenceLabel -PageID $script:SmokeWritePage.ID -ErrorAction Stop
-            ($labelsAfterAdd.Label -contains $script:SmokeWriteLabel) | Should -Be $true
+            ($labelsAfterAdd.Labels.Name -contains $script:SmokeWriteLabel) | Should -Be $true
 
             $null = Remove-ConfluenceLabel -PageID $script:SmokeWritePage.ID -Label $script:SmokeWriteLabel -Confirm:$false -ErrorAction Stop
             $labelsAfterRemove = Get-ConfluenceLabel -PageID $script:SmokeWritePage.ID -ErrorAction Stop
-            ($labelsAfterRemove.Label -contains $script:SmokeWriteLabel) | Should -Be $false
+            ($labelsAfterRemove.Labels.Name -contains $script:SmokeWriteLabel) | Should -Be $false
         }
 
         It "supports attachment add/remove lifecycle on the smoke-write page" {
             if (-not $script:SmokeWriteReady) {
-                Set-ItResult -Skipped -Because $script:SmokeWriteSkipReason
-                return
+                if ($script:SmokeWriteSkipReason) {
+                    Set-ItResult -Skipped -Because $script:SmokeWriteSkipReason
+                    return
+                }
+                throw "Smoke write setup did not create a writable disposable space and page."
             }
 
             $smokeAttachmentPath = Join-Path $PSScriptRoot 'resources/Test.txt'
