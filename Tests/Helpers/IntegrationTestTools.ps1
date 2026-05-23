@@ -89,6 +89,34 @@ function Get-ConfluenceIntegrationRequiredVariables {
     )
 }
 
+function Resolve-ConfluenceRepositoryRoot {
+    [CmdletBinding()]
+    [OutputType([string])]
+    param()
+
+    if (
+        -not [string]::IsNullOrWhiteSpace($env:BHProjectPath) -and
+        (Test-Path -LiteralPath (Join-Path -Path $env:BHProjectPath -ChildPath 'ConfluencePS.build.ps1')) -and
+        (Test-Path -LiteralPath (Join-Path -Path $env:BHProjectPath -ChildPath 'Tools/build.requirements.psd1'))
+    ) {
+        return (Resolve-Path -LiteralPath $env:BHProjectPath).ProviderPath
+    }
+
+    $candidate = (Resolve-Path -LiteralPath $PSScriptRoot).ProviderPath
+    while ($candidate -and ($candidate -ne [System.IO.Path]::GetPathRoot($candidate))) {
+        if (
+            (Test-Path -LiteralPath (Join-Path -Path $candidate -ChildPath 'ConfluencePS.build.ps1')) -and
+            (Test-Path -LiteralPath (Join-Path -Path $candidate -ChildPath 'Tools/build.requirements.psd1'))
+        ) {
+            return $candidate
+        }
+
+        $candidate = Split-Path -Path $candidate -Parent
+    }
+
+    throw "Could not resolve repository root from '$PSScriptRoot'."
+}
+
 function Initialize-IntegrationEnvironment {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidGlobalVars', '', Justification = 'Process-wide warn-once guard shared across dot-sourced integration files')]
     [CmdletBinding()]
@@ -99,12 +127,7 @@ function Initialize-IntegrationEnvironment {
         return $script:_CachedIntegrationEnv
     }
 
-    $projectRoot = if (-not [string]::IsNullOrWhiteSpace($env:BHProjectPath)) {
-        $env:BHProjectPath
-    }
-    else {
-        (Get-Location).Path
-    }
+    $projectRoot = Resolve-ConfluenceRepositoryRoot
     $envFile = Join-Path $projectRoot '.env'
     if (Test-Path $envFile) {
         Read-DotEnvFile -Path $envFile

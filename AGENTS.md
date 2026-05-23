@@ -63,6 +63,8 @@ Invoke-Build -Task Test -Tag Documentation
 # Integration tests (copy .env.example to .env first)
 Invoke-Build -Task TestIntegration -Tag Cloud
 Invoke-Build -Task TestIntegration -Tag DataCenter
+Invoke-Build -Task StartConfluenceDocker
+Invoke-Build -Task StopConfluenceDocker
 
 # Required before commit/PR finalization
 Invoke-Build -Task Build, Test
@@ -111,6 +113,7 @@ Before merging: ensure the Windows PowerShell 5.1 CI test job is green.
 ## CI/CD Alignment
 
 - `.github/workflows/ci.yml` is the required PR/push quality gate.
+- `.github/workflows/integration_tests.yml` runs full integration suites on a nightly schedule (Cloud + Dockerized Data Center) and manual dispatch.
 - `.github/workflows/release.yml` publishes tagged releases.
 - For instruction-only changes, run local validation before opening/updating a PR.
 

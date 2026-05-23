@@ -102,9 +102,18 @@
         if (
             ($PSVersionTable.PSVersion.Major -ge 6) -and
             ($Uri.Scheme -eq "http") -and
-            ($Credential -or $PersonalAccessToken)
+            ($Credential -or $PersonalAccessToken) -and
+            ($Uri.Host -in @("localhost", "127.0.0.1", "::1"))
         ) {
-            $splatParameters["AllowUnencryptedAuthentication"] = $true
+            $allowUnencryptedAuthentication = (
+                @('1', 'true', 'yes') -contains "$($env:CONFLUENCE_ALLOW_UNENCRYPTED_AUTH)".Trim().ToLowerInvariant()
+            ) -and (
+                @('localhost', '127.0.0.1', '::1') -contains $Uri.Host
+            )
+
+            if ($allowUnencryptedAuthentication) {
+                $splatParameters["AllowUnencryptedAuthentication"] = $true
+            }
         }
 
         #add 'start' query parameter if Paging with Skip is being used

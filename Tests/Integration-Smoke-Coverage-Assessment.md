@@ -13,7 +13,7 @@ Scope: `confluence-integration-smoke`, implemented and re-evaluated on branch `c
 ## Current coverage summary
 
 - Integration suite breadth: `Tests/Integration.Tests.ps1` contains **105** assertions across **21** cmdlet-focused contexts.
-- Smoke suite breadth: `Tests/Configuration.Integration.Tests.ps1` contains **9** assertions under one `Smoke`-tagged describe block.
+- Smoke suite breadth: `Tests/Configuration.Integration.Tests.ps1` contains **11** assertions under one `Smoke`-tagged describe block.
 - Public cmdlets in module: **21**.
 - Public cmdlets without dedicated integration context coverage: **0**.
 

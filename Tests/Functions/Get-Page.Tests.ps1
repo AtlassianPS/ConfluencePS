@@ -29,19 +29,26 @@ InModuleScope ConfluencePS {
             $null = Get-Page -ApiUri "https://example.com/wiki/rest/api" -Label @("labelA", "labelB")
 
             $script:lastUri | Should -Be "https://example.com/wiki/rest/api/content/search"
-            [System.Net.WebUtility]::UrlDecode($script:lastCql) | Should -Be "type=page AND label=labelA AND label=labelB"
+            $script:lastCql | Should -Be "type=page AND label=labelA AND label=labelB"
         }
 
         It "builds one label clause for a single byLabel value" {
             $null = Get-Page -ApiUri "https://example.com/wiki/rest/api" -Label @("labelA")
 
-            [System.Net.WebUtility]::UrlDecode($script:lastCql) | Should -Be "type=page AND label=labelA"
+            $script:lastCql | Should -Be "type=page AND label=labelA"
         }
 
         It "appends space filtering to multi-label byLabel queries" {
             $null = Get-Page -ApiUri "https://example.com/wiki/rest/api" -SpaceKey "HOTH" -Label @("labelA", "labelB")
 
-            [System.Net.WebUtility]::UrlDecode($script:lastCql) | Should -Be "type=page AND label=labelA AND label=labelB AND space=HOTH"
+            $script:lastCql | Should -Be "type=page AND label=labelA AND label=labelB AND space=HOTH"
+        }
+
+        It "prefixes byQuery CQL with type=page without pre-encoding" {
+            $null = Get-Page -ApiUri "https://example.com/wiki/rest/api" -Query 'space=HOTH and title~"*Object"'
+
+            $script:lastUri | Should -Be "https://example.com/wiki/rest/api/content/search"
+            $script:lastCql | Should -Be 'type=page AND space=HOTH and title~"*Object"'
         }
 
         It "throws when Label is an empty array" {

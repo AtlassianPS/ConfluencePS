@@ -583,6 +583,9 @@ Task StartConfluenceDocker {
     if (-not $env:CI_CONFLUENCE_PASSWORD) {
         $env:CI_CONFLUENCE_PASSWORD = 'admin'
     }
+    if (-not $env:CONFLUENCE_ALLOW_UNENCRYPTED_AUTH) {
+        $env:CONFLUENCE_ALLOW_UNENCRYPTED_AUTH = 'true'
+    }
 
     & (Join-Path $env:BHProjectPath 'Tools/Wait-ConfluenceServer.ps1')
 }

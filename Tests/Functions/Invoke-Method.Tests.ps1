@@ -92,7 +92,7 @@ namespace ConfluencePS.Tests {
             } -Exactly -Times 1 -Scope It
         }
 
-        It "allows unencrypted authentication for HTTP requests" {
+        It "allows unencrypted authentication only when explicitly enabled for localhost" {
             if (
                 ($PSVersionTable.PSVersion.Major -lt 6) -or
                 (-not (Get-Command Invoke-WebRequest).Parameters.ContainsKey("AllowUnencryptedAuthentication"))
@@ -104,11 +104,71 @@ namespace ConfluencePS.Tests {
             $securePassword = ConvertTo-SecureString -AsPlainText -Force -String "password"
             $credential = [pscredential]::new("user", $securePassword)
 
-            $null = Invoke-Method -Uri "http://example.com/wiki/rest/api/content" -Credential $credential -ErrorAction Stop
+            $originalFlag = $env:CONFLUENCE_ALLOW_UNENCRYPTED_AUTH
+            $env:CONFLUENCE_ALLOW_UNENCRYPTED_AUTH = "true"
 
-            Should -Invoke -CommandName Invoke-WebRequest -ModuleName ConfluencePS -ParameterFilter {
-                $AllowUnencryptedAuthentication
-            } -Exactly -Times 1 -Scope It
+            try {
+                $null = Invoke-Method -Uri "http://localhost/wiki/rest/api/content" -Credential $credential -ErrorAction Stop
+
+                Should -Invoke -CommandName Invoke-WebRequest -ModuleName ConfluencePS -ParameterFilter {
+                    $AllowUnencryptedAuthentication
+                } -Exactly -Times 1 -Scope It
+            }
+            finally {
+                $env:CONFLUENCE_ALLOW_UNENCRYPTED_AUTH = $originalFlag
+            }
+        }
+
+        It "does not set unencrypted authentication when explicit opt-in is missing" {
+            if (
+                ($PSVersionTable.PSVersion.Major -lt 6) -or
+                (-not (Get-Command Invoke-WebRequest).Parameters.ContainsKey("AllowUnencryptedAuthentication"))
+            ) {
+                Set-ItResult -Skipped -Because "AllowUnencryptedAuthentication is unavailable in this PowerShell version."
+                return
+            }
+
+            $securePassword = ConvertTo-SecureString -AsPlainText -Force -String "password"
+            $credential = [pscredential]::new("user", $securePassword)
+            $originalFlag = $env:CONFLUENCE_ALLOW_UNENCRYPTED_AUTH
+            $env:CONFLUENCE_ALLOW_UNENCRYPTED_AUTH = $null
+
+            try {
+                $null = Invoke-Method -Uri "http://localhost/wiki/rest/api/content" -Credential $credential -ErrorAction Stop
+
+                Should -Invoke -CommandName Invoke-WebRequest -ModuleName ConfluencePS -ParameterFilter {
+                    -not $AllowUnencryptedAuthentication
+                } -Exactly -Times 1 -Scope It
+            }
+            finally {
+                $env:CONFLUENCE_ALLOW_UNENCRYPTED_AUTH = $originalFlag
+            }
+        }
+
+        It "does not set unencrypted authentication for non-local HTTP hosts" {
+            if (
+                ($PSVersionTable.PSVersion.Major -lt 6) -or
+                (-not (Get-Command Invoke-WebRequest).Parameters.ContainsKey("AllowUnencryptedAuthentication"))
+            ) {
+                Set-ItResult -Skipped -Because "AllowUnencryptedAuthentication is unavailable in this PowerShell version."
+                return
+            }
+
+            $securePassword = ConvertTo-SecureString -AsPlainText -Force -String "password"
+            $credential = [pscredential]::new("user", $securePassword)
+            $originalFlag = $env:CONFLUENCE_ALLOW_UNENCRYPTED_AUTH
+            $env:CONFLUENCE_ALLOW_UNENCRYPTED_AUTH = "true"
+
+            try {
+                $null = Invoke-Method -Uri "http://example.com/wiki/rest/api/content" -Credential $credential -ErrorAction Stop
+
+                Should -Invoke -CommandName Invoke-WebRequest -ModuleName ConfluencePS -ParameterFilter {
+                    -not $AllowUnencryptedAuthentication
+                } -Exactly -Times 1 -Scope It
+            }
+            finally {
+                $env:CONFLUENCE_ALLOW_UNENCRYPTED_AUTH = $originalFlag
+            }
         }
 
         It "does not set unencrypted authentication for HTTPS requests" {
@@ -122,12 +182,19 @@ namespace ConfluencePS.Tests {
 
             $securePassword = ConvertTo-SecureString -AsPlainText -Force -String "password"
             $credential = [pscredential]::new("user", $securePassword)
+            $originalFlag = $env:CONFLUENCE_ALLOW_UNENCRYPTED_AUTH
+            $env:CONFLUENCE_ALLOW_UNENCRYPTED_AUTH = "true"
 
-            $null = Invoke-Method -Uri "https://example.com/wiki/rest/api/content" -Credential $credential -ErrorAction Stop
+            try {
+                $null = Invoke-Method -Uri "https://localhost/wiki/rest/api/content" -Credential $credential -ErrorAction Stop
 
-            Should -Invoke -CommandName Invoke-WebRequest -ModuleName ConfluencePS -ParameterFilter {
-                -not $AllowUnencryptedAuthentication
-            } -Exactly -Times 1 -Scope It
+                Should -Invoke -CommandName Invoke-WebRequest -ModuleName ConfluencePS -ParameterFilter {
+                    -not $AllowUnencryptedAuthentication
+                } -Exactly -Times 1 -Scope It
+            }
+            finally {
+                $env:CONFLUENCE_ALLOW_UNENCRYPTED_AUTH = $originalFlag
+            }
         }
 
         It "handles success payloads with duplicate JSON key casing" {

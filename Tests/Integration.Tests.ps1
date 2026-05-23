@@ -238,9 +238,9 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             $script:OutputString = "<p>Hi Pester!</p>"
 
             # ACT
-            $result1 = $InputString | ConvertTo-ConfluenceStorageFormat
-            $result2 = ConvertTo-ConfluenceStorageFormat -Content $InputString
-            $result3 = ConvertTo-ConfluenceStorageFormat -Content $InputString, $InputString
+            $result1 = $script:InputString | ConvertTo-ConfluenceStorageFormat
+            $result2 = ConvertTo-ConfluenceStorageFormat -Content $script:InputString
+            $result3 = ConvertTo-ConfluenceStorageFormat -Content $script:InputString, $script:InputString
 
         }
 
@@ -252,9 +252,9 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             $result3 | Should -BeOfType [String]
         }
         It 'output matches the expected string' {
-            $result1 | Should -BeExactly $OutputString
-            $result2 | Should -BeExactly $OutputString
-            $result3 | Should -BeExactly @($OutputString, $OutputString)
+            $result1 | Should -BeExactly $script:OutputString
+            $result2 | Should -BeExactly $script:OutputString
+            $result3 | Should -BeExactly @($script:OutputString, $script:OutputString)
         }
     }
 
@@ -262,22 +262,22 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
         BeforeAll {
             $script:InvokeMethodApiUri = '{0}/rest/api' -f $script:integrationEnvironment.CloudUrl.TrimEnd('/')
             $script:InvokeMethodSecurePassword = ConvertTo-SecureString -AsPlainText -Force -String $script:integrationEnvironment.Password
-            $script:InvokeMethodCredential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList ($script:integrationEnvironment.Username, $script:InvokeMethodSecurePassword)
+            $script:InvokeMethodCredential = [System.Management.Automation.PSCredential]::new($script:integrationEnvironment.Username, $script:InvokeMethodSecurePassword)
 
             $script:InvokeMethodSpaceResults = Invoke-ConfluenceMethod -Uri "$script:InvokeMethodApiUri/space" -GetParameters @{ limit = 1 } -Credential $script:InvokeMethodCredential -ErrorAction Stop
             $script:InvokeMethodTypedSpaceResults = Invoke-ConfluenceMethod -Uri "$script:InvokeMethodApiUri/space" -GetParameters @{ limit = 1 } -Credential $script:InvokeMethodCredential -OutputType ([ConfluencePS.Space]) -ErrorAction Stop
         }
 
         It 'returns at least one space result from a direct API call' {
-            @($InvokeMethodSpaceResults).Count | Should -BeGreaterThan 0
-            @($InvokeMethodSpaceResults)[0].ID | Should -Not -BeNullOrEmpty
-            @($InvokeMethodSpaceResults)[0].Key | Should -Not -BeNullOrEmpty
+            @($script:InvokeMethodSpaceResults).Count | Should -BeGreaterThan 0
+            @($script:InvokeMethodSpaceResults)[0].ID | Should -Not -BeNullOrEmpty
+            @($script:InvokeMethodSpaceResults)[0].Key | Should -Not -BeNullOrEmpty
         }
 
         It 'can cast direct API results to ConfluencePS.Space' {
-            @($InvokeMethodTypedSpaceResults).Count | Should -BeGreaterThan 0
-            @($InvokeMethodTypedSpaceResults)[0] | Should -BeOfType [ConfluencePS.Space]
-            @($InvokeMethodTypedSpaceResults)[0].Key | Should -Not -BeNullOrEmpty
+            @($script:InvokeMethodTypedSpaceResults).Count | Should -BeGreaterThan 0
+            @($script:InvokeMethodTypedSpaceResults)[0] | Should -BeOfType [ConfluencePS.Space]
+            @($script:InvokeMethodTypedSpaceResults)[0].Key | Should -Not -BeNullOrEmpty
         }
     }
 
@@ -428,6 +428,7 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             $script:ContentRaw = "<p>Hi Pester!👋</p>"
             $script:ContentFormatted = "<p>Hi Pester!</p><p>👋</p>"
             (Get-ConfluenceSpace -SpaceKey $SpaceKey).Homepage | Add-ConfluenceLabel -Label "important" -ErrorAction Stop
+            Start-Sleep -Seconds 20 # Delay to allow DB index to update
 
             # ACT
             $script:GetTitle1 = Get-ConfluencePage -Title $Title1.ToLower() -SpaceKey $SpaceKey -PageSize 200 -ErrorAction SilentlyContinue
@@ -437,16 +438,17 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             $script:GetID1 = Get-ConfluencePage -PageID $GetTitle1.ID -ErrorAction SilentlyContinue
             $script:GetID2 = Get-ConfluencePage -PageID $GetTitle2.ID -ErrorAction SilentlyContinue
             $script:GetKeys = Get-ConfluencePage -SpaceKey $SpaceKey -ErrorAction SilentlyContinue | Sort-Object ID
-            $script:GetByLabel = $null
-            for ($retry = 0; $retry -lt 18; $retry++) {
+            $script:GetByLabel = @()
+            $script:GetByQuery = @()
+            for ($retry = 0; $retry -lt 6; $retry++) {
                 $script:GetByLabel = Get-ConfluencePage -Label "important" -ErrorAction SilentlyContinue
-                if (@($GetByLabel).Count -ge 1) {
+                $script:GetByQuery = Get-ConfluencePage -Query $query -ErrorAction SilentlyContinue
+                if ((@($GetByLabel).Count -ge 1) -and (@($GetByQuery).Count -eq 2)) {
                     break
                 }
 
                 Start-Sleep -Seconds 5
             }
-            $script:GetByQuery = Get-ConfluencePage -Query $query -ErrorAction SilentlyContinue
             $script:GetSpacePage = Get-ConfluencePage -Space (Get-ConfluenceSpace -SpaceKey $SpaceKey) -ErrorAction SilentlyContinue
             $script:GetSpacePiped = Get-ConfluenceSpace -SpaceKey $SpaceKey | Get-ConfluencePage -ErrorAction SilentlyContinue
 
@@ -462,7 +464,9 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             @($GetID1).Count | Should -Be 1
             @($GetID2).Count | Should -Be 1
             @($GetKeys).Count | Should -Be 5
+            @($GetByLabel).Count | Should -Be 1
             @($GetSpacePage).Count | Should -Be 5
+            @($GetByQuery).Count | Should -Be 2
             @($GetSpacePiped).Count | Should -Be 5
         }
         It 'returns an object with specific properties' {
@@ -471,11 +475,15 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             $GetID1 | Should -BeOfType [ConfluencePS.Page]
             $GetID2 | Should -BeOfType [ConfluencePS.Page]
             $GetKeys | Should -BeOfType [ConfluencePS.Page]
+            $GetByLabel | Should -BeOfType [ConfluencePS.Page]
+            $GetByQuery | Should -BeOfType [ConfluencePS.Page]
             ($GetTitle1 | Get-Member -MemberType Property).Count | Should -Be 9
             ($GetTitle2 | Get-Member -MemberType Property).Count | Should -Be 9
             ($GetID1 | Get-Member -MemberType Property).Count | Should -Be 9
             ($GetID2 | Get-Member -MemberType Property).Count | Should -Be 9
             ($GetKeys | Get-Member -MemberType Property).Count | Should -Be 9
+            ($GetByLabel | Get-Member -MemberType Property).Count | Should -Be 9
+            ($GetByQuery | Get-Member -MemberType Property).Count | Should -Be 9
         }
         It 'id is integer' {
             $GetTitle1.ID | Should -BeOfType [UInt64]
@@ -483,6 +491,8 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             $GetID1.ID | Should -BeOfType [UInt64]
             $GetID2.ID | Should -BeOfType [UInt64]
             $GetKeys.ID | Should -BeOfType [UInt64]
+            $GetByLabel.ID | Should -BeOfType [UInt64]
+            $GetByQuery.ID | Should -BeOfType [UInt64]
         }
         It 'id matches the specified value' {
             $GetID1.ID | Should -Be $GetTitle1.ID
@@ -497,6 +507,7 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             $GetID2.Title | Should -BeExactly $Title2
             $GetKeys.Title -contains $Title3 | Should -Be $true
             $GetKeys.Title -contains $GetID1.Title | Should -Be $true
+            $GetByLabel.Title -like "PESTER Test Space Home" | Should -Be $true
         }
         It 'space matches the specified value' {
             $GetTitle1.Space.Key | Should -BeExactly $SpaceKey
@@ -504,11 +515,13 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             $GetID1.Space.Key | Should -BeExactly $SpaceKey
             $GetID2.Space.Key | Should -BeExactly $SpaceKey
             $GetKeys.Space.Key -contains $SpaceKey | Should -Be $true
+            $GetByLabel.Space.Key | Should -BeExactly $SpaceKey
         }
         It 'version matches the specified value' {
             $GetTitle2.Version.Number | Should -Be 1
             $GetID2.Version.Number | Should -Be 1
             $GetKeys.Version.Number -contains 1 | Should -Be $true
+            $GetByLabel.Version.Number | Should -Be 1
         }
         It 'body matches the specified value' {
             . "$env:BHProjectPath/$env:BHProjectName/Private/ConvertFrom-HTMLEncoded.ps1"
@@ -528,6 +541,10 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             $GetID2.URL | Should -Not -BeNullOrEmpty
             $GetKeys.URL | Should -BeOfType [String]
             $GetKeys.URL | Should -Not -BeNullOrEmpty
+            $GetByLabel.URL | Should -BeOfType [String]
+            $GetByLabel.URL | Should -Not -BeNullOrEmpty
+            $GetByQuery.URL | Should -BeOfType [String]
+            $GetByQuery.URL | Should -Not -BeNullOrEmpty
         }
         It 'shorturl is string' {
             $GetTitle1.ShortURL | Should -BeOfType [String]
@@ -540,6 +557,10 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             $GetID2.ShortURL | Should -Not -BeNullOrEmpty
             $GetKeys.ShortURL | Should -BeOfType [String]
             $GetKeys.ShortURL | Should -Not -BeNullOrEmpty
+            $GetByLabel.ShortURL | Should -BeOfType [String]
+            $GetByLabel.ShortURL | Should -Not -BeNullOrEmpty
+            $GetByQuery.ShortURL | Should -BeOfType [String]
+            $GetByQuery.ShortURL | Should -Not -BeNullOrEmpty
         }
         It 'has a meaningful string value' {
             $GetTitle1.Version.ToString() | Should -Be $GetTitle1.Version.Number.ToString()
@@ -686,7 +707,7 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
         }
     }
 
-    Context 'Set-ConfluencePage' -Skip:($env:CI_CONFLUENCE_URL -like 'http://localhost*' -or $env:CONFLUENCE_CLOUD_URL -like 'http://localhost*') {
+    Context 'Set-ConfluencePage' {
         <# TODO:
         * Title may not be empty
         * fails when version is 1 larger than current version
@@ -700,8 +721,8 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             $script:Page4 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page with Parent Object"
             # create some more pages
             $script:Page5, $script:Page6, $script:Page7, $script:Page8, $script:Page9 = ("Page 5", "Page 6", "Page 7", "Page 8", "Page 9" | New-ConfluencePage -SpaceKey $SpaceKey -Body "<p>Lorem ipsum</p>" -ErrorAction Stop)
-            $script:AllPages = Get-ConfluencePage -SpaceKey $SpaceKey
-            $script:ParentPage = $AllPages | Where-Object { $_.Title -like "*Home" }
+            $script:AllPages = Get-ConfluencePage -SpaceKey $SpaceKey | Where-Object { $_.Title -notlike "*Home" }
+            $script:ParentPage = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester Test Space Home" -ErrorAction Stop
 
             $script:NewTitle6 = "Renamed Page 6"
             $script:NewTitle7 = "Renamed Page 7"
@@ -709,6 +730,7 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             $script:NewContent1 = "<h1>Bulk Change</h1><p>Changed all bodies in this space at once</p>"
             $script:NewContent2 = "<h1>Set Body by property</h1>"
             $script:NewContent3 = "<p>Updated</p>"
+            $script:NewContent9 = "<h1>Bulk Change</h1><p>Changed all bodies in this space at once</p><p>Updated body for version message test</p>"
             $script:RawContent3 = "Updated"
 
             # ACT
@@ -722,36 +744,43 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             # change the body of a page by property - this page should have version 3
             $script:SetPage2 = $Page2.ID | Set-ConfluencePage -Body $NewContent2 -ErrorAction Stop
             # make a non-relevant change just to bump page version
-            $script:SetPage3 = $Page3.ID | Set-ConfluencePage -Body "..."
+            $script:SetPage3 = $Page3.ID | Set-ConfluencePage -Body "..." -ErrorAction Stop
             # change the title of a page by property - this page should have version 4
-            $script:SetPage3 = $Page3.ID | Set-ConfluencePage -Body $RawContent3 -Convert
+            $script:SetPage3 = $Page3.ID | Set-ConfluencePage -Body $RawContent3 -Convert -ErrorAction Stop
             # change the parent page by object
-            $script:SetPage4 = Set-ConfluencePage -PageID $Page4.ID -Parent $Page3
+            $script:SetPage4 = Set-ConfluencePage -PageID $Page4.ID -Parent $Page3 -ErrorAction Stop
             # change the parent page by pageid
-            $script:SetPage5 = Set-ConfluencePage -PageID $Page5.ID -ParentID $Page4.ID
+            $script:SetPage5 = Set-ConfluencePage -PageID $Page5.ID -ParentID $Page4.ID -ErrorAction Stop
             # change the title of a page
-            $script:SetPage6 = $Page6.ID | Set-ConfluencePage -Title $NewTitle6
+            $script:SetPage6 = $Page6.ID | Set-ConfluencePage -Title $NewTitle6 -ErrorAction Stop
             $script:SetPage7 = $AllChangedPages | Where-Object { $_.ID -eq $Page7.ID } | ForEach-Object {
                 $_.Title = $NewTitle7
                 $_
-            } | Set-ConfluencePage
+            } | Set-ConfluencePage -ErrorAction Stop
             # clear the body of a page
-            $script:SetPage8 = Set-ConfluencePage -PageID $Page8.ID -Body ""
+            $script:SetPage8 = Set-ConfluencePage -PageID $Page8.ID -Body "" -ErrorAction Stop
             # change the version message of a page
             $script:SetPage9 = $AllChangedPages | Where-Object { $_.ID -eq $Page9.ID } | ForEach-Object {
+                $_.Body = $NewContent9
                 $_.Version.Message = $NewVersionMessage9
                 $_
-            } | Set-ConfluencePage
+            } | Set-ConfluencePage -ErrorAction Stop
 
         }
 
 
         # ASSERT
         It 'returns the correct amount of results' {
-            @($SetPage1).Count | Should -BeGreaterThan 0
-            @($SetPage2).Count | Should -BeGreaterThan 0
-            @($SetPage3).Count | Should -BeGreaterThan 0
-            @($AllChangedPages).Count | Should -BeGreaterThanOrEqual 9
+            @($SetPage1).Count | Should -Be 1
+            @($SetPage2).Count | Should -Be 1
+            @($SetPage3).Count | Should -Be 1
+            @($SetPage4).Count | Should -Be 1
+            @($SetPage5).Count | Should -Be 1
+            @($SetPage6).Count | Should -Be 1
+            @($SetPage7).Count | Should -Be 1
+            @($SetPage8).Count | Should -Be 1
+            @($SetPage9).Count | Should -Be 1
+            @($AllChangedPages).Count | Should -Be 9
         }
         It 'returns an object with specific properties' {
             $SetPage1 | Should -BeOfType [ConfluencePS.Page]
@@ -795,7 +824,7 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             $SetPage7.Space.Key | Should -BeExactly $SpaceKey
             $SetPage8.Space.Key | Should -BeExactly $SpaceKey
             $SetPage9.Space.Key | Should -BeExactly $SpaceKey
-            ($AllChangedPages.Space.Key | Select-Object -Unique) | Should -BeExactly $SpaceKey
+            $AllChangedPages.Space.Key | Should -BeExactly (1..9 | ForEach-Object {$SpaceKey})
         }
         It 'title has the specified value' {
             $SetPage1.Title | Should -BeExactly $Page1.Title
@@ -804,8 +833,9 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             $SetPage4.Title | Should -BeExactly $Page4.Title
             $SetPage5.Title | Should -BeExactly $Page5.Title
             $SetPage6.Title | Should -BeExactly $NewTitle6
-            $SetPage7.Title -in @($Page7.Title, $NewTitle7) | Should -Be $true
+            $SetPage7.Title | Should -BeExactly $NewTitle7
             $SetPage8.Title | Should -BeExactly $Page8.Title
+            $SetPage9.Version.Message | Should -BeExactly $NewVersionMessage9
         }
         It 'parentid has the specified value' {
             $SetPage1.Ancestors | Should -Not -BeNullOrEmpty
@@ -831,12 +861,18 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             $SetPage6.Body | Should -BeExactly $NewContent1
             $SetPage7.Body | Should -BeExactly $NewContent1
             $SetPage8.Body | Should -BeExactly ""
-            $SetPage9.Body | Should -BeExactly $NewContent1
+            $SetPage9.Body | Should -BeExactly $NewContent9
         }
         It 'version has the specified value' {
-            $SetPage1.Version.Number | Should -BeGreaterThanOrEqual 2
-            $SetPage2.Version.Number | Should -BeGreaterThanOrEqual 2
-            $SetPage3.Version.Number | Should -BeGreaterThanOrEqual 3
+            $SetPage1.Version.Number | Should -BeExactly 2
+            $SetPage2.Version.Number | Should -BeExactly 3
+            $SetPage3.Version.Number | Should -BeExactly 4
+            $SetPage4.Version.Number | Should -BeExactly 3
+            $SetPage5.Version.Number | Should -BeExactly 3
+            $SetPage6.Version.Number | Should -BeExactly 3
+            $SetPage7.Version.Number | Should -BeExactly 3
+            $SetPage8.Version.Number | Should -BeExactly 3
+            $SetPage9.Version.Number | Should -BeExactly 3
         }
     }
 
@@ -846,13 +882,13 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
         BeforeAll {
 
             # ACT
-            $ChildPages = $null
-            $DesendantPages = $null
+            $script:ChildPages = @()
+            $script:DesendantPages = @()
             $lastChildPageError = $null
-            for ($retry = 0; $retry -lt 6; $retry++) {
+            for ($retry = 0; $retry -lt 12; $retry++) {
                 try {
-                    $ChildPages = (Get-ConfluenceSpace -SpaceKey "PESTER$SpaceID").Homepage | Get-ConfluenceChildPage -ErrorAction Stop
-                    $DesendantPages = (Get-ConfluenceSpace -SpaceKey "PESTER$SpaceID").Homepage | Get-ConfluenceChildPage -Recurse -ErrorAction Stop
+                    $script:ChildPages = (Get-ConfluenceSpace -SpaceKey "PESTER$SpaceID").Homepage | Get-ConfluenceChildPage -ErrorAction Stop
+                    $script:DesendantPages = (Get-ConfluenceSpace -SpaceKey "PESTER$SpaceID").Homepage | Get-ConfluenceChildPage -Recurse -ErrorAction Stop
                     $lastChildPageError = $null
                     break
                 }
@@ -869,16 +905,14 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
         # ASSERT
         It 'returns the correct amount of results' {
             if ($script:lastChildPageError) {
-                Set-ItResult -Skipped -Because "Get-ConfluenceChildPage returned HTTP 500 in this environment."
-                return
+                throw $script:lastChildPageError
             }
-            $ChildPages.Count | Should -BeGreaterThan 0
-            $DesendantPages.Count | Should -BeGreaterThanOrEqual $ChildPages.Count
+            $ChildPages.Count | Should -Be 2
+            $DesendantPages.Count | Should -Be 4
         }
         It 'returns an object with specific properties' {
             if ($script:lastChildPageError) {
-                Set-ItResult -Skipped -Because "Get-ConfluenceChildPage returned HTTP 500 in this environment."
-                return
+                throw $script:lastChildPageError
             }
             $ChildPages | Should -BeOfType [ConfluencePS.Page]
             $DesendantPages | Should -BeOfType [ConfluencePS.Page]
