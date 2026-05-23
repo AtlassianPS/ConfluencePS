@@ -258,6 +258,67 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
         }
     }
 
+    Context 'Invoke-ConfluenceMethod' {
+        BeforeAll {
+            $script:InvokeMethodApiUri = '{0}/rest/api' -f $script:integrationEnvironment.CloudUrl.TrimEnd('/')
+            $script:InvokeMethodSecurePassword = ConvertTo-SecureString -AsPlainText -Force -String $script:integrationEnvironment.Password
+            $script:InvokeMethodCredential = [System.Management.Automation.PSCredential]::new($script:integrationEnvironment.Username, $script:InvokeMethodSecurePassword)
+
+            $script:InvokeMethodSpaceResults = Invoke-ConfluenceMethod -Uri "$script:InvokeMethodApiUri/space" -GetParameters @{ limit = 1 } -Credential $script:InvokeMethodCredential -ErrorAction Stop
+            $script:InvokeMethodTypedSpaceResults = Invoke-ConfluenceMethod -Uri "$script:InvokeMethodApiUri/space" -GetParameters @{ limit = 1 } -Credential $script:InvokeMethodCredential -OutputType ([ConfluencePS.Space]) -ErrorAction Stop
+        }
+
+        It 'returns at least one space result from a direct API call' {
+            @($script:InvokeMethodSpaceResults).Count | Should -BeGreaterThan 0
+            @($script:InvokeMethodSpaceResults)[0].ID | Should -Not -BeNullOrEmpty
+            @($script:InvokeMethodSpaceResults)[0].Key | Should -Not -BeNullOrEmpty
+        }
+
+        It 'can cast direct API results to ConfluencePS.Space' {
+            @($script:InvokeMethodTypedSpaceResults).Count | Should -BeGreaterThan 0
+            @($script:InvokeMethodTypedSpaceResults)[0] | Should -BeOfType [ConfluencePS.Space]
+            @($script:InvokeMethodTypedSpaceResults)[0].Key | Should -Not -BeNullOrEmpty
+        }
+    }
+
+    Context 'ConvertTo-ConfluenceTable' {
+        BeforeAll {
+            $script:TableIntegrationSpaceKey = "PESTER$SpaceID"
+            $script:TableIntegrationTitle = "Pester Confluence Table Page $SpaceID"
+            $script:TableInput = [PSCustomObject]@{
+                Name  = 'ConfluencePS'
+                Scope = 'SmokeCoverage'
+            }
+            $script:TableMarkup = $script:TableInput | ConvertTo-ConfluenceTable
+            $script:TableStorageMarkup = ConvertTo-ConfluenceStorageFormat -Content $script:TableMarkup
+            $script:TableIntegrationPage = New-ConfluencePage -Title $script:TableIntegrationTitle -SpaceKey $script:TableIntegrationSpaceKey -Body $script:TableStorageMarkup -ErrorAction Stop
+            $script:FetchedTableIntegrationPage = Get-ConfluencePage -PageID $script:TableIntegrationPage.ID -ErrorAction Stop
+        }
+
+        AfterAll {
+            if ($script:TableIntegrationPage) {
+                try {
+                    Remove-ConfluencePage -PageID $script:TableIntegrationPage.ID -Confirm:$false -ErrorAction Stop
+                }
+                catch {
+                    Write-Warning "Failed to clean up table integration page $($script:TableIntegrationPage.ID): $($_.Exception.Message)"
+                }
+            }
+        }
+
+        It 'creates Confluence table markup that contains the expected header row' {
+            $script:TableMarkup | Should -Match '\|\| Name \|\| Scope \|\|'
+            $script:TableMarkup | Should -Match '\| ConfluencePS \| SmokeCoverage \|'
+        }
+
+        It 'can be used in a real page creation flow' {
+            $script:FetchedTableIntegrationPage | Should -BeOfType [ConfluencePS.Page]
+            $script:FetchedTableIntegrationPage.Title | Should -BeExactly $script:TableIntegrationTitle
+            $script:FetchedTableIntegrationPage.Body | Should -Match 'ConfluencePS'
+            $script:FetchedTableIntegrationPage.Body | Should -Match 'SmokeCoverage'
+        }
+    }
+
     Context 'New-ConfluencePage' {
         <# TODO:
             * Title may not be empty

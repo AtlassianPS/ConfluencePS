@@ -115,4 +115,117 @@ Describe "Integration Test Configuration" -Tag 'Integration', 'Smoke', 'Cloud', 
             { Get-ConfluencePage -SpaceKey $script:SmokeSpace.Key -ErrorAction Stop | Select-Object -First 1 | Out-Null } | Should -Not -Throw
         }
     }
+
+    Context "Smoke Write Coverage" {
+        BeforeAll {
+            $script:SmokeWriteReady = $false
+            $script:SmokeWritePage = $null
+            $script:SmokeWriteSpace = $null
+            $script:SmokeWriteSkipReason = $null
+            $script:SmokeWriteLabel = "smoke-write-$([Guid]::NewGuid().ToString('N').Substring(0, 8))"
+
+            if (-not $script:IsIntegrationEnvironmentConfigured) {
+                $script:SmokeWriteSkipReason = "Environment not configured"
+                return
+            }
+
+            Set-ConfluenceInfo -BaseUri $script:IntegrationEnvironment.CloudUrl -Credential $script:Credential
+            $script:SmokeWriteSpaceKey = "SMOKE$([Guid]::NewGuid().ToString('N').Substring(0, 8))".ToUpperInvariant()
+            $script:SmokeWriteTitle = "ConfluencePS Smoke Write $([Guid]::NewGuid().ToString('N').Substring(0, 12))"
+
+            $script:SmokeWriteSpace = New-ConfluenceSpace -Key $script:SmokeWriteSpaceKey -Name "ConfluencePS Smoke Write $($script:SmokeWriteSpaceKey)" -Description "Disposable smoke-test space" -ErrorAction Stop
+            $script:SmokeWritePage = New-ConfluencePage -Title $script:SmokeWriteTitle -SpaceKey $script:SmokeWriteSpace.Key -Body "<p>ConfluencePS smoke create</p>" -ErrorAction Stop
+            $script:SmokeWriteReady = $true
+        }
+
+        AfterAll {
+            if ($script:SmokeWritePage) {
+                try {
+                    Remove-ConfluencePage -PageID $script:SmokeWritePage.ID -Confirm:$false -ErrorAction Stop
+                }
+                catch {
+                    Write-Warning "Failed to remove smoke-write page $($script:SmokeWritePage.ID): $($_.Exception.Message)"
+                }
+            }
+            if ($script:SmokeWriteSpace) {
+                try {
+                    Remove-ConfluenceSpace -Key $script:SmokeWriteSpace.Key -Force -ErrorAction Stop
+                }
+                catch {
+                    Write-Warning "Failed to remove smoke-write space $($script:SmokeWriteSpace.Key): $($_.Exception.Message)"
+                }
+            }
+        }
+
+        It "can create a page in a writable space" {
+            if (-not $script:SmokeWriteReady) {
+                if ($script:SmokeWriteSkipReason) {
+                    Set-ItResult -Skipped -Because $script:SmokeWriteSkipReason
+                    return
+                }
+                throw "Smoke write setup did not create a writable disposable space and page."
+            }
+
+            $script:SmokeWritePage | Should -BeOfType [ConfluencePS.Page]
+            $script:SmokeWritePage.ID | Should -Not -BeNullOrEmpty
+            $script:SmokeWritePage.Space.Key | Should -BeExactly $script:SmokeWriteSpace.Key
+        }
+
+        It "can update the smoke-write page body" {
+            if (-not $script:SmokeWriteReady) {
+                if ($script:SmokeWriteSkipReason) {
+                    Set-ItResult -Skipped -Because $script:SmokeWriteSkipReason
+                    return
+                }
+                throw "Smoke write setup did not create a writable disposable space and page."
+            }
+
+            $script:UpdatedSmokeWritePage = Set-ConfluencePage -PageID $script:SmokeWritePage.ID -Body "<p>ConfluencePS smoke updated</p>" -ErrorAction Stop
+
+            $script:UpdatedSmokeWritePage.ID | Should -BeExactly $script:SmokeWritePage.ID
+            $script:UpdatedSmokeWritePage.Version.Number | Should -BeGreaterThan $script:SmokeWritePage.Version.Number
+            $script:UpdatedSmokeWritePage.Body | Should -Match "ConfluencePS smoke updated"
+        }
+
+        It "supports label add/remove lifecycle on the smoke-write page" {
+            if (-not $script:SmokeWriteReady) {
+                if ($script:SmokeWriteSkipReason) {
+                    Set-ItResult -Skipped -Because $script:SmokeWriteSkipReason
+                    return
+                }
+                throw "Smoke write setup did not create a writable disposable space and page."
+            }
+
+            $null = Add-ConfluenceLabel -PageID $script:SmokeWritePage.ID -Label $script:SmokeWriteLabel -ErrorAction Stop
+            $labelsAfterAdd = Get-ConfluenceLabel -PageID $script:SmokeWritePage.ID -ErrorAction Stop
+            ($labelsAfterAdd.Labels.Name -contains $script:SmokeWriteLabel) | Should -Be $true
+
+            $null = Remove-ConfluenceLabel -PageID $script:SmokeWritePage.ID -Label $script:SmokeWriteLabel -Confirm:$false -ErrorAction Stop
+            $labelsAfterRemove = Get-ConfluenceLabel -PageID $script:SmokeWritePage.ID -ErrorAction Stop
+            ($labelsAfterRemove.Labels.Name -contains $script:SmokeWriteLabel) | Should -Be $false
+        }
+
+        It "supports attachment add/remove lifecycle on the smoke-write page" {
+            if (-not $script:SmokeWriteReady) {
+                if ($script:SmokeWriteSkipReason) {
+                    Set-ItResult -Skipped -Because $script:SmokeWriteSkipReason
+                    return
+                }
+                throw "Smoke write setup did not create a writable disposable space and page."
+            }
+
+            $smokeAttachmentPath = Join-Path $PSScriptRoot 'resources/Test.txt'
+            $smokeAttachmentName = [IO.Path]::GetFileName($smokeAttachmentPath)
+
+            $addedAttachment = Add-ConfluenceAttachment -PageID $script:SmokeWritePage.ID -FilePath $smokeAttachmentPath -ErrorAction Stop
+            $addedAttachment | Should -Not -BeNullOrEmpty
+
+            $attachmentsAfterAdd = Get-ConfluenceAttachment -PageID $script:SmokeWritePage.ID -ErrorAction Stop
+            @($attachmentsAfterAdd | Where-Object { $_.Title -eq $smokeAttachmentName }).Count | Should -BeGreaterThan 0
+
+            $null = Remove-ConfluenceAttachment -Attachment $addedAttachment -Confirm:$false -ErrorAction Stop
+            $attachmentsAfterRemove = Get-ConfluenceAttachment -PageID $script:SmokeWritePage.ID -ErrorAction Stop
+            @($attachmentsAfterRemove | Where-Object { $_.Title -eq $smokeAttachmentName }).Count | Should -Be 0
+        }
+    }
 }
