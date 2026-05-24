@@ -5,7 +5,7 @@ permalink: /module/ConfluencePS/
 # [ConfluencePS](https://atlassianps.org/module/ConfluencePS)
 
 [![GitHub release](https://img.shields.io/github/release/AtlassianPS/ConfluencePS.svg?style=for-the-badge)](https://github.com/AtlassianPS/ConfluencePS/releases/latest)
-[![Build Status](https://img.shields.io/vso/build/AtlassianPS/ConfluencePS/12/master.svg?style=for-the-badge)](https://dev.azure.com/AtlassianPS/ConfluencePS/_build/latest?definitionId=12)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/AtlassianPS/ConfluencePS/ci.yml?style=for-the-badge)](https://github.com/AtlassianPS/ConfluencePS/actions/workflows/ci.yml)
 [![PowerShell Gallery](https://img.shields.io/powershellgallery/dt/ConfluencePS.svg?style=for-the-badge)](https://www.powershellgallery.com/packages/ConfluencePS)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg?style=for-the-badge)
 
@@ -62,14 +62,12 @@ Check out our guidelines on [Contributing](https://atlassianps.org/docs/Contribu
 
 ## Tested on
 
-|Configuration|Status|
-|-------------|------|
-|Windows Powershell v3|[![Build Status](https://img.shields.io/teamcity/http/build.powershell.org/s/ConfluencePS_TestOnPowerShellV3.svg?label=Build%20Status)](https://build.powershell.org/viewType.html?buildTypeId=ConfluencePS_TestOnPowerShellV3)|
-|Windows Powershell v4|[![Build Status](https://img.shields.io/teamcity/http/build.powershell.org/s/ConfluencePS_TestOnPowerShellV4.svg?label=Build%20Status)](https://build.powershell.org/viewType.html?buildTypeId=ConfluencePS_TestOnPowerShellV4)|
-|Windows Powershell v5.1|[![Build Status](https://img.shields.io/vso/build/AtlassianPS/ConfluencePS/12/master.svg?style=for-the-badge)](https://dev.azure.com/AtlassianPS/ConfluencePS/_build/latest?definitionId=12)|
-|Powershell Core (latest) on Windows|[![Build Status](https://img.shields.io/vso/build/AtlassianPS/ConfluencePS/12/master.svg?style=for-the-badge)](https://dev.azure.com/AtlassianPS/ConfluencePS/_build/latest?definitionId=12)|
-|Powershell Core (latest) on Ubuntu|[![Build Status](https://img.shields.io/vso/build/AtlassianPS/ConfluencePS/12/master.svg?style=for-the-badge)](https://dev.azure.com/AtlassianPS/ConfluencePS/_build/latest?definitionId=12)|
-|Powershell Core (latest) on MacOS|[![Build Status](https://img.shields.io/vso/build/AtlassianPS/ConfluencePS/12/master.svg?style=for-the-badge)](https://dev.azure.com/AtlassianPS/ConfluencePS/_build/latest?definitionId=12)|
+| Configuration | Status |
+| ------------- | ------ |
+| Windows PowerShell v5.1 | [CI workflow](https://github.com/AtlassianPS/ConfluencePS/actions/workflows/ci.yml) |
+| PowerShell 7 on Windows | [CI workflow](https://github.com/AtlassianPS/ConfluencePS/actions/workflows/ci.yml) |
+| PowerShell 7 on Ubuntu | [CI workflow](https://github.com/AtlassianPS/ConfluencePS/actions/workflows/ci.yml) |
+| PowerShell 7 on macOS | [CI workflow](https://github.com/AtlassianPS/ConfluencePS/actions/workflows/ci.yml) |
 
 ## Acknowledgements
 
@@ -82,6 +80,7 @@ Check out our guidelines on [Contributing](https://atlassianps.org/docs/Contribu
 * [Source Code]
 * [Latest Release]
 * [Submit an Issue]
+* [Contributing]
 * How you can help us: [List of Issues](https://github.com/AtlassianPS/ConfluencePS/issues?q=is%3Aissue+is%3Aopen+label%3Aup-for-grabs)
 
 ## Disclaimer
@@ -99,6 +98,7 @@ Hopefully this is obvious, but:
   [Source Code]: <https://github.com/AtlassianPS/ConfluencePS>
   [Latest Release]: <https://github.com/AtlassianPS/ConfluencePS/releases/latest>
   [Submit an Issue]: <https://github.com/AtlassianPS/ConfluencePS/issues/new>
+  [Contributing]: https://atlassianps.org/docs/Contributing/
   [juneb]: <https://github.com/juneb>
   [brianbunke]: <https://github.com/brianbunke>
   [Check this out]: <https://github.com/juneb/PowerShellHelpDeepDive>

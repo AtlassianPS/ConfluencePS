@@ -133,6 +133,10 @@ Find us on GitHub or Slack, and let us know what you think.
 
 # SEE ALSO
 
+[Commands index](/docs/ConfluencePS/commands/)
+
+[Classes index](/docs/ConfluencePS/classes/)
+
 ConfluencePS on Github: <https://github.com/AtlassianPS/ConfluencePS>
 
 Confluence's REST API documentation: <https://docs.atlassian.com/atlassian-confluence/REST/latest/>
