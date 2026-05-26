@@ -84,6 +84,23 @@ namespace ConfluencePS.Tests {
             } -Exactly -Times 1 -Scope It
         }
 
+        It "forwards PersonalAccessToken to Invoke-WebRequest" {
+            $null = Invoke-Method -Uri "https://example.com/wiki/rest/api/content" -PersonalAccessToken "token-value" -ErrorAction Stop
+
+            Should -Invoke -CommandName Invoke-WebRequest -ModuleName ConfluencePS -ParameterFilter {
+                $PersonalAccessToken -eq "token-value"
+            } -Exactly -Times 1 -Scope It
+        }
+
+        It "supports PersonalAccessToken in the private Invoke-WebRequest wrapper" {
+            if ($PSVersionTable.PSVersion.Major -lt 6) {
+                Set-ItResult -Skipped -Because "PowerShell 5.1 wrapper handles PersonalAccessToken separately."
+                return
+            }
+
+            (Get-Command -Name Invoke-WebRequest).Parameters.Keys | Should -Contain "PersonalAccessToken"
+        }
+
         It "omits TimeoutSec from Invoke-WebRequest when TimeoutSec is 0" {
             $null = Invoke-Method -Uri "https://example.com/wiki/rest/api/content" -TimeoutSec 0 -ErrorAction Stop
 
