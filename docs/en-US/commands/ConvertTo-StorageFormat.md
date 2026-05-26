@@ -18,6 +18,7 @@ Convert your content to Confluence's storage format.
 ```powershell
 ConvertTo-ConfluenceStorageFormat -ApiUri <Uri> [-Credential <PSCredential>]
  [-PersonalAccessToken <String>] [-Certificate <X509Certificate>] [-Content] <String[]>
+ [-AsPlainText]
 ```
 
 ## DESCRIPTION
@@ -43,6 +44,15 @@ Get-Date -Format s | ConvertTo-ConfluenceStorageFormat
 ```
 
 Pipe the current date/time in sortable format, returning the converted string.
+
+### -------------------------- EXAMPLE 3 --------------------------
+
+```powershell
+$Body = ConvertTo-ConfluenceStorageFormat -Content 'Use @{ Name = "Value" } in PowerShell.' -AsPlainText
+```
+
+Entity-encodes the content before conversion so Confluence treats wiki markup
+characters as literal text instead of converting them to mentions, links, or macros.
 
 ## PARAMETERS
 
@@ -126,6 +136,23 @@ Required: True
 Position: 1
 Default value: None
 Accept pipeline input: True (ByValue)
+Accept wildcard characters: False
+```
+
+### -AsPlainText
+
+Entity-encodes the content before conversion so Confluence treats wiki markup
+characters as literal text.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
 Accept wildcard characters: False
 ```
 

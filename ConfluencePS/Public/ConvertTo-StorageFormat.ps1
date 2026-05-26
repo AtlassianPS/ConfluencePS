@@ -22,7 +22,10 @@
             Mandatory = $true,
             ValueFromPipeline = $true
         )]
-        [String[]]$Content
+        [String[]]$Content,
+
+        [Parameter()]
+        [Switch]$AsPlainText
     )
 
     BEGIN {
@@ -36,8 +39,17 @@
         $iwParameters = Copy-CommonParameter -InputObject $PSBoundParameters
         $iwParameters['Uri'] = "$ApiUri/contentbody/convert/storage"
         $iwParameters['Method'] = 'Post'
+        $plainTextMarkupPattern = '[!"#$%&''()*+,\-./:;<=>?@\[\\\]\^_`{|}~]'
 
         foreach ($_content in $Content) {
+            if ($AsPlainText) {
+                $_content = [Regex]::Replace(
+                    $_content,
+                    $plainTextMarkupPattern,
+                    { param($match) "&#$([Int32][Char]$match.Value);" }
+                )
+            }
+
             $iwParameters['Body'] = @{
                 value          = "$_content"
                 representation = 'wiki'
