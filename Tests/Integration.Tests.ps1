@@ -241,6 +241,7 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             $result1 = $script:InputString | ConvertTo-ConfluenceStorageFormat
             $result2 = ConvertTo-ConfluenceStorageFormat -Content $script:InputString
             $result3 = ConvertTo-ConfluenceStorageFormat -Content $script:InputString, $script:InputString
+            $result4 = ConvertTo-ConfluenceStorageFormat -Content 'h1. *bold* !image.png!' -AsPlainText
 
         }
 
@@ -250,11 +251,15 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             $result1 | Should -BeOfType [String]
             $result2 | Should -BeOfType [String]
             $result3 | Should -BeOfType [String]
+            $result4 | Should -BeOfType [String]
         }
         It 'output matches the expected string' {
             $result1 | Should -BeExactly $script:OutputString
             $result2 | Should -BeExactly $script:OutputString
             $result3 | Should -BeExactly @($script:OutputString, $script:OutputString)
+        }
+        It 'can preserve wiki markup characters as literal text' {
+            $result4 | Should -Not -Match '<h1|<strong|<ac:image'
         }
     }
 

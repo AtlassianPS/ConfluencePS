@@ -39,14 +39,15 @@
         $iwParameters = Copy-CommonParameter -InputObject $PSBoundParameters
         $iwParameters['Uri'] = "$ApiUri/contentbody/convert/storage"
         $iwParameters['Method'] = 'Post'
-
-        if ($AsPlainText) {
-            $iwParameters.Remove('AsPlainText')
-        }
+        $plainTextMarkupPattern = '[!"#$%&''()*+,\-./:;<=>?@\[\\\]\^_`{|}~]'
 
         foreach ($_content in $Content) {
             if ($AsPlainText) {
-                $_content = [System.Web.HttpUtility]::HtmlEncode($_content)
+                $_content = [Regex]::Replace(
+                    $_content,
+                    $plainTextMarkupPattern,
+                    { param($match) "&#$([Int32][Char]$match.Value);" }
+                )
             }
 
             $iwParameters['Body'] = @{

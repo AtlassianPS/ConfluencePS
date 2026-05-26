@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Added Confluence Data Center integration-test infrastructure: `docker-compose.yml` (moveworkforward `atlas-run-standalone` image), `Tools/Wait-ConfluenceServer.ps1`, and `StartConfluenceDocker` / `StopConfluenceDocker` build tasks.
 - Added `.github/workflows/integration_tests.yml` with parallel Cloud and Dockerized Data Center tracks (nightly schedule + manual dispatch input).
+- Added `ConvertTo-ConfluenceStorageFormat -AsPlainText` to publish literal text containing wiki markup characters without Confluence converting them to links, mentions, or macros (#178, [@empty03]).
 
 ### Changed
 
@@ -210,6 +211,7 @@ No changelog available for version `1.0` of ConfluencePS. `1.0` was created in l
 [@colhal]: https://github.com/colhal
 [@Dejulia489]: https://github.com/Dejulia489
 [@ebekker]: https://github.com/ebekker
+[@empty03]: https://github.com/empty03
 [@FelixMelchert]: https://github.com/FelixMelchert
 [@jkknorr]: https://github.com/jkknorr
 [@JohnAdders]: https://github.com/JohnAdders
