@@ -142,7 +142,7 @@
                 $iwParameters["Uri"] = $resourceApi -f "/search"
 
                 $CQLparameters = @("type=page")
-                $Label | ForEach-Object { $CQLparameters += "label=$_" }
+                $Label | ForEach-Object { $CQLparameters += "label=`"$_`"" }
                 if ($SpaceKey) { $CQLparameters += "space=$SpaceKey" }
                 $iwParameters["GetParameters"]["cql"] = ($CQLparameters -join " AND ")
 
