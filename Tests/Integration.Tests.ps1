@@ -259,6 +259,9 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             $result3 | Should -BeExactly @($script:OutputString, $script:OutputString)
         }
         It 'can preserve wiki markup characters as literal text' {
+            $result4 | Should -Match 'h1\.'
+            $result4 | Should -Match '\*bold\*'
+            $result4 | Should -Match '!image\.png!'
             $result4 | Should -Not -Match '<h1|<strong|<ac:image'
         }
     }
