@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+- `Get-ConfluencePage -Label` now quotes label values in generated CQL so labels containing hyphens are accepted by Confluence (#175, #185, [@ehrenfeu])
 - `Invoke-Method` now handles JSON payloads with duplicate key casing (for example `subType` and `subtype`) without failing parsing (#216, [@codethief])
 
 ### Fixed
@@ -210,6 +211,7 @@ No changelog available for version `1.0` of ConfluencePS. `1.0` was created in l
 [@colhal]: https://github.com/colhal
 [@Dejulia489]: https://github.com/Dejulia489
 [@ebekker]: https://github.com/ebekker
+[@ehrenfeu]: https://github.com/ehrenfeu
 [@FelixMelchert]: https://github.com/FelixMelchert
 [@jkknorr]: https://github.com/jkknorr
 [@JohnAdders]: https://github.com/JohnAdders

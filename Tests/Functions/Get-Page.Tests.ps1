@@ -25,23 +25,29 @@ InModuleScope ConfluencePS {
             }
         }
 
-        It "builds one label clause per label value for byLabel queries" {
+        It "builds one quoted label clause per label value for byLabel queries" {
             $null = Get-Page -ApiUri "https://example.com/wiki/rest/api" -Label @("labelA", "labelB")
 
             $script:lastUri | Should -Be "https://example.com/wiki/rest/api/content/search"
-            $script:lastCql | Should -Be "type=page AND label=labelA AND label=labelB"
+            $script:lastCql | Should -Be 'type=page AND label="labelA" AND label="labelB"'
         }
 
-        It "builds one label clause for a single byLabel value" {
+        It "builds one quoted label clause for a single byLabel value" {
             $null = Get-Page -ApiUri "https://example.com/wiki/rest/api" -Label @("labelA")
 
-            $script:lastCql | Should -Be "type=page AND label=labelA"
+            $script:lastCql | Should -Be 'type=page AND label="labelA"'
+        }
+
+        It "quotes hyphenated label values in byLabel queries" {
+            $null = Get-Page -ApiUri "https://example.com/wiki/rest/api" -Label "noarchive-single"
+
+            $script:lastCql | Should -Be 'type=page AND label="noarchive-single"'
         }
 
         It "appends space filtering to multi-label byLabel queries" {
             $null = Get-Page -ApiUri "https://example.com/wiki/rest/api" -SpaceKey "HOTH" -Label @("labelA", "labelB")
 
-            $script:lastCql | Should -Be "type=page AND label=labelA AND label=labelB AND space=HOTH"
+            $script:lastCql | Should -Be 'type=page AND label="labelA" AND label="labelB" AND space=HOTH'
         }
 
         It "prefixes byQuery CQL with type=page without pre-encoding" {
