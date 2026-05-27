@@ -435,7 +435,7 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             $script:Query = "space=PESTER$SpaceID and title~`"*Object`""
             $script:ContentRaw = "<p>Hi Pester!👋</p>"
             $script:ContentFormatted = "<p>Hi Pester!</p><p>👋</p>"
-            $script:SearchLabel = "pesterlabel$SpaceID"
+            $script:SearchLabel = "searchlabel$SpaceID"
             (Get-ConfluenceSpace -SpaceKey $SpaceKey).Homepage | Add-ConfluenceLabel -Label $SearchLabel -ErrorAction Stop
             Start-Sleep -Seconds 20 # Delay to allow DB index to update
 
