@@ -449,7 +449,8 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             $script:GetKeys = Get-ConfluencePage -SpaceKey $SpaceKey -ErrorAction SilentlyContinue | Sort-Object ID
             $script:GetByLabel = @()
             $script:GetByQuery = @()
-            for ($retry = 0; $retry -lt 6; $retry++) {
+            $maxSearchRetries = if ($script:integrationEnvironment.IsCloud) { 24 } else { 6 }
+            for ($retry = 0; $retry -lt $maxSearchRetries; $retry++) {
                 $script:GetByLabel = Get-ConfluencePage -Label $SearchLabel -SpaceKey $SpaceKey -ErrorAction SilentlyContinue
                 $script:GetByQuery = Get-ConfluencePage -Query $query -ErrorAction SilentlyContinue
                 if ((@($GetByLabel).Count -ge 1) -and (@($GetByQuery).Count -eq 2)) {

@@ -92,30 +92,27 @@ namespace ConfluencePS.Tests {
             } -Exactly -Times 1 -Scope It
         }
 
-        It "preserves authorization on Confluence Cloud attachment redirects" {
-            if (-not (Get-Command 'Microsoft.PowerShell.Utility\Invoke-WebRequest').Parameters.ContainsKey("PreserveAuthorizationOnRedirect")) {
-                Set-ItResult -Skipped -Because "PreserveAuthorizationOnRedirect is unavailable in this PowerShell version."
-                return
-            }
-
+        It "sends explicit authorization for Confluence Cloud attachment downloads" {
             $securePassword = ConvertTo-SecureString -AsPlainText -Force -String "password"
             $credential = [pscredential]::new("user", $securePassword)
 
             $null = Invoke-Method -Uri "https://tenant.atlassian.net/wiki/download/attachments/123/Test.txt" -Credential $credential -OutFile "Test.txt" -ErrorAction Stop
 
             Should -Invoke -CommandName Invoke-WebRequest -ModuleName ConfluencePS -ParameterFilter {
-                $PreserveAuthorizationOnRedirect
+                (-not $PSBoundParameters.ContainsKey('Credential')) -and
+                $Headers.Authorization -eq 'Basic dXNlcjpwYXNzd29yZA=='
             } -Exactly -Times 1 -Scope It
         }
 
-        It "does not preserve authorization on non-Cloud file downloads" {
+        It "does not send explicit authorization on non-Cloud file downloads" {
             $securePassword = ConvertTo-SecureString -AsPlainText -Force -String "password"
             $credential = [pscredential]::new("user", $securePassword)
 
             $null = Invoke-Method -Uri "http://localhost:1990/confluence/download/attachments/123/Test.txt" -Credential $credential -OutFile "Test.txt" -ErrorAction Stop
 
             Should -Invoke -CommandName Invoke-WebRequest -ModuleName ConfluencePS -ParameterFilter {
-                -not $PreserveAuthorizationOnRedirect
+                $Credential -eq $credential -and
+                (-not $Headers.ContainsKey('Authorization'))
             } -Exactly -Times 1 -Scope It
         }
 

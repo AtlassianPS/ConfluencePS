@@ -13,7 +13,7 @@
     )
 
     if (-not $OutFile) { return $false }
-    if (-not ($Credential -or $PersonalAccessToken)) { return $false }
+    if (-not $Credential) { return $false }
 
     if ($Uri.Scheme -ne 'https') { return $false }
     if ($Uri.Host -notmatch '(^|\.)atlassian\.net$') { return $false }

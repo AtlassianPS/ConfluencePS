@@ -97,7 +97,15 @@
         $splatParameters['ErrorAction'] = 'Stop'
         $splatParameters['Verbose'] = $false     # Overwrites verbose output
         if (Test-ShouldPreserveAuthorizationOnRedirect -Uri $Uri -OutFile $OutFile -Credential $Credential -PersonalAccessToken $PersonalAccessToken) {
-            $splatParameters['PreserveAuthorizationOnRedirect'] = $true
+            if (-not $splatParameters.ContainsKey('Headers') -or -not $splatParameters['Headers']) {
+                $splatParameters['Headers'] = @{}
+            }
+
+            $secureCreds = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes(
+                    $('{0}:{1}' -f $Credential.UserName, $Credential.GetNetworkCredential().Password)
+                ))
+            $splatParameters['Headers']['Authorization'] = "Basic $($secureCreds)"
+            $null = $splatParameters.Remove('Credential')
         }
         if ($TimeoutSec -gt 0) {
             $splatParameters["TimeoutSec"] = $TimeoutSec

@@ -305,18 +305,7 @@ if ($PSVersionTable.PSVersion.Major -ge 6) {
             ${SkipHeaderValidation})
 
         begin {
-            if ($Credential -and $PreserveAuthorizationOnRedirect -and (-not ($Authentication))) {
-                if (-not $PSBoundParameters.ContainsKey("Headers") -or -not $PSBoundParameters["Headers"]) {
-                    $PSBoundParameters["Headers"] = @{}
-                }
-
-                $SecureCreds = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes(
-                        $('{0}:{1}' -f $Credential.UserName, $Credential.GetNetworkCredential().Password)
-                    ))
-                $PSBoundParameters["Headers"]["Authorization"] = "Basic $($SecureCreds)"
-                $null = $PSBoundParameters.Remove("Credential")
-            }
-            elseif ($Credential -and (-not ($Authentication))) {
+            if ($Credential -and (-not ($Authentication))) {
                 $PSBoundParameters["Authentication"] = "Basic"
             }
             if ($PersonalAccessToken) {
