@@ -65,19 +65,8 @@
             $iwParameters['Uri'] = $_Attachment.URL
             $iwParameters['Headers'] = @{"Accept" = $_Attachment.MediaType }
             $iwParameters['OutFile'] = if ($Path) { Join-Path -Path $Path -ChildPath $_Attachment.Filename } else { $_Attachment.Filename }
-            $preserveAuthorizationOnRedirect = Test-ConfluenceCloudAttachmentRedirect -Uri $_Attachment.URL
 
-            try {
-                if ($preserveAuthorizationOnRedirect) {
-                    # Confluence Cloud attachment URLs redirect; PowerShell 7 drops auth unless explicitly told not to.
-                    $script:ConfluencePSPreserveAuthorizationOnRedirect = $true
-                }
-
-                $result = Invoke-Method @iwParameters
-            }
-            finally {
-                Remove-Variable -Name ConfluencePSPreserveAuthorizationOnRedirect -Scope Script -ErrorAction SilentlyContinue
-            }
+            $result = Invoke-Method @iwParameters
             (-not $result)
         }
     }

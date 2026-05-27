@@ -92,22 +92,30 @@ namespace ConfluencePS.Tests {
             } -Exactly -Times 1 -Scope It
         }
 
-        It "maps internal redirect authorization preservation to Invoke-WebRequest" {
+        It "preserves authorization on Confluence Cloud attachment redirects" {
             if (-not (Get-Command 'Microsoft.PowerShell.Utility\Invoke-WebRequest').Parameters.ContainsKey("PreserveAuthorizationOnRedirect")) {
                 Set-ItResult -Skipped -Because "PreserveAuthorizationOnRedirect is unavailable in this PowerShell version."
                 return
             }
 
-            try {
-                $script:ConfluencePSPreserveAuthorizationOnRedirect = $true
-                $null = Invoke-Method -Uri "https://example.com/wiki/rest/api/content" -ErrorAction Stop
-            }
-            finally {
-                Remove-Variable -Name ConfluencePSPreserveAuthorizationOnRedirect -Scope Script -ErrorAction SilentlyContinue
-            }
+            $securePassword = ConvertTo-SecureString -AsPlainText -Force -String "password"
+            $credential = [pscredential]::new("user", $securePassword)
+
+            $null = Invoke-Method -Uri "https://tenant.atlassian.net/wiki/download/attachments/123/Test.txt" -Credential $credential -OutFile "Test.txt" -ErrorAction Stop
 
             Should -Invoke -CommandName Invoke-WebRequest -ModuleName ConfluencePS -ParameterFilter {
                 $PreserveAuthorizationOnRedirect
+            } -Exactly -Times 1 -Scope It
+        }
+
+        It "does not preserve authorization on non-Cloud file downloads" {
+            $securePassword = ConvertTo-SecureString -AsPlainText -Force -String "password"
+            $credential = [pscredential]::new("user", $securePassword)
+
+            $null = Invoke-Method -Uri "http://localhost:1990/confluence/download/attachments/123/Test.txt" -Credential $credential -OutFile "Test.txt" -ErrorAction Stop
+
+            Should -Invoke -CommandName Invoke-WebRequest -ModuleName ConfluencePS -ParameterFilter {
+                -not $PreserveAuthorizationOnRedirect
             } -Exactly -Times 1 -Scope It
         }
 

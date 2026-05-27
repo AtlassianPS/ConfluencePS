@@ -96,10 +96,7 @@
         $splatParameters['UseBasicParsing'] = $true
         $splatParameters['ErrorAction'] = 'Stop'
         $splatParameters['Verbose'] = $false     # Overwrites verbose output
-        if (
-            $script:ConfluencePSPreserveAuthorizationOnRedirect -and
-            (Get-Command -Name 'Microsoft.PowerShell.Utility\Invoke-WebRequest').Parameters.ContainsKey('PreserveAuthorizationOnRedirect')
-        ) {
+        if (Test-ShouldPreserveAuthorizationOnRedirect -Uri $Uri -OutFile $OutFile -Credential $Credential -PersonalAccessToken $PersonalAccessToken) {
             $splatParameters['PreserveAuthorizationOnRedirect'] = $true
         }
         if ($TimeoutSec -gt 0) {
