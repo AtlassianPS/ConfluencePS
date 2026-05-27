@@ -1,0 +1,47 @@
+﻿function Get-ServerInformation {
+    [CmdletBinding()]
+    [OutputType([ConfluencePS.ServerInfo])]
+    param (
+        [Parameter(Mandatory = $true)]
+        [Uri]$ApiUri,
+
+        [Parameter(Mandatory = $false)]
+        [PSCredential]$Credential,
+
+        [Parameter(Mandatory = $false)]
+        [String]
+        $PersonalAccessToken,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNull()]
+        [System.Security.Cryptography.X509Certificates.X509Certificate]
+        $Certificate
+    )
+
+    BEGIN {
+        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function started"
+    }
+
+    PROCESS {
+        Write-DebugMessage "[$($MyInvocation.MyCommand.Name)] ParameterSetName: $($PsCmdlet.ParameterSetName)"
+        Write-DebugMessage "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
+
+        $iwParameters = Copy-CommonParameter -InputObject $PSBoundParameters
+        $iwParameters['Method'] = 'Get'
+        $iwParameters['Uri'] = "$($ApiUri.AbsoluteUri.TrimEnd('/'))/settings/systemInfo"
+
+        try {
+            Invoke-Method @iwParameters -ErrorAction Stop | ConvertTo-ServerInfo
+        }
+        catch {
+            Write-Warning "[$($MyInvocation.MyCommand.Name)] Could not retrieve server information: $_"
+            [ConfluencePS.ServerInfo]@{ DeploymentType = 'DataCenter' }
+        }
+    }
+
+    END {
+        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function ended"
+    }
+}
+
+New-Alias -Name "Get-ConfluenceServerInfo" -Value "Get-ServerInformation" -ErrorAction SilentlyContinue

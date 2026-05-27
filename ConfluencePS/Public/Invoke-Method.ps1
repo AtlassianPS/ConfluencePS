@@ -8,7 +8,8 @@
         [ConfluencePS.Icon],
         [ConfluencePS.Version],
         [ConfluencePS.User],
-        [ConfluencePS.Attachment]
+        [ConfluencePS.Attachment],
+        [ConfluencePS.ServerInfo]
     )]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute( "PSAvoidUsingEmptyCatchBlock", "" )]
     param (
@@ -43,7 +44,8 @@
             [ConfluencePS.Icon],
             [ConfluencePS.Version],
             [ConfluencePS.User],
-            [ConfluencePS.Attachment]
+            [ConfluencePS.Attachment],
+            [ConfluencePS.ServerInfo]
         )]
         [System.Type]$OutputType,
 

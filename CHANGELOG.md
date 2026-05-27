@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Added Confluence Data Center integration-test infrastructure: `docker-compose.yml` (moveworkforward `atlas-run-standalone` image), `Tools/Wait-ConfluenceServer.ps1`, and `StartConfluenceDocker` / `StopConfluenceDocker` build tasks.
 - Added `.github/workflows/integration_tests.yml` with parallel Cloud and Dockerized Data Center tracks (nightly schedule + manual dispatch input).
 - Added `ConvertTo-ConfluenceStorageFormat -AsPlainText` to publish literal text containing wiki markup characters without Confluence converting them to links, mentions, or macros (#178, [@empty03]).
+- Added `Get-ConfluenceServerInformation` to expose Confluence system information and deployment type.
 
 ### Changed
 

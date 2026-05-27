@@ -19,6 +19,7 @@ The documentation pages use the source function names that back the exported com
 | `Get-ConfluenceChildPage` | [Get-ChildPage](/docs/ConfluencePS/commands/Get-ChildPage/) |
 | `Get-ConfluenceLabel` | [Get-Label](/docs/ConfluencePS/commands/Get-Label/) |
 | `Get-ConfluencePage` | [Get-Page](/docs/ConfluencePS/commands/Get-Page/) |
+| `Get-ConfluenceServerInformation` | [Get-ServerInformation](/docs/ConfluencePS/commands/Get-ServerInformation/) |
 | `Get-ConfluenceSpace` | [Get-Space](/docs/ConfluencePS/commands/Get-Space/) |
 | `Invoke-ConfluenceMethod` | [Invoke-Method](/docs/ConfluencePS/commands/Invoke-Method/) |
 | `New-ConfluencePage` | [New-Page](/docs/ConfluencePS/commands/New-Page/) |

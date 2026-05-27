@@ -118,4 +118,27 @@ namespace ConfluencePS
             return "[att$ID] $Title";
         }
     }
+
+    public class ServerInfo
+    {
+        public String DeploymentType { get; set; }
+        public String CloudId { get; set; }
+        public String CommitHash { get; set; }
+        public Uri BaseUrl { get; set; }
+        public Uri FallbackBaseUrl { get; set; }
+        public String Edition { get; set; }
+        public String SiteTitle { get; set; }
+        public String DefaultLocale { get; set; }
+        public String DefaultTimeZone { get; set; }
+        public String MicrosPerimeter { get; set; }
+        public String Version { get; set; }
+        public Int32 BuildNumber { get; set; }
+        public DateTime BuildDate { get; set; }
+        public DateTime ServerTime { get; set; }
+
+        public override string ToString()
+        {
+            return DeploymentType;
+        }
+    }
 }

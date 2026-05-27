@@ -59,11 +59,14 @@
         }
 
         $iwParameters = Copy-CommonParameter -InputObject $PSBoundParameters
+        $serverInfoParameters = $iwParameters.Clone()
         $iwParameters['Method'] = 'Get'
+        $serverInfo = Get-ServerInformation @serverInfoParameters -ApiUri $ApiUri
+        $isCloudApi = $serverInfo.DeploymentType -eq 'Cloud'
 
         foreach ($_Attachment in $Attachment) {
             $iwParameters['Uri'] = $_Attachment.URL
-            if (($ApiUri.Host -match '(^|\.)atlassian\.net$') -and ($_Attachment.PageID) -and ($_Attachment.ID)) {
+            if ($isCloudApi -and ($_Attachment.PageID) -and ($_Attachment.ID)) {
                 $iwParameters['Uri'] = "$ApiUri/content/$($_Attachment.PageID)/child/attachment/$($_Attachment.ID)/download"
                 $iwParameters['Headers'] = @{"Accept" = "*/*" }
             }
