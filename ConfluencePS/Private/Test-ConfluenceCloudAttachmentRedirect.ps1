@@ -1,4 +1,4 @@
-﻿function Test-AtlassianCloudAttachmentDownload {
+﻿function Test-ConfluenceCloudAttachmentRedirect {
     [CmdletBinding()]
     [OutputType([Bool])]
     param (

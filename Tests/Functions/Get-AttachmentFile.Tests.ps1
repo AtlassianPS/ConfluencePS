@@ -24,7 +24,7 @@ InModuleScope ConfluencePS {
             $null = Get-AttachmentFile -ApiUri "https://tenant.atlassian.net/wiki/rest/api" -Attachment $attachment
 
             Should -Invoke -CommandName Invoke-Method -ModuleName ConfluencePS -ParameterFilter {
-                $PreserveAuthorizationOnRedirect
+                $InternalPreserveAuthorizationOnRedirect
             } -Exactly -Times 1 -Scope It
         }
 
@@ -37,7 +37,7 @@ InModuleScope ConfluencePS {
             $null = Get-AttachmentFile -ApiUri "http://localhost:1990/confluence/rest/api" -Attachment $attachment
 
             Should -Invoke -CommandName Invoke-Method -ModuleName ConfluencePS -ParameterFilter {
-                -not $PreserveAuthorizationOnRedirect
+                -not $InternalPreserveAuthorizationOnRedirect
             } -Exactly -Times 1 -Scope It
         }
     }

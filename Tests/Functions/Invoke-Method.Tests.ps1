@@ -92,13 +92,13 @@ namespace ConfluencePS.Tests {
             } -Exactly -Times 1 -Scope It
         }
 
-        It "forwards PreserveAuthorizationOnRedirect when requested" {
+        It "maps internal redirect authorization preservation to Invoke-WebRequest" {
             if (-not (Get-Command 'Microsoft.PowerShell.Utility\Invoke-WebRequest').Parameters.ContainsKey("PreserveAuthorizationOnRedirect")) {
                 Set-ItResult -Skipped -Because "PreserveAuthorizationOnRedirect is unavailable in this PowerShell version."
                 return
             }
 
-            $null = Invoke-Method -Uri "https://example.com/wiki/rest/api/content" -PreserveAuthorizationOnRedirect -ErrorAction Stop
+            $null = Invoke-Method -Uri "https://example.com/wiki/rest/api/content" -InternalPreserveAuthorizationOnRedirect -ErrorAction Stop
 
             Should -Invoke -CommandName Invoke-WebRequest -ModuleName ConfluencePS -ParameterFilter {
                 $PreserveAuthorizationOnRedirect
