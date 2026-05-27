@@ -93,6 +93,11 @@ namespace ConfluencePS.Tests {
         }
 
         It "sends explicit authorization for Confluence Cloud attachment web downloads" {
+            if (-not (Get-Command -Name 'Microsoft.PowerShell.Utility\Invoke-WebRequest').Parameters.ContainsKey('PreserveAuthorizationOnRedirect')) {
+                Set-ItResult -Skipped -Because "PreserveAuthorizationOnRedirect is unavailable in this PowerShell version."
+                return
+            }
+
             $securePassword = ConvertTo-SecureString -AsPlainText -Force -String "password"
             $credential = [pscredential]::new("user", $securePassword)
 
@@ -105,6 +110,11 @@ namespace ConfluencePS.Tests {
         }
 
         It "sends explicit authorization for Confluence Cloud attachment REST downloads" {
+            if (-not (Get-Command -Name 'Microsoft.PowerShell.Utility\Invoke-WebRequest').Parameters.ContainsKey('PreserveAuthorizationOnRedirect')) {
+                Set-ItResult -Skipped -Because "PreserveAuthorizationOnRedirect is unavailable in this PowerShell version."
+                return
+            }
+
             $securePassword = ConvertTo-SecureString -AsPlainText -Force -String "password"
             $credential = [pscredential]::new("user", $securePassword)
 
