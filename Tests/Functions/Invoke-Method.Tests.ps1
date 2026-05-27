@@ -92,35 +92,16 @@ namespace ConfluencePS.Tests {
             } -Exactly -Times 1 -Scope It
         }
 
-        It "preserves authorization on redirects for file downloads" {
+        It "forwards PreserveAuthorizationOnRedirect when requested" {
             if (-not (Get-Command 'Microsoft.PowerShell.Utility\Invoke-WebRequest').Parameters.ContainsKey("PreserveAuthorizationOnRedirect")) {
                 Set-ItResult -Skipped -Because "PreserveAuthorizationOnRedirect is unavailable in this PowerShell version."
                 return
             }
 
-            $securePassword = ConvertTo-SecureString -AsPlainText -Force -String "password"
-            $credential = [pscredential]::new("user", $securePassword)
-
-            $null = Invoke-Method -Uri "https://tenant.atlassian.net/wiki/download/attachments/file.txt" -Credential $credential -OutFile "attachment.txt" -ErrorAction Stop
+            $null = Invoke-Method -Uri "https://example.com/wiki/rest/api/content" -PreserveAuthorizationOnRedirect -ErrorAction Stop
 
             Should -Invoke -CommandName Invoke-WebRequest -ModuleName ConfluencePS -ParameterFilter {
                 $PreserveAuthorizationOnRedirect
-            } -Exactly -Times 1 -Scope It
-        }
-
-        It "does not preserve authorization on redirects for non-Atlassian file downloads" {
-            if (-not (Get-Command 'Microsoft.PowerShell.Utility\Invoke-WebRequest').Parameters.ContainsKey("PreserveAuthorizationOnRedirect")) {
-                Set-ItResult -Skipped -Because "PreserveAuthorizationOnRedirect is unavailable in this PowerShell version."
-                return
-            }
-
-            $securePassword = ConvertTo-SecureString -AsPlainText -Force -String "password"
-            $credential = [pscredential]::new("user", $securePassword)
-
-            $null = Invoke-Method -Uri "https://example.com/wiki/download/attachments/file.txt" -Credential $credential -OutFile "attachment.txt" -ErrorAction Stop
-
-            Should -Invoke -CommandName Invoke-WebRequest -ModuleName ConfluencePS -ParameterFilter {
-                -not $PreserveAuthorizationOnRedirect
             } -Exactly -Times 1 -Scope It
         }
 

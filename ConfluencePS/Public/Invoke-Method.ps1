@@ -33,6 +33,8 @@
 
         [String]$OutFile,
 
+        [Switch]$PreserveAuthorizationOnRedirect,
+
         [ValidateRange(0, [Int32]::MaxValue)]
         [Int32]$TimeoutSec = 100,
 
@@ -90,20 +92,17 @@
         $PSDefaultParameterValues = $global:PSDefaultParameterValues
         $convertFromJsonSupportsAsHashtable = (Get-Command -Name ConvertFrom-Json).Parameters.ContainsKey("AsHashtable")
 
-        $splatParameters = Copy-CommonParameter -InputObject $PSBoundParameters -AdditionalParameter @("Uri", "Method", "InFile", "OutFile")
+        $splatParameters = Copy-CommonParameter -InputObject $PSBoundParameters -AdditionalParameter @("Uri", "Method", "InFile", "OutFile", "PreserveAuthorizationOnRedirect")
         $splatParameters['Headers'] = $_headers
         $splatParameters['ContentType'] = "application/json; charset=utf-8"
         $splatParameters['UseBasicParsing'] = $true
         $splatParameters['ErrorAction'] = 'Stop'
         $splatParameters['Verbose'] = $false     # Overwrites verbose output
         if (
-            $OutFile -and
-            ($Credential -or $PersonalAccessToken) -and
-            ($Uri.Scheme -eq 'https') -and
-            ($Uri.Host -match '(^|\.)atlassian\.net$') -and
-            (Get-Command -Name 'Microsoft.PowerShell.Utility\Invoke-WebRequest').Parameters.ContainsKey('PreserveAuthorizationOnRedirect')
+            $splatParameters.ContainsKey('PreserveAuthorizationOnRedirect') -and
+            -not (Get-Command -Name 'Microsoft.PowerShell.Utility\Invoke-WebRequest').Parameters.ContainsKey('PreserveAuthorizationOnRedirect')
         ) {
-            $splatParameters['PreserveAuthorizationOnRedirect'] = $true
+            $splatParameters.Remove('PreserveAuthorizationOnRedirect')
         }
         if ($TimeoutSec -gt 0) {
             $splatParameters["TimeoutSec"] = $TimeoutSec

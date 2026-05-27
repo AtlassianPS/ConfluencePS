@@ -65,6 +65,10 @@
             $iwParameters['Uri'] = $_Attachment.URL
             $iwParameters['Headers'] = @{"Accept" = $_Attachment.MediaType }
             $iwParameters['OutFile'] = if ($Path) { Join-Path -Path $Path -ChildPath $_Attachment.Filename } else { $_Attachment.Filename }
+            if (Test-AtlassianCloudAttachmentDownload -Uri $_Attachment.URL) {
+                # Confluence Cloud attachment URLs redirect; PowerShell 7 drops auth unless explicitly told not to.
+                $iwParameters['PreserveAuthorizationOnRedirect'] = $true
+            }
 
             $result = Invoke-Method @iwParameters
             (-not $result)
