@@ -432,7 +432,7 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             $script:Title3 = "Pester Test Space Home"
             $script:Title4 = "orphan"
             $script:Title5 = "*orphan"
-            $script:Query = "space=PESTER$SpaceID and title~`"*Object`""
+            $script:Query = $null
             $script:ContentRaw = "<p>Hi Pester!👋</p>"
             $script:ContentFormatted = "<p>Hi Pester!</p><p>👋</p>"
             $script:SearchLabel = "searchlabel$SpaceID"
@@ -446,6 +446,7 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             $script:GetWildcard = Get-ConfluencePage -Title $Title5 -SpaceKey $SpaceKey -ErrorAction SilentlyContinue
             $script:GetID1 = Get-ConfluencePage -PageID $GetTitle1.ID -ErrorAction SilentlyContinue
             $script:GetID2 = Get-ConfluencePage -PageID $GetTitle2.ID -ErrorAction SilentlyContinue
+            $script:Query = "id in ($($GetID1.ID), $($GetID2.ID))"
             $script:GetKeys = Get-ConfluencePage -SpaceKey $SpaceKey -ErrorAction SilentlyContinue | Sort-Object ID
             $script:GetByLabel = @()
             $script:GetByQuery = @()

@@ -63,6 +63,9 @@
 
         foreach ($_Attachment in $Attachment) {
             $iwParameters['Uri'] = $_Attachment.URL
+            if (($ApiUri.Host -match '(^|\.)atlassian\.net$') -and ($_Attachment.PageID) -and ($_Attachment.ID)) {
+                $iwParameters['Uri'] = "$ApiUri/content/$($_Attachment.PageID)/child/attachment/$($_Attachment.ID)/download"
+            }
             $iwParameters['Headers'] = @{"Accept" = $_Attachment.MediaType }
             $iwParameters['OutFile'] = if ($Path) { Join-Path -Path $Path -ChildPath $_Attachment.Filename } else { $_Attachment.Filename }
 

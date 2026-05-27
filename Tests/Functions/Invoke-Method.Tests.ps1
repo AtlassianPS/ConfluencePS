@@ -92,11 +92,23 @@ namespace ConfluencePS.Tests {
             } -Exactly -Times 1 -Scope It
         }
 
-        It "sends explicit authorization for Confluence Cloud attachment downloads" {
+        It "sends explicit authorization for Confluence Cloud attachment web downloads" {
             $securePassword = ConvertTo-SecureString -AsPlainText -Force -String "password"
             $credential = [pscredential]::new("user", $securePassword)
 
             $null = Invoke-Method -Uri "https://tenant.atlassian.net/wiki/download/attachments/123/Test.txt" -Credential $credential -OutFile "Test.txt" -ErrorAction Stop
+
+            Should -Invoke -CommandName Invoke-WebRequest -ModuleName ConfluencePS -ParameterFilter {
+                (-not $PSBoundParameters.ContainsKey('Credential')) -and
+                $Headers.Authorization -eq 'Basic dXNlcjpwYXNzd29yZA=='
+            } -Exactly -Times 1 -Scope It
+        }
+
+        It "sends explicit authorization for Confluence Cloud attachment REST downloads" {
+            $securePassword = ConvertTo-SecureString -AsPlainText -Force -String "password"
+            $credential = [pscredential]::new("user", $securePassword)
+
+            $null = Invoke-Method -Uri "https://tenant.atlassian.net/wiki/rest/api/content/123/child/attachment/456/download" -Credential $credential -OutFile "Test.txt" -ErrorAction Stop
 
             Should -Invoke -CommandName Invoke-WebRequest -ModuleName ConfluencePS -ParameterFilter {
                 (-not $PSBoundParameters.ContainsKey('Credential')) -and
