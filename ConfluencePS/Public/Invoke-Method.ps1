@@ -96,6 +96,15 @@
         $splatParameters['UseBasicParsing'] = $true
         $splatParameters['ErrorAction'] = 'Stop'
         $splatParameters['Verbose'] = $false     # Overwrites verbose output
+        if (
+            $OutFile -and
+            ($Credential -or $PersonalAccessToken) -and
+            ($Uri.Scheme -eq 'https') -and
+            ($Uri.Host -match '(^|\.)atlassian\.net$') -and
+            (Get-Command -Name 'Microsoft.PowerShell.Utility\Invoke-WebRequest').Parameters.ContainsKey('PreserveAuthorizationOnRedirect')
+        ) {
+            $splatParameters['PreserveAuthorizationOnRedirect'] = $true
+        }
         if ($TimeoutSec -gt 0) {
             $splatParameters["TimeoutSec"] = $TimeoutSec
         }

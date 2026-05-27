@@ -259,9 +259,9 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             $result3 | Should -BeExactly @($script:OutputString, $script:OutputString)
         }
         It 'can preserve wiki markup characters as literal text' {
-            $result4 | Should -Match 'h1\.'
-            $result4 | Should -Match '\*bold\*'
-            $result4 | Should -Match '!image\.png!'
+            $result4 | Should -Match 'h1&#46;'
+            $result4 | Should -Match '&#42;bold&#42;'
+            $result4 | Should -Match '&#33;image&#46;png&#33;'
             $result4 | Should -Not -Match '<h1|<strong|<ac:image'
         }
     }
@@ -435,7 +435,8 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             $script:Query = "space=PESTER$SpaceID and title~`"*Object`""
             $script:ContentRaw = "<p>Hi Pester!👋</p>"
             $script:ContentFormatted = "<p>Hi Pester!</p><p>👋</p>"
-            (Get-ConfluenceSpace -SpaceKey $SpaceKey).Homepage | Add-ConfluenceLabel -Label "important" -ErrorAction Stop
+            $script:SearchLabel = "pesterlabel$SpaceID"
+            (Get-ConfluenceSpace -SpaceKey $SpaceKey).Homepage | Add-ConfluenceLabel -Label $SearchLabel -ErrorAction Stop
             Start-Sleep -Seconds 20 # Delay to allow DB index to update
 
             # ACT
@@ -449,7 +450,7 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             $script:GetByLabel = @()
             $script:GetByQuery = @()
             for ($retry = 0; $retry -lt 6; $retry++) {
-                $script:GetByLabel = Get-ConfluencePage -Label "important" -ErrorAction SilentlyContinue
+                $script:GetByLabel = Get-ConfluencePage -Label $SearchLabel -SpaceKey $SpaceKey -ErrorAction SilentlyContinue
                 $script:GetByQuery = Get-ConfluencePage -Query $query -ErrorAction SilentlyContinue
                 if ((@($GetByLabel).Count -ge 1) -and (@($GetByQuery).Count -eq 2)) {
                     break
