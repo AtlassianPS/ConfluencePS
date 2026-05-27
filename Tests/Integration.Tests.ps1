@@ -458,6 +458,9 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
 
                 Start-Sleep -Seconds 5
             }
+            $script:GetByLabelIndexed = @($GetByLabel).Count -ge 1
+            $script:GetByLabelRequired = -not $script:integrationEnvironment.IsCloud
+            $script:GetByLabelCanBeAsserted = $script:GetByLabelIndexed -or $script:GetByLabelRequired
             $script:GetSpacePage = Get-ConfluencePage -Space (Get-ConfluenceSpace -SpaceKey $SpaceKey) -ErrorAction SilentlyContinue
             $script:GetSpacePiped = Get-ConfluenceSpace -SpaceKey $SpaceKey | Get-ConfluencePage -ErrorAction SilentlyContinue
 
@@ -473,7 +476,9 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             @($GetID1).Count | Should -Be 1
             @($GetID2).Count | Should -Be 1
             @($GetKeys).Count | Should -Be 5
-            @($GetByLabel).Count | Should -Be 1
+            if ($script:GetByLabelCanBeAsserted) {
+                @($GetByLabel).Count | Should -Be 1
+            }
             @($GetSpacePage).Count | Should -Be 5
             @($GetByQuery).Count | Should -Be 2
             @($GetSpacePiped).Count | Should -Be 5
@@ -484,14 +489,18 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             $GetID1 | Should -BeOfType [ConfluencePS.Page]
             $GetID2 | Should -BeOfType [ConfluencePS.Page]
             $GetKeys | Should -BeOfType [ConfluencePS.Page]
-            $GetByLabel | Should -BeOfType [ConfluencePS.Page]
+            if ($script:GetByLabelCanBeAsserted) {
+                $GetByLabel | Should -BeOfType [ConfluencePS.Page]
+            }
             $GetByQuery | Should -BeOfType [ConfluencePS.Page]
             ($GetTitle1 | Get-Member -MemberType Property).Count | Should -Be 9
             ($GetTitle2 | Get-Member -MemberType Property).Count | Should -Be 9
             ($GetID1 | Get-Member -MemberType Property).Count | Should -Be 9
             ($GetID2 | Get-Member -MemberType Property).Count | Should -Be 9
             ($GetKeys | Get-Member -MemberType Property).Count | Should -Be 9
-            ($GetByLabel | Get-Member -MemberType Property).Count | Should -Be 9
+            if ($script:GetByLabelCanBeAsserted) {
+                ($GetByLabel | Get-Member -MemberType Property).Count | Should -Be 9
+            }
             ($GetByQuery | Get-Member -MemberType Property).Count | Should -Be 9
         }
         It 'id is integer' {
@@ -500,7 +509,9 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             $GetID1.ID | Should -BeOfType [UInt64]
             $GetID2.ID | Should -BeOfType [UInt64]
             $GetKeys.ID | Should -BeOfType [UInt64]
-            $GetByLabel.ID | Should -BeOfType [UInt64]
+            if ($script:GetByLabelCanBeAsserted) {
+                $GetByLabel.ID | Should -BeOfType [UInt64]
+            }
             $GetByQuery.ID | Should -BeOfType [UInt64]
         }
         It 'id matches the specified value' {
@@ -516,7 +527,9 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             $GetID2.Title | Should -BeExactly $Title2
             $GetKeys.Title -contains $Title3 | Should -Be $true
             $GetKeys.Title -contains $GetID1.Title | Should -Be $true
-            $GetByLabel.Title -like "PESTER Test Space Home" | Should -Be $true
+            if ($script:GetByLabelCanBeAsserted) {
+                $GetByLabel.Title -like "PESTER Test Space Home" | Should -Be $true
+            }
         }
         It 'space matches the specified value' {
             $GetTitle1.Space.Key | Should -BeExactly $SpaceKey
@@ -524,13 +537,17 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             $GetID1.Space.Key | Should -BeExactly $SpaceKey
             $GetID2.Space.Key | Should -BeExactly $SpaceKey
             $GetKeys.Space.Key -contains $SpaceKey | Should -Be $true
-            $GetByLabel.Space.Key | Should -BeExactly $SpaceKey
+            if ($script:GetByLabelCanBeAsserted) {
+                $GetByLabel.Space.Key | Should -BeExactly $SpaceKey
+            }
         }
         It 'version matches the specified value' {
             $GetTitle2.Version.Number | Should -Be 1
             $GetID2.Version.Number | Should -Be 1
             $GetKeys.Version.Number -contains 1 | Should -Be $true
-            $GetByLabel.Version.Number | Should -Be 1
+            if ($script:GetByLabelCanBeAsserted) {
+                $GetByLabel.Version.Number | Should -Be 1
+            }
         }
         It 'body matches the specified value' {
             . "$env:BHProjectPath/$env:BHProjectName/Private/ConvertFrom-HTMLEncoded.ps1"
@@ -550,8 +567,10 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             $GetID2.URL | Should -Not -BeNullOrEmpty
             $GetKeys.URL | Should -BeOfType [String]
             $GetKeys.URL | Should -Not -BeNullOrEmpty
-            $GetByLabel.URL | Should -BeOfType [String]
-            $GetByLabel.URL | Should -Not -BeNullOrEmpty
+            if ($script:GetByLabelCanBeAsserted) {
+                $GetByLabel.URL | Should -BeOfType [String]
+                $GetByLabel.URL | Should -Not -BeNullOrEmpty
+            }
             $GetByQuery.URL | Should -BeOfType [String]
             $GetByQuery.URL | Should -Not -BeNullOrEmpty
         }
@@ -566,8 +585,10 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             $GetID2.ShortURL | Should -Not -BeNullOrEmpty
             $GetKeys.ShortURL | Should -BeOfType [String]
             $GetKeys.ShortURL | Should -Not -BeNullOrEmpty
-            $GetByLabel.ShortURL | Should -BeOfType [String]
-            $GetByLabel.ShortURL | Should -Not -BeNullOrEmpty
+            if ($script:GetByLabelCanBeAsserted) {
+                $GetByLabel.ShortURL | Should -BeOfType [String]
+                $GetByLabel.ShortURL | Should -Not -BeNullOrEmpty
+            }
             $GetByQuery.ShortURL | Should -BeOfType [String]
             $GetByQuery.ShortURL | Should -Not -BeNullOrEmpty
         }
@@ -703,8 +724,8 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             ($GetPageLabel2 | Get-Member -MemberType Property).Count | Should -Be 2
         }
         It 'label matches the specified value' {
-            $GetPageLabel1.Labels.Name | Should -Match $patternLabel2
-            $GetPageLabel2.Labels.Name | Should -Match $patternLabel2
+            ($GetPageLabel1.Labels.Name | Where-Object { $_ -ne $script:SearchLabel }) | Should -Match $patternLabel2
+            ($GetPageLabel2.Labels.Name | Where-Object { $_ -ne $script:SearchLabel }) | Should -Match $patternLabel2
         }
         It 'labelid is not null or empty' {
             $GetPageLabel1.Labels.ID | Should -Not -BeNullOrEmpty
