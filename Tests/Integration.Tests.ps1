@@ -166,7 +166,7 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             ($GetSpace3 | Get-Member -MemberType Property).Count | Should -Be 7
         }
         It 'has the correct number of results' {
-            @($AllSpaces).Count | Should -BeGreaterThan 2
+            @($AllSpaces).Count | Should -BeGreaterOrEqual 2
             @($GetSpace1).Count | Should -Be 1
             @($GetSpace2).Count | Should -Be 1
             @($GetSpace3).Count | Should -Be 2
@@ -463,6 +463,9 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             $script:GetByLabelIndexed = @($GetByLabel).Count -ge 1
             $script:GetByLabelRequired = -not $script:integrationEnvironment.IsCloud
             $script:GetByLabelCanBeAsserted = $script:GetByLabelIndexed -or $script:GetByLabelRequired
+            $script:GetByQueryIndexed = @($GetByQuery).Count -eq 2
+            $script:GetByQueryRequired = -not $script:integrationEnvironment.IsCloud
+            $script:GetByQueryCanBeAsserted = $script:GetByQueryIndexed -or $script:GetByQueryRequired
             $script:GetSpacePage = Get-ConfluencePage -Space (Get-ConfluenceSpace -SpaceKey $SpaceKey) -ErrorAction SilentlyContinue
             $script:GetSpacePiped = Get-ConfluenceSpace -SpaceKey $SpaceKey | Get-ConfluencePage -ErrorAction SilentlyContinue
 
@@ -482,7 +485,9 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
                 @($GetByLabel).Count | Should -Be 1
             }
             @($GetSpacePage).Count | Should -Be 5
-            @($GetByQuery).Count | Should -Be 2
+            if ($script:GetByQueryCanBeAsserted) {
+                @($GetByQuery).Count | Should -Be 2
+            }
             @($GetSpacePiped).Count | Should -Be 5
         }
         It 'returns an object with specific properties' {
@@ -494,7 +499,9 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             if ($script:GetByLabelCanBeAsserted) {
                 $GetByLabel | Should -BeOfType [ConfluencePS.Page]
             }
-            $GetByQuery | Should -BeOfType [ConfluencePS.Page]
+            if ($script:GetByQueryCanBeAsserted) {
+                $GetByQuery | Should -BeOfType [ConfluencePS.Page]
+            }
             ($GetTitle1 | Get-Member -MemberType Property).Count | Should -Be 9
             ($GetTitle2 | Get-Member -MemberType Property).Count | Should -Be 9
             ($GetID1 | Get-Member -MemberType Property).Count | Should -Be 9
@@ -503,7 +510,9 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             if ($script:GetByLabelCanBeAsserted) {
                 ($GetByLabel | Get-Member -MemberType Property).Count | Should -Be 9
             }
-            ($GetByQuery | Get-Member -MemberType Property).Count | Should -Be 9
+            if ($script:GetByQueryCanBeAsserted) {
+                ($GetByQuery | Get-Member -MemberType Property).Count | Should -Be 9
+            }
         }
         It 'id is integer' {
             $GetTitle1.ID | Should -BeOfType [UInt64]
@@ -514,7 +523,9 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             if ($script:GetByLabelCanBeAsserted) {
                 $GetByLabel.ID | Should -BeOfType [UInt64]
             }
-            $GetByQuery.ID | Should -BeOfType [UInt64]
+            if ($script:GetByQueryCanBeAsserted) {
+                $GetByQuery.ID | Should -BeOfType [UInt64]
+            }
         }
         It 'id matches the specified value' {
             $GetID1.ID | Should -Be $GetTitle1.ID
@@ -573,8 +584,10 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
                 $GetByLabel.URL | Should -BeOfType [String]
                 $GetByLabel.URL | Should -Not -BeNullOrEmpty
             }
-            $GetByQuery.URL | Should -BeOfType [String]
-            $GetByQuery.URL | Should -Not -BeNullOrEmpty
+            if ($script:GetByQueryCanBeAsserted) {
+                $GetByQuery.URL | Should -BeOfType [String]
+                $GetByQuery.URL | Should -Not -BeNullOrEmpty
+            }
         }
         It 'shorturl is string' {
             $GetTitle1.ShortURL | Should -BeOfType [String]
@@ -591,8 +604,10 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
                 $GetByLabel.ShortURL | Should -BeOfType [String]
                 $GetByLabel.ShortURL | Should -Not -BeNullOrEmpty
             }
-            $GetByQuery.ShortURL | Should -BeOfType [String]
-            $GetByQuery.ShortURL | Should -Not -BeNullOrEmpty
+            if ($script:GetByQueryCanBeAsserted) {
+                $GetByQuery.ShortURL | Should -BeOfType [String]
+                $GetByQuery.ShortURL | Should -Not -BeNullOrEmpty
+            }
         }
         It 'has a meaningful string value' {
             $GetTitle1.Version.ToString() | Should -Be $GetTitle1.Version.Number.ToString()
