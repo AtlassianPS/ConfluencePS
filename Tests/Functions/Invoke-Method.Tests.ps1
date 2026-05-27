@@ -98,7 +98,13 @@ namespace ConfluencePS.Tests {
                 return
             }
 
-            $null = Invoke-Method -Uri "https://example.com/wiki/rest/api/content" -InternalPreserveAuthorizationOnRedirect -ErrorAction Stop
+            try {
+                $script:ConfluencePSPreserveAuthorizationOnRedirect = $true
+                $null = Invoke-Method -Uri "https://example.com/wiki/rest/api/content" -ErrorAction Stop
+            }
+            finally {
+                Remove-Variable -Name ConfluencePSPreserveAuthorizationOnRedirect -Scope Script -ErrorAction SilentlyContinue
+            }
 
             Should -Invoke -CommandName Invoke-WebRequest -ModuleName ConfluencePS -ParameterFilter {
                 $PreserveAuthorizationOnRedirect

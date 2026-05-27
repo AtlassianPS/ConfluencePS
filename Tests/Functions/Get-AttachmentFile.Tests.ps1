@@ -10,7 +10,9 @@ BeforeDiscovery {
 InModuleScope ConfluencePS {
     Describe "Get-AttachmentFile" -Tag 'Unit' {
         BeforeEach {
+            $script:preserveAuthorizationOnRedirectAtInvoke = $null
             Mock Invoke-Method -ModuleName ConfluencePS {
+                $script:preserveAuthorizationOnRedirectAtInvoke = $script:ConfluencePSPreserveAuthorizationOnRedirect
                 $null
             }
         }
@@ -23,9 +25,8 @@ InModuleScope ConfluencePS {
 
             $null = Get-AttachmentFile -ApiUri "https://tenant.atlassian.net/wiki/rest/api" -Attachment $attachment
 
-            Should -Invoke -CommandName Invoke-Method -ModuleName ConfluencePS -ParameterFilter {
-                $InternalPreserveAuthorizationOnRedirect
-            } -Exactly -Times 1 -Scope It
+            Should -Invoke -CommandName Invoke-Method -ModuleName ConfluencePS -Exactly -Times 1 -Scope It
+            $script:preserveAuthorizationOnRedirectAtInvoke | Should -BeTrue
         }
 
         It "does not preserve authorization for non-Cloud attachment downloads" {
@@ -36,9 +37,8 @@ InModuleScope ConfluencePS {
 
             $null = Get-AttachmentFile -ApiUri "http://localhost:1990/confluence/rest/api" -Attachment $attachment
 
-            Should -Invoke -CommandName Invoke-Method -ModuleName ConfluencePS -ParameterFilter {
-                -not $InternalPreserveAuthorizationOnRedirect
-            } -Exactly -Times 1 -Scope It
+            Should -Invoke -CommandName Invoke-Method -ModuleName ConfluencePS -Exactly -Times 1 -Scope It
+            $script:preserveAuthorizationOnRedirectAtInvoke | Should -BeNullOrEmpty
         }
     }
 }

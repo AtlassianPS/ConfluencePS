@@ -33,9 +33,6 @@
 
         [String]$OutFile,
 
-        [Parameter(DontShow = $true)]
-        [Switch]$InternalPreserveAuthorizationOnRedirect,
-
         [ValidateRange(0, [Int32]::MaxValue)]
         [Int32]$TimeoutSec = 100,
 
@@ -100,7 +97,7 @@
         $splatParameters['ErrorAction'] = 'Stop'
         $splatParameters['Verbose'] = $false     # Overwrites verbose output
         if (
-            $InternalPreserveAuthorizationOnRedirect -and
+            $script:ConfluencePSPreserveAuthorizationOnRedirect -and
             (Get-Command -Name 'Microsoft.PowerShell.Utility\Invoke-WebRequest').Parameters.ContainsKey('PreserveAuthorizationOnRedirect')
         ) {
             $splatParameters['PreserveAuthorizationOnRedirect'] = $true
