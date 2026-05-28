@@ -29,9 +29,10 @@
         $iwParameters = Copy-CommonParameter -InputObject $PSBoundParameters
         $iwParameters['Method'] = 'Get'
         $iwParameters['Uri'] = "$($ApiUri.AbsoluteUri.TrimEnd('/'))/settings/systemInfo"
+        $iwParameters['OutputType'] = [ConfluencePS.ServerInfo]
 
         try {
-            Invoke-Method @iwParameters -ErrorAction Stop | ConvertTo-ServerInfo
+            Invoke-Method @iwParameters -ErrorAction Stop
         }
         catch {
             Write-Warning "[$($MyInvocation.MyCommand.Name)] Could not retrieve server information: $_"

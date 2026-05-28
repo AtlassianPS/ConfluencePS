@@ -11,7 +11,7 @@ InModuleScope ConfluencePS {
     Describe "Get-ServerInformation" -Tag 'Unit' {
         BeforeEach {
             Mock Invoke-Method -ModuleName ConfluencePS {
-                [PSCustomObject]@{
+                $response = [PSCustomObject]@{
                     cloudId          = 'cloud-id'
                     commitHash       = 'abc123'
                     baseUrl          = 'https://docs.example.com/wiki'
@@ -22,6 +22,8 @@ InModuleScope ConfluencePS {
                     defaultTimeZone  = 'UTC'
                     microsPerimeter  = 'commercial'
                 }
+                if ($OutputType -eq [ConfluencePS.ServerInfo]) { return $response | ConvertTo-ServerInfo }
+                $response
             }
         }
 
@@ -33,18 +35,21 @@ InModuleScope ConfluencePS {
             $result.CloudId | Should -Be 'cloud-id'
             $result.BaseUrl.AbsoluteUri | Should -Be 'https://docs.example.com/wiki'
             Should -Invoke -CommandName Invoke-Method -ModuleName ConfluencePS -Exactly -Times 1 -Scope It -ParameterFilter {
-                $Uri -eq 'https://docs.example.com/wiki/rest/api/settings/systemInfo'
+                $Uri -eq 'https://docs.example.com/wiki/rest/api/settings/systemInfo' -and
+                $OutputType -eq [ConfluencePS.ServerInfo]
             }
         }
 
         It "maps responses without cloudId to DataCenter" {
             Mock Invoke-Method -ModuleName ConfluencePS {
-                [PSCustomObject]@{
+                $response = [PSCustomObject]@{
                     baseUrl     = 'https://docs.example.com/wiki'
                     version     = '9.2.0'
                     buildNumber = 9200
                     siteTitle   = 'Docs'
                 }
+                if ($OutputType -eq [ConfluencePS.ServerInfo]) { return $response | ConvertTo-ServerInfo }
+                $response
             }
 
             $result = Get-ServerInformation -ApiUri "https://docs.example.com/wiki/rest/api"
