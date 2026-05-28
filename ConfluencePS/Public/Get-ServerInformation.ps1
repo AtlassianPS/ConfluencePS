@@ -31,13 +31,7 @@
         $iwParameters['Uri'] = "$($ApiUri.AbsoluteUri.TrimEnd('/'))/settings/systemInfo"
         $iwParameters['OutputType'] = [ConfluencePS.ServerInformation]
 
-        $serverInformation = Invoke-Method @iwParameters -ErrorAction Stop
-        if ($serverInformation) {
-            $serverInformation
-        }
-        else {
-            [ConfluencePS.ServerInformation]@{ DeploymentType = 'DataCenter' }
-        }
+        Invoke-Method @iwParameters -ErrorAction Stop
     }
 
     END {

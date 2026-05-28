@@ -80,13 +80,12 @@ InModuleScope ConfluencePS {
             { Get-ServerInformation -ApiUri "https://docs.example.com/wiki/rest/api" -ErrorAction Stop } | Should -Throw
         }
 
-        It "defaults to DataCenter when system info returns no object" {
+        It "returns no output when system info returns no object" {
             Mock Invoke-Method -ModuleName ConfluencePS {}
 
             $result = Get-ServerInformation -ApiUri "https://docs.example.com/wiki/rest/api"
 
-            $result | Should -BeOfType [ConfluencePS.ServerInformation]
-            $result.DeploymentType | Should -Be 'DataCenter'
+            $result | Should -BeNullOrEmpty
         }
     }
 }

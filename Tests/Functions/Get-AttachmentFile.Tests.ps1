@@ -72,10 +72,10 @@ InModuleScope ConfluencePS {
             }
         }
 
-        It "preserves attachment URLs when server information defaults to Data Center" {
+        It "preserves attachment URLs when server information returns no object" {
             $attachment = New-TestAttachment -URL "https://docs.example.com/wiki/download/attachments/123/Test.txt"
 
-            Mock Get-ServerInformation -ModuleName ConfluencePS { [ConfluencePS.ServerInformation]@{ DeploymentType = 'DataCenter' } }
+            Mock Get-ServerInformation -ModuleName ConfluencePS {}
 
             $result = Get-AttachmentFile -ApiUri "https://docs.example.com/wiki/rest/api" -Attachment $attachment
 
