@@ -8,7 +8,8 @@
         [ConfluencePS.Icon],
         [ConfluencePS.Version],
         [ConfluencePS.User],
-        [ConfluencePS.Attachment]
+        [ConfluencePS.Attachment],
+        [ConfluencePS.ServerInformation]
     )]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute( "PSAvoidUsingEmptyCatchBlock", "" )]
     param (
@@ -43,7 +44,8 @@
             [ConfluencePS.Icon],
             [ConfluencePS.Version],
             [ConfluencePS.User],
-            [ConfluencePS.Attachment]
+            [ConfluencePS.Attachment],
+            [ConfluencePS.ServerInformation]
         )]
         [System.Type]$OutputType,
 
@@ -96,6 +98,13 @@
         $splatParameters['UseBasicParsing'] = $true
         $splatParameters['ErrorAction'] = 'Stop'
         $splatParameters['Verbose'] = $false     # Overwrites verbose output
+        if (Test-ShouldPreserveAuthorizationOnRedirect -Uri $Uri -OutFile $OutFile -Credential $Credential -PersonalAccessToken $PersonalAccessToken) {
+            $secureCreds = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes(
+                    $('{0}:{1}' -f $Credential.UserName, $Credential.GetNetworkCredential().Password)
+                ))
+            $splatParameters['Headers']['Authorization'] = "Basic $($secureCreds)"
+            $null = $splatParameters.Remove('Credential')
+        }
         if ($TimeoutSec -gt 0) {
             $splatParameters["TimeoutSec"] = $TimeoutSec
         }

@@ -46,6 +46,10 @@
 
     BEGIN {
         Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function started"
+
+        $serverInfoParameters = Copy-CommonParameter -InputObject $PSBoundParameters
+        $serverInfo = Get-ServerInformation @serverInfoParameters -ApiUri $ApiUri -ErrorAction Stop
+        $isCloudApi = $serverInfo.DeploymentType -eq 'Cloud'
     }
 
     PROCESS {
@@ -63,7 +67,10 @@
 
         foreach ($_Attachment in $Attachment) {
             $iwParameters['Uri'] = $_Attachment.URL
-            $iwParameters['Headers'] = @{"Accept" = $_Attachment.MediaType }
+            $iwParameters['Headers'] = @{"Accept" = "*/*" }
+            if ($isCloudApi -and ($_Attachment.PageID) -and ($_Attachment.ID)) {
+                $iwParameters['Uri'] = "$ApiUri/content/$($_Attachment.PageID)/child/attachment/$($_Attachment.ID)/download"
+            }
             $iwParameters['OutFile'] = if ($Path) { Join-Path -Path $Path -ChildPath $_Attachment.Filename } else { $_Attachment.Filename }
 
             $result = Invoke-Method @iwParameters
