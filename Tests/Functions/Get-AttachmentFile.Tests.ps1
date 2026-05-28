@@ -54,7 +54,7 @@ InModuleScope ConfluencePS {
             $result | Should -Be $true
             Should -Invoke -CommandName Invoke-Method -ModuleName ConfluencePS -Exactly -Times 1 -Scope It -ParameterFilter {
                 $Uri -eq "http://localhost:1990/confluence/download/attachments/123/Test.txt" -and
-                $Headers.Accept -eq "text/plain"
+                $Headers.Accept -eq "*/*"
             }
         }
 
@@ -68,7 +68,7 @@ InModuleScope ConfluencePS {
             $result | Should -Be $true
             Should -Invoke -CommandName Invoke-Method -ModuleName ConfluencePS -Exactly -Times 1 -Scope It -ParameterFilter {
                 $Uri -eq "https://docs.example.com/wiki/download/attachments/123/Test.txt" -and
-                $Headers.Accept -eq "text/plain"
+                $Headers.Accept -eq "*/*"
             }
         }
 
@@ -82,7 +82,7 @@ InModuleScope ConfluencePS {
             $result | Should -Be $true
             Should -Invoke -CommandName Invoke-Method -ModuleName ConfluencePS -Exactly -Times 1 -Scope It -ParameterFilter {
                 $Uri -eq "https://docs.example.com/wiki/download/attachments/123/Test.txt" -and
-                $Headers.Accept -eq "text/plain"
+                $Headers.Accept -eq "*/*"
             }
         }
     }

@@ -58,20 +58,18 @@
             Throw $exception
         }
 
-        $iwParameters = Copy-CommonParameter -InputObject $PSBoundParameters
-        $serverInfoParameters = $iwParameters.Clone()
-        $iwParameters['Method'] = 'Get'
+        $serverInfoParameters = Copy-CommonParameter -InputObject $PSBoundParameters
         $serverInfo = Get-ServerInformation @serverInfoParameters -ApiUri $ApiUri
         $isCloudApi = $serverInfo.DeploymentType -eq 'Cloud'
 
+        $iwParameters = Copy-CommonParameter -InputObject $PSBoundParameters
+        $iwParameters['Method'] = 'Get'
+
         foreach ($_Attachment in $Attachment) {
             $iwParameters['Uri'] = $_Attachment.URL
+            $iwParameters['Headers'] = @{"Accept" = "*/*" }
             if ($isCloudApi -and ($_Attachment.PageID) -and ($_Attachment.ID)) {
                 $iwParameters['Uri'] = "$ApiUri/content/$($_Attachment.PageID)/child/attachment/$($_Attachment.ID)/download"
-                $iwParameters['Headers'] = @{"Accept" = "*/*" }
-            }
-            else {
-                $iwParameters['Headers'] = @{"Accept" = $_Attachment.MediaType }
             }
             $iwParameters['OutFile'] = if ($Path) { Join-Path -Path $Path -ChildPath $_Attachment.Filename } else { $_Attachment.Filename }
 
