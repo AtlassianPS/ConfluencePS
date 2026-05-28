@@ -468,6 +468,7 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             $script:GetByQueryCanBeAsserted = $script:GetByQueryIndexed -or $script:GetByQueryRequired
             $script:GetSpacePage = Get-ConfluencePage -Space (Get-ConfluenceSpace -SpaceKey $SpaceKey) -ErrorAction SilentlyContinue
             $script:GetSpacePiped = Get-ConfluenceSpace -SpaceKey $SpaceKey | Get-ConfluencePage -ErrorAction SilentlyContinue
+            $script:GetSpacePaged = Get-ConfluencePage -SpaceKey $SpaceKey -PageSize 1 -ErrorAction SilentlyContinue
 
         }
 
@@ -489,6 +490,11 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
                 @($GetByQuery).Count | Should -Be 2
             }
             @($GetSpacePiped).Count | Should -Be 5
+            @($GetSpacePaged).Count | Should -Be 5
+        }
+        It 'preserves the space filter when paginating page results' {
+            @($GetSpacePaged).Count | Should -Be 5
+            @($GetSpacePaged | Where-Object { $_.Space.Key -ne $SpaceKey }).Count | Should -Be 0
         }
         It 'returns an object with specific properties' {
             $GetTitle1 | Should -BeOfType [ConfluencePS.Page]
