@@ -48,7 +48,7 @@
         Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function started"
 
         $serverInfoParameters = Copy-CommonParameter -InputObject $PSBoundParameters
-        $serverInfo = Get-ServerInformation @serverInfoParameters -ApiUri $ApiUri
+        $serverInfo = Get-ServerInformation @serverInfoParameters -ApiUri $ApiUri -ErrorAction Stop
         $isCloudApi = $serverInfo.DeploymentType -eq 'Cloud'
     }
 

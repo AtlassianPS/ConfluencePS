@@ -31,7 +31,7 @@
         $iwParameters['Uri'] = "$($ApiUri.AbsoluteUri.TrimEnd('/'))/settings/systemInfo"
         $iwParameters['OutputType'] = [ConfluencePS.ServerInformation]
 
-        $serverInformation = try { Invoke-Method @iwParameters -ErrorAction SilentlyContinue } catch { $null }
+        $serverInformation = Invoke-Method @iwParameters -ErrorAction Stop
         if ($serverInformation) {
             $serverInformation
         }
