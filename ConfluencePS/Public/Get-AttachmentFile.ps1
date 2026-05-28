@@ -47,15 +47,9 @@
     BEGIN {
         Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function started"
 
-        $isCloudApi = try {
-            $serverInfoParameters = Copy-CommonParameter -InputObject $PSBoundParameters
-            $serverInfo = Get-ServerInformation @serverInfoParameters -ApiUri $ApiUri -ErrorAction Stop
-            $serverInfo.DeploymentType -eq 'Cloud'
-        }
-        catch {
-            Write-Warning "[$($MyInvocation.MyCommand.Name)] Could not determine Confluence deployment type: $_"
-            $false
-        }
+        $serverInfoParameters = Copy-CommonParameter -InputObject $PSBoundParameters
+        $serverInfo = Get-ServerInformation @serverInfoParameters -ApiUri $ApiUri
+        $isCloudApi = $serverInfo.DeploymentType -eq 'Cloud'
     }
 
     PROCESS {

@@ -59,10 +59,37 @@ InModuleScope ConfluencePS {
             $result.BuildNumber | Should -Be 9200
         }
 
-        It "throws when system info cannot be retrieved" {
+        It "prefers cloudId when determining deployment type" {
+            Mock Invoke-Method -ModuleName ConfluencePS {
+                $response = [PSCustomObject]@{
+                    cloudId        = 'cloud-id'
+                    deploymentType = 'DataCenter'
+                }
+                if ($OutputType -eq [ConfluencePS.ServerInformation]) { return $response | ConvertTo-ServerInformation }
+                $response
+            }
+
+            $result = Get-ServerInformation -ApiUri "https://docs.example.com/wiki/rest/api"
+
+            $result.DeploymentType | Should -Be 'Cloud'
+        }
+
+        It "defaults to DataCenter when system info cannot be retrieved" {
             Mock Invoke-Method -ModuleName ConfluencePS { throw "failed" }
 
-            { Get-ServerInformation -ApiUri "https://docs.example.com/wiki/rest/api" -ErrorAction Stop } | Should -Throw
+            $result = Get-ServerInformation -ApiUri "https://docs.example.com/wiki/rest/api"
+
+            $result | Should -BeOfType [ConfluencePS.ServerInformation]
+            $result.DeploymentType | Should -Be 'DataCenter'
+        }
+
+        It "defaults to DataCenter when system info returns no object" {
+            Mock Invoke-Method -ModuleName ConfluencePS {}
+
+            $result = Get-ServerInformation -ApiUri "https://docs.example.com/wiki/rest/api"
+
+            $result | Should -BeOfType [ConfluencePS.ServerInformation]
+            $result.DeploymentType | Should -Be 'DataCenter'
         }
     }
 }

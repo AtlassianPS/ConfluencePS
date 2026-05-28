@@ -72,12 +72,12 @@ InModuleScope ConfluencePS {
             }
         }
 
-        It "preserves attachment URLs when server information cannot be retrieved" {
+        It "preserves attachment URLs when server information defaults to Data Center" {
             $attachment = New-TestAttachment -URL "https://docs.example.com/wiki/download/attachments/123/Test.txt"
 
-            Mock Get-ServerInformation -ModuleName ConfluencePS { throw "Unable to get server information" }
+            Mock Get-ServerInformation -ModuleName ConfluencePS { [ConfluencePS.ServerInformation]@{ DeploymentType = 'DataCenter' } }
 
-            $result = Get-AttachmentFile -ApiUri "https://docs.example.com/wiki/rest/api" -Attachment $attachment -WarningAction SilentlyContinue
+            $result = Get-AttachmentFile -ApiUri "https://docs.example.com/wiki/rest/api" -Attachment $attachment
 
             $result | Should -Be $true
             Should -Invoke -CommandName Invoke-Method -ModuleName ConfluencePS -Exactly -Times 1 -Scope It -ParameterFilter {

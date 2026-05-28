@@ -10,7 +10,7 @@
         foreach ($object in $InputObject) {
             Write-Verbose "[$($MyInvocation.MyCommand.Name)] Converting Object to ServerInformation"
 
-            $deploymentType = if ($object.deploymentType) { $object.deploymentType } elseif ($object.cloudId) { 'Cloud' } else { 'DataCenter' }
+            $deploymentType = if ($object.cloudId) { 'Cloud' } elseif ($object.deploymentType) { $object.deploymentType } else { 'DataCenter' }
             $hash = @{
                 DeploymentType  = $deploymentType
                 CloudId         = $object.cloudId
