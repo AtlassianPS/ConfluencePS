@@ -146,7 +146,7 @@
                 if ($SpaceKey) { $CQLparameters += "space=$SpaceKey" }
                 $iwParameters["GetParameters"]["cql"] = ($CQLparameters -join " AND ")
 
-                Invoke-Method @iwParameters
+                Invoke-Method @iwParameters | Where-Object { $_.Status -eq 'current' }
                 break
             }
             "byQuery" {

@@ -103,6 +103,7 @@ Get-ConfluencePage -Label 'skywalker'
 
 Return all pages containing the label "skywalker" (case-insensitive).
 Label text must match exactly; no wildcards are applied.
+Only current pages are returned; archived and trashed pages are excluded.
 
 ### -------------------------- EXAMPLE 5 --------------------------
 
@@ -118,7 +119,7 @@ Return all pages matching the query.
 Get-ConfluencePage -Label 'skywalker' -ExcludePageBody
 ```
 
-Return all pages containing the label "skywalker" (case-insensitive) without their page content.
+Return all current pages containing the label "skywalker" (case-insensitive) without their page content.
 
 ## PARAMETERS
 
