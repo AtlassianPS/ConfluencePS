@@ -22,7 +22,7 @@ Get-ConfluenceServerInformation -ApiUri <Uri> [-Credential <PSCredential>]
 
 ## DESCRIPTION
 
-Returns the Confluence system information resource from `settings/systemInfo` as a `ConfluencePS.ServerInfo` object.
+Returns the Confluence system information resource from `settings/systemInfo` as a `ConfluencePS.ServerInformation` object.
 Cloud responses include Cloud-specific fields such as `CloudId`; Data Center responses are mapped to `DeploymentType = DataCenter`.
 
 ## EXAMPLES
@@ -118,7 +118,7 @@ Accept wildcard characters: False
 
 ## OUTPUTS
 
-### ConfluencePS.ServerInfo
+### ConfluencePS.ServerInformation
 
 ## NOTES
 

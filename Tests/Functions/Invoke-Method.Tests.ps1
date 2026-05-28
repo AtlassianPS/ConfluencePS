@@ -126,6 +126,23 @@ namespace ConfluencePS.Tests {
             } -Exactly -Times 1 -Scope It
         }
 
+        It "sends explicit authorization for Confluence Cloud attachment REST downloads on custom domains" {
+            if (-not (Get-Command -Name 'Microsoft.PowerShell.Utility\Invoke-WebRequest').Parameters.ContainsKey('PreserveAuthorizationOnRedirect')) {
+                Set-ItResult -Skipped -Because "PreserveAuthorizationOnRedirect is unavailable in this PowerShell version."
+                return
+            }
+
+            $securePassword = ConvertTo-SecureString -AsPlainText -Force -String "password"
+            $credential = [pscredential]::new("user", $securePassword)
+
+            $null = Invoke-Method -Uri "https://docs.example.com/wiki/rest/api/content/123/child/attachment/456/download" -Credential $credential -OutFile "Test.txt" -ErrorAction Stop
+
+            Should -Invoke -CommandName Invoke-WebRequest -ModuleName ConfluencePS -ParameterFilter {
+                (-not $PSBoundParameters.ContainsKey('Credential')) -and
+                $Headers.Authorization -eq 'Basic dXNlcjpwYXNzd29yZA=='
+            } -Exactly -Times 1 -Scope It
+        }
+
         It "does not send explicit authorization on non-Cloud file downloads" {
             $securePassword = ConvertTo-SecureString -AsPlainText -Force -String "password"
             $credential = [pscredential]::new("user", $securePassword)

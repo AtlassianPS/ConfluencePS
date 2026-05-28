@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections;
 // using System.Linq;
@@ -119,7 +119,7 @@ namespace ConfluencePS
         }
     }
 
-    public class ServerInfo
+    public class ServerInformation
     {
         public String DeploymentType { get; set; }
         public String CloudId { get; set; }

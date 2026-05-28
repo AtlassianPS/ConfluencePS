@@ -1,6 +1,6 @@
-﻿function ConvertTo-ServerInfo {
+﻿function ConvertTo-ServerInformation {
     [CmdletBinding()]
-    [OutputType([ConfluencePS.ServerInfo])]
+    [OutputType([ConfluencePS.ServerInformation])]
     param (
         [Parameter(ValueFromPipeline = $true)]
         [PSObject[]]$InputObject
@@ -8,7 +8,7 @@
 
     PROCESS {
         foreach ($object in $InputObject) {
-            Write-Verbose "[$($MyInvocation.MyCommand.Name)] Converting Object to ServerInfo"
+            Write-Verbose "[$($MyInvocation.MyCommand.Name)] Converting Object to ServerInformation"
 
             $deploymentType = if ($object.deploymentType) { $object.deploymentType } elseif ($object.cloudId) { 'Cloud' } else { 'DataCenter' }
             $hash = @{
@@ -29,7 +29,7 @@
             if ($object.buildDate) { $hash.BuildDate = [DateTime]$object.buildDate }
             if ($object.serverTime) { $hash.ServerTime = [DateTime]$object.serverTime }
 
-            [ConfluencePS.ServerInfo]$hash
+            [ConfluencePS.ServerInformation]$hash
         }
     }
 }

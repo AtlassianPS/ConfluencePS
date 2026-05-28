@@ -28,7 +28,7 @@ InModuleScope ConfluencePS {
         }
 
         BeforeEach {
-            Mock Get-ServerInformation -ModuleName ConfluencePS { [ConfluencePS.ServerInfo]@{ DeploymentType = 'Cloud' } }
+            Mock Get-ServerInformation -ModuleName ConfluencePS { [ConfluencePS.ServerInformation]@{ DeploymentType = 'Cloud' } }
             Mock Invoke-Method -ModuleName ConfluencePS {}
         }
 
@@ -47,7 +47,7 @@ InModuleScope ConfluencePS {
         It "preserves Data Center attachment URLs" {
             $attachment = New-TestAttachment -URL "http://localhost:1990/confluence/download/attachments/123/Test.txt"
 
-            Mock Get-ServerInformation -ModuleName ConfluencePS { [ConfluencePS.ServerInfo]@{ DeploymentType = 'DataCenter' } }
+            Mock Get-ServerInformation -ModuleName ConfluencePS { [ConfluencePS.ServerInformation]@{ DeploymentType = 'DataCenter' } }
 
             $result = Get-AttachmentFile -ApiUri "http://localhost:1990/confluence/rest/api" -Attachment $attachment
 
@@ -61,7 +61,7 @@ InModuleScope ConfluencePS {
         It "preserves Data Center attachment URLs when Data Center is hosted under /wiki" {
             $attachment = New-TestAttachment -URL "https://docs.example.com/wiki/download/attachments/123/Test.txt"
 
-            Mock Get-ServerInformation -ModuleName ConfluencePS { [ConfluencePS.ServerInfo]@{ DeploymentType = 'DataCenter' } }
+            Mock Get-ServerInformation -ModuleName ConfluencePS { [ConfluencePS.ServerInformation]@{ DeploymentType = 'DataCenter' } }
 
             $result = Get-AttachmentFile -ApiUri "https://docs.example.com/wiki/rest/api" -Attachment $attachment
 
@@ -72,18 +72,30 @@ InModuleScope ConfluencePS {
             }
         }
 
-        It "preserves attachment URLs when server information falls back to Data Center" {
+        It "preserves attachment URLs when server information cannot be retrieved" {
             $attachment = New-TestAttachment -URL "https://docs.example.com/wiki/download/attachments/123/Test.txt"
 
-            Mock Get-ServerInformation -ModuleName ConfluencePS { [ConfluencePS.ServerInfo]@{ DeploymentType = 'DataCenter' } }
+            Mock Get-ServerInformation -ModuleName ConfluencePS { throw "Unable to get server information" }
 
-            $result = Get-AttachmentFile -ApiUri "https://docs.example.com/wiki/rest/api" -Attachment $attachment
+            $result = Get-AttachmentFile -ApiUri "https://docs.example.com/wiki/rest/api" -Attachment $attachment -WarningAction SilentlyContinue
 
             $result | Should -Be $true
             Should -Invoke -CommandName Invoke-Method -ModuleName ConfluencePS -Exactly -Times 1 -Scope It -ParameterFilter {
                 $Uri -eq "https://docs.example.com/wiki/download/attachments/123/Test.txt" -and
                 $Headers.Accept -eq "*/*"
             }
+        }
+
+        It "retrieves server information only once for piped attachments" {
+            $attachments = @(
+                New-TestAttachment -ID 456 -PageID 123 -URL "https://docs.example.com/wiki/download/attachments/123/Test1.txt"
+                New-TestAttachment -ID 789 -PageID 124 -URL "https://docs.example.com/wiki/download/attachments/124/Test2.txt"
+            )
+
+            $result = $attachments | Get-AttachmentFile -ApiUri "https://docs.example.com/wiki/rest/api"
+
+            $result | Should -Be ($true, $true)
+            Should -Invoke -CommandName Get-ServerInformation -ModuleName ConfluencePS -Exactly -Times 1 -Scope It
         }
     }
 }

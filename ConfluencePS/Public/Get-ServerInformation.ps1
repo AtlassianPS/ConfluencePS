@@ -1,6 +1,6 @@
 ﻿function Get-ServerInformation {
     [CmdletBinding()]
-    [OutputType([ConfluencePS.ServerInfo])]
+    [OutputType([ConfluencePS.ServerInformation])]
     param (
         [Parameter(Mandatory = $true)]
         [Uri]$ApiUri,
@@ -29,15 +29,9 @@
         $iwParameters = Copy-CommonParameter -InputObject $PSBoundParameters
         $iwParameters['Method'] = 'Get'
         $iwParameters['Uri'] = "$($ApiUri.AbsoluteUri.TrimEnd('/'))/settings/systemInfo"
-        $iwParameters['OutputType'] = [ConfluencePS.ServerInfo]
+        $iwParameters['OutputType'] = [ConfluencePS.ServerInformation]
 
-        try {
-            Invoke-Method @iwParameters -ErrorAction Stop
-        }
-        catch {
-            Write-Warning "[$($MyInvocation.MyCommand.Name)] Could not retrieve server information: $_"
-            [ConfluencePS.ServerInfo]@{ DeploymentType = 'DataCenter' }
-        }
+        Invoke-Method @iwParameters
     }
 
     END {

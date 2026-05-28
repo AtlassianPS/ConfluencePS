@@ -22,7 +22,7 @@ InModuleScope ConfluencePS {
                     defaultTimeZone  = 'UTC'
                     microsPerimeter  = 'commercial'
                 }
-                if ($OutputType -eq [ConfluencePS.ServerInfo]) { return $response | ConvertTo-ServerInfo }
+                if ($OutputType -eq [ConfluencePS.ServerInformation]) { return $response | ConvertTo-ServerInformation }
                 $response
             }
         }
@@ -30,13 +30,13 @@ InModuleScope ConfluencePS {
         It "calls the system info endpoint" {
             $result = Get-ServerInformation -ApiUri "https://docs.example.com/wiki/rest/api"
 
-            $result | Should -BeOfType [ConfluencePS.ServerInfo]
+            $result | Should -BeOfType [ConfluencePS.ServerInformation]
             $result.DeploymentType | Should -Be 'Cloud'
             $result.CloudId | Should -Be 'cloud-id'
             $result.BaseUrl.AbsoluteUri | Should -Be 'https://docs.example.com/wiki'
             Should -Invoke -CommandName Invoke-Method -ModuleName ConfluencePS -Exactly -Times 1 -Scope It -ParameterFilter {
                 $Uri -eq 'https://docs.example.com/wiki/rest/api/settings/systemInfo' -and
-                $OutputType -eq [ConfluencePS.ServerInfo]
+                $OutputType -eq [ConfluencePS.ServerInformation]
             }
         }
 
@@ -48,7 +48,7 @@ InModuleScope ConfluencePS {
                     buildNumber = 9200
                     siteTitle   = 'Docs'
                 }
-                if ($OutputType -eq [ConfluencePS.ServerInfo]) { return $response | ConvertTo-ServerInfo }
+                if ($OutputType -eq [ConfluencePS.ServerInformation]) { return $response | ConvertTo-ServerInformation }
                 $response
             }
 
@@ -59,13 +59,10 @@ InModuleScope ConfluencePS {
             $result.BuildNumber | Should -Be 9200
         }
 
-        It "falls back to DataCenter when system info cannot be retrieved" {
+        It "throws when system info cannot be retrieved" {
             Mock Invoke-Method -ModuleName ConfluencePS { throw "failed" }
 
-            $result = Get-ServerInformation -ApiUri "https://docs.example.com/wiki/rest/api" -WarningAction SilentlyContinue
-
-            $result | Should -BeOfType [ConfluencePS.ServerInfo]
-            $result.DeploymentType | Should -Be 'DataCenter'
+            { Get-ServerInformation -ApiUri "https://docs.example.com/wiki/rest/api" -ErrorAction Stop } | Should -Throw
         }
     }
 }
