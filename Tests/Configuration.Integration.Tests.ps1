@@ -93,6 +93,16 @@ Describe "Integration Test Configuration" -Tag 'Integration', 'Smoke', 'Cloud', 
             { Get-ConfluenceSpace -ErrorAction Stop | Select-Object -First 1 | Out-Null } | Should -Not -Throw
         }
 
+        It "can list spaces without expanded label metadata" {
+            if (-not $script:IsIntegrationEnvironmentConfigured) {
+                Set-ItResult -Skipped -Because "Environment not configured"
+                return
+            }
+
+            $spaces = Get-ConfluenceSpace -PageSize 1 -ErrorAction Stop
+            $spaces | Select-Object -First 1 | Should -BeOfType [ConfluencePS.Space]
+        }
+
         It "can execute a CQL page query using configured defaults" {
             if (-not $script:IsIntegrationEnvironmentConfigured) {
                 Set-ItResult -Skipped -Because "Environment not configured"
