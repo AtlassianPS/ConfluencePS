@@ -36,11 +36,13 @@ method for Server installations in the future.
 
 ```powershell
 Import-Module ConfluencePS
-Set-ConfluenceInfo -BaseURI 'https://mywiki.company.com' -PromptCredentials
+$credential = Get-Credential -UserName 'me@example.com'
+Set-ConfluenceInfo -BaseURI 'https://yournamehere.atlassian.net/wiki' -Credential $credential
 ```
 
-Unless supplying the credentials (`-Credential $cred`), you will be
-prompted for a username/password to connect to your wiki instance.
+For Confluence Cloud, use your Atlassian account email address and an API token.
+For Confluence Data Center or Server, use the authentication method configured for your instance.
+See [about_ConfluencePS_Authentication](about/authentication.html) for Cloud, Data Center, Server, and anonymous authentication examples.
 
 `Set-ConfluenceInfo` sets defaults in your current session for common parameters
 `-ApiUri` and `-Credential`. This saves you from entering the info into each command,
@@ -134,6 +136,8 @@ Find us on GitHub or Slack, and let us know what you think.
 # SEE ALSO
 
 [Commands index](/docs/ConfluencePS/commands/)
+
+[Authentication guide](/docs/ConfluencePS/about/authentication.html)
 
 [Classes index](/docs/ConfluencePS/classes/)
 

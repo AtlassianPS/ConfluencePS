@@ -202,4 +202,6 @@ https://yournamehere.atlassian.net/wiki.
 
 [ConfluencePS PR#59: Add proper Paging to Get functions](https://github.com/AtlassianPS/ConfluencePS/pull/59)
 
+[about_ConfluencePS_Authentication](/docs/ConfluencePS/about/authentication.html)
+
 [Manage API tokens for your Atlassian account](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/)

@@ -34,3 +34,4 @@ The documentation pages use the source function names that back the exported com
 | `Set-ConfluencePage` | [Set-Page](/docs/ConfluencePS/commands/Set-Page/) |
 
 For module overview and setup, see [about_ConfluencePS](/docs/ConfluencePS/).
+For Cloud, Data Center, Server, and anonymous authentication examples, see [about_ConfluencePS_Authentication](/docs/ConfluencePS/about/authentication.html).

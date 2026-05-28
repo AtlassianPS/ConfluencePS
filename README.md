@@ -37,7 +37,8 @@ Update-Module ConfluencePS
 
 # To use each session:
 Import-Module ConfluencePS
-Set-ConfluenceInfo -BaseURI 'https://YourCloudWiki.atlassian.net/wiki' -PromptCredentials
+$credential = Get-Credential -UserName 'me@example.com'
+Set-ConfluenceInfo -BaseURI 'https://YourCloudWiki.atlassian.net/wiki' -Credential $credential
 ```
 
 ### Usage
@@ -47,11 +48,13 @@ You can find the full documentation on our [homepage](https://atlassianps.org/do
 ```powershell
 # Review the help at any time!
 Get-Help about_ConfluencePS
+Get-Help about_ConfluencePS_Authentication
 Get-Command -Module ConfluencePS
 Get-Help Get-ConfluencePage -Full   # or any other command
 ```
 
 For first steps to get up and running, check out the [Getting Started](https://atlassianps.org/docs/ConfluencePS/#getting-started) page.
+For Cloud, Data Center, Server, and anonymous authentication examples, see the [authentication guide](https://atlassianps.org/docs/ConfluencePS/about/authentication.html).
 
 ### Contribute
 
