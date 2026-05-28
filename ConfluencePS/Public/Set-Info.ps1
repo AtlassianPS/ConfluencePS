@@ -33,9 +33,10 @@
             PROCESS {
                 Write-Verbose "[$($MyInvocation.MyCommand.Name)] Setting [$command : $parameter] = $value"
 
-                # Needs to set both global and module scope for the private functions:
+                # Needs to set caller, module, and global scope for nested functions and module commands:
                 # http://stackoverflow.com/questions/30427110/set-psdefaultparametersvalues-for-use-within-module-scope
                 $PSDefaultParameterValues["${command}:${parameter}"] = $Value
+                $script:PSDefaultParameterValues["${command}:${parameter}"] = $Value
                 $global:PSDefaultParameterValues["${command}:${parameter}"] = $Value
             }
         }
