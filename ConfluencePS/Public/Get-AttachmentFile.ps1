@@ -47,8 +47,15 @@
     BEGIN {
         Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function started"
 
-        $isCloudApi = $false
-        $isCloudApiResolved = $false
+        $isCloudApi = try {
+            $serverInfoParameters = Copy-CommonParameter -InputObject $PSBoundParameters
+            $serverInfo = Get-ServerInformation @serverInfoParameters -ApiUri $ApiUri -ErrorAction Stop
+            $serverInfo.DeploymentType -eq 'Cloud'
+        }
+        catch {
+            Write-Warning "[$($MyInvocation.MyCommand.Name)] Could not determine Confluence deployment type: $_"
+            $false
+        }
     }
 
     PROCESS {
@@ -59,18 +66,6 @@
             $message = "The Object in the pipe is not an Attachment."
             $exception = New-Object -TypeName System.ArgumentException -ArgumentList $message
             Throw $exception
-        }
-
-        if (-not $isCloudApiResolved) {
-            try {
-                $serverInfoParameters = Copy-CommonParameter -InputObject $PSBoundParameters
-                $serverInfo = Get-ServerInformation @serverInfoParameters -ApiUri $ApiUri -ErrorAction Stop
-                $isCloudApi = $serverInfo.DeploymentType -eq 'Cloud'
-            }
-            catch {
-                Write-Warning "[$($MyInvocation.MyCommand.Name)] Could not determine Confluence deployment type: $_"
-            }
-            $isCloudApiResolved = $true
         }
 
         $iwParameters = Copy-CommonParameter -InputObject $PSBoundParameters
