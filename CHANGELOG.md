@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+- `Get-ConfluenceSpace` no longer requests unused space label metadata, avoiding HTTP 500 responses from Confluence Data Center 8.9.x when listing spaces (#214)
 - `Get-ConfluencePage -Label` now quotes label values in generated CQL so labels containing hyphens are accepted by Confluence (#175, #185, [@ehrenfeu])
 - `Invoke-Method` now handles JSON payloads with duplicate key casing (for example `subType` and `subtype`) without failing parsing (#216, [@codethief])
 - Fixed `-PersonalAccessToken` authentication on PowerShell 6+ by forwarding it as a bearer authorization header (#208, #209, [@sebmaurer])

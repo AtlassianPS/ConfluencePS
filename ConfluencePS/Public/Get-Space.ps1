@@ -42,7 +42,7 @@
         $iwParameters = Copy-CommonParameter -InputObject $PSBoundParameters
         $iwParameters['Method'] = 'Get'
         $iwParameters['GetParameters'] = @{
-            expand = "description.plain,icon,homepage,metadata.labels"
+            expand = "description.plain,icon,homepage"
             limit  = $PageSize
         }
         $iwParameters['OutputType'] = [ConfluencePS.Space]
