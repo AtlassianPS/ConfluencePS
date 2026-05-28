@@ -43,5 +43,3 @@
         Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function ended"
     }
 }
-
-New-Alias -Name "Get-ConfluenceServerInfo" -Value "Get-ServerInformation" -ErrorAction SilentlyContinue
