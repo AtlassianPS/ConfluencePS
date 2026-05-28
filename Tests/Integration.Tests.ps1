@@ -436,7 +436,10 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             $script:ContentRaw = "<p>Hi Pester!👋</p>"
             $script:ContentFormatted = "<p>Hi Pester!</p><p>👋</p>"
             $script:SearchLabel = "searchlabel$SpaceID"
+            $script:DeletedLabelPageTitle = "Pester Label Search Deleted $SpaceID"
             (Get-ConfluenceSpace -SpaceKey $SpaceKey).Homepage | Add-ConfluenceLabel -Label $SearchLabel -ErrorAction Stop
+            $script:DeletedLabelPage = New-ConfluencePage -Title $DeletedLabelPageTitle -SpaceKey $SpaceKey -ErrorAction Stop
+            $script:DeletedLabelPage | Add-ConfluenceLabel -Label $SearchLabel -ErrorAction Stop
             Start-Sleep -Seconds 20 # Delay to allow DB index to update
 
             # ACT
@@ -447,14 +450,26 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             $script:GetID1 = Get-ConfluencePage -PageID $GetTitle1.ID -ErrorAction SilentlyContinue
             $script:GetID2 = Get-ConfluencePage -PageID $GetTitle2.ID -ErrorAction SilentlyContinue
             $script:Query = "id in ($($GetID1.ID), $($GetID2.ID))"
-            $script:GetKeys = Get-ConfluencePage -SpaceKey $SpaceKey -ErrorAction SilentlyContinue | Sort-Object ID
             $script:GetByLabel = @()
             $script:GetByQuery = @()
+            $script:GetDeletedByLabelIndexed = $false
             $maxSearchRetries = if ($script:integrationEnvironment.IsCloud) { 24 } else { 6 }
             for ($retry = 0; $retry -lt $maxSearchRetries; $retry++) {
                 $script:GetByLabel = Get-ConfluencePage -Label $SearchLabel -SpaceKey $SpaceKey -ErrorAction SilentlyContinue
                 $script:GetByQuery = Get-ConfluencePage -Query $query -ErrorAction SilentlyContinue
-                if ((@($GetByLabel).Count -ge 1) -and (@($GetByQuery).Count -eq 2)) {
+                if (@($GetByLabel).ID -contains $DeletedLabelPage.ID) {
+                    $script:GetDeletedByLabelIndexed = $true
+                }
+                if ((@($GetByLabel).Count -ge 1) -and (@($GetByQuery).Count -eq 2) -and ($script:GetDeletedByLabelIndexed -or $script:integrationEnvironment.IsCloud)) {
+                    break
+                }
+
+                Start-Sleep -Seconds 5
+            }
+            Remove-ConfluencePage -PageID $DeletedLabelPage.ID -ErrorAction Stop
+            for ($retry = 0; $retry -lt $maxSearchRetries; $retry++) {
+                $script:GetByLabel = Get-ConfluencePage -Label $SearchLabel -SpaceKey $SpaceKey -ErrorAction SilentlyContinue
+                if ((@($GetByLabel).Count -ge 1) -and (@($GetByLabel).ID -notcontains $DeletedLabelPage.ID)) {
                     break
                 }
 
@@ -463,9 +478,11 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             $script:GetByLabelIndexed = @($GetByLabel).Count -ge 1
             $script:GetByLabelRequired = -not $script:integrationEnvironment.IsCloud
             $script:GetByLabelCanBeAsserted = $script:GetByLabelIndexed -or $script:GetByLabelRequired
+            $script:GetDeletedByLabelCanBeAsserted = $script:GetDeletedByLabelIndexed -or $script:GetByLabelRequired
             $script:GetByQueryIndexed = @($GetByQuery).Count -eq 2
             $script:GetByQueryRequired = -not $script:integrationEnvironment.IsCloud
             $script:GetByQueryCanBeAsserted = $script:GetByQueryIndexed -or $script:GetByQueryRequired
+            $script:GetKeys = Get-ConfluencePage -SpaceKey $SpaceKey -ErrorAction SilentlyContinue | Sort-Object ID
             $script:GetSpacePage = Get-ConfluencePage -Space (Get-ConfluenceSpace -SpaceKey $SpaceKey) -ErrorAction SilentlyContinue
             $script:GetSpacePiped = Get-ConfluenceSpace -SpaceKey $SpaceKey | Get-ConfluencePage -ErrorAction SilentlyContinue
             $script:GetSpacePaged = Get-ConfluencePage -SpaceKey $SpaceKey -PageSize 1 -ErrorAction SilentlyContinue
@@ -495,6 +512,12 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
         It 'preserves the space filter when paginating page results' {
             @($GetSpacePaged).Count | Should -Be 5
             @($GetSpacePaged | Where-Object { $_.Space.Key -ne $SpaceKey }).Count | Should -Be 0
+        }
+        It 'does not return deleted pages for label searches' {
+            if ($script:GetDeletedByLabelCanBeAsserted) {
+                $script:GetDeletedByLabelIndexed | Should -Be $true
+                @($GetByLabel).ID | Should -Not -Contain $DeletedLabelPage.ID
+            }
         }
         It 'returns an object with specific properties' {
             $GetTitle1 | Should -BeOfType [ConfluencePS.Page]
