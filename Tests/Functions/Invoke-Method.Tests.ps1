@@ -379,7 +379,12 @@ namespace ConfluencePS.Tests {
                     return New-FakeWebResponse -StatusCode 200 -Json '{"results":[{"id":1}],"_links":{"base":"https://example.com","next":"/wiki/rest/api/content?limit=20&start=20"}}'
                 }
 
-                New-FakeWebResponse -StatusCode 200 -Json '{"results":[{"id":2}]}'
+                if ($script:invokeCount -eq 1) {
+                    $script:invokeCount++
+                    return New-FakeWebResponse -StatusCode 200 -Json '{"results":[{"id":2}],"_links":{"base":"https://example.com","next":"/wiki/rest/api/content?limit=20&start=40"}}'
+                }
+
+                New-FakeWebResponse -StatusCode 200 -Json '{"results":[{"id":3}]}'
             }
 
             $null = Invoke-Method -Uri "https://example.com/wiki/rest/api/content" -GetParameters @{
@@ -387,13 +392,15 @@ namespace ConfluencePS.Tests {
                 title    = "my Page"
             } -ErrorAction Stop
 
-            $script:requestUris | Should -HaveCount 2
-            $nextUri = [uri]$script:requestUris[1]
-            $nextQueryParameters = [System.Web.HttpUtility]::ParseQueryString($nextUri.Query)
-            $nextQueryParameters["spaceKey"] | Should -Be "Foo"
-            $nextQueryParameters["title"] | Should -Be "my Page"
-            $nextQueryParameters["limit"] | Should -Be "20"
-            $nextQueryParameters["start"] | Should -Be "20"
+            $script:requestUris | Should -HaveCount 3
+            foreach ($nextUri in @([uri]$script:requestUris[1], [uri]$script:requestUris[2])) {
+                $nextQueryParameters = [System.Web.HttpUtility]::ParseQueryString($nextUri.Query)
+                $nextQueryParameters["spaceKey"] | Should -Be "Foo"
+                $nextQueryParameters["title"] | Should -Be "my Page"
+                $nextQueryParameters["limit"] | Should -Be "20"
+            }
+            ([System.Web.HttpUtility]::ParseQueryString(([uri]$script:requestUris[1]).Query))["start"] | Should -Be "20"
+            ([System.Web.HttpUtility]::ParseQueryString(([uri]$script:requestUris[2]).Query))["start"] | Should -Be "40"
         }
 
         It "surfaces JSON errorMessages from HTTP error responses" {

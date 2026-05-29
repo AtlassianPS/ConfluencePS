@@ -388,6 +388,7 @@
                                 $parameters = Copy-CommonParameter -InputObject $PSBoundParameters -AdditionalParameter @("Method", "Headers", "OutputType", "TimeoutSec")
                                 $parameters['Uri'] = "{0}{1}" -f $response._links.base, $response._links.next
                                 if ($paginationGetParameters) {
+                                    $parameters['GetParameters'] = $paginationGetParameters
                                     $nextUriBuilder = [System.UriBuilder]$parameters['Uri']
                                     $nextQueryParameters = [System.Web.HttpUtility]::ParseQueryString($nextUriBuilder.Query)
                                     foreach ($key in $paginationGetParameters.Keys) {
