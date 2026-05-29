@@ -450,11 +450,9 @@ Task Test {
     Remove-Module $env:BHProjectName -ErrorAction SilentlyContinue
 
     # Skip integration test files at discovery time so normal Test runs do
-    # not execute its setup blocks or require integration credentials.
-    $integrationPaths = @(
-        (Join-Path $env:BHBuildOutput 'Tests/Integration.Tests.ps1')
-        (Join-Path $env:BHBuildOutput 'Tests/Configuration.Integration.Tests.ps1')
-    )
+    # not execute setup blocks or require integration credentials.
+    $integrationPaths = @(Get-ChildItem -Path (Join-Path $env:BHBuildOutput 'Tests/Integration') -Filter '*.Integration.Tests.ps1' -File -Recurse -ErrorAction SilentlyContinue |
+        Select-Object -ExpandProperty FullName)
 
     $pesterConfigHash = @{
         Run        = @{
@@ -478,9 +476,6 @@ Task Test {
     if ($Tag) {
         $pesterConfigHash.Filter.Tag = $Tag
         $pesterConfigHash.Filter.ExcludeTag = @($pesterConfigHash.Filter.ExcludeTag | Where-Object { $_ -notin $Tag })
-        if ('Integration' -in $Tag) {
-            $pesterConfigHash.Run.ExcludePath = @()
-        }
     }
 
     if ($ExcludeTag) {
@@ -517,16 +512,31 @@ For local development: copy .env.example to .env and configure the required vari
 "@
     }
 
-    $integrationScripts = @(
-        (Join-Path $env:BHBuildOutput 'Tests/Configuration.Integration.Tests.ps1')
-        (Join-Path $env:BHBuildOutput 'Tests/Integration.Tests.ps1')
-    ) | Where-Object { Test-Path $_ }
+    $integrationOrder = @(
+        'Configuration.Integration.Tests.ps1'
+        'Spaces.Integration.Tests.ps1'
+        'Pages.Integration.Tests.ps1'
+        'Labels.Integration.Tests.ps1'
+        'Attachments.Integration.Tests.ps1'
+    )
+
+    $integrationRoot = Join-Path $env:BHBuildOutput 'Tests/Integration'
+    $integrationScripts = @()
+    if (Test-Path $integrationRoot) {
+        $integrationScripts = @(Get-ChildItem -Path $integrationRoot -Filter '*.Integration.Tests.ps1' -File -Recurse | Sort-Object {
+                $index = [Array]::IndexOf($integrationOrder, $_.Name)
+                if ($index -ge 0) { $index } else { [Int32]::MaxValue }
+            }, Name | Select-Object -ExpandProperty FullName)
+    }
 
     if (-not $integrationScripts) {
-        $integrationScripts = @(
-            (Join-Path $env:BHProjectPath 'Tests/Configuration.Integration.Tests.ps1')
-            (Join-Path $env:BHProjectPath 'Tests/Integration.Tests.ps1')
-        ) | Where-Object { Test-Path $_ }
+        $integrationRoot = Join-Path $env:BHProjectPath 'Tests/Integration'
+        if (Test-Path $integrationRoot) {
+            $integrationScripts = @(Get-ChildItem -Path $integrationRoot -Filter '*.Integration.Tests.ps1' -File -Recurse | Sort-Object {
+                    $index = [Array]::IndexOf($integrationOrder, $_.Name)
+                    if ($index -ge 0) { $index } else { [Int32]::MaxValue }
+                }, Name | Select-Object -ExpandProperty FullName)
+        }
     }
     Assert-True ($integrationScripts.Count -gt 0) 'No integration test files were found.'
 

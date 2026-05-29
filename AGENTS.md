@@ -27,7 +27,7 @@
 - Module source: `ConfluencePS/Public/*.ps1`, `ConfluencePS/Private/*.ps1`
 - REST wrapper entrypoint: `ConfluencePS/Public/Invoke-Method.ps1`
 - Build entrypoint: `ConfluencePS.build.ps1`
-- Test suites: `Tests/*.Tests.ps1`, `Tests/Functions/*.Tests.ps1`
+- Test suites: `Tests/*.Tests.ps1`, `Tests/Functions/Public/*.Tests.ps1`, `Tests/Functions/Private/*.Tests.ps1`
 - Docs/help sources: `docs/en-US/commands/*.md`, `docs/en-US/classes/*.md`
 - Build helpers: `Tools/setup.ps1`, `Tools/BuildTools.psm1`
 
@@ -46,7 +46,7 @@ Focused validation while iterating:
 ```powershell
 # After changing one function/helper, run the matching test file directly
 Invoke-Build -Task Lint
-Invoke-Pester -Path 'Tests/Functions/Invoke-Method.Tests.ps1'
+Invoke-Pester -Path 'Tests/Functions/Public/Invoke-Method.Tests.ps1'
 
 # After changing docs/help, run help tests directly
 Invoke-Build -Task Lint
@@ -77,7 +77,7 @@ Invoke-Build -Task Build, Test
 | What changed | Test command |
 |---|---|
 | Any code file (`.ps1`, `.psm1`) | `Invoke-Build -Task Lint` |
-| Function/helper behavior | `Invoke-Pester -Path 'Tests/Functions/<RelatedFile>.Tests.ps1'` |
+| Function/helper behavior | `Invoke-Pester -Path 'Tests/Functions/Public/<RelatedFile>.Tests.ps1'` or `Tests/Functions/Private/<RelatedFile>.Tests.ps1` |
 | Test file under `Tests/` | `Invoke-Pester -Path '<path-to-that-test-file>'` |
 | Documentation/help under `docs/**` | `Invoke-Pester -Path 'Tests/Help.Tests.ps1'` |
 | Build/test plumbing | `Invoke-Pester -Path 'Tests/Build.Tests.ps1'` |
@@ -87,7 +87,7 @@ Examples:
 ```powershell
 # After editing ConfluencePS/Public/Invoke-Method.ps1
 Invoke-Build -Task Lint
-Invoke-Pester -Path 'Tests/Functions/Invoke-Method.Tests.ps1'
+Invoke-Pester -Path 'Tests/Functions/Public/Invoke-Method.Tests.ps1'
 
 # After editing docs/en-US/commands/Set-Info.md
 Invoke-Build -Task Lint

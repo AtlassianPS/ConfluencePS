@@ -1,7 +1,7 @@
 ﻿#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "5.7"; MaximumVersion = "5.999" }
 
 BeforeDiscovery {
-    . "$PSScriptRoot/../Helpers/TestTools.ps1"
+    . "$PSScriptRoot/../../Helpers/TestTools.ps1"
 
     $script:moduleToTest = Initialize-TestEnvironment -CallerPath $PSScriptRoot
     Import-Module $script:moduleToTest -Force -ErrorAction Stop

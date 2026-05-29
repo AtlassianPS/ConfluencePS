@@ -3,14 +3,14 @@
 param()
 
 BeforeDiscovery {
-    . "$PSScriptRoot/Helpers/TestTools.ps1"
-    $script:moduleToTest = Initialize-TestEnvironment -CallerPath $PSScriptRoot
+    . "$PSScriptRoot/../Helpers/TestTools.ps1"
+    $script:moduleToTest = Initialize-TestEnvironment -CallerPath (Split-Path $PSScriptRoot -Parent)
 }
 
 Describe "Integration Test Configuration" -Tag 'Integration', 'Smoke', 'Cloud', 'DataCenter' {
     BeforeAll {
         Import-Module $env:BHManifestToTest -Force
-        . "$PSScriptRoot/Helpers/IntegrationTestTools.ps1"
+        . "$PSScriptRoot/../Helpers/IntegrationTestTools.ps1"
 
         $script:DeploymentType = Get-ConfluenceIntegrationDeploymentType
         $script:RequiredEnvironmentVariables = Get-ConfluenceIntegrationRequiredVariables -DeploymentType $script:DeploymentType
@@ -223,7 +223,7 @@ Describe "Integration Test Configuration" -Tag 'Integration', 'Smoke', 'Cloud', 
                 throw "Smoke write setup did not create a writable disposable space and page."
             }
 
-            $smokeAttachmentPath = Join-Path $PSScriptRoot 'resources/Test.txt'
+            $smokeAttachmentPath = Join-Path $PSScriptRoot '../resources/Test.txt'
             $smokeAttachmentName = [IO.Path]::GetFileName($smokeAttachmentPath)
 
             $addedAttachment = Add-ConfluenceAttachment -PageID $script:SmokeWritePage.ID -FilePath $smokeAttachmentPath -ErrorAction Stop

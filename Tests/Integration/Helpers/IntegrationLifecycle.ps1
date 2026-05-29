@@ -14,13 +14,56 @@ param()
 # Pester integration/acceptance tests to use during module development. Dave Wyatt's five-part series:
 # http://blogs.technet.com/b/heyscriptingguy/archive/2015/12/14/what-is-pester-and-why-should-i-care.aspx
 
+$script:ConfluencePSIntegrationFocus = if ($script:ConfluencePSIntegrationFocus) { $script:ConfluencePSIntegrationFocus } else { 'All' }
+$script:ConfluencePSIntegrationContextMap = @{
+    Spaces      = @('Set-ConfluenceInfo', 'New-ConfluenceSpace', 'Get-ConfluenceSpace', 'ConvertTo-ConfluenceStorageFormat', 'Invoke-ConfluenceMethod', 'ConvertTo-ConfluenceTable')
+    Pages       = @('New-ConfluencePage', 'Get-ConfluencePage', 'Set-ConfluencePage', 'Get-ConfluenceChildPage')
+    Labels      = @('Add-ConfluenceLabel', 'Set-ConfluenceLabel', 'Get-ConfluenceLabel')
+    Attachments = @('Add-ConfluenceAttachment', 'Get-ConfluenceAttachment', 'Get-ConfluenceAttachmentFile', 'Set-ConfluenceAttachment', 'Remove-ConfluenceAttachment', 'Remove-ConfluenceLabel', 'Remove-ConfluencePage', 'Remove-ConfluenceSpace')
+}
+$script:ConfluencePSPesterContextCommand = Get-Command Context -CommandType Function
+
+function Context {
+    [CmdletBinding(DefaultParameterSetName = 'Normal')]
+    param(
+        [Parameter(Mandatory, Position = 0)]
+        [String] $Name,
+
+        [Parameter(ParameterSetName = 'Normal', Position = 1)]
+        [ScriptBlock] $Fixture,
+
+        [Parameter(ParameterSetName = 'Tagged')]
+        [String[]] $Tag,
+
+        [Parameter(ParameterSetName = 'Tagged', Position = 1)]
+        [ScriptBlock] $FixtureTagged
+    )
+
+    if ($script:ConfluencePSIntegrationFocus -ne 'All') {
+        $allowedContexts = $script:ConfluencePSIntegrationContextMap[$script:ConfluencePSIntegrationFocus]
+        if ($Name -notin $allowedContexts) {
+            return
+        }
+    }
+
+    if ($PSCmdlet.ParameterSetName -eq 'Tagged') {
+        & $script:ConfluencePSPesterContextCommand -Name $Name -Tag $Tag -Fixture $FixtureTagged
+    }
+    else {
+        & $script:ConfluencePSPesterContextCommand -Name $Name -Fixture $Fixture
+    }
+}
+
 Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
 
     BeforeAll {
-        $script:SpaceID = Get-Random
-        . "$PSScriptRoot/Helpers/TestTools.ps1"
-        . "$PSScriptRoot/Helpers/IntegrationTestTools.ps1"
-        $script:moduleToTest = Initialize-TestEnvironment -CallerPath $PSScriptRoot
+        if (-not $env:CONFLUENCEPS_INTEGRATION_SPACE_ID) {
+            $env:CONFLUENCEPS_INTEGRATION_SPACE_ID = Get-Random
+        }
+        $script:SpaceID = $env:CONFLUENCEPS_INTEGRATION_SPACE_ID
+        . "$PSScriptRoot/../../Helpers/TestTools.ps1"
+        . "$PSScriptRoot/../../Helpers/IntegrationTestTools.ps1"
+        $script:moduleToTest = Initialize-TestEnvironment -CallerPath (Split-Path (Split-Path $PSScriptRoot -Parent) -Parent)
         $script:integrationEnvironment = Initialize-IntegrationEnvironment
         if (-not $script:integrationEnvironment) {
             throw "Integration environment not configured. Copy .env.example to .env and configure required variables."
@@ -990,9 +1033,9 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             $script:Page2 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page Orphan" -ErrorAction Stop
             $script:Page3 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page from Object" -ErrorAction Stop
             $script:Page4 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page with Parent Object" -ErrorAction Stop
-            $script:TextFile = Get-Item -Path "$PSScriptRoot/resources/Test.txt"
-            $script:ImageFile = Get-Item -Path "$PSScriptRoot/resources/Test.png"
-            $script:ExcelFile = Get-Item -Path "$PSScriptRoot/resources/Test.xlsx"
+            $script:TextFile = Get-Item -Path "$PSScriptRoot/../../resources/Test.txt"
+            $script:ImageFile = Get-Item -Path "$PSScriptRoot/../../resources/Test.png"
+            $script:ExcelFile = Get-Item -Path "$PSScriptRoot/../../resources/Test.xlsx"
 
             # ACT
             $script:result1 = Add-ConfluenceAttachment -PageId $Page1.Id -FilePath $TextFile.FullName -ErrorAction Stop
@@ -1174,7 +1217,7 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             $script:SpaceKey = "PESTER$SpaceID"
             $script:Page1 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page Piped" -ErrorAction Stop
             $script:Attachment = $Page1 | Get-ConfluenceAttachment -FileNameFilter "Test.txt" -ErrorAction Stop
-            $script:TextFile = Get-Item -Path "$PSScriptRoot/resources/Test.txt"
+            $script:TextFile = Get-Item -Path "$PSScriptRoot/../../resources/Test.txt"
 
             # ACT
             $script:result1 = Set-ConfluenceAttachment -Attachment $Attachment -FilePath $TextFile.FullName -ErrorAction Stop
