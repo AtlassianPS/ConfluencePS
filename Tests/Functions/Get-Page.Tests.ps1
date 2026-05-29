@@ -73,7 +73,7 @@ InModuleScope ConfluencePS {
             $result.ID | Should -Be 1
         }
 
-        It "returns pages matching the requested byLabel status" {
+        It "returns pages matching the requested byLabel status values" {
             Mock Invoke-Method -ModuleName ConfluencePS {
                 $currentPage = [ConfluencePS.Page]::new()
                 $currentPage.ID = 1
@@ -83,13 +83,17 @@ InModuleScope ConfluencePS {
                 $trashedPage.ID = 2
                 $trashedPage.Status = 'trashed'
 
-                $currentPage, $trashedPage
+                $archivedPage = [ConfluencePS.Page]::new()
+                $archivedPage.ID = 3
+                $archivedPage.Status = 'archived'
+
+                $currentPage, $trashedPage, $archivedPage
             }
 
-            $result = Get-Page -ApiUri "https://example.com/wiki/rest/api" -Label "labelA" -Status trashed
+            $result = Get-Page -ApiUri "https://example.com/wiki/rest/api" -Label "labelA" -Status current, trashed
 
-            $result | Should -HaveCount 1
-            $result.ID | Should -Be 2
+            $result | Should -HaveCount 2
+            $result.ID | Should -Be 1, 2
         }
 
         It "prefixes byQuery CQL with type=page without pre-encoding" {

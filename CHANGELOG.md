@@ -30,7 +30,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - `Get-ConfluenceSpace` no longer requests unused space label metadata, avoiding HTTP 500 responses from Confluence Data Center 8.9.x when listing spaces (#214)
 - `Get-ConfluencePage -Label` now quotes label values in generated CQL so labels containing hyphens are accepted by Confluence (#175, #185, [@ehrenfeu])
 - Fixed pagination so GET filters such as `spaceKey` and `title` are preserved when requesting follow-up pages (#157).
-- `Get-ConfluencePage -Label` now returns only current pages by default and supports `-Status` to request archived or trashed label search results (#213)
+- `Get-ConfluencePage -Label` now returns only current pages by default and supports `-Status` to request one or more page statuses (#213)
 - `Invoke-Method` now handles JSON payloads with duplicate key casing (for example `subType` and `subtype`) without failing parsing (#216, [@codethief])
 - Fixed `-PersonalAccessToken` authentication on PowerShell 6+ by forwarding it as a bearer authorization header (#208, #209, [@sebmaurer])
 - Fixed Confluence Cloud attachment downloads on PowerShell 6+ by preserving authorization across Atlassian download redirects.

@@ -29,7 +29,7 @@ Get-ConfluencePage -ApiUri <Uri> [-Credential <PSCredential>]
 ```powershell
 Get-ConfluencePage -ApiUri <Uri> [-Credential <PSCredential>]
  [-PersonalAccessToken <String>] [-Certificate <X509Certificate>]
- [-SpaceKey <String>] [-Space <Space>] -Label <String[]> [-Status <String>]
+ [-SpaceKey <String>] [-Space <Space>] -Label <String[]> [-Status <String[]>]
  [-PageSize <UInt32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
  [-ExcludePageBody]
 ```
@@ -129,6 +129,14 @@ Get-ConfluencePage -Label 'skywalker' -Status trashed
 ```
 
 Return trashed pages containing the label "skywalker".
+
+### -------------------------- EXAMPLE 7 --------------------------
+
+```powershell
+Get-ConfluencePage -Label 'skywalker' -Status current, archived, trashed
+```
+
+Return all current, archived, and trashed pages containing the label "skywalker".
 
 ## PARAMETERS
 
@@ -311,12 +319,12 @@ Accept wildcard characters: False
 
 ### -Status
 
-Filter label search results by page status.
+Filter label search results by one or more page statuses.
 
 The default is current, which excludes archived and trashed pages.
 
 ```yaml
-Type: String
+Type: String[]
 Parameter Sets: byLabel
 Aliases:
 
