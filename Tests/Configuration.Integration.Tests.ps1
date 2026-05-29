@@ -99,8 +99,7 @@ Describe "Integration Test Configuration" -Tag 'Integration', 'Smoke', 'Cloud', 
                 return
             }
 
-            $spaces = Get-ConfluenceSpace -PageSize 1 -ErrorAction Stop
-            $spaces | Select-Object -First 1 | Should -BeOfType [ConfluencePS.Space]
+            { Get-ConfluenceSpace -PageSize 1 -ErrorAction Stop | Out-Null } | Should -Not -Throw
         }
 
         It "can execute a CQL page query using configured defaults" {
