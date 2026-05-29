@@ -447,7 +447,6 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             $script:GetID1 = Get-ConfluencePage -PageID $GetTitle1.ID -ErrorAction SilentlyContinue
             $script:GetID2 = Get-ConfluencePage -PageID $GetTitle2.ID -ErrorAction SilentlyContinue
             $script:Query = "id in ($($GetID1.ID), $($GetID2.ID))"
-            $script:GetKeys = Get-ConfluencePage -SpaceKey $SpaceKey -ErrorAction SilentlyContinue | Sort-Object ID
             $script:GetByLabel = @()
             $script:GetByQuery = @()
             $maxSearchRetries = if ($script:integrationEnvironment.IsCloud) { 24 } else { 6 }
@@ -466,6 +465,7 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             $script:GetByQueryIndexed = @($GetByQuery).Count -eq 2
             $script:GetByQueryRequired = -not $script:integrationEnvironment.IsCloud
             $script:GetByQueryCanBeAsserted = $script:GetByQueryIndexed -or $script:GetByQueryRequired
+            $script:GetKeys = Get-ConfluencePage -SpaceKey $SpaceKey -ErrorAction SilentlyContinue | Sort-Object ID
             $script:GetSpacePage = Get-ConfluencePage -Space (Get-ConfluenceSpace -SpaceKey $SpaceKey) -ErrorAction SilentlyContinue
             $script:GetSpacePiped = Get-ConfluenceSpace -SpaceKey $SpaceKey | Get-ConfluencePage -ErrorAction SilentlyContinue
             $script:GetSpacePaged = Get-ConfluencePage -SpaceKey $SpaceKey -PageSize 1 -ErrorAction SilentlyContinue
@@ -798,6 +798,14 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             $script:SetPage2 = $Page2.ID | Set-ConfluencePage -Body $NewContent2 -ErrorAction Stop
             # make a non-relevant change just to bump page version
             $script:SetPage3 = $Page3.ID | Set-ConfluencePage -Body "..." -ErrorAction Stop
+            for ($retry = 0; $retry -lt 12; $retry++) {
+                $script:Page3 = Get-ConfluencePage -PageID $Page3.ID -ErrorAction Stop
+                if ($Page3.Version.Number -ge $SetPage3.Version.Number) {
+                    break
+                }
+
+                Start-Sleep -Seconds 5
+            }
             # change the title of a page by property - this page should have version 4
             $script:SetPage3 = $Page3.ID | Set-ConfluencePage -Body $RawContent3 -Convert -ErrorAction Stop
             # change the parent page by object
@@ -1292,10 +1300,42 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             $script:SpaceKey = "PESTER$SpaceID"
             $script:Title = "Pester New Page Orphan"
             $script:PageID = Get-ConfluencePage -Title $Title -SpaceKey $SpaceKey -ErrorAction Stop
+            $script:DeletedPageLabel = "deletedlabel$SpaceID"
+            $script:PageID | Add-ConfluenceLabel -Label $DeletedPageLabel -ErrorAction Stop
+            $script:DeletedPageByLabelBefore = @()
+            $maxSearchRetries = if ($script:integrationEnvironment.IsCloud) { 24 } else { 6 }
+            for ($retry = 0; $retry -lt $maxSearchRetries; $retry++) {
+                $script:DeletedPageByLabelBefore = Get-ConfluencePage -Label $DeletedPageLabel -SpaceKey $SpaceKey -ErrorAction SilentlyContinue
+                if (@($DeletedPageByLabelBefore).ID -contains $PageID.ID) {
+                    break
+                }
+
+                Start-Sleep -Seconds 5
+            }
             $script:Before = Get-ConfluencePage -SpaceKey $SpaceKey -ErrorAction Stop
 
             # ACT
             Remove-ConfluencePage -PageID $PageID.ID -ErrorAction SilentlyContinue
+            $script:DeletedPageByLabelAfter = @()
+            for ($retry = 0; $retry -lt $maxSearchRetries; $retry++) {
+                $script:DeletedPageByLabelAfter = Get-ConfluencePage -Label $DeletedPageLabel -SpaceKey $SpaceKey -ErrorAction SilentlyContinue
+                if (@($DeletedPageByLabelAfter).ID -notcontains $PageID.ID) {
+                    break
+                }
+
+                Start-Sleep -Seconds 5
+            }
+            if (-not $script:integrationEnvironment.IsCloud) {
+                $script:DeletedPageByLabelWithStatus = @()
+                for ($retry = 0; $retry -lt $maxSearchRetries; $retry++) {
+                    $script:DeletedPageByLabelWithStatus = Get-ConfluencePage -Label $DeletedPageLabel -SpaceKey $SpaceKey -Status trashed -ErrorAction SilentlyContinue
+                    if (@($DeletedPageByLabelWithStatus).ID -contains $PageID.ID) {
+                        break
+                    }
+
+                    Start-Sleep -Seconds 5
+                }
+            }
             Get-ConfluencePage -SpaceKey $SpaceKey | Remove-ConfluencePage -ErrorAction SilentlyContinue
             $script:After = Get-ConfluencePage -SpaceKey $SpaceKey -ErrorAction SilentlyContinue
 
@@ -1305,6 +1345,19 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
         # ASSERT
         It 'has pages before' {
             $Before | Should -Not -BeNullOrEmpty
+        }
+        It 'does not return the deleted page for label searches' {
+            if (-not $script:integrationEnvironment.IsCloud) {
+                @($DeletedPageByLabelBefore).ID | Should -Contain $PageID.ID
+            }
+            @($DeletedPageByLabelAfter).ID | Should -Not -Contain $PageID.ID
+        }
+        It 'returns the deleted page when requesting trashed label search results on Data Center' {
+            if ($script:integrationEnvironment.IsCloud) {
+                Set-ItResult -Skipped -Because 'Confluence Cloud content search does not return trashed labeled pages.'
+            }
+
+            @($DeletedPageByLabelWithStatus).ID | Should -Contain $PageID.ID
         }
         It 'space does not have pages after' {
             $After | Should -BeNullOrEmpty

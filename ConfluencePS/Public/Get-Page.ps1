@@ -69,6 +69,10 @@
         [ValidateNotNullOrEmpty()]
         [String[]]$Label,
 
+        [Parameter(ParameterSetName = "byLabel")]
+        [ValidateSet('current', 'archived', 'trashed')]
+        [String[]]$Status = 'current',
+
         [Parameter(
             Position = 0,
             Mandatory = $true,
@@ -146,7 +150,7 @@
                 if ($SpaceKey) { $CQLparameters += "space=$SpaceKey" }
                 $iwParameters["GetParameters"]["cql"] = ($CQLparameters -join " AND ")
 
-                Invoke-Method @iwParameters
+                Invoke-Method @iwParameters | Where-Object { $_.Status -in $Status }
                 break
             }
             "byQuery" {

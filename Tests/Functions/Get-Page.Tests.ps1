@@ -50,6 +50,52 @@ InModuleScope ConfluencePS {
             $script:lastCql | Should -Be 'type=page AND label="labelA" AND label="labelB" AND space=HOTH'
         }
 
+        It "returns only current pages by default for byLabel results" {
+            Mock Invoke-Method -ModuleName ConfluencePS {
+                $currentPage = [ConfluencePS.Page]::new()
+                $currentPage.ID = 1
+                $currentPage.Status = 'current'
+
+                $trashedPage = [ConfluencePS.Page]::new()
+                $trashedPage.ID = 2
+                $trashedPage.Status = 'trashed'
+
+                $archivedPage = [ConfluencePS.Page]::new()
+                $archivedPage.ID = 3
+                $archivedPage.Status = 'archived'
+
+                $currentPage, $trashedPage, $archivedPage
+            }
+
+            $result = Get-Page -ApiUri "https://example.com/wiki/rest/api" -Label "labelA"
+
+            $result | Should -HaveCount 1
+            $result.ID | Should -Be 1
+        }
+
+        It "returns pages matching the requested byLabel status values" {
+            Mock Invoke-Method -ModuleName ConfluencePS {
+                $currentPage = [ConfluencePS.Page]::new()
+                $currentPage.ID = 1
+                $currentPage.Status = 'current'
+
+                $trashedPage = [ConfluencePS.Page]::new()
+                $trashedPage.ID = 2
+                $trashedPage.Status = 'trashed'
+
+                $archivedPage = [ConfluencePS.Page]::new()
+                $archivedPage.ID = 3
+                $archivedPage.Status = 'archived'
+
+                $currentPage, $trashedPage, $archivedPage
+            }
+
+            $result = Get-Page -ApiUri "https://example.com/wiki/rest/api" -Label "labelA" -Status current, trashed
+
+            $result | Should -HaveCount 2
+            $result.ID | Should -Be 1, 2
+        }
+
         It "prefixes byQuery CQL with type=page without pre-encoding" {
             $null = Get-Page -ApiUri "https://example.com/wiki/rest/api" -Query 'space=HOTH and title~"*Object"'
 

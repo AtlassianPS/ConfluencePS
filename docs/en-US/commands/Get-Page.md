@@ -29,8 +29,9 @@ Get-ConfluencePage -ApiUri <Uri> [-Credential <PSCredential>]
 ```powershell
 Get-ConfluencePage -ApiUri <Uri> [-Credential <PSCredential>]
  [-PersonalAccessToken <String>] [-Certificate <X509Certificate>]
- [-SpaceKey <String>] [-Space <Space>] -Label <String[]> [-PageSize <UInt32>]
- [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>] [-ExcludePageBody]
+ [-SpaceKey <String>] [-Space <Space>] -Label <String[]> [-Status <String[]>]
+ [-PageSize <UInt32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
+ [-ExcludePageBody]
 ```
 
 ### bySpace
@@ -103,6 +104,7 @@ Get-ConfluencePage -Label 'skywalker'
 
 Return all pages containing the label "skywalker" (case-insensitive).
 Label text must match exactly; no wildcards are applied.
+Only current pages are returned by default; use -Status to request archived or trashed pages.
 
 ### -------------------------- EXAMPLE 5 --------------------------
 
@@ -112,13 +114,30 @@ Get-ConfluencePage -Query "mention = jSmith and creator != jSmith"
 
 Return all pages matching the query.
 
-### -------------------------- EXAMPLE 5 --------------------------
+### -------------------------- EXAMPLE 6 --------------------------
 
 ```powershell
 Get-ConfluencePage -Label 'skywalker' -ExcludePageBody
 ```
 
-Return all pages containing the label "skywalker" (case-insensitive) without their page content.
+Return all current pages containing the label "skywalker" (case-insensitive) without their page content.
+
+### -------------------------- EXAMPLE 7 --------------------------
+
+```powershell
+Get-ConfluencePage -Label 'skywalker' -Status trashed
+```
+
+Return trashed pages containing the label "skywalker" when Confluence content search returns trashed label results.
+Confluence Cloud content search may not return trashed pages for label queries.
+
+### -------------------------- EXAMPLE 8 --------------------------
+
+```powershell
+Get-ConfluencePage -Label 'skywalker' -Status current, archived, trashed
+```
+
+Return all current, archived, and trashed pages containing the label "skywalker".
 
 ## PARAMETERS
 
@@ -295,6 +314,25 @@ Aliases:
 Required: True
 Position: Named
 Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Status
+
+Filter label search results by one or more page statuses.
+
+The default is current, which excludes archived and trashed pages.
+This filters statuses returned by Confluence content search; Confluence Cloud content search may not return trashed pages for label queries.
+
+```yaml
+Type: String[]
+Parameter Sets: byLabel
+Aliases:
+
+Required: False
+Position: Named
+Default value: current
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
