@@ -798,6 +798,14 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
             $script:SetPage2 = $Page2.ID | Set-ConfluencePage -Body $NewContent2 -ErrorAction Stop
             # make a non-relevant change just to bump page version
             $script:SetPage3 = $Page3.ID | Set-ConfluencePage -Body "..." -ErrorAction Stop
+            for ($retry = 0; $retry -lt 12; $retry++) {
+                $script:Page3 = Get-ConfluencePage -PageID $Page3.ID -ErrorAction Stop
+                if ($Page3.Version.Number -ge $SetPage3.Version.Number) {
+                    break
+                }
+
+                Start-Sleep -Seconds 5
+            }
             # change the title of a page by property - this page should have version 4
             $script:SetPage3 = $Page3.ID | Set-ConfluencePage -Body $RawContent3 -Convert -ErrorAction Stop
             # change the parent page by object
