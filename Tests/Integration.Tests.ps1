@@ -1317,6 +1317,15 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
 
                 Start-Sleep -Seconds 5
             }
+            $script:DeletedPageByLabelWithStatus = @()
+            for ($retry = 0; $retry -lt $maxSearchRetries; $retry++) {
+                $script:DeletedPageByLabelWithStatus = Get-ConfluencePage -Label $DeletedPageLabel -SpaceKey $SpaceKey -Status trashed -ErrorAction SilentlyContinue
+                if (@($DeletedPageByLabelWithStatus).ID -contains $PageID.ID) {
+                    break
+                }
+
+                Start-Sleep -Seconds 5
+            }
             Get-ConfluencePage -SpaceKey $SpaceKey | Remove-ConfluencePage -ErrorAction SilentlyContinue
             $script:After = Get-ConfluencePage -SpaceKey $SpaceKey -ErrorAction SilentlyContinue
 
@@ -1332,6 +1341,9 @@ Describe 'Integration Tests' -Tag Integration, Cloud, DataCenter {
                 @($DeletedPageByLabelBefore).ID | Should -Contain $PageID.ID
             }
             @($DeletedPageByLabelAfter).ID | Should -Not -Contain $PageID.ID
+        }
+        It 'returns the deleted page when requesting trashed label search results' {
+            @($DeletedPageByLabelWithStatus).ID | Should -Contain $PageID.ID
         }
         It 'space does not have pages after' {
             $After | Should -BeNullOrEmpty

@@ -50,7 +50,7 @@ InModuleScope ConfluencePS {
             $script:lastCql | Should -Be 'type=page AND label="labelA" AND label="labelB" AND space=HOTH'
         }
 
-        It "excludes non-current pages from byLabel results" {
+        It "returns only current pages by default for byLabel results" {
             Mock Invoke-Method -ModuleName ConfluencePS {
                 $currentPage = [ConfluencePS.Page]::new()
                 $currentPage.ID = 1
@@ -71,6 +71,25 @@ InModuleScope ConfluencePS {
 
             $result | Should -HaveCount 1
             $result.ID | Should -Be 1
+        }
+
+        It "returns pages matching the requested byLabel status" {
+            Mock Invoke-Method -ModuleName ConfluencePS {
+                $currentPage = [ConfluencePS.Page]::new()
+                $currentPage.ID = 1
+                $currentPage.Status = 'current'
+
+                $trashedPage = [ConfluencePS.Page]::new()
+                $trashedPage.ID = 2
+                $trashedPage.Status = 'trashed'
+
+                $currentPage, $trashedPage
+            }
+
+            $result = Get-Page -ApiUri "https://example.com/wiki/rest/api" -Label "labelA" -Status trashed
+
+            $result | Should -HaveCount 1
+            $result.ID | Should -Be 2
         }
 
         It "prefixes byQuery CQL with type=page without pre-encoding" {

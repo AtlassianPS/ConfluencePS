@@ -29,8 +29,9 @@ Get-ConfluencePage -ApiUri <Uri> [-Credential <PSCredential>]
 ```powershell
 Get-ConfluencePage -ApiUri <Uri> [-Credential <PSCredential>]
  [-PersonalAccessToken <String>] [-Certificate <X509Certificate>]
- [-SpaceKey <String>] [-Space <Space>] -Label <String[]> [-PageSize <UInt32>]
- [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>] [-ExcludePageBody]
+ [-SpaceKey <String>] [-Space <Space>] -Label <String[]> [-Status <String>]
+ [-PageSize <UInt32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
+ [-ExcludePageBody]
 ```
 
 ### bySpace
@@ -103,7 +104,7 @@ Get-ConfluencePage -Label 'skywalker'
 
 Return all pages containing the label "skywalker" (case-insensitive).
 Label text must match exactly; no wildcards are applied.
-Only current pages are returned; archived and trashed pages are excluded.
+Only current pages are returned by default; use -Status to request archived or trashed pages.
 
 ### -------------------------- EXAMPLE 5 --------------------------
 
@@ -120,6 +121,14 @@ Get-ConfluencePage -Label 'skywalker' -ExcludePageBody
 ```
 
 Return all current pages containing the label "skywalker" (case-insensitive) without their page content.
+
+### -------------------------- EXAMPLE 6 --------------------------
+
+```powershell
+Get-ConfluencePage -Label 'skywalker' -Status trashed
+```
+
+Return trashed pages containing the label "skywalker".
 
 ## PARAMETERS
 
@@ -296,6 +305,24 @@ Aliases:
 Required: True
 Position: Named
 Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Status
+
+Filter label search results by page status.
+
+The default is current, which excludes archived and trashed pages.
+
+```yaml
+Type: String
+Parameter Sets: byLabel
+Aliases:
+
+Required: False
+Position: Named
+Default value: current
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
