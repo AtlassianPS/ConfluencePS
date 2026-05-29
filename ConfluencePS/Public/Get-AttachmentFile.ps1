@@ -48,7 +48,13 @@
         Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function started"
 
         $serverInfoParameters = Copy-CommonParameter -InputObject $PSBoundParameters
-        $serverInfo = Get-ServerInformation @serverInfoParameters -ApiUri $ApiUri -ErrorAction Stop
+        try {
+            $serverInfo = Get-ServerInformation @serverInfoParameters -ApiUri $ApiUri -ErrorAction Stop
+        }
+        catch {
+            Write-Verbose "[$($MyInvocation.MyCommand.Name)] Server information unavailable; preserving attachment download URLs"
+            $serverInfo = $null
+        }
         $isCloudApi = $serverInfo.DeploymentType -eq 'Cloud'
     }
 

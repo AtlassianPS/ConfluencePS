@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+- `Get-ConfluenceAttachmentFile` now preserves attachment download URLs when server information is unavailable, restoring Data Center attachment downloads in the Dockerized integration track.
 - `Get-ConfluenceSpace` no longer requests unused space label metadata, avoiding HTTP 500 responses from Confluence Data Center 8.9.x when listing spaces (#214)
 - `Get-ConfluencePage -Label` now quotes label values in generated CQL so labels containing hyphens are accepted by Confluence (#175, #185, [@ehrenfeu])
 - `Invoke-Method` now handles JSON payloads with duplicate key casing (for example `subType` and `subtype`) without failing parsing (#216, [@codethief])
