@@ -28,8 +28,10 @@ URI/auth info to all other functions in the module (e.g. Get-ConfluenceSpace).
 These session defaults can be overwritten on any single command, but using
 Set-ConfluenceInfo avoids repetitively specifying -ApiUri and -Credential parameters.
 
-Confluence's REST API supports passing basic authentication in headers.
-(If you have a better suggestion for how to handle auth, please reach out on GitHub!)
+Confluence's REST API supports passing basic authentication in headers. For
+Confluence Cloud, use your Atlassian account email address as the username and
+an Atlassian API token as the password. Do not use your Atlassian account
+password for Cloud authentication.
 
 Unless allowing anonymous access to your instance, credentials are needed.
 
@@ -38,11 +40,13 @@ Unless allowing anonymous access to your instance, credentials are needed.
 ### -------------------------- EXAMPLE 1 --------------------------
 
 ```powershell
-Set-ConfluenceInfo -BaseURI 'https://yournamehere.atlassian.net/wiki' -PromptCredentials
+$Cred = Get-Credential -UserName 'me@example.com'
+Set-ConfluenceInfo -BaseURI 'https://yournamehere.atlassian.net/wiki' -Credential $Cred
 ```
 
-Declare the URI of your Confluence instance; be prompted for username and password.
-Note that Atlassian Cloud Confluence instances typically use the /wiki subdirectory.
+Declare the URI of your Confluence Cloud instance and authenticate with an
+Atlassian account email address and API token. When prompted, enter the API
+token as the password. Cloud instances use the /wiki subdirectory.
 
 ### -------------------------- EXAMPLE 2 --------------------------
 
@@ -69,8 +73,9 @@ $Cred = Get-Credential
 Set-ConfluenceInfo -BaseURI 'https://wiki.yourcompany.com' -Credential $Cred
 ```
 
-Declare the URI of your Confluence instance and the credentials (username and
-password).
+Declare the URI of your Confluence instance and the credentials. For Confluence
+Cloud, the credential username is your Atlassian account email address and the
+password is an Atlassian API token.
 
 ### -------------------------- EXAMPLE 5 --------------------------
 
@@ -103,7 +108,9 @@ Accept wildcard characters: False
 
 ### -Credential
 
-The username/password combo you use to log in to Confluence.
+The username/password combo used to authenticate to Confluence. For Confluence
+Cloud, use your Atlassian account email address as the username and an Atlassian
+API token as the password.
 
 ```yaml
 Type: PSCredential
@@ -119,7 +126,10 @@ Accept wildcard characters: False
 
 ### -PersonalAccessToken
 
-The PersonalAccessToken you created in your Confluence User Settings.
+The PersonalAccessToken you created in your Confluence User Settings. This is
+for Confluence Data Center and Server personal access tokens. For Confluence
+Cloud, use the -Credential parameter with your Atlassian account email address
+and an Atlassian API token.
 
 ```yaml
 Type: String
@@ -180,8 +190,18 @@ See related links for implementation discussion and details.
 
 (If you don't know exactly what this means, feel free to ignore it.)
 
+For Confluence Cloud authentication, create an API token at
+https://id.atlassian.com/manage-profile/security/api-tokens. Use your Atlassian
+account email address as the credential username and paste the API token as the
+credential password. The BaseURI must include /wiki, for example
+https://yournamehere.atlassian.net/wiki.
+
 ## RELATED LINKS
 
 [https://github.com/AtlassianPS/ConfluencePS](https://github.com/AtlassianPS/ConfluencePS)
 
 [ConfluencePS PR#59: Add proper Paging to Get functions](https://github.com/AtlassianPS/ConfluencePS/pull/59)
+
+[about_ConfluencePS_Authentication](/docs/ConfluencePS/about/authentication.html)
+
+[Manage API tokens for your Atlassian account](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/)

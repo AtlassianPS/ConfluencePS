@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- Documented how to authenticate to Confluence Cloud with an Atlassian account email address and API token, including a dedicated authentication about topic (#203, #248, [@lipkau]).
 - Migrated `Tools/setup.ps1` and `Tools/update.dependencies.ps1` to shared `AtlassianPS.Standards` bootstrap/update commands with deterministic standards-version resolution from `Tools/build.requirements.psd1`.
 - Replaced legacy PSDepend hashtable dependencies with pinned array requirements and aligned workflow setup action usage to the pinned standards action release.
 - `Set-ConfluencePage` now forwards `Version.Message` for `-InputObject` / pipeline updates when provided (#207, #231, [@JoseAPortilloJSC])
