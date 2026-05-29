@@ -322,6 +322,7 @@ Accept wildcard characters: False
 Filter label search results by one or more page statuses.
 
 The default is current, which excludes archived and trashed pages.
+This filters statuses returned by Confluence content search; Confluence Cloud content search may not return trashed pages for label queries.
 
 ```yaml
 Type: String[]
