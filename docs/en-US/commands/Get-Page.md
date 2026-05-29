@@ -114,7 +114,7 @@ Get-ConfluencePage -Query "mention = jSmith and creator != jSmith"
 
 Return all pages matching the query.
 
-### -------------------------- EXAMPLE 5 --------------------------
+### -------------------------- EXAMPLE 6 --------------------------
 
 ```powershell
 Get-ConfluencePage -Label 'skywalker' -ExcludePageBody
@@ -122,15 +122,16 @@ Get-ConfluencePage -Label 'skywalker' -ExcludePageBody
 
 Return all current pages containing the label "skywalker" (case-insensitive) without their page content.
 
-### -------------------------- EXAMPLE 6 --------------------------
+### -------------------------- EXAMPLE 7 --------------------------
 
 ```powershell
 Get-ConfluencePage -Label 'skywalker' -Status trashed
 ```
 
-Return trashed pages containing the label "skywalker".
+Return trashed pages containing the label "skywalker" when Confluence content search returns trashed label results.
+Confluence Cloud content search may not return trashed pages for label queries.
 
-### -------------------------- EXAMPLE 7 --------------------------
+### -------------------------- EXAMPLE 8 --------------------------
 
 ```powershell
 Get-ConfluencePage -Label 'skywalker' -Status current, archived, trashed
