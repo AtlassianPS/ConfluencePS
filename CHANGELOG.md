@@ -40,7 +40,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Fixed `-Label` parsing for the Get-ConfluencePage cmdlet (#193 [@claudiospizzi])
 
-## [2.5] 2019-03-27
+## v2.5.0 - 2019-03-27
 
 ### Added
 

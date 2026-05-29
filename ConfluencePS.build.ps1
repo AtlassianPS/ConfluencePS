@@ -27,6 +27,24 @@ param(
 
 Import-Module "$PSScriptRoot/Tools/BuildTools.psm1" -Force -ErrorAction Stop
 
+function Import-ConfluencePSStandard {
+    [CmdletBinding()]
+    param()
+
+    $buildRequirements = Import-PowerShellDataFile -Path (Join-Path -Path $PSScriptRoot -ChildPath 'Tools/build.requirements.psd1')
+    $standardsRequirement = $buildRequirements |
+        Where-Object { $_.ModuleName -eq 'AtlassianPS.Standards' } |
+        Select-Object -First 1
+
+    if (-not $standardsRequirement) {
+        throw 'AtlassianPS.Standards is missing from Tools/build.requirements.psd1.'
+    }
+
+    Import-Module AtlassianPS.Standards -RequiredVersion $standardsRequirement.RequiredVersion -Force -ErrorAction Stop
+}
+
+Import-ConfluencePSStandard
+
 Remove-Item -Path env:\BH* -ErrorAction SilentlyContinue
 
 $ProjectName = 'ConfluencePS'
@@ -429,29 +447,16 @@ Task UpdateManifest {
 }
 
 Task SetVersion {
-    [System.Management.Automation.SemanticVersion]$versionToPublish = $VersionToPublish
+    $releaseNotes = Get-AtlassianPSReleaseNotesFromChangelog `
+        -ChangelogPath (Join-Path -Path $env:BHProjectPath -ChildPath 'CHANGELOG.md') `
+        -ReleaseVersion $VersionToPublish
 
-    $published = Find-Module -Name $env:BHProjectName -ErrorAction SilentlyContinue
-    if ($published) {
-        [System.Management.Automation.SemanticVersion]$latestPublished = $published.Version
-        Write-Build Gray "Latest published version: $latestPublished"
-        Assert-True { $versionToPublish -gt $latestPublished } "Version must be greater than latest published version: $latestPublished"
-    }
-    else {
-        Write-Build Gray "No published version found in PSGallery; skipping version guard"
-    }
-
-    $versionString = "{0}.{1}.{2}" -f $versionToPublish.Major, $versionToPublish.Minor, $versionToPublish.Patch
-    Metadata\Update-Metadata -Path $builtManifestPath -PropertyName "ModuleVersion" -Value $versionString
-
-    if ($versionToPublish.PreReleaseLabel) {
-        Write-Build Gray "Setting Prerelease label: $($versionToPublish.PreReleaseLabel)"
-        Metadata\Update-Metadata -Path $builtManifestPath -PropertyName "Prerelease" -Value $versionToPublish.PreReleaseLabel
-    }
-    else {
-        Write-Build Gray "Removing Prerelease label (stable release)"
-        Metadata\Update-Metadata -Path $builtManifestPath -PropertyName "Prerelease" -Value ''
-    }
+    $versionString = Set-AtlassianPSModuleManifestVersion `
+        -BuiltManifestPath $builtManifestPath `
+        -ModuleName $env:BHProjectName `
+        -VersionToPublish $VersionToPublish `
+        -ReleaseNotes $releaseNotes
+    Write-Build Gray "Resolved release version: $versionString"
 }
 
 Task Test {

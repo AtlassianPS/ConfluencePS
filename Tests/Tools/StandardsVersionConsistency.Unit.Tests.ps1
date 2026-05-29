@@ -1,4 +1,4 @@
-﻿#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "4.10" }
+﻿#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "5.7"; MaximumVersion = "5.999" }
 
 Describe 'AtlassianPS.Standards version consistency' -Tag Unit {
     BeforeAll {
@@ -24,50 +24,36 @@ Describe 'AtlassianPS.Standards version consistency' -Tag Unit {
 
             throw "Could not resolve repository root from '$PSScriptRoot'."
         }
-    }
 
-    It 'keeps workflow setup action pins aligned with build.requirements' {
-        $projectRoot = Get-RepositoryRoot
+        function Get-StandardsVersion {
+            param([Parameter(Mandatory)][String]$ProjectRoot)
 
-        $buildRequirementsPath = Join-Path -Path $projectRoot -ChildPath 'Tools/build.requirements.psd1'
-        $buildRequirements = Import-PowerShellDataFile -Path $buildRequirementsPath
-        $standardsRequirement = $buildRequirements |
-            Where-Object { $_.ModuleName -eq 'AtlassianPS.Standards' } |
-            Select-Object -First 1
-
-        if (-not $standardsRequirement -or -not $standardsRequirement.RequiredVersion) {
-            $tokens = $null
-            $parseErrors = $null
-            $ast = [System.Management.Automation.Language.Parser]::ParseFile($buildRequirementsPath, [ref]$tokens, [ref]$parseErrors)
-            if ($parseErrors -and $parseErrors.Count -gt 0) {
-                throw "Unable to parse build requirements file '$buildRequirementsPath': $($parseErrors[0].Message)"
-            }
-
-            $statement = $ast.EndBlock.Statements[0]
-            if (
-                $statement -isnot [System.Management.Automation.Language.PipelineAst] -or
-                $statement.PipelineElements[0] -isnot [System.Management.Automation.Language.CommandExpressionAst]
-            ) {
-                throw "Build requirements file '$buildRequirementsPath' does not contain a supported data expression."
-            }
-
-            $buildRequirements = @($statement.PipelineElements[0].Expression.SafeGetValue())
+            $buildRequirementsPath = Join-Path -Path $ProjectRoot -ChildPath 'Tools/build.requirements.psd1'
+            $buildRequirements = Import-PowerShellDataFile -Path $buildRequirementsPath
             $standardsRequirement = $buildRequirements |
                 Where-Object { $_.ModuleName -eq 'AtlassianPS.Standards' } |
                 Select-Object -First 1
-        }
 
-        $standardsVersion = [string] $standardsRequirement.RequiredVersion
-        $standardsVersion | Should -Not -BeNullOrEmpty
+            if (-not $standardsRequirement -or -not $standardsRequirement.RequiredVersion) {
+                throw "Could not resolve AtlassianPS.Standards required version from '$buildRequirementsPath'."
+            }
+
+            return [string] $standardsRequirement.RequiredVersion
+        }
+    }
+
+    It 'keeps workflow Standards action pins aligned with build.requirements' {
+        $projectRoot = Get-RepositoryRoot
+        $standardsVersion = Get-StandardsVersion -ProjectRoot $projectRoot
 
         $workflowPaths = Get-ChildItem -Path (Join-Path -Path $projectRoot -ChildPath '.github/workflows') -File -Filter '*.yml' |
             Select-Object -ExpandProperty FullName
 
-        $workflowActionMatches = foreach ($workflowPath in $workflowPaths) {
+        $standardsActionReferences = foreach ($workflowPath in $workflowPaths) {
             $workflowContent = Get-Content -LiteralPath $workflowPath -Raw
             [regex]::Matches(
                 $workflowContent,
-                "AtlassianPS/AtlassianPS\.Standards/\.github/actions/setup-powershell@(?<ref>[^\s#]+)(?:\s+#\s+v(?<version>[0-9]+\.[0-9]+\.[0-9]+))?"
+                'AtlassianPS/AtlassianPS\.Standards/\.github/actions/[^@\s]+@(?<ref>[^\s#]+)(?:\s+#\s+v(?<version>[0-9]+\.[0-9]+\.[0-9]+))?'
             ) | ForEach-Object {
                 [PSCustomObject]@{
                     WorkflowPath = $workflowPath
@@ -77,19 +63,39 @@ Describe 'AtlassianPS.Standards version consistency' -Tag Unit {
             }
         }
 
-        @($workflowActionMatches).Count | Should -BeGreaterThan 0
+        @($standardsActionReferences).Count | Should -BeGreaterThan 0
+        @($standardsActionReferences | Where-Object { $_.Ref -notmatch '^[0-9a-f]{40}$' }).Count | Should -Be 0
+        @($standardsActionReferences | Where-Object { [string]::IsNullOrWhiteSpace($_.Version) }).Count | Should -Be 0
+        ($standardsActionReferences | Select-Object -ExpandProperty Version -Unique) | Should -Be @($standardsVersion)
+        @($standardsActionReferences | Select-Object -ExpandProperty Ref -Unique).Count | Should -Be 1
+    }
 
-        @($workflowActionMatches | Where-Object { $_.Ref -notmatch '^[0-9a-f]{40}$' }).Count | Should -Be 0
-        @($workflowActionMatches | Where-Object { [string]::IsNullOrWhiteSpace($_.Version) }).Count | Should -Be 0
+    It 'uses the shared Standards release tag resolver action' {
+        $projectRoot = Get-RepositoryRoot
+        $releaseWorkflowContent = Get-Content -LiteralPath (Join-Path -Path $projectRoot -ChildPath '.github/workflows/release.yml') -Raw
 
-        @($workflowActionMatches | Select-Object -ExpandProperty Ref -Unique).Count | Should -Be 1
+        $releaseWorkflowContent | Should -Match 'AtlassianPS/AtlassianPS\.Standards/\.github/actions/resolve-release-tag@[0-9a-f]{40}'
+        $releaseWorkflowContent | Should -Not -Match 'git\s+rev-list|Resolve-ReleaseTag|release_sha="\$\(git'
+    }
 
-        $matchedVersions = @(
-            $workflowActionMatches |
-                Select-Object -ExpandProperty Version -Unique
-        )
-        $matchedVersions.Count | Should -Be 1
-        $matchedVersions[0] | Should -Be $standardsVersion
+    It 'builds changelog release notes before publishing and reuses them for GitHub releases' {
+        $projectRoot = Get-RepositoryRoot
+        $releaseWorkflowContent = Get-Content -LiteralPath (Join-Path -Path $projectRoot -ChildPath '.github/workflows/release.yml') -Raw
+
+        $releaseWorkflowContent | Should -Match 'AtlassianPS/AtlassianPS\.Standards/\.github/actions/build-release-notes@[0-9a-f]{40}'
+        $releaseWorkflowContent | Should -Match 'body_path:\s+\$\{\{\s*steps\.release_notes\.outputs\.release_notes_path\s*\}\}'
+        $releaseWorkflowContent | Should -Match 'build-release-notes[\s\S]+Publish module'
+        $releaseWorkflowContent | Should -Not -Match 'changelog-to-release|changelog\.configuration\.json|steps\.changelog\.outputs\.body|Set-Content|Out-File|release-notes\.md'
+        Test-Path -LiteralPath (Join-Path -Path $projectRoot -ChildPath '.github/changelog.configuration.json') | Should -BeFalse
+    }
+
+    It 'keeps published manifest release notes sourced from the changelog' {
+        $projectRoot = Get-RepositoryRoot
+        $buildScriptContent = Get-Content -LiteralPath (Join-Path -Path $projectRoot -ChildPath 'ConfluencePS.build.ps1') -Raw
+
+        $buildScriptContent | Should -Match 'Get-AtlassianPSReleaseNotesFromChangelog[\s\S]+CHANGELOG\.md'
+        $buildScriptContent | Should -Match 'Set-AtlassianPSModuleManifestVersion[\s\S]+-ReleaseNotes\s+\$releaseNotes'
+        $buildScriptContent | Should -Not -Match 'function\s+Get-.*ReleaseNotesFromChangelog|Metadata\\Update-Metadata[\s\S]+PropertyName\s+"ReleaseNotes"|Get-Content[\s\S]+CHANGELOG\.md[\s\S]+Set-Content'
     }
 
     It 'reads AtlassianPS.Standards version from build.requirements in tool scripts' {
@@ -97,6 +103,7 @@ Describe 'AtlassianPS.Standards version consistency' -Tag Unit {
 
         $setupScriptContent = Get-Content -LiteralPath (Join-Path -Path $projectRoot -ChildPath 'Tools/setup.ps1') -Raw
         $updateScriptContent = Get-Content -LiteralPath (Join-Path -Path $projectRoot -ChildPath 'Tools/update.dependencies.ps1') -Raw
+        $buildScriptContent = Get-Content -LiteralPath (Join-Path -Path $projectRoot -ChildPath 'ConfluencePS.build.ps1') -Raw
 
         $setupScriptContent | Should -Match '\$buildRequirements\s*=\s*Import-PowerShellDataFile'
         $setupScriptContent | Should -Not -Match '\$standardsVersion\s*=\s*'''
@@ -107,5 +114,9 @@ Describe 'AtlassianPS.Standards version consistency' -Tag Unit {
         $updateScriptContent | Should -Match '-RequiredVersion\s+\$standardsVersion'
         $updateScriptContent | Should -Match '\$PSCmdlet\.ShouldProcess\('
         $updateScriptContent | Should -Match 'AtlassianPS\.Standards\\Update-AtlassianPSDependencyReference'
+
+        $buildScriptContent | Should -Match '\$buildRequirements\s*=\s*Import-PowerShellDataFile'
+        $buildScriptContent | Should -Match '-RequiredVersion\s+\$standardsRequirement\.RequiredVersion'
+        $buildScriptContent | Should -Not -Match "AtlassianPS\.Standards.*RequiredVersion\s+'[0-9]+\.[0-9]+\.[0-9]+'"
     }
 }

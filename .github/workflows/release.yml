@@ -24,19 +24,11 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event_name == 'workflow_dispatch' && inputs.release_tag || github.ref_name }}
 
-      - name: Resolve release ref
+      - name: Validate release tag
         id: release_ref
-        shell: bash
-        run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            release_tag="${{ inputs.release_tag }}"
-          else
-            release_tag="${{ github.ref_name }}"
-          fi
-
-          release_sha="$(git rev-list -n 1 "$release_tag")"
-          echo "release_tag=$release_tag" >> "$GITHUB_OUTPUT"
-          echo "release_sha=$release_sha" >> "$GITHUB_OUTPUT"
+        uses: AtlassianPS/AtlassianPS.Standards/.github/actions/resolve-release-tag@6fe5d05db84cdd10c9e4284e235a8f359c9537ad # v0.1.11
+        with:
+          tag: ${{ github.event_name == 'workflow_dispatch' && inputs.release_tag || github.ref_name }}
 
       - name: Download artifact from tagged commit CI run
         uses: dawidd6/action-download-artifact@v21
@@ -48,15 +40,24 @@ jobs:
           path: ./Release/
           if_no_artifact_found: fail
 
-      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@9a9367e22847bd24f86208ed2d98d207b0e2a3b3 # v0.1.6
+      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@6fe5d05db84cdd10c9e4284e235a8f359c9537ad # v0.1.11
 
-      - run: Invoke-Build -Task Publish -VersionToPublish ${{ steps.release_ref.outputs.release_tag }}
-          -PSGalleryAPIKey ${{ secrets.PSGALLERY_API_KEY }}
+      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/build-release-notes@6fe5d05db84cdd10c9e4284e235a8f359c9537ad # v0.1.11
+        id: release_notes
+        with:
+          release-version: ${{ steps.release_ref.outputs.release_tag }}
+
+      - name: Publish module
+        run: |
+          Invoke-Build -Task Publish `
+            -VersionToPublish ${{ steps.release_ref.outputs.release_tag }} `
+            -PSGalleryAPIKey ${{ secrets.PSGALLERY_API_KEY }}
         shell: pwsh
 
       - name: Create Release and Upload Asset
         uses: softprops/action-gh-release@v3
         with:
+          body_path: ${{ steps.release_notes.outputs.release_notes_path }}
           tag_name: ${{ steps.release_ref.outputs.release_tag }}
           name: ${{ steps.release_ref.outputs.release_tag }}
           files: ./Release/ConfluencePS.zip
