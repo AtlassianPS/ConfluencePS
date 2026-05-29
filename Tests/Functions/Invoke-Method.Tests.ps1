@@ -366,6 +366,43 @@ namespace ConfluencePS.Tests {
             $script:requestUris[1] | Should -Be "https://example.com/wiki/rest/api/content?start=25"
         }
 
+        It "preserves GET parameters when following pagination links" {
+            $script:requestUris = @()
+            $script:invokeCount = 0
+            Mock Invoke-WebRequest -ModuleName ConfluencePS {
+                param($Uri)
+
+                $script:requestUris += $Uri.AbsoluteUri
+
+                if ($script:invokeCount -eq 0) {
+                    $script:invokeCount++
+                    return New-FakeWebResponse -StatusCode 200 -Json '{"results":[{"id":1}],"_links":{"base":"https://example.com","next":"/wiki/rest/api/content?limit=20&start=20"}}'
+                }
+
+                if ($script:invokeCount -eq 1) {
+                    $script:invokeCount++
+                    return New-FakeWebResponse -StatusCode 200 -Json '{"results":[{"id":2}],"_links":{"base":"https://example.com","next":"/wiki/rest/api/content?limit=20&start=40"}}'
+                }
+
+                New-FakeWebResponse -StatusCode 200 -Json '{"results":[{"id":3}]}'
+            }
+
+            $null = Invoke-Method -Uri "https://example.com/wiki/rest/api/content" -GetParameters @{
+                spaceKey = "Foo"
+                title    = "my Page"
+            } -ErrorAction Stop
+
+            $script:requestUris | Should -HaveCount 3
+            foreach ($nextUri in @([uri]$script:requestUris[1], [uri]$script:requestUris[2])) {
+                $nextQueryParameters = [System.Web.HttpUtility]::ParseQueryString($nextUri.Query)
+                $nextQueryParameters["spaceKey"] | Should -Be "Foo"
+                $nextQueryParameters["title"] | Should -Be "my Page"
+                $nextQueryParameters["limit"] | Should -Be "20"
+            }
+            ([System.Web.HttpUtility]::ParseQueryString(([uri]$script:requestUris[1]).Query))["start"] | Should -Be "20"
+            ([System.Web.HttpUtility]::ParseQueryString(([uri]$script:requestUris[2]).Query))["start"] | Should -Be "40"
+        }
+
         It "surfaces JSON errorMessages from HTTP error responses" {
             Mock Invoke-WebRequest -ModuleName ConfluencePS {
                 New-FakeWebResponse -StatusCode 400 -Json '{"errorMessages":["Alpha issue","Beta issue"]}'

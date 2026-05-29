@@ -129,6 +129,10 @@
         if (($PSCmdlet.PagingParameters) -and ($PSCmdlet.PagingParameters.Skip)) {
             $GetParameters["start"] = $PSCmdlet.PagingParameters.Skip
         }
+        $paginationGetParameters = $null
+        if ($GetParameters) {
+            $paginationGetParameters = $GetParameters.Clone()
+        }
         # Append GET parameters to Uri, aka query Parameters
         if ($GetParameters -and ($Uri.Query -eq "")) {
             Write-Debug "[$($MyInvocation.MyCommand.Name)] Using `$GetParameters: $($GetParameters | Out-String)"
@@ -383,6 +387,18 @@
 
                                 $parameters = Copy-CommonParameter -InputObject $PSBoundParameters -AdditionalParameter @("Method", "Headers", "OutputType", "TimeoutSec")
                                 $parameters['Uri'] = "{0}{1}" -f $response._links.base, $response._links.next
+                                if ($paginationGetParameters) {
+                                    $parameters['GetParameters'] = $paginationGetParameters
+                                    $nextUriBuilder = [System.UriBuilder]$parameters['Uri']
+                                    $nextQueryParameters = [System.Web.HttpUtility]::ParseQueryString($nextUriBuilder.Query)
+                                    foreach ($key in $paginationGetParameters.Keys) {
+                                        if ($nextQueryParameters.AllKeys -notcontains $key) {
+                                            $nextQueryParameters[[string]$key] = [string]$paginationGetParameters[$key]
+                                        }
+                                    }
+                                    $nextUriBuilder.Query = $nextQueryParameters.ToString()
+                                    $parameters['Uri'] = $nextUriBuilder.Uri
+                                }
 
                                 Write-Verbose "NEXT PAGE: $($parameters["Uri"])"
 
