@@ -62,5 +62,15 @@ InModuleScope ConfluencePS {
 
             Should -Invoke -CommandName Invoke-Method -ModuleName ConfluencePS -Exactly -Times 0 -Scope It
         }
+
+        It "sets prefixed defaults when called from inside a function" {
+            function Set-TestConfluenceDefaults {
+                Set-Info -BaseUri "https://example.com/wiki"
+            }
+
+            Set-TestConfluenceDefaults
+
+            $script:PSDefaultParameterValues["Get-ConfluencePage:ApiUri"] | Should -Be "https://example.com/wiki/rest/api"
+        }
     }
 }
