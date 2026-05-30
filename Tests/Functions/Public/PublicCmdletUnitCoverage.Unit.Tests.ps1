@@ -30,7 +30,7 @@ Describe 'Public cmdlet unit coverage baseline' -Tag Unit {
         )
 
         foreach ($cmdletName in $coveredCmdlets) {
-            Join-Path $PSScriptRoot "$cmdletName.Tests.ps1" | Should -Exist
+            Join-Path $PSScriptRoot "$cmdletName.Unit.Tests.ps1" | Should -Exist
         }
     }
 }
