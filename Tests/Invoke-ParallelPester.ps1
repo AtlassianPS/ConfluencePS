@@ -44,6 +44,13 @@ if ($OutputPath -and $PSCmdlet.ShouldProcess($tempResultsDir, 'Create temporary 
 }
 
 $testFiles = @()
+$preferredIntegrationOrder = @(
+    'Configuration.Integration.Tests.ps1'
+    'Spaces.Integration.Tests.ps1'
+    'Pages.Integration.Tests.ps1'
+    'Labels.Integration.Tests.ps1'
+    'Attachments.Integration.Tests.ps1'
+)
 foreach ($p in $Path) {
     $resolvedPath = Resolve-Path $p -ErrorAction SilentlyContinue
     if ($resolvedPath) {
@@ -55,6 +62,11 @@ foreach ($p in $Path) {
         }
     }
 }
+
+$testFiles = @($testFiles | Sort-Object {
+        $index = [Array]::IndexOf($preferredIntegrationOrder, $_.Name)
+        if ($index -ge 0) { $index } else { [Int32]::MaxValue }
+    }, Name)
 
 if ($testFiles.Count -eq 0) {
     Write-Warning "No test files found in: $Path"
