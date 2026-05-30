@@ -2,6 +2,8 @@
 
 Describe 'AtlassianPS.Standards version consistency' -Tag Unit {
     BeforeAll {
+        $script:ExpectedStandardsSha = '6fe5d05db84cdd10c9e4284e235a8f359c9537ad'
+
         function Get-RepositoryRoot {
             if (
                 $env:BHProjectPath -and
@@ -67,14 +69,14 @@ Describe 'AtlassianPS.Standards version consistency' -Tag Unit {
         @($standardsActionReferences | Where-Object { $_.Ref -notmatch '^[0-9a-f]{40}$' }).Count | Should -Be 0
         @($standardsActionReferences | Where-Object { [string]::IsNullOrWhiteSpace($_.Version) }).Count | Should -Be 0
         ($standardsActionReferences | Select-Object -ExpandProperty Version -Unique) | Should -Be @($standardsVersion)
-        @($standardsActionReferences | Select-Object -ExpandProperty Ref -Unique).Count | Should -Be 1
+        ($standardsActionReferences | Select-Object -ExpandProperty Ref -Unique) | Should -Be @($script:ExpectedStandardsSha)
     }
 
     It 'uses the shared Standards release tag resolver action' {
         $projectRoot = Get-RepositoryRoot
         $releaseWorkflowContent = Get-Content -LiteralPath (Join-Path -Path $projectRoot -ChildPath '.github/workflows/release.yml') -Raw
 
-        $releaseWorkflowContent | Should -Match 'AtlassianPS/AtlassianPS\.Standards/\.github/actions/resolve-release-tag@[0-9a-f]{40}'
+        $releaseWorkflowContent | Should -Match "AtlassianPS/AtlassianPS\.Standards/\.github/actions/resolve-release-tag@$script:ExpectedStandardsSha"
         $releaseWorkflowContent | Should -Not -Match 'git\s+rev-list|Resolve-ReleaseTag|release_sha="\$\(git'
     }
 
@@ -82,7 +84,7 @@ Describe 'AtlassianPS.Standards version consistency' -Tag Unit {
         $projectRoot = Get-RepositoryRoot
         $releaseWorkflowContent = Get-Content -LiteralPath (Join-Path -Path $projectRoot -ChildPath '.github/workflows/release.yml') -Raw
 
-        $releaseWorkflowContent | Should -Match 'AtlassianPS/AtlassianPS\.Standards/\.github/actions/build-release-notes@[0-9a-f]{40}'
+        $releaseWorkflowContent | Should -Match "AtlassianPS/AtlassianPS\.Standards/\.github/actions/build-release-notes@$script:ExpectedStandardsSha"
         $releaseWorkflowContent | Should -Match 'body_path:\s+\$\{\{\s*steps\.release_notes\.outputs\.release_notes_path\s*\}\}'
         $releaseWorkflowContent | Should -Match 'build-release-notes[\s\S]+Publish module'
         $releaseWorkflowContent | Should -Not -Match 'changelog-to-release|changelog\.configuration\.json|steps\.changelog\.outputs\.body|Set-Content|Out-File|release-notes\.md'
@@ -96,6 +98,27 @@ Describe 'AtlassianPS.Standards version consistency' -Tag Unit {
         $buildScriptContent | Should -Match 'Get-AtlassianPSReleaseNotesFromChangelog[\s\S]+CHANGELOG\.md'
         $buildScriptContent | Should -Match 'Set-AtlassianPSModuleManifestVersion[\s\S]+-ReleaseNotes\s+\$releaseNotes'
         $buildScriptContent | Should -Not -Match 'function\s+Get-.*ReleaseNotesFromChangelog|Metadata\\Update-Metadata[\s\S]+PropertyName\s+"ReleaseNotes"|Get-Content[\s\S]+CHANGELOG\.md[\s\S]+Set-Content'
+    }
+
+    It 'uses Standards package validation for CI publish dry-runs' {
+        $projectRoot = Get-RepositoryRoot
+        $buildScriptContent = Get-Content -LiteralPath (Join-Path -Path $projectRoot -ChildPath 'ConfluencePS.build.ps1') -Raw
+        $ciWorkflowContent = Get-Content -LiteralPath (Join-Path -Path $projectRoot -ChildPath '.github/workflows/ci.yml') -Raw
+
+        $buildScriptContent | Should -Match 'Task\s+TestPublish\s+Build,\s+Package'
+        $buildScriptContent | Should -Match 'New-AtlassianPSModulePackage'
+        $buildScriptContent | Should -Match 'Test-AtlassianPSModulePackage'
+        $buildScriptContent | Should -Not -Match 'Task\s+SignCode|Task\s+UpdateHomepage|Compress-Archive'
+        $ciWorkflowContent | Should -Match 'Invoke-Build -Task Clean, TestPublish'
+        $ciWorkflowContent | Should -Match 'rhysd/actionlint@[0-9a-f]{40}\s+#\s+v[0-9]+\.[0-9]+\.[0-9]+'
+        $ciWorkflowContent | Should -Match 'dorny/paths-filter@[0-9a-f]{40}\s+#\s+v[0-9]+'
+    }
+
+    It 'uses the future release changelog format required by the blueprint' {
+        $projectRoot = Get-RepositoryRoot
+        $changelogContent = Get-Content -LiteralPath (Join-Path -Path $projectRoot -ChildPath 'CHANGELOG.md') -Raw
+
+        $changelogContent | Should -Match '(?m)^## v[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z][0-9A-Za-z.-]*)? - \d{4}-\d{2}-\d{2}$'
     }
 
     It 'reads AtlassianPS.Standards version from build.requirements in tool scripts' {

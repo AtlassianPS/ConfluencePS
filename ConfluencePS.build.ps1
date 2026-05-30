@@ -618,27 +618,27 @@ Task StopConfluenceDocker {
     Invoke-BuildExec { docker compose -f $composeFile down -v }
 }
 
-Task Publish SetVersion, SignCode, Package, {
+Task Publish SetVersion, Package, {
     Assert-True (-not [String]::IsNullOrEmpty($PSGalleryAPIKey)) "No key for the PSGallery"
 
-    Publish-Module -Path "$env:BHBuildOutput/$env:BHProjectName" -NuGetApiKey $PSGalleryAPIKey
-}, UpdateHomepage
-
-Task UpdateHomepage {
-    # TODO:
-}
-Task SignCode {
-    # TODO: waiting for certificates
+    Publish-Module -Path (Join-Path $env:BHBuildOutput $env:BHProjectName) -NuGetApiKey $PSGalleryAPIKey
 }
 
 Task Package {
-    $source = "$env:BHBuildOutput\$env:BHProjectName"
-    $destination = "$env:BHBuildOutput\$env:BHProjectName.zip"
+    $script:PackagePath = New-AtlassianPSModulePackage -BuildOutputPath $env:BHBuildOutput -ModuleName $env:BHProjectName
+}
 
-    Assert-True { Test-Path $source } "Missing files to package"
+Task TestPublish Build, Package, {
+    $testPackageParameters = @{
+        BuildOutputPath = $env:BHBuildOutput
+        ModuleName      = $env:BHProjectName
+    }
+    if ($script:PackagePath) {
+        $testPackageParameters.PackagePath = $script:PackagePath
+    }
 
-    Remove-Item $destination -ErrorAction SilentlyContinue
-    $null = Compress-Archive -Path $source -DestinationPath $destination
+    $package = Test-AtlassianPSModulePackage @testPackageParameters
+    Write-Build Green "Publish dry-run passed: $($package.PackagePath)"
 }
 
 Task . Clean, Build, Test

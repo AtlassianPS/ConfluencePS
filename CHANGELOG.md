@@ -40,6 +40,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Fixed `-Label` parsing for the Get-ConfluencePage cmdlet (#193 [@claudiospizzi])
 
+## v2.5.2 - 2026-05-30
+
+### Changed
+
+- Aligned release workflow, release-note generation, and publish-time manifest metadata with the AtlassianPS Standards release blueprint.
+
 ## v2.5.0 - 2019-03-27
 
 ### Added
