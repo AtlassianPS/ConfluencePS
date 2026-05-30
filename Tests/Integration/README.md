@@ -70,7 +70,7 @@ Invoke-Pester -Path 'Tests/Integration/*.Integration.Tests.ps1' -Tag 'NoSuchTagF
 
 ## Fixture Pattern
 
-Use `Helpers/ConfluenceIntegrationFixture.ps1` for new independent integration files.
+Use `Tests/Helpers/IntegrationTestTools.ps1` for new independent integration files.
 It imports the module under test, initializes credentials from `.env`, creates disposable spaces/pages/labels/attachments, and removes created resources in `AfterAll`.
 
 Each focused file should contain real `Describe`/`Context`/`It` blocks and create the spaces, pages, labels, or attachments it needs. Shared helpers may create and clean disposable fixtures, but should not hide the behavior contexts for a whole suite.

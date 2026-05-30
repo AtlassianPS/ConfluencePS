@@ -16,7 +16,7 @@ BeforeDiscovery {
 
 Describe '%AREA%' -Tag 'Integration', 'Cloud', 'DataCenter' {
     BeforeAll {
-        . "$PSScriptRoot/Helpers/ConfluenceIntegrationFixture.ps1"
+        . "$PSScriptRoot/../Helpers/IntegrationTestTools.ps1"
 
         $script:fixture = New-ConfluenceIntegrationFixture
         if (-not $script:fixture.IsConfigured) {

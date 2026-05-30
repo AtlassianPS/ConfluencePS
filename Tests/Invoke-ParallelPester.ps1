@@ -6,9 +6,6 @@
 [CmdletBinding(SupportsShouldProcess)]
 param(
     [Parameter()]
-    [string]$ProjectRoot,
-
-    [Parameter()]
     [string[]]$Path = './Tests/Integration/',
 
     [Parameter()]
@@ -34,23 +31,13 @@ if (-not $canParallel) {
     Write-Warning 'PowerShell 5.1 detected: running tests sequentially. Use PowerShell 7+ for parallel execution.'
 }
 
-if (-not $ProjectRoot) {
-    $ProjectRoot = Split-Path -Parent $PSScriptRoot
-}
-$projectRoot = (Resolve-Path -LiteralPath $ProjectRoot).ProviderPath
+$projectRoot = Split-Path -Parent $PSScriptRoot
 $tempResultsDir = Join-Path ([System.IO.Path]::GetTempPath()) "ConfluencePS-TestResults-$(Get-Date -Format 'yyyyMMddHHmmss')"
 if ($OutputPath -and $PSCmdlet.ShouldProcess($tempResultsDir, 'Create temporary results directory')) {
     $null = New-Item -ItemType Directory -Path $tempResultsDir -Force
 }
 
 $testFiles = @()
-$preferredIntegrationOrder = @(
-    'Configuration.Integration.Tests.ps1'
-    'Spaces.Integration.Tests.ps1'
-    'Pages.Integration.Tests.ps1'
-    'Labels.Integration.Tests.ps1'
-    'Attachments.Integration.Tests.ps1'
-)
 foreach ($p in $Path) {
     $resolvedPath = Resolve-Path $p -ErrorAction SilentlyContinue
     if ($resolvedPath) {
@@ -62,11 +49,6 @@ foreach ($p in $Path) {
         }
     }
 }
-
-$testFiles = @($testFiles | Sort-Object {
-        $index = [Array]::IndexOf($preferredIntegrationOrder, $_.Name)
-        if ($index -ge 0) { $index } else { [Int32]::MaxValue }
-    }, Name)
 
 if ($testFiles.Count -eq 0) {
     Write-Warning "No test files found in: $Path"
@@ -95,7 +77,7 @@ try {
 
     if (Test-Path $helpersPath) {
         . $helpersPath
-        Read-DotEnvFile -Path (Join-Path $projectRoot '.env')
+        Read-DotEnvFile -Path (Join-Path $projectRoot '.env') -ExcludeName (Get-DotEnvExcludedName)
     }
 
     Import-Module Pester -MinimumVersion 5.0 -Force

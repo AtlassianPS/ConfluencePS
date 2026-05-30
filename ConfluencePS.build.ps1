@@ -504,10 +504,14 @@ Task Test {
 
 # Synopsis: Run integration tests against live Confluence (Cloud or Data Center)
 Task TestIntegration {
-    $integrationToolsPath = Join-Path $env:BHProjectPath 'Tests/Helpers/IntegrationTestTools.ps1'
-    Assert-True (Test-Path $integrationToolsPath) "Integration helper not found: $integrationToolsPath"
-    . $integrationToolsPath
-    Read-DotEnvFile -Path (Join-Path $env:BHProjectPath '.env')
+    $helpersPath = Join-Path $env:BHProjectPath 'Tests/Helpers/IntegrationTestTools.ps1'
+    if (Test-Path $helpersPath) {
+        . $helpersPath
+        Read-DotEnvFile -Path (Join-Path $env:BHProjectPath '.env') -ExcludeName (Get-DotEnvExcludedName)
+    }
+    else {
+        throw "Integration helper not found: $helpersPath"
+    }
 
     $deploymentType = Get-ConfluenceIntegrationDeploymentType
     $requiredEnvVars = Get-ConfluenceIntegrationRequiredVariables -DeploymentType $deploymentType
@@ -523,8 +527,10 @@ For local development: copy .env.example to .env and configure the required vari
 "@
     }
 
-    $runnerPath = Join-Path $env:BHProjectPath 'Tests/Invoke-ParallelPester.ps1'
-    Assert-True (Test-Path $runnerPath) "Integration test runner not found: $runnerPath"
+    $runnerPath = "$env:BHProjectPath/Tests/Invoke-ParallelPester.ps1"
+    if (-not (Test-Path $runnerPath)) {
+        throw "Integration test runner not found: $runnerPath"
+    }
 
     $defaultIntegrationPath = Join-Path $env:BHBuildOutput 'Tests/Integration'
     if (-not (Test-Path $defaultIntegrationPath)) {
@@ -532,7 +538,6 @@ For local development: copy .env.example to .env and configure the required vari
     }
 
     $runnerParams = @{
-        ProjectRoot   = $env:BHProjectPath
         Path          = @($defaultIntegrationPath)
         ThrottleLimit = $ThrottleLimit
         Output        = $PesterVerbosity
