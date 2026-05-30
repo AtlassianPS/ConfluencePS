@@ -98,6 +98,68 @@ function New-ConfluenceIntegrationPage {
     return $page
 }
 
+function Assert-ConfluenceIntegrationFixtureReady {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [pscustomobject]$Fixture
+    )
+
+    if (-not $Fixture.IsConfigured) {
+        Set-ItResult -Skipped -Because $Fixture.SkipReason
+        return $false
+    }
+
+    return $true
+}
+
+function New-ConfluenceIntegrationPageSet {
+    [CmdletBinding()]
+    [OutputType([PSCustomObject])]
+    param(
+        [Parameter(Mandatory)]
+        [pscustomobject]$Fixture,
+
+        [Parameter()]
+        [string]$SpaceNamePrefix = 'ConfluencePS Page Set',
+
+        [Parameter()]
+        [string]$Body = '<p>ConfluencePS integration test page</p>'
+    )
+
+    $space = New-ConfluenceIntegrationSpace -Fixture $Fixture -NamePrefix $SpaceNamePrefix
+    $homePage = (Get-ConfluenceSpace -SpaceKey $space.Key -ErrorAction Stop).Homepage
+    $nameSuffix = [Guid]::NewGuid().ToString('N').Substring(0, 8)
+
+    $page1 = "Page Piped $nameSuffix" | New-ConfluencePage -ParentID $homePage.ID -Body $Body -ErrorAction Stop
+    $null = $Fixture.Pages.Add($page1.ID)
+
+    $page2 = New-ConfluencePage -Title "Page Orphan $nameSuffix" -SpaceKey $space.Key -Body $Body -ErrorAction Stop
+    $null = $Fixture.Pages.Add($page2.ID)
+
+    $pageObject = [ConfluencePS.Page]@{
+        Title     = "Page from Object $nameSuffix"
+        Body      = $Body
+        Ancestors = @($homePage)
+        Space     = [ConfluencePS.Space]@{ Key = $space.Key }
+    }
+    $page3 = $pageObject | New-ConfluencePage -ErrorAction Stop
+    $null = $Fixture.Pages.Add($page3.ID)
+
+    $page4 = New-ConfluencePage -Title "Page with Parent Object $nameSuffix" -Parent $homePage -Body $Body -ErrorAction Stop
+    $null = $Fixture.Pages.Add($page4.ID)
+
+    return [PSCustomObject]@{
+        Space    = $space
+        HomePage = $homePage
+        Page1    = $page1
+        Page2    = $page2
+        Page3    = $page3
+        Page4    = $page4
+        Suffix   = $nameSuffix
+    }
+}
+
 function New-ConfluenceIntegrationAttachmentFile {
     [CmdletBinding()]
     [OutputType([string])]

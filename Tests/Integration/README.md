@@ -52,7 +52,7 @@ Invoke-Build -Task TestIntegration -IntegrationTestPath './Tests/Integration/Spa
 Invoke-Build -Task TestIntegration -PesterVerbosity Detailed
 ```
 
-The legacy integration contexts share a disposable ordered lifecycle, so keep the default `ThrottleLimit` at `1` unless the selected files are known to be independent.
+The default integration runner remains sequential. Focused files own their disposable resources, but sequential execution avoids unnecessary load on shared Confluence test tenants.
 
 Use the runner directly when debugging file-level execution:
 
@@ -72,5 +72,4 @@ Invoke-Pester -Path 'Tests/Integration/*.Integration.Tests.ps1' -Tag 'NoSuchTagF
 Use `Helpers/ConfluenceIntegrationFixture.ps1` for new independent integration files.
 It imports the module under test, initializes credentials from `.env`, creates disposable spaces/pages/labels/attachments, and removes created resources in `AfterAll`.
 
-The current split preserves the historical ordered lifecycle assertions through focused entry files so existing coverage is not lost.
-Prefer behavior-focused files with owned resources for new coverage, and migrate old lifecycle contexts only when their setup and cleanup can stay self-contained.
+Each focused file should contain real `Describe`/`Context`/`It` blocks and create the spaces, pages, labels, or attachments it needs. Shared helpers may create and clean disposable fixtures, but should not hide the behavior contexts for a whole suite.
