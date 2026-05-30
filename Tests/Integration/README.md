@@ -49,10 +49,12 @@ Invoke-Build -Task TestIntegration
 Invoke-Build -Task TestIntegration -Tag Cloud
 Invoke-Build -Task TestIntegration -Tag DataCenter
 Invoke-Build -Task TestIntegration -IntegrationTestPath './Tests/Integration/Spaces.Integration.Tests.ps1'
-Invoke-Build -Task TestIntegration -ThrottleLimit 2 -PesterVerbosity Detailed
+Invoke-Build -Task TestIntegration -PesterVerbosity Detailed
 ```
 
-Use the runner directly when debugging file-level parallelization:
+The legacy integration contexts share a disposable ordered lifecycle, so keep the default `ThrottleLimit` at `1` unless the selected files are known to be independent.
+
+Use the runner directly when debugging file-level execution:
 
 ```powershell
 ./Tests/Invoke-ParallelPester.ps1
@@ -67,8 +69,8 @@ Invoke-Pester -Path 'Tests/Integration/*.Integration.Tests.ps1' -Tag 'NoSuchTagF
 
 ## Fixture Pattern
 
-Use `Helpers/ConfluenceIntegrationFixture.ps1` for shared setup.
+Use `Helpers/ConfluenceIntegrationFixture.ps1` for new independent integration files.
 It imports the module under test, initializes credentials from `.env`, creates disposable spaces/pages/labels/attachments, and removes created resources in `AfterAll`.
 
-Prefer behavior-focused files over ordered lifecycle tests.
-Each file should own its resources and cleanup tracking so it can run independently or in parallel with other files.
+The current split preserves the historical ordered lifecycle assertions through focused entry files so existing coverage is not lost.
+Prefer behavior-focused files with owned resources for new coverage, and migrate old lifecycle contexts only when their setup and cleanup can stay self-contained.

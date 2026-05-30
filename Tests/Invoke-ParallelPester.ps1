@@ -6,10 +6,13 @@
 [CmdletBinding(SupportsShouldProcess)]
 param(
     [Parameter()]
+    [string]$ProjectRoot,
+
+    [Parameter()]
     [string[]]$Path = './Tests/Integration/',
 
     [Parameter()]
-    [int]$ThrottleLimit = 4,
+    [int]$ThrottleLimit = 1,
 
     [Parameter()]
     [string[]]$Tag,
@@ -31,7 +34,10 @@ if (-not $canParallel) {
     Write-Warning 'PowerShell 5.1 detected: running tests sequentially. Use PowerShell 7+ for parallel execution.'
 }
 
-$projectRoot = Split-Path -Parent $PSScriptRoot
+if (-not $ProjectRoot) {
+    $ProjectRoot = Split-Path -Parent $PSScriptRoot
+}
+$projectRoot = (Resolve-Path -LiteralPath $ProjectRoot).ProviderPath
 $tempResultsDir = Join-Path ([System.IO.Path]::GetTempPath()) "ConfluencePS-TestResults-$(Get-Date -Format 'yyyyMMddHHmmss')"
 if ($OutputPath -and $PSCmdlet.ShouldProcess($tempResultsDir, 'Create temporary results directory')) {
     $null = New-Item -ItemType Directory -Path $tempResultsDir -Force

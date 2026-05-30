@@ -19,7 +19,7 @@ param(
     # Integration test parameters
     [Parameter()]
     [ValidateRange(1, 16)]
-    [Int] $ThrottleLimit = 4,
+    [Int] $ThrottleLimit = 1,
 
     [Parameter()]
     [String[]] $IntegrationTestPath
@@ -484,6 +484,9 @@ Task Test {
     if ($Tag) {
         $pesterConfigHash.Filter.Tag = $Tag
         $pesterConfigHash.Filter.ExcludeTag = @($pesterConfigHash.Filter.ExcludeTag | Where-Object { $_ -notin $Tag })
+        if ('Integration' -in $Tag) {
+            $pesterConfigHash.Run.ExcludePath = @()
+        }
     }
 
     if ($ExcludeTag) {
@@ -523,7 +526,14 @@ For local development: copy .env.example to .env and configure the required vari
     $runnerPath = Join-Path $env:BHProjectPath 'Tests/Invoke-ParallelPester.ps1'
     Assert-True (Test-Path $runnerPath) "Integration test runner not found: $runnerPath"
 
+    $defaultIntegrationPath = Join-Path $env:BHBuildOutput 'Tests/Integration'
+    if (-not (Test-Path $defaultIntegrationPath)) {
+        $defaultIntegrationPath = Join-Path $env:BHProjectPath 'Tests/Integration'
+    }
+
     $runnerParams = @{
+        ProjectRoot   = $env:BHProjectPath
+        Path          = @($defaultIntegrationPath)
         ThrottleLimit = $ThrottleLimit
         Output        = $PesterVerbosity
         OutputPath    = 'Test-Integration.xml'
