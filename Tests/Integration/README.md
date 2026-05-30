@@ -46,6 +46,7 @@ Use the build task for normal runs:
 
 ```powershell
 Invoke-Build -Task TestIntegration
+Invoke-Build -Task TestIntegration -Tag Smoke
 Invoke-Build -Task TestIntegration -Tag Cloud
 Invoke-Build -Task TestIntegration -Tag DataCenter
 Invoke-Build -Task TestIntegration -IntegrationTestPath './Tests/Integration/Spaces.Integration.Tests.ps1'
