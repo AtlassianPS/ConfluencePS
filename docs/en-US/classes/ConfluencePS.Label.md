@@ -1,5 +1,6 @@
 ---
 layout: documentation
+title: ConfluencePS.Label
 permalink: /docs/ConfluencePS/classes/ConfluencePS.Label/
 ---
 <!-- markdownlint-disable MD036 -->
