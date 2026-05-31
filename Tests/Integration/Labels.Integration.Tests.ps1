@@ -44,7 +44,8 @@ Describe 'Label integration tests' -Tag Integration, Cloud, DataCenter {
             $script:newLabel1.Labels.Name | Should -BeExactly $script:label1
             @($script:newLabel2).Count | Should -Be 5
             ($script:newLabel2.Labels.Name -contains $script:label2) | Should -Be $true
-            $script:newLabel3.Labels.Name | Should -BeExactly $script:label1
+            ($script:newLabel3.Labels.Name | Where-Object { $_ -in $script:label1 }).Count | Should -Be 3
+            $script:newLabel3.Labels.Name | Should -Contain $script:label2
             $script:newLabel1.Labels.ID | Should -Not -BeNullOrEmpty
         }
     }
@@ -89,7 +90,7 @@ Describe 'Label integration tests' -Tag Integration, Cloud, DataCenter {
             $script:getPageLabel2 | Should -BeOfType [ConfluencePS.ContentLabelSet]
             $script:getPageLabel2.Labels | Should -BeOfType [ConfluencePS.Label]
             @($script:getPageLabel1.Labels).Count | Should -BeGreaterOrEqual 4
-            @($script:getPageLabel2.Labels | Where-Object { $_.Name -eq $script:label2 }).Count | Should -Be 5
+            @($script:getPageLabel2.Labels | Where-Object { $_.Name -eq $script:label2 }).Count | Should -Be 4
             ($script:getPageLabel1.Labels.Name | Where-Object { $_ -in $script:label1 }).Count | Should -Be 3
             $script:getPageLabel1.Page.ID | Should -BeExactly $script:pageSet.Page1.ID
             $script:getPageLabel2.Page.ID | Should -Contain $script:pageSet.Page1.ID

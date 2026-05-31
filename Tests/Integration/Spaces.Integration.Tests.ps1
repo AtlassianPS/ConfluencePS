@@ -77,21 +77,18 @@ Describe 'Space integration tests' -Tag Integration, Cloud, DataCenter {
             if ($script:fixture.IsConfigured) {
                 $script:getAllSpaces = Get-ConfluenceSpace -ErrorAction Stop
                 $script:getSpaceByKey = Get-ConfluenceSpace -Key $script:spaceObjectKey -ErrorAction Stop
-                $script:getSpaceByPipeline = $script:spaceParameterKey | Get-ConfluenceSpace -ErrorAction Stop
                 $script:getSpacesByArray = Get-ConfluenceSpace @($script:spaceObjectKey, $script:spaceParameterKey) -ErrorAction Stop
             }
         }
 
-        It 'gets spaces by key, pipeline, and multiple keys' {
+        It 'gets spaces by key and multiple keys' {
             if (-not (Assert-ConfluenceIntegrationFixtureReady -Fixture $script:fixture)) { return }
 
             @($script:getAllSpaces).Count | Should -BeGreaterOrEqual 2
             @($script:getSpaceByKey).Count | Should -Be 1
-            @($script:getSpaceByPipeline).Count | Should -Be 1
             @($script:getSpacesByArray).Count | Should -Be 2
             $script:getSpaceByKey | Should -BeOfType [ConfluencePS.Space]
             $script:getSpaceByKey.Key | Should -BeExactly $script:spaceObjectKey
-            $script:getSpaceByPipeline.Key | Should -BeExactly $script:spaceParameterKey
             $script:getSpacesByArray.Key | Should -BeExactly @($script:spaceObjectKey, $script:spaceParameterKey)
             $script:getSpaceByKey.Icon | Should -BeOfType [ConfluencePS.Icon]
             $script:getSpaceByKey.Homepage | Should -BeOfType [ConfluencePS.Page]

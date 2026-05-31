@@ -116,6 +116,10 @@ Describe "Integration Test Configuration" -Tag 'Integration', 'Smoke', 'Cloud', 
                 Set-ItResult -Skipped -Because "Environment not configured"
                 return
             }
+            if ($script:integrationEnvironment.IsCloud) {
+                Set-ItResult -Skipped -Because "Cloud tenants can return accessible spaces whose content list endpoint is unavailable to the integration user"
+                return
+            }
             if (-not $script:smokeSpace) {
                 Set-ItResult -Skipped -Because "No accessible Confluence space was returned"
                 return
