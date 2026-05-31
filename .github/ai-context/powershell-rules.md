@@ -17,7 +17,7 @@ Focused validation while iterating:
 ```powershell
 # After changing one function/helper, run the matching test file directly
 Invoke-Build -Task Lint
-Invoke-Pester -Path 'Tests/Functions/Invoke-Method.Tests.ps1'
+Invoke-Pester -Path 'Tests/Functions/Public/Invoke-Method.Unit.Tests.ps1'
 
 # After changing docs/help, run help tests directly
 Invoke-Build -Task Lint
@@ -52,7 +52,7 @@ DataCenter track requires `CI_CONFLUENCE_TYPE=DataCenter`, `CI_CONFLUENCE_URL`, 
 - Private helpers/converters: `ConfluencePS/Private/*.ps1`
 - REST wrapper entrypoint: `ConfluencePS/Public/Invoke-Method.ps1`
 - Build script: `ConfluencePS.build.ps1`
-- Tests: `Tests/*.Tests.ps1`, `Tests/Functions/*.Tests.ps1`
+- Tests: `Tests/*.Tests.ps1`, `Tests/Functions/Public/*.Unit.Tests.ps1`, `Tests/Functions/Private/*.Unit.Tests.ps1`
 - Docs/help sources: `docs/en-US/commands/*.md`, `docs/en-US/classes/*.md`
 
 ## API and REST Conventions

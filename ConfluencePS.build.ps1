@@ -14,7 +14,15 @@ param(
     [String[]] $Tag,
 
     [Parameter()]
-    [String[]] $ExcludeTag
+    [String[]] $ExcludeTag,
+
+    # Integration test parameters
+    [Parameter()]
+    [ValidateRange(1, 16)]
+    [Int] $ThrottleLimit = 1,
+
+    [Parameter()]
+    [String[]] $IntegrationTestPath
 )
 
 Import-Module "$PSScriptRoot/Tools/BuildTools.psm1" -Force -ErrorAction Stop
@@ -450,11 +458,9 @@ Task Test {
     Remove-Module $env:BHProjectName -ErrorAction SilentlyContinue
 
     # Skip integration test files at discovery time so normal Test runs do
-    # not execute its setup blocks or require integration credentials.
-    $integrationPaths = @(
-        (Join-Path $env:BHBuildOutput 'Tests/Integration.Tests.ps1')
-        (Join-Path $env:BHBuildOutput 'Tests/Configuration.Integration.Tests.ps1')
-    )
+    # not execute setup blocks or require integration credentials.
+    $integrationPaths = @(Get-ChildItem -Path (Join-Path $env:BHBuildOutput 'Tests/Integration') -Filter '*.Integration.Tests.ps1' -File -Recurse -ErrorAction SilentlyContinue |
+        Select-Object -ExpandProperty FullName)
 
     $pesterConfigHash = @{
         Run        = @{
@@ -498,10 +504,14 @@ Task Test {
 
 # Synopsis: Run integration tests against live Confluence (Cloud or Data Center)
 Task TestIntegration {
-    $integrationToolsPath = Join-Path $env:BHProjectPath 'Tests/Helpers/IntegrationTestTools.ps1'
-    Assert-True (Test-Path $integrationToolsPath) "Integration helper not found: $integrationToolsPath"
-    . $integrationToolsPath
-    $null = Initialize-IntegrationEnvironment
+    $helpersPath = Join-Path $env:BHProjectPath 'Tests/Helpers/IntegrationTestTools.ps1'
+    if (Test-Path $helpersPath) {
+        . $helpersPath
+        Read-DotEnvFile -Path (Join-Path $env:BHProjectPath '.env') -ExcludeName (Get-DotEnvExcludedName)
+    }
+    else {
+        throw "Integration helper not found: $helpersPath"
+    }
 
     $deploymentType = Get-ConfluenceIntegrationDeploymentType
     $requiredEnvVars = Get-ConfluenceIntegrationRequiredVariables -DeploymentType $deploymentType
@@ -517,47 +527,48 @@ For local development: copy .env.example to .env and configure the required vari
 "@
     }
 
-    $integrationScripts = @(
-        (Join-Path $env:BHBuildOutput 'Tests/Configuration.Integration.Tests.ps1')
-        (Join-Path $env:BHBuildOutput 'Tests/Integration.Tests.ps1')
-    ) | Where-Object { Test-Path $_ }
-
-    if (-not $integrationScripts) {
-        $integrationScripts = @(
-            (Join-Path $env:BHProjectPath 'Tests/Configuration.Integration.Tests.ps1')
-            (Join-Path $env:BHProjectPath 'Tests/Integration.Tests.ps1')
-        ) | Where-Object { Test-Path $_ }
+    $runnerPath = "$env:BHProjectPath/Tests/Invoke-ParallelPester.ps1"
+    if (-not (Test-Path $runnerPath)) {
+        throw "Integration test runner not found: $runnerPath"
     }
-    Assert-True ($integrationScripts.Count -gt 0) 'No integration test files were found.'
 
-    $pesterConfigHash = @{
-        Run        = @{
-            PassThru = $true
-            Path     = $integrationScripts
-        }
-        TestResult = @{
-            Enabled      = $true
-            OutputFormat = 'NUnitXml'
-            OutputPath   = 'Test-Integration.xml'
-        }
-        Output     = @{
-            Verbosity = $PesterVerbosity
-        }
-        Filter     = @{
-            Tag = @('Integration')
-        }
+    $defaultIntegrationPath = Join-Path $env:BHBuildOutput 'Tests/Integration'
+    if (-not (Test-Path $defaultIntegrationPath)) {
+        $defaultIntegrationPath = Join-Path $env:BHProjectPath 'Tests/Integration'
+    }
+
+    $runnerParams = @{
+        Path          = @($defaultIntegrationPath)
+        ThrottleLimit = $ThrottleLimit
+        Output        = $PesterVerbosity
+        OutputPath    = 'Test-Integration.xml'
+    }
+
+    if ($IntegrationTestPath) {
+        $runnerParams.Path = $IntegrationTestPath
+        Write-Build Gray "Restricting integration tests to: $($IntegrationTestPath -join ', ')"
     }
 
     if ($Tag) {
-        $pesterConfigHash.Filter.Tag = $Tag
+        $runnerParams.Tag = $Tag
+        Write-Build Gray "Running integration tests with tag(s): $($Tag -join ', ')"
     }
-    if ($ExcludeTag) {
-        $pesterConfigHash.Filter.ExcludeTag = $ExcludeTag
+    else {
+        $runnerParams.Tag = @('Integration')
+        Write-Build Gray 'Running integration tests (tag: Integration)'
     }
 
-    $pesterConfig = New-PesterConfiguration -Hashtable $pesterConfigHash
-    $testResults = Invoke-Pester -Configuration $pesterConfig
-    Assert-True ($testResults.FailedCount -eq 0) "$($testResults.FailedCount) integration test(s) failed."
+    if ($ExcludeTag) {
+        $runnerParams.ExcludeTag = $ExcludeTag
+        Write-Build Gray "Excluding tag(s): $($ExcludeTag -join ', ')"
+    }
+
+    Write-Build Gray "ThrottleLimit: $ThrottleLimit"
+    Write-Build Gray "Output: $($runnerParams.OutputPath)"
+
+    & $runnerPath @runnerParams
+
+    Assert-True ($LASTEXITCODE -eq 0) "Integration tests failed with exit code $LASTEXITCODE"
 }
 
 # Synopsis: Start the local Confluence Data Center Docker container for integration tests

@@ -3,7 +3,7 @@
 Describe 'ConvertTo-Table' -Tag Unit {
 
     BeforeAll {
-        . "$PSScriptRoot/../Helpers/TestTools.ps1"
+        . "$PSScriptRoot/../../Helpers/TestTools.ps1"
         $script:moduleToTest = Initialize-TestEnvironment -CallerPath $PSScriptRoot
         Import-Module $env:BHManifestToTest
     }
