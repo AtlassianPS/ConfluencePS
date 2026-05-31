@@ -1,7 +1,6 @@
 ---
 layout: documentation
 permalink: /docs/ConfluencePS/commands/
-hide: true
 ---
 # ConfluencePS commands
 
