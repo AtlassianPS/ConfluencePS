@@ -24,7 +24,7 @@
     CompanyName       = 'AtlassianPS'
 
     # Copyright statement for this module
-    Copyright         = 'MIT License'
+    Copyright         = '(c) 2016 Brian Bunke and AtlassianPS contributors.'
 
     # Description of the functionality provided by this module
     Description       = 'PowerShell module to interact with the Atlassian Confluence REST API'
