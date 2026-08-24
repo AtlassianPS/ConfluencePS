@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
+## v2.5.1 - 2026-08-24
+
 ### Added
 
 - Added Confluence Data Center integration-test infrastructure: `docker-compose.yml` (moveworkforward `atlas-run-standalone` image), `Tools/Wait-ConfluenceServer.ps1`, and `StartConfluenceDocker` / `StopConfluenceDocker` build tasks.
@@ -39,6 +41,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 
 - Fixed `-Label` parsing for the Get-ConfluencePage cmdlet (#193 [@claudiospizzi])
+* Centralized release planning and publication in the reusable AtlassianPS.Standards workflow.
 
 ## v2.5.0 - 2019-03-27
 
