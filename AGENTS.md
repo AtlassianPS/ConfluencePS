@@ -114,7 +114,9 @@ Before merging: ensure the Windows PowerShell 5.1 CI test job is green.
 
 - `.github/workflows/ci.yml` is the required PR/push quality gate.
 - `.github/workflows/integration_tests.yml` runs full integration suites on a nightly schedule (Cloud + Dockerized Data Center) and manual dispatch.
-- `.github/workflows/release.yml` publishes tagged releases.
+- `.github/workflows/release_intent.yml` validates release labels and changelog fragments.
+- `.github/workflows/continuous_release.yml` delegates release orchestration to the pinned reusable Standards workflow.
+- `.github/ai-context/releasing.md` keeps ConfluencePS-specific release steps and links to the canonical AtlassianPS Standards release blueprint.
 - For instruction-only changes, run local validation before opening/updating a PR.
 
 ## Instruction Maintenance

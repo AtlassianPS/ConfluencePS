@@ -6,9 +6,6 @@ param(
     [Parameter()]
     [String] $VersionToPublish,
 
-    [Parameter()]
-    [String] $PSGalleryAPIKey,
-
     # Test filtering parameters
     [Parameter()]
     [String[]] $Tag,
@@ -26,6 +23,24 @@ param(
 )
 
 Import-Module "$PSScriptRoot/Tools/BuildTools.psm1" -Force -ErrorAction Stop
+
+function Import-ConfluencePSStandard {
+    [CmdletBinding()]
+    param()
+
+    $buildRequirements = Import-PowerShellDataFile -Path (Join-Path -Path $PSScriptRoot -ChildPath 'Tools/build.requirements.psd1')
+    $standardsRequirement = $buildRequirements |
+        Where-Object { $_.ModuleName -eq 'AtlassianPS.Standards' } |
+        Select-Object -First 1
+
+    if (-not $standardsRequirement) {
+        throw 'AtlassianPS.Standards is missing from Tools/build.requirements.psd1.'
+    }
+
+    Import-Module AtlassianPS.Standards -RequiredVersion $standardsRequirement.RequiredVersion -Force -ErrorAction Stop
+}
+
+Import-ConfluencePSStandard
 
 Remove-Item -Path env:\BH* -ErrorAction SilentlyContinue
 
@@ -428,30 +443,32 @@ Task UpdateManifest {
     }
 }
 
+Task SetSourceVersion {
+    if (-not $VersionToPublish) {
+        throw 'VersionToPublish is required for SetSourceVersion. Use -VersionToPublish <semver>.'
+    }
+
+    $null = Set-AtlassianPSModuleManifestVersion `
+        -BuiltManifestPath $env:BHPSModuleManifest `
+        -ModuleName $env:BHProjectName `
+        -VersionToPublish $VersionToPublish
+}
+
 Task SetVersion {
-    [System.Management.Automation.SemanticVersion]$versionToPublish = $VersionToPublish
-
-    $published = Find-Module -Name $env:BHProjectName -ErrorAction SilentlyContinue
-    if ($published) {
-        [System.Management.Automation.SemanticVersion]$latestPublished = $published.Version
-        Write-Build Gray "Latest published version: $latestPublished"
-        Assert-True { $versionToPublish -gt $latestPublished } "Version must be greater than latest published version: $latestPublished"
-    }
-    else {
-        Write-Build Gray "No published version found in PSGallery; skipping version guard"
+    if (-not $VersionToPublish) {
+        throw 'VersionToPublish is required for SetVersion. Use -VersionToPublish <semver>.'
     }
 
-    $versionString = "{0}.{1}.{2}" -f $versionToPublish.Major, $versionToPublish.Minor, $versionToPublish.Patch
-    Metadata\Update-Metadata -Path $builtManifestPath -PropertyName "ModuleVersion" -Value $versionString
+    $releaseNotes = Get-AtlassianPSReleaseNotesFromChangelog `
+        -ChangelogPath (Join-Path -Path $env:BHProjectPath -ChildPath 'CHANGELOG.md') `
+        -ReleaseVersion $VersionToPublish
 
-    if ($versionToPublish.PreReleaseLabel) {
-        Write-Build Gray "Setting Prerelease label: $($versionToPublish.PreReleaseLabel)"
-        Metadata\Update-Metadata -Path $builtManifestPath -PropertyName "Prerelease" -Value $versionToPublish.PreReleaseLabel
-    }
-    else {
-        Write-Build Gray "Removing Prerelease label (stable release)"
-        Metadata\Update-Metadata -Path $builtManifestPath -PropertyName "Prerelease" -Value ''
-    }
+    $versionString = Set-AtlassianPSModuleManifestVersion `
+        -BuiltManifestPath $builtManifestPath `
+        -ModuleName $env:BHProjectName `
+        -VersionToPublish $VersionToPublish `
+        -ReleaseNotes $releaseNotes
+    Write-Build Gray "Resolved release version: $versionString"
 }
 
 Task Test {
@@ -613,27 +630,34 @@ Task StopConfluenceDocker {
     Invoke-BuildExec { docker compose -f $composeFile down -v }
 }
 
-Task Publish SetVersion, SignCode, Package, {
-    Assert-True (-not [String]::IsNullOrEmpty($PSGalleryAPIKey)) "No key for the PSGallery"
-
-    Publish-Module -Path "$env:BHBuildOutput/$env:BHProjectName" -NuGetApiKey $PSGalleryAPIKey
-}, UpdateHomepage
-
-Task UpdateHomepage {
-    # TODO:
-}
-Task SignCode {
-    # TODO: waiting for certificates
-}
-
 Task Package {
-    $source = "$env:BHBuildOutput\$env:BHProjectName"
-    $destination = "$env:BHBuildOutput\$env:BHProjectName.zip"
+    $script:PackagePath = New-AtlassianPSModulePackage -BuildOutputPath $env:BHBuildOutput -ModuleName $env:BHProjectName
+}
 
-    Assert-True { Test-Path $source } "Missing files to package"
+Task VerifyReleaseArtifact Package, {
+    if (-not $VersionToPublish) {
+        throw 'VersionToPublish is required for VerifyReleaseArtifact. Use -VersionToPublish <semver>.'
+    }
 
-    Remove-Item $destination -ErrorAction SilentlyContinue
-    $null = Compress-Archive -Path $source -DestinationPath $destination
+    $null = Test-AtlassianPSModulePackage `
+        -BuildOutputPath $env:BHBuildOutput `
+        -ModuleName $env:BHProjectName `
+        -PackagePath $script:PackagePath `
+        -ExpectedVersion $VersionToPublish `
+        -RequireReleaseNotes
+}
+
+Task TestPublish Build, Package, {
+    $testPackageParameters = @{
+        BuildOutputPath = $env:BHBuildOutput
+        ModuleName      = $env:BHProjectName
+    }
+    if ($script:PackagePath) {
+        $testPackageParameters.PackagePath = $script:PackagePath
+    }
+
+    $package = Test-AtlassianPSModulePackage @testPackageParameters
+    Write-Build Green "Publish dry-run passed: $($package.PackagePath)"
 }
 
 Task . Clean, Build, Test
