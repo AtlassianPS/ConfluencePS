@@ -1,4 +1,4 @@
-﻿#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "4.10" }
+﻿#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "5.9.0"; MaximumVersion = "5.9.999" }
 
 Describe 'Tools/update.dependencies.ps1' -Tag Unit {
     BeforeAll {

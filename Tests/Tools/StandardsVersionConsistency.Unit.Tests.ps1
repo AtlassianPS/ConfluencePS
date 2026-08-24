@@ -1,10 +1,10 @@
-﻿#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "5.7"; MaximumVersion = "5.999" }
+﻿#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "5.9.0"; MaximumVersion = "5.9.999" }
 
 Describe 'AtlassianPS.Standards version consistency' -Tag Unit {
     BeforeAll {
         . "$PSScriptRoot/../Helpers/TestTools.ps1"
         $script:projectRoot = Resolve-ProjectRoot
-        $script:standardsActionSha = '869d36f403c7534a37434d64119f96d1bacfeb25'
+        $script:standardsActionSha = 'fc574a6647971312d28383dd06e29a1a8d2e66e6'
 
         $requirements = Import-PowerShellDataFile -Path (Join-Path $script:projectRoot 'Tools/build.requirements.psd1')
         $standardsRequirement = $requirements |

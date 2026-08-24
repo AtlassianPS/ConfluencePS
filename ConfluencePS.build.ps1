@@ -133,6 +133,9 @@ Task Lint {
     Remove-Item $env:BHBuildOutput -Force -Recurse -ErrorAction SilentlyContinue
     Remove-Item "Test*.xml" -Force -ErrorAction SilentlyContinue
 
+    Get-Module Pester | Remove-Module -Force -ErrorAction SilentlyContinue
+    Import-Module Pester -MinimumVersion '5.9.0' -MaximumVersion '5.9.999' -Force -ErrorAction Stop
+
     $styleConfig = New-PesterConfiguration -Hashtable @{
         Run    = @{
             PassThru = $true
@@ -473,6 +476,9 @@ Task SetVersion {
 
 Task Test {
     Remove-Module $env:BHProjectName -ErrorAction SilentlyContinue
+
+    Get-Module Pester | Remove-Module -Force -ErrorAction SilentlyContinue
+    Import-Module Pester -MinimumVersion '5.9.0' -MaximumVersion '5.9.999' -Force -ErrorAction Stop
 
     # Skip integration test files at discovery time so normal Test runs do
     # not execute setup blocks or require integration credentials.
