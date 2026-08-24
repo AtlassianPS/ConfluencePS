@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
+## v2.5.2 - 2026-08-24
+
+### Changed
+
+* Standardized lint, unit, and integration test execution on Pester 5.9.x, using 5.9.0 as the clean-install baseline and 5.9.999 as the upper compatibility bound (#260, @lipkau).
+
 ## v2.5.1 - 2026-08-24
 
 ### Added
