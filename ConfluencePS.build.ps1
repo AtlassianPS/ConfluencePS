@@ -6,9 +6,6 @@ param(
     [Parameter()]
     [String] $VersionToPublish,
 
-    [Parameter()]
-    [String] $PSGalleryAPIKey,
-
     # Test filtering parameters
     [Parameter()]
     [String[]] $Tag,
@@ -446,7 +443,22 @@ Task UpdateManifest {
     }
 }
 
+Task SetSourceVersion {
+    if (-not $VersionToPublish) {
+        throw 'VersionToPublish is required for SetSourceVersion. Use -VersionToPublish <semver>.'
+    }
+
+    $null = Set-AtlassianPSModuleManifestVersion `
+        -BuiltManifestPath $env:BHPSModuleManifest `
+        -ModuleName $env:BHProjectName `
+        -VersionToPublish $VersionToPublish
+}
+
 Task SetVersion {
+    if (-not $VersionToPublish) {
+        throw 'VersionToPublish is required for SetVersion. Use -VersionToPublish <semver>.'
+    }
+
     $releaseNotes = Get-AtlassianPSReleaseNotesFromChangelog `
         -ChangelogPath (Join-Path -Path $env:BHProjectPath -ChildPath 'CHANGELOG.md') `
         -ReleaseVersion $VersionToPublish
@@ -618,14 +630,21 @@ Task StopConfluenceDocker {
     Invoke-BuildExec { docker compose -f $composeFile down -v }
 }
 
-Task Publish SetVersion, Package, {
-    Assert-True (-not [String]::IsNullOrEmpty($PSGalleryAPIKey)) "No key for the PSGallery"
-
-    Publish-Module -Path (Join-Path $env:BHBuildOutput $env:BHProjectName) -NuGetApiKey $PSGalleryAPIKey
-}
-
 Task Package {
     $script:PackagePath = New-AtlassianPSModulePackage -BuildOutputPath $env:BHBuildOutput -ModuleName $env:BHProjectName
+}
+
+Task VerifyReleaseArtifact Package, {
+    if (-not $VersionToPublish) {
+        throw 'VersionToPublish is required for VerifyReleaseArtifact. Use -VersionToPublish <semver>.'
+    }
+
+    $null = Test-AtlassianPSModulePackage `
+        -BuildOutputPath $env:BHBuildOutput `
+        -ModuleName $env:BHProjectName `
+        -PackagePath $script:PackagePath `
+        -ExpectedVersion $VersionToPublish `
+        -RequireReleaseNotes
 }
 
 Task TestPublish Build, Package, {
