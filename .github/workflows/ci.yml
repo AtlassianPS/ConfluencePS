@@ -58,7 +58,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@869d36f403c7534a37434d64119f96d1bacfeb25 # v0.1.17
+      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@fc574a6647971312d28383dd06e29a1a8d2e66e6 # v0.1.18
 
       - run: Invoke-Build -Task Lint, Build
         shell: pwsh
@@ -74,7 +74,7 @@ jobs:
             "tag=$($Matches.tag)" >> $env:GITHUB_OUTPUT
           }
 
-      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/build-release-notes@869d36f403c7534a37434d64119f96d1bacfeb25 # v0.1.17
+      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/build-release-notes@fc574a6647971312d28383dd06e29a1a8d2e66e6 # v0.1.18
         if: steps.release.outputs.tag != ''
         with:
           release-version: ${{ steps.release.outputs.tag }}
@@ -100,7 +100,7 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@869d36f403c7534a37434d64119f96d1bacfeb25 # v0.1.17
+      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@fc574a6647971312d28383dd06e29a1a8d2e66e6 # v0.1.18
         with:
           ps-version: "5"
           skip-setup: "true"
@@ -139,7 +139,7 @@ jobs:
           - { os: macos-latest, name: "macOS" }
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@869d36f403c7534a37434d64119f96d1bacfeb25 # v0.1.17
+      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@fc574a6647971312d28383dd06e29a1a8d2e66e6 # v0.1.18
 
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
@@ -171,7 +171,7 @@ jobs:
       ATLASSIAN_CLOUD_PAT: ${{ secrets.ATLASSIAN_CLOUD_PAT }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@869d36f403c7534a37434d64119f96d1bacfeb25 # v0.1.17
+      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@fc574a6647971312d28383dd06e29a1a8d2e66e6 # v0.1.18
 
       - name: Run smoke integration tests
         run: Invoke-Build -Task TestIntegration -Tag "Smoke" -PesterVerbosity Detailed

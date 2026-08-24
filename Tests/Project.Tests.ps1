@@ -1,4 +1,4 @@
-﻿#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "5.7"; MaximumVersion = "5.999" }
+﻿#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "5.9.0"; MaximumVersion = "5.9.999" }
 
 BeforeDiscovery {
     . "$PSScriptRoot/Helpers/TestTools.ps1"
@@ -6,10 +6,14 @@ BeforeDiscovery {
     $script:moduleToTest = Initialize-TestEnvironment
     $script:moduleRoot = Resolve-ProjectRoot
 
-    Import-Module $moduleToTest -Force -ErrorAction Stop
+    Import-Module $moduleToTest -Global -Force -ErrorAction Stop
 }
 
 Describe "General project validation" -Tag Unit {
+    BeforeAll {
+        Import-Module $moduleToTest -Global -Force -ErrorAction Stop
+    }
+
     BeforeDiscovery {
         $script:module = Get-Module 'ConfluencePS'
 
@@ -46,11 +50,12 @@ Describe "General project validation" -Tag Unit {
             }
 
             It "is loaded in the module" {
-                $commandInModule = $module.Invoke({
-                        param($name)
-                        Get-Command -Name $name -CommandType Function -ErrorAction SilentlyContinue |
-                            Where-Object { $_.ModuleName -eq 'ConfluencePS' }
-                    }, $functionName)
+                $commandInModule = InModuleScope ConfluencePS -Parameters @{ Name = $functionName } {
+                    param($Name)
+
+                    Get-Command -Name $Name -CommandType Function -ErrorAction SilentlyContinue |
+                        Where-Object { $_.ModuleName -eq 'ConfluencePS' }
+                }
 
                 $commandInModule | Should -Not -BeNullOrEmpty -Because "private function '$functionName' should be loaded"
             }
