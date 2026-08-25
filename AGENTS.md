@@ -117,6 +117,7 @@ Before merging: ensure the Windows PowerShell 5.1 CI test job is green.
 - `.github/workflows/release_intent.yml` validates release labels and changelog fragments.
 - `.github/workflows/continuous_release.yml` delegates release orchestration to the pinned reusable Standards workflow.
 - `.github/ai-context/releasing.md` keeps ConfluencePS-specific release steps and links to the canonical AtlassianPS Standards release blueprint.
+- Branch protection requires both `CI Result` and `Release Intent` before merge.
 - For instruction-only changes, run local validation before opening/updating a PR.
 
 ## Instruction Maintenance
