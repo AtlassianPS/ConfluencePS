@@ -16,188 +16,26 @@ permissions:
   pull-requests: read
 
 jobs:
-  changes:
-    name: Detect Changes
-    runs-on: ubuntu-latest
-    outputs:
-      run_ci: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'push' || steps.filter.outputs.code == 'true' }}
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          fetch-depth: 0
-
-      - id: filter
-        name: Decide whether full CI is required
-        uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d # v4
-        with:
-          predicate-quantifier: every
-          filters: |
-            code:
-              - '**'
-              - '!.editorconfig'
-              - '!.github/copilot-instructions.md'
-              - '!.spelling'
-              - '!AGENTS.md'
-              - '!CHANGELOG.md'
-              - '!CLAUDE.md'
-              - '!GEMINI.md'
-              - '!LICENSE'
-              - '!.cursor/**'
-              - '!.github/*.md'
-              - '!.github/ai-context/**'
-              - '!.github/instructions/**'
-              - '!.github/ISSUE_TEMPLATE/**'
-              - '!.github/PULL_REQUEST_TEMPLATE/**'
-              - '!.vscode/**'
-              - '!docs-regenerated/**'
-
-  build:
-    name: Lint and build
-    needs: changes
-    if: needs.changes.outputs.run_ci == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@fc574a6647971312d28383dd06e29a1a8d2e66e6 # v0.1.18
-
-      - run: Invoke-Build -Task Lint, Build
-        shell: pwsh
-
-      - name: Resolve release build
-        id: release
-        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
-        shell: pwsh
-        env:
-          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
-        run: |
-          if ($env:COMMIT_MESSAGE -match '^Prepare (?<tag>v\d+\.\d+\.\d+) release$') {
-            "tag=$($Matches.tag)" >> $env:GITHUB_OUTPUT
-          }
-
-      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/build-release-notes@fc574a6647971312d28383dd06e29a1a8d2e66e6 # v0.1.18
-        if: steps.release.outputs.tag != ''
-        with:
-          release-version: ${{ steps.release.outputs.tag }}
-
-      - name: Stamp and verify release build
-        if: steps.release.outputs.tag != ''
-        run: |
-          Invoke-Build -Task SetVersion -VersionToPublish ${{ steps.release.outputs.tag }}
-          Invoke-Build -Task VerifyReleaseArtifact -VersionToPublish ${{ steps.release.outputs.tag }}
-        shell: pwsh
-
-      - name: Upload build artifact
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        with:
-          name: Release
-          path: ./Release/
-          if-no-files-found: error
-
-  test_windows_ps5:
-    name: Test (Windows PS5)
-    needs: [changes, build]
-    if: needs.changes.outputs.run_ci == 'true'
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@fc574a6647971312d28383dd06e29a1a8d2e66e6 # v0.1.18
-        with:
-          ps-version: "5"
-          skip-setup: "true"
-
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
-        with:
-          name: Release
-          path: ./Release/
-
-      - name: Setup
-        shell: powershell
-        run: |
-          ./Tools/setup.ps1
-          Invoke-Build -Task ShowDebugInfo
-
-      - run: Invoke-Build -Task Test
-        shell: powershell
-
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        if: always()
-        with:
-          name: Windows-PS5-Unit-Tests
-          path: Test*.xml
-
-  test_pwsh:
-    name: Test (${{ matrix.name }})
-    needs: [changes, build]
-    if: needs.changes.outputs.run_ci == 'true'
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - { os: windows-latest, name: "Windows PS7" }
-          - { os: ubuntu-latest, name: "Ubuntu" }
-          - { os: macos-latest, name: "macOS" }
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@fc574a6647971312d28383dd06e29a1a8d2e66e6 # v0.1.18
-
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
-        with:
-          name: Release
-          path: ./Release/
-
-      - run: Invoke-Build -Task Test -ExcludeTag "Integration", "Documentation"
-        shell: pwsh
-
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        if: always()
-        with:
-          name: ${{ matrix.name }}-Unit-Tests
-          path: Test*.xml
-
-  smoke_tests:
-    name: Smoke Tests
-    needs: [changes, build]
-    if: >-
-      needs.changes.outputs.run_ci == 'true' &&
-      (github.event_name != 'pull_request' ||
-      (github.event.pull_request.head.repo.full_name == github.repository &&
-      github.actor != 'dependabot[bot]'))
-    runs-on: ubuntu-latest
-    env:
-      CI_CONFLUENCE_TYPE: Cloud
-      CONFLUENCE_CLOUD_URL: ${{ vars.CONFLUENCE_CLOUD_URL }}
-      ATLASSIAN_CLOUD_USER: ${{ vars.ATLASSIAN_CLOUD_USER }}
-      ATLASSIAN_CLOUD_PAT: ${{ secrets.ATLASSIAN_CLOUD_PAT }}
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@fc574a6647971312d28383dd06e29a1a8d2e66e6 # v0.1.18
-
-      - name: Run smoke integration tests
-        run: Invoke-Build -Task TestIntegration -Tag "Smoke" -PesterVerbosity Detailed
-        shell: pwsh
-
-      - name: Upload integration test results
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        with:
-          name: Smoke-Tests
-          path: Test-Integration.xml
+  module-ci:
+    uses: AtlassianPS/AtlassianPS.Standards/.github/workflows/module_ci.yml@a2aac6c601073864ae77c8660e6c6c57c26217be # v0.2.0
+    with:
+      smoke-profile: confluence
+      exclude-documentation-tests: true
+    secrets: inherit
 
   ci-required:
     name: CI Result
     if: always()
-    needs: [changes, build, test_windows_ps5, test_pwsh, smoke_tests]
+    needs: module-ci
     runs-on: ubuntu-latest
     steps:
-      - name: Aggregate job results
+      - name: Require the reusable CI pipeline
         shell: bash
+        env:
+          PIPELINE_RESULT: ${{ needs.module-ci.result }}
         run: |
-          results='${{ toJSON(needs) }}'
-          echo "Job results:"
-          echo "$results"
-          if echo "$results" | grep -E '"result":[[:space:]]*"(failure|cancelled)"' > /dev/null; then
-            echo "::error::One or more required jobs failed or were cancelled."
+          if [[ "$PIPELINE_RESULT" != "success" ]]; then
+            echo "::error::Module CI finished with result: $PIPELINE_RESULT"
             exit 1
           fi
-          echo "All required jobs passed or were skipped."
+
