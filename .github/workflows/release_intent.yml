@@ -13,4 +13,4 @@ jobs:
     name: Release Intent
     runs-on: ubuntu-latest
     steps:
-      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/validate-release-intent@fc574a6647971312d28383dd06e29a1a8d2e66e6 # v0.1.18
+      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/validate-release-intent@f691d79ab6b5e44b67db390f6a61ebf00e2f7293 # v0.1.19

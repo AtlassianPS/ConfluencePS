@@ -86,7 +86,8 @@ function Update-AtlassianPSDependencyReference {
         [String]`$BuildRequirementsPath,
         [String]`$ManifestPath,
         [Switch]`$SkipBuildRequirement,
-        [Switch]`$SkipManifestRequirement
+        [Switch]`$SkipManifestRequirement,
+        [Switch]`$AllowMajorVersionUpgrade
     )
 
     [PSCustomObject]@{
@@ -94,6 +95,7 @@ function Update-AtlassianPSDependencyReference {
         ManifestPath            = `$ManifestPath
         SkipBuildRequirement    = [Boolean]`$SkipBuildRequirement
         SkipManifestRequirement = [Boolean]`$SkipManifestRequirement
+        AllowMajorVersionUpgrade = [Boolean]`$AllowMajorVersionUpgrade
     } | ConvertTo-Json -Compress | Set-Content -LiteralPath '$escapedCapturePath'
 
     return [PSCustomObject]@{
@@ -131,7 +133,7 @@ Export-ModuleMember -Function Update-AtlassianPSDependencyReference
         $originalModulePath = $env:PSModulePath
         $env:PSModulePath = "$moduleSearchPath$([System.IO.Path]::PathSeparator)$originalModulePath"
         try {
-            $result = & $scriptPath -SkipBuildRequirement -SkipManifestRequirement
+            $result = & $scriptPath -SkipBuildRequirement -SkipManifestRequirement -AllowMajorVersionUpgrade
         }
         finally {
             $env:PSModulePath = $originalModulePath
@@ -143,6 +145,7 @@ Export-ModuleMember -Function Update-AtlassianPSDependencyReference
         $captured.BuildRequirementsPath | Should -Be (Join-Path -Path $harnessRoot -ChildPath 'Tools/build.requirements.psd1')
         $captured.ManifestPath | Should -Be (Join-Path -Path $harnessRoot -ChildPath 'ConfluencePS/ConfluencePS.psd1')
         $captured.SkipBuildRequirement | Should -BeTrue
+        $captured.AllowMajorVersionUpgrade | Should -BeTrue
         $captured.SkipManifestRequirement | Should -BeTrue
         $result.SkipBuildRequirement | Should -BeTrue
         $result.SkipManifestRequirement | Should -BeTrue
@@ -263,7 +266,8 @@ function Update-AtlassianPSDependencyReference {
         [String]$BuildRequirementsPath,
         [String]$ManifestPath,
         [Switch]$SkipBuildRequirement,
-        [Switch]$SkipManifestRequirement
+        [Switch]$SkipManifestRequirement,
+        [Switch]$AllowMajorVersionUpgrade
     )
 
     Write-Error -Message "simulated updater failure"

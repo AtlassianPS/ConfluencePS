@@ -8,6 +8,9 @@ param(
     [Parameter()]
     [Switch]$SkipManifestRequirement,
 
+    [Parameter()]
+    [Switch]$AllowMajorVersionUpgrade,
+
     [Parameter(DontShow = $true)]
     [ValidateSet('Desktop', 'Core')]
     [String]$RuntimePSEdition = $PSVersionTable.PSEdition,
@@ -135,6 +138,7 @@ $result = AtlassianPS.Standards\Update-AtlassianPSDependencyReference `
     -ManifestPath $manifestPath `
     -SkipBuildRequirement:$SkipBuildRequirement `
     -SkipManifestRequirement:$SkipManifestRequirement `
+    -AllowMajorVersionUpgrade:$AllowMajorVersionUpgrade `
     -ErrorAction Stop
 
 $result
