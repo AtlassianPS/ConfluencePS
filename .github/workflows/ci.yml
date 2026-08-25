@@ -17,7 +17,7 @@ permissions:
 
 jobs:
   module-ci:
-    uses: AtlassianPS/AtlassianPS.Standards/.github/workflows/module_ci.yml@a2aac6c601073864ae77c8660e6c6c57c26217be # v0.2.0
+    uses: AtlassianPS/AtlassianPS.Standards/.github/workflows/module_ci.yml@8a75c583308d27526f29d7aaef1d1ba67c059103 # v0.3.0
     with:
       smoke-profile: confluence
       exclude-documentation-tests: true
@@ -38,4 +38,3 @@ jobs:
             echo "::error::Module CI finished with result: $PIPELINE_RESULT"
             exit 1
           fi
-
