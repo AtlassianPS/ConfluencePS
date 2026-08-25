@@ -29,12 +29,12 @@ Describe 'GitHub Actions release contract' -Tag Unit {
         $script:releaseIntent | Should -Not -Match 'actions/checkout@|contents:\s+write|pull_request\.head|github\.head_ref'
     }
 
-    It 'builds and verifies the release candidate without publishing credentials' {
-        $script:ci | Should -Match 'AtlassianPS/AtlassianPS\.Standards/\.github/actions/build-release-notes@'
-        $script:ci | Should -Match 'Invoke-Build -Task SetVersion'
-        $script:ci | Should -Match 'Invoke-Build -Task VerifyReleaseArtifact'
-        $script:ci | Should -Match 'name:\s+Release'
-        $script:ci | Should -Not -Match 'PSGALLERY_API_KEY|ATLASSIANPS_RELEASE_APP|HOMEPAGE_PAT'
+    It 'delegates CI to the immutable Standards workflow' {
+        $script:ci | Should -Match 'AtlassianPS/AtlassianPS\.Standards/\.github/workflows/module_ci\.yml@[0-9a-f]{40}\s+#\s+v0\.2\.0'
+        $script:ci | Should -Match 'smoke-profile:\s+confluence'
+        $script:ci | Should -Match 'exclude-documentation-tests:\s+true'
+        $script:ci | Should -Match '(?ms)ci-required:.*?name:\s+CI Result.*?needs:\s+module-ci'
+        $script:ci | Should -Not -Match 'actions/checkout@|Invoke-Build|upload-artifact@'
     }
 
     It 'delegates release orchestration to the immutable Standards workflow' {
