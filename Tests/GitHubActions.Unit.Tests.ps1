@@ -7,6 +7,7 @@ Describe 'GitHub Actions release contract' -Tag Unit {
         $workflowRoot = Join-Path $script:projectRoot '.github/workflows'
         $script:ci = Get-Content (Join-Path $workflowRoot 'ci.yml') -Raw
         $script:continuousRelease = Get-Content (Join-Path $workflowRoot 'continuous_release.yml') -Raw
+        $script:integrationTests = Get-Content (Join-Path $workflowRoot 'integration_tests.yml') -Raw
         $script:releaseIntent = Get-Content (Join-Path $workflowRoot 'release_intent.yml') -Raw
     }
 
@@ -38,11 +39,17 @@ Describe 'GitHub Actions release contract' -Tag Unit {
     }
 
     It 'delegates release orchestration to the immutable Standards workflow' {
+        $script:continuousRelease | Should -Match '(?ms)workflow_run:.*?branches:\s*\[master\]'
         $script:continuousRelease | Should -Match 'uses:\s+AtlassianPS/AtlassianPS\.Standards/\.github/workflows/module_release\.yml@[0-9a-f]{40}'
         $script:continuousRelease | Should -Match 'module-name:\s+ConfluencePS'
         $script:continuousRelease | Should -Match 'release-impact:\s+\$\{\{\s*inputs\.release_impact\s*\}\}'
         $script:continuousRelease | Should -Match 'secrets:\s+inherit'
         $script:continuousRelease | Should -Not -Match '(?m)^  (prepare|publish):|Publish-Module|create-github-app-token|actions/download-artifact'
+    }
+
+    It 'runs full integration tests weekly and on demand' {
+        $script:integrationTests | Should -Match 'cron:\s*"0 5 \* \* 0"'
+        $script:integrationTests | Should -Match 'workflow_dispatch:'
     }
 
     It 'removes the legacy tag-triggered release path' {

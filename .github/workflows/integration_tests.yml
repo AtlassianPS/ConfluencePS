@@ -1,10 +1,10 @@
 name: Integration Tests
 
-# Cloud + Data Center tracks share this workflow's nightly cron and manual
+# Cloud + Data Center tracks share this workflow's weekly cron and manual
 # dispatch but run independently in parallel jobs.
 on:
   schedule:
-    - cron: "0 5 * * *"
+    - cron: "0 5 * * 0"
   workflow_dispatch:
     inputs:
       track:
