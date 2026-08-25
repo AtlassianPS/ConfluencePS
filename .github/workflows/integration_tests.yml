@@ -16,6 +16,11 @@ on:
           - cloud
           - datacenter
           - both
+      debug:
+        description: "Upload Data Center container logs even when tests succeed"
+        required: false
+        default: false
+        type: boolean
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -46,6 +51,7 @@ jobs:
         with:
           name: Cloud-Integration-Tests
           path: Test-Integration.xml
+          retention-days: 14
         if: always()
 
   datacenter_integration_tests:
@@ -84,10 +90,11 @@ jobs:
         with:
           name: DataCenter-Integration-Tests
           path: Test-Integration.xml
+          retention-days: 14
         if: always()
 
       - name: Capture Confluence container logs for debugging
-        if: always()
+        if: ${{ failure() || inputs.debug || runner.debug == '1' }}
         run: docker compose logs confluence > confluence-container.log
         shell: bash
 
@@ -95,7 +102,8 @@ jobs:
         with:
           name: DataCenter-Confluence-Container-Logs
           path: confluence-container.log
-        if: always()
+          retention-days: 7
+        if: ${{ failure() || inputs.debug || runner.debug == '1' }}
 
       - name: Tear down Confluence Data Center container
         if: always()
