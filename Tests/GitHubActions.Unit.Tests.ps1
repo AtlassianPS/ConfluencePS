@@ -24,6 +24,10 @@ Describe 'GitHub Actions release contract' -Tag Unit {
 
     It 'validates release intent without checking out contributor code' {
         $script:releaseIntent | Should -Match '(?m)^\s+pull_request_target:'
+        $script:releaseIntent | Should -Not -Match '(?m)types:\s*\[[^\]]*\bedited\b'
+        $script:releaseIntent | Should -Match '(?m)types:\s*\[[^\]]*\bsynchronize\b'
+        $script:releaseIntent | Should -Match '(?m)types:\s*\[[^\]]*\blabeled\b'
+        $script:releaseIntent | Should -Match '(?m)types:\s*\[[^\]]*\bunlabeled\b'
         $script:releaseIntent | Should -Match 'AtlassianPS/AtlassianPS\.Standards/\.github/actions/validate-release-intent@'
         $script:releaseIntent | Should -Match '(?m)^\s+pull-requests:\s+read\r?$'
         $script:releaseIntent | Should -Match '(?m)^\s+issues:\s+write\r?$'
@@ -50,6 +54,13 @@ Describe 'GitHub Actions release contract' -Tag Unit {
     It 'runs full integration tests weekly and on demand' {
         $script:integrationTests | Should -Match 'cron:\s*"0 5 \* \* 0"'
         $script:integrationTests | Should -Match 'workflow_dispatch:'
+    }
+
+    It 'retains integration diagnostics briefly and uploads container logs on demand' {
+        ([regex]::Matches($script:integrationTests, 'retention-days:\s+14')).Count | Should -Be 2
+        ([regex]::Matches($script:integrationTests, 'retention-days:\s+7')).Count | Should -Be 1
+        $script:integrationTests | Should -Match '(?ms)debug:.*?type:\s+boolean'
+        ([regex]::Matches($script:integrationTests, "failure\(\) \|\| inputs\.debug \|\| runner\.debug == '1'")).Count | Should -Be 2
     }
 
     It 'removes the legacy tag-triggered release path' {
