@@ -9,6 +9,9 @@ Describe 'GitHub Actions release contract' -Tag Unit {
         $script:continuousRelease = Get-Content (Join-Path $workflowRoot 'continuous_release.yml') -Raw
         $script:integrationTests = Get-Content (Join-Path $workflowRoot 'integration_tests.yml') -Raw
         $script:releaseIntent = Get-Content (Join-Path $workflowRoot 'release_intent.yml') -Raw
+        $requirements = Import-PowerShellDataFile (Join-Path $script:projectRoot 'Tools/build.requirements.psd1')
+        $standardsRequirement = $requirements | Where-Object ModuleName -EQ 'AtlassianPS.Standards' | Select-Object -First 1
+        $script:standardsVersionPattern = [regex]::Escape([String]$standardsRequirement.RequiredVersion)
     }
 
     It 'pins every external action to a full commit SHA' {
@@ -35,7 +38,7 @@ Describe 'GitHub Actions release contract' -Tag Unit {
     }
 
     It 'delegates CI to the immutable Standards workflow' {
-        $script:ci | Should -Match 'AtlassianPS/AtlassianPS\.Standards/\.github/workflows/module_ci\.yml@[0-9a-f]{40}\s+#\s+v0\.3\.0'
+        $script:ci | Should -Match "AtlassianPS/AtlassianPS\.Standards/\.github/workflows/module_ci\.yml@[0-9a-f]{40}\s+#\s+v$script:standardsVersionPattern"
         $script:ci | Should -Match 'smoke-profile:\s+confluence'
         $script:ci | Should -Match 'exclude-documentation-tests:\s+true'
         $script:ci | Should -Match '(?ms)ci-required:.*?name:\s+CI Result.*?needs:\s+module-ci'

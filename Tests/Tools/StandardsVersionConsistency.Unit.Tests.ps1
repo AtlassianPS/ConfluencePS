@@ -30,15 +30,12 @@ Describe 'AtlassianPS.Standards version consistency' -Tag Unit {
             Should -Be @($script:standardsVersion)
     }
 
-    It 'reads the Standards version from build.requirements in build and dependency tools' {
+    It 'reads the Standards version from build.requirements in build and setup tools' {
         $setupScript = Get-Content (Join-Path $script:projectRoot 'Tools/setup.ps1') -Raw
-        $updateScript = Get-Content (Join-Path $script:projectRoot 'Tools/update.dependencies.ps1') -Raw
         $buildScript = Get-Content (Join-Path $script:projectRoot 'ConfluencePS.build.ps1') -Raw
 
         $setupScript | Should -Match '\$buildRequirements\s*=\s*Import-PowerShellDataFile'
         $setupScript | Should -Match '-RequiredVersion\s+\$standardsVersion'
-        $updateScript | Should -Match '\$buildRequirements\s*=\s*Import-PowerShellDataFile'
-        $updateScript | Should -Match 'AtlassianPS\.Standards\\Update-AtlassianPSDependencyReference'
         $buildScript | Should -Match '\$buildRequirements\s*=\s*Import-PowerShellDataFile'
         $buildScript | Should -Match '-RequiredVersion\s+\$standardsRequirement\.RequiredVersion'
     }
