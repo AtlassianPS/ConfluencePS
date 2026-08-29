@@ -24,7 +24,7 @@ permissions:
 
 jobs:
   release:
-    uses: AtlassianPS/AtlassianPS.Standards/.github/workflows/module_release.yml@fc574a6647971312d28383dd06e29a1a8d2e66e6 # v0.1.18
+    uses: AtlassianPS/AtlassianPS.Standards/.github/workflows/module_release.yml@bd959dc3de7ee8426f89c31a62e0282e7140bd51 # v0.3.4
     with:
       module-name: ConfluencePS
       release-impact: ${{ inputs.release_impact }}
