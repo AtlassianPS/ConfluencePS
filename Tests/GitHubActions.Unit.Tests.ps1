@@ -87,5 +87,6 @@ Describe 'GitHub Actions release contract' -Tag Unit {
         $dependabot | Should -Match '(?m)^\s+- dependencies\r?$'
         $dependabot | Should -Match '(?m)^\s+- github_actions\r?$'
         $dependabot | Should -Match '(?m)^\s+- "release:none"\r?$'
+        $dependabot | Should -Match 'ignore:[\s\S]+dependency-name:\s*"AtlassianPS/AtlassianPS\.Standards\*"'
     }
 }
