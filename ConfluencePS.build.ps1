@@ -146,7 +146,7 @@ Task Lint {
         }
     }
     $styleResults = Invoke-Pester -Configuration $styleConfig
-    Assert-True ($styleResults.FailedCount -eq 0) "$($styleResults.FailedCount) style test(s) failed."
+    Assert-True (($styleResults.FailedCount + $styleResults.FailedBlocksCount + $styleResults.FailedContainersCount) -eq 0) "$($styleResults.FailedCount) style test(s) failed."
 
     $pssaConfig = New-PesterConfiguration -Hashtable @{
         Run    = @{
@@ -158,7 +158,7 @@ Task Lint {
         }
     }
     $pssaResults = Invoke-Pester -Configuration $pssaConfig
-    Assert-True ($pssaResults.FailedCount -eq 0) "$($pssaResults.FailedCount) analyzer test(s) failed."
+    Assert-True (($pssaResults.FailedCount + $pssaResults.FailedBlocksCount + $pssaResults.FailedContainersCount) -eq 0) "$($pssaResults.FailedCount) analyzer test(s) failed."
 }
 
 Task Clean {
@@ -522,7 +522,7 @@ Task Test {
 
     $pesterConfig = New-PesterConfiguration -Hashtable $pesterConfigHash
     $testResults = Invoke-Pester -Configuration $pesterConfig
-    Assert-True ($testResults.FailedCount -eq 0) "$($testResults.FailedCount) Pester test(s) failed."
+    Assert-True (($testResults.FailedCount + $testResults.FailedBlocksCount + $testResults.FailedContainersCount) -eq 0) "$($testResults.FailedCount) Pester test(s) failed."
 }
 
 # Synopsis: Run integration tests against live Confluence (Cloud or Data Center)
