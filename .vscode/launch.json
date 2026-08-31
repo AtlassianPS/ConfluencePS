@@ -4,8 +4,7 @@
             "type": "PowerShell",
             "request": "launch",
             "name": "PowerShell Pester Tests",
-            "script": ".\\.env.ps1",
-            "script": "Invoke-Pester",
+            "script": "Get-Module Pester | Remove-Module -Force -ErrorAction SilentlyContinue; Import-Module Pester -MinimumVersion '5.9.0' -MaximumVersion '5.9.999' -Force -ErrorAction Stop; Invoke-Pester",
             "args": [],
             "cwd": "${workspaceRoot}"
         },

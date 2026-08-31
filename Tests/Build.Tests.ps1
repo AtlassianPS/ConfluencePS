@@ -1,4 +1,4 @@
-﻿#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "5.7"; MaximumVersion = "5.999" }
+﻿#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "5.9.0"; MaximumVersion = "5.9.999" }
 
 Describe "Validation of build environment" -Tag Unit {
     BeforeAll {
@@ -30,7 +30,7 @@ Describe "Validation of build environment" -Tag Unit {
 
             $script:changelogVersion = $null
             foreach ($line in (Get-Content $changelogFile)) {
-                if ($line -match "(?:##|\<h2.*?\>)\s*\[?(?<Version>\d+(?:\.\d+){1,2})\]?(\-(?<Prerelease>(?:alpha|beta|rc)\d*))?") {
+                if ($line -match "(?:##|\<h2.*?\>)\s*\[?v?(?<Version>\d+\.\d+(?:\.\d+)?)\]?(\-(?<Prerelease>(?:alpha|beta|rc)\d*))?") {
                     $changelogVersion = $matches.Version
                     break
                 }

@@ -87,5 +87,6 @@ DataCenter track requires `CI_CONFLUENCE_TYPE=DataCenter`, `CI_CONFLUENCE_URL`, 
 - User-facing command docs belong in `docs/en-US/commands/*.md`.
 - Include changelog updates for user-visible behavior changes.
 - `.github/workflows/ci.yml` path filters can skip instruction-only changes.
-- `.github/workflows/integration_tests.yml` is the full-suite Cloud/Data Center integration workflow (nightly + manual).
+- `.github/workflows/integration_tests.yml` is the full-suite Cloud/Data Center integration workflow (weekly + manual).
+- `.github/ai-context/releasing.md` links to the canonical AtlassianPS Standards release blueprint and keeps ConfluencePS-specific release details.
 - Run local validation before opening/updating PRs when changing instruction files.

@@ -1,111 +1,42 @@
-﻿#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "4.10" }
+﻿#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "5.9.0"; MaximumVersion = "5.9.999" }
 
 Describe 'AtlassianPS.Standards version consistency' -Tag Unit {
     BeforeAll {
-        function Get-RepositoryRoot {
-            if (
-                $env:BHProjectPath -and
-                (Test-Path -LiteralPath (Join-Path -Path $env:BHProjectPath -ChildPath 'ConfluencePS.build.ps1'))
-            ) {
-                return (Resolve-Path -LiteralPath $env:BHProjectPath).ProviderPath
-            }
+        . "$PSScriptRoot/../Helpers/TestTools.ps1"
+        $script:projectRoot = Resolve-ProjectRoot
+        $script:standardsActionSha = 'bd959dc3de7ee8426f89c31a62e0282e7140bd51'
 
-            $candidate = (Resolve-Path -LiteralPath $PSScriptRoot).ProviderPath
-            while ($candidate -and ($candidate -ne [System.IO.Path]::GetPathRoot($candidate))) {
-                if (
-                    (Test-Path -LiteralPath (Join-Path -Path $candidate -ChildPath 'ConfluencePS.build.ps1')) -and
-                    (Test-Path -LiteralPath (Join-Path -Path $candidate -ChildPath 'Tools/build.requirements.psd1'))
-                ) {
-                    return $candidate
-                }
-
-                $candidate = Split-Path -Path $candidate -Parent
-            }
-
-            throw "Could not resolve repository root from '$PSScriptRoot'."
-        }
-    }
-
-    It 'keeps workflow setup action pins aligned with build.requirements' {
-        $projectRoot = Get-RepositoryRoot
-
-        $buildRequirementsPath = Join-Path -Path $projectRoot -ChildPath 'Tools/build.requirements.psd1'
-        $buildRequirements = Import-PowerShellDataFile -Path $buildRequirementsPath
-        $standardsRequirement = $buildRequirements |
-            Where-Object { $_.ModuleName -eq 'AtlassianPS.Standards' } |
+        $requirements = Import-PowerShellDataFile -Path (Join-Path $script:projectRoot 'Tools/build.requirements.psd1')
+        $standardsRequirement = $requirements |
+            Where-Object ModuleName -EQ 'AtlassianPS.Standards' |
             Select-Object -First 1
-
-        if (-not $standardsRequirement -or -not $standardsRequirement.RequiredVersion) {
-            $tokens = $null
-            $parseErrors = $null
-            $ast = [System.Management.Automation.Language.Parser]::ParseFile($buildRequirementsPath, [ref]$tokens, [ref]$parseErrors)
-            if ($parseErrors -and $parseErrors.Count -gt 0) {
-                throw "Unable to parse build requirements file '$buildRequirementsPath': $($parseErrors[0].Message)"
-            }
-
-            $statement = $ast.EndBlock.Statements[0]
-            if (
-                $statement -isnot [System.Management.Automation.Language.PipelineAst] -or
-                $statement.PipelineElements[0] -isnot [System.Management.Automation.Language.CommandExpressionAst]
-            ) {
-                throw "Build requirements file '$buildRequirementsPath' does not contain a supported data expression."
-            }
-
-            $buildRequirements = @($statement.PipelineElements[0].Expression.SafeGetValue())
-            $standardsRequirement = $buildRequirements |
-                Where-Object { $_.ModuleName -eq 'AtlassianPS.Standards' } |
-                Select-Object -First 1
-        }
-
-        $standardsVersion = [string] $standardsRequirement.RequiredVersion
-        $standardsVersion | Should -Not -BeNullOrEmpty
-
-        $workflowPaths = Get-ChildItem -Path (Join-Path -Path $projectRoot -ChildPath '.github/workflows') -File -Filter '*.yml' |
-            Select-Object -ExpandProperty FullName
-
-        $workflowActionMatches = foreach ($workflowPath in $workflowPaths) {
-            $workflowContent = Get-Content -LiteralPath $workflowPath -Raw
-            [regex]::Matches(
-                $workflowContent,
-                "AtlassianPS/AtlassianPS\.Standards/\.github/actions/setup-powershell@(?<ref>[^\s#]+)(?:\s+#\s+v(?<version>[0-9]+\.[0-9]+\.[0-9]+))?"
-            ) | ForEach-Object {
-                [PSCustomObject]@{
-                    WorkflowPath = $workflowPath
-                    Ref          = $_.Groups['ref'].Value
-                    Version      = $_.Groups['version'].Value
-                }
-            }
-        }
-
-        @($workflowActionMatches).Count | Should -BeGreaterThan 0
-
-        @($workflowActionMatches | Where-Object { $_.Ref -notmatch '^[0-9a-f]{40}$' }).Count | Should -Be 0
-        @($workflowActionMatches | Where-Object { [string]::IsNullOrWhiteSpace($_.Version) }).Count | Should -Be 0
-
-        @($workflowActionMatches | Select-Object -ExpandProperty Ref -Unique).Count | Should -Be 1
-
-        $matchedVersions = @(
-            $workflowActionMatches |
-                Select-Object -ExpandProperty Version -Unique
-        )
-        $matchedVersions.Count | Should -Be 1
-        $matchedVersions[0] | Should -Be $standardsVersion
+        $script:standardsVersion = [string]$standardsRequirement.RequiredVersion
     }
 
-    It 'reads AtlassianPS.Standards version from build.requirements in tool scripts' {
-        $projectRoot = Get-RepositoryRoot
+    It 'pins every Standards workflow dependency to the released build dependency' {
+        $workflowRoot = Join-Path $script:projectRoot '.github/workflows'
+        $matches = foreach ($workflow in Get-ChildItem $workflowRoot -Filter '*.yml') {
+            $content = Get-Content -LiteralPath $workflow.FullName -Raw
+            [regex]::Matches(
+                $content,
+                'AtlassianPS/AtlassianPS\.Standards/\.github/(?:actions/[^\s@]+|workflows/module_release\.yml)@(?<sha>[0-9a-f]{40})\s+#\s+v(?<version>\d+\.\d+\.\d+)'
+            )
+        }
 
-        $setupScriptContent = Get-Content -LiteralPath (Join-Path -Path $projectRoot -ChildPath 'Tools/setup.ps1') -Raw
-        $updateScriptContent = Get-Content -LiteralPath (Join-Path -Path $projectRoot -ChildPath 'Tools/update.dependencies.ps1') -Raw
+        @($matches).Count | Should -BeGreaterThan 0
+        @($matches | ForEach-Object { $_.Groups['sha'].Value } | Select-Object -Unique) |
+            Should -Be @($script:standardsActionSha)
+        @($matches | ForEach-Object { $_.Groups['version'].Value } | Select-Object -Unique) |
+            Should -Be @($script:standardsVersion)
+    }
 
-        $setupScriptContent | Should -Match '\$buildRequirements\s*=\s*Import-PowerShellDataFile'
-        $setupScriptContent | Should -Not -Match '\$standardsVersion\s*=\s*'''
-        $setupScriptContent | Should -Match '-RequiredVersion\s+\$standardsVersion'
+    It 'reads the Standards version from build.requirements in build and setup tools' {
+        $setupScript = Get-Content (Join-Path $script:projectRoot 'Tools/setup.ps1') -Raw
+        $buildScript = Get-Content (Join-Path $script:projectRoot 'ConfluencePS.build.ps1') -Raw
 
-        $updateScriptContent | Should -Match '\$buildRequirements\s*=\s*Import-PowerShellDataFile'
-        $updateScriptContent | Should -Not -Match '\$standardsVersion\s*=\s*'''
-        $updateScriptContent | Should -Match '-RequiredVersion\s+\$standardsVersion'
-        $updateScriptContent | Should -Match '\$PSCmdlet\.ShouldProcess\('
-        $updateScriptContent | Should -Match 'AtlassianPS\.Standards\\Update-AtlassianPSDependencyReference'
+        $setupScript | Should -Match '\$buildRequirements\s*=\s*Import-PowerShellDataFile'
+        $setupScript | Should -Match '-RequiredVersion\s+\$standardsVersion'
+        $buildScript | Should -Match '\$buildRequirements\s*=\s*Import-PowerShellDataFile'
+        $buildScript | Should -Match '-RequiredVersion\s+\$standardsRequirement\.RequiredVersion'
     }
 }

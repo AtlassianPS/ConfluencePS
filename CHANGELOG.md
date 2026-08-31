@@ -5,7 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## Unreleased
+
+## v2.5.2 - 2026-08-24
+
+### Changed
+
+* Standardized lint, unit, and integration test execution on Pester 5.9.x, using 5.9.0 as the clean-install baseline and 5.9.999 as the upper compatibility bound (#260, @lipkau).
+
+## v2.5.1 - 2026-08-24
 
 ### Added
 
@@ -39,8 +47,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 
 - Fixed `-Label` parsing for the Get-ConfluencePage cmdlet (#193 [@claudiospizzi])
+* Centralized release planning and publication in the reusable AtlassianPS.Standards workflow.
 
-## [2.5] 2019-03-27
+## v2.5.0 - 2019-03-27
 
 ### Added
 

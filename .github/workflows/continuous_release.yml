@@ -1,0 +1,31 @@
+name: Continuous Release
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [master]
+  workflow_dispatch:
+    inputs:
+      release_impact:
+        description: Release impact for unreleased changes already on master
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+permissions:
+  actions: read
+  contents: read
+  issues: read
+  pull-requests: read
+
+jobs:
+  release:
+    uses: AtlassianPS/AtlassianPS.Standards/.github/workflows/module_release.yml@bd959dc3de7ee8426f89c31a62e0282e7140bd51 # v0.3.4
+    with:
+      module-name: ConfluencePS
+      release-impact: ${{ inputs.release_impact }}
+    secrets: inherit

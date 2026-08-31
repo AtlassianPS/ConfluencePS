@@ -4,7 +4,7 @@ This guide explains the test layout used by ConfluencePS.
 
 ## Test Structure
 
-ConfluencePS uses Pester 5.7+ for new and modernized tests.
+ConfluencePS uses Pester 5.9.x for new and modernized tests.
 Tests are organized to mirror the module structure:
 
 - `Tests/Functions/Public/` contains unit tests for exported cmdlets in `ConfluencePS/Public/`.
