@@ -142,7 +142,9 @@ Describe 'Space integration tests' -Tag Integration, Cloud, DataCenter {
                 $script:tableMarkup = $script:tableInput | ConvertTo-ConfluenceTable
                 $tableStorageMarkup = ConvertTo-ConfluenceStorageFormat -Content $script:tableMarkup
                 $script:tablePage = New-ConfluenceIntegrationPage -Fixture $script:fixture -SpaceKey $script:spaceObjectKey -TitlePrefix 'Table Page' -Body $tableStorageMarkup
-                $script:fetchedTablePage = Get-ConfluencePage -PageID $script:tablePage.ID -ErrorAction Stop
+                $script:fetchedTablePage = Wait-ConfluenceIntegrationResult -FailureMessage "Table page '$($script:tablePage.ID)' did not become readable after creation." -Operation {
+                    Get-ConfluencePage -PageID $script:tablePage.ID -ErrorAction Stop
+                }
             }
         }
 

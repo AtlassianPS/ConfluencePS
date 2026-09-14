@@ -208,6 +208,54 @@ function New-ConfluenceIntegrationResourceName {
     return "$script:TestResourcePrefix$safePrefix-$([Guid]::NewGuid().ToString('N').Substring(0, 10))"
 }
 
+function Wait-ConfluenceIntegrationResult {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [scriptblock]$Operation,
+
+        [Parameter(Mandatory)]
+        [string]$FailureMessage,
+
+        [Parameter()]
+        [ValidateRange(1, 120)]
+        [int]$MaximumAttempts = 12,
+
+        [Parameter()]
+        [ValidateRange(0, 60)]
+        [int]$DelaySeconds = 5
+    )
+
+    $lastError = $null
+    for ($attempt = 1; $attempt -le $MaximumAttempts; $attempt++) {
+        try {
+            $result = & $Operation
+            $lastError = $null
+            if ($result) {
+                return $result
+            }
+        }
+        catch [System.ArgumentException] {
+            if ($_.Exception.Message -ne 'Invalid Server Response') {
+                throw
+            }
+            $lastError = $_
+        }
+        catch {
+            throw
+        }
+
+        if ($attempt -lt $MaximumAttempts) {
+            Start-Sleep -Seconds $DelaySeconds
+        }
+    }
+
+    if ($lastError) {
+        throw "$FailureMessage Last error: $($lastError.Exception.Message)"
+    }
+    throw $FailureMessage
+}
+
 function New-ConfluenceIntegrationFixture {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingConvertToSecureStringWithPlainText', '', Justification = 'Integration tests convert test credentials from environment variables')]
     [CmdletBinding()]
@@ -323,7 +371,10 @@ function New-ConfluenceIntegrationPageSet {
     )
 
     $space = New-ConfluenceIntegrationSpace -Fixture $Fixture -NamePrefix $SpaceNamePrefix
-    $homePage = (Get-ConfluenceSpace -SpaceKey $space.Key -ErrorAction Stop).Homepage
+    $visibleSpace = Wait-ConfluenceIntegrationResult -FailureMessage "Space '$($space.Key)' did not become readable after creation." -Operation {
+        Get-ConfluenceSpace -SpaceKey $space.Key -ErrorAction Stop
+    }
+    $homePage = $visibleSpace.Homepage
     $nameSuffix = [Guid]::NewGuid().ToString('N').Substring(0, 8)
 
     $page1 = "Page Piped $nameSuffix" | New-ConfluencePage -ParentID $homePage.ID -Body $Body -ErrorAction Stop
@@ -343,6 +394,12 @@ function New-ConfluenceIntegrationPageSet {
 
     $page4 = New-ConfluencePage -Title "Page with Parent Object $nameSuffix" -Parent $homePage -Body $Body -ErrorAction Stop
     $null = $Fixture.Pages.Add($page4.ID)
+
+    foreach ($page in @($page1, $page2, $page3, $page4)) {
+        $null = Wait-ConfluenceIntegrationResult -FailureMessage "Page '$($page.ID)' did not become readable after creation." -Operation {
+            Get-ConfluencePage -PageID $page.ID -ErrorAction Stop
+        }
+    }
 
     return [PSCustomObject]@{
         Space    = $space
