@@ -134,7 +134,7 @@ Task Lint {
     Remove-Item "Test*.xml" -Force -ErrorAction SilentlyContinue
 
     Get-Module Pester | Remove-Module -Force -ErrorAction SilentlyContinue
-    Import-Module Pester -MinimumVersion '5.9.0' -MaximumVersion '5.9.999' -Force -ErrorAction Stop
+    Import-Module Pester -MinimumVersion '6.2.0' -MaximumVersion '6.999' -Force -ErrorAction Stop
 
     $styleConfig = New-PesterConfiguration -Hashtable @{
         Run    = @{
@@ -146,7 +146,7 @@ Task Lint {
         }
     }
     $styleResults = Invoke-Pester -Configuration $styleConfig
-    Assert-True (($styleResults.FailedCount + $styleResults.FailedBlocksCount + $styleResults.FailedContainersCount) -eq 0) "$($styleResults.FailedCount) style test(s) failed."
+    Assert-True (($styleResults.FailedCount + $styleResults.FailedBlocksCount + $styleResults.FailedContainersCount) -eq 0) "$($styleResults.FailedCount) style test(s), $($styleResults.FailedBlocksCount) block(s), and $($styleResults.FailedContainersCount) container(s) failed."
 
     $pssaConfig = New-PesterConfiguration -Hashtable @{
         Run    = @{
@@ -158,7 +158,7 @@ Task Lint {
         }
     }
     $pssaResults = Invoke-Pester -Configuration $pssaConfig
-    Assert-True (($pssaResults.FailedCount + $pssaResults.FailedBlocksCount + $pssaResults.FailedContainersCount) -eq 0) "$($pssaResults.FailedCount) analyzer test(s) failed."
+    Assert-True (($pssaResults.FailedCount + $pssaResults.FailedBlocksCount + $pssaResults.FailedContainersCount) -eq 0) "$($pssaResults.FailedCount) analyzer test(s), $($pssaResults.FailedBlocksCount) block(s), and $($pssaResults.FailedContainersCount) container(s) failed."
 }
 
 Task Clean {
@@ -478,7 +478,7 @@ Task Test {
     Remove-Module $env:BHProjectName -ErrorAction SilentlyContinue
 
     Get-Module Pester | Remove-Module -Force -ErrorAction SilentlyContinue
-    Import-Module Pester -MinimumVersion '5.9.0' -MaximumVersion '5.9.999' -Force -ErrorAction Stop
+    Import-Module Pester -MinimumVersion '6.2.0' -MaximumVersion '6.999' -Force -ErrorAction Stop
 
     # Skip integration test files at discovery time so normal Test runs do
     # not execute setup blocks or require integration credentials.
@@ -522,7 +522,7 @@ Task Test {
 
     $pesterConfig = New-PesterConfiguration -Hashtable $pesterConfigHash
     $testResults = Invoke-Pester -Configuration $pesterConfig
-    Assert-True (($testResults.FailedCount + $testResults.FailedBlocksCount + $testResults.FailedContainersCount) -eq 0) "$($testResults.FailedCount) Pester test(s) failed."
+    Assert-True (($testResults.FailedCount + $testResults.FailedBlocksCount + $testResults.FailedContainersCount) -eq 0) "$($testResults.FailedCount) Pester test(s), $($testResults.FailedBlocksCount) block(s), and $($testResults.FailedContainersCount) container(s) failed."
 }
 
 # Synopsis: Run integration tests against live Confluence (Cloud or Data Center)

@@ -1,11 +1,11 @@
-﻿#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "5.9.0"; MaximumVersion = "5.9.999" }
+﻿#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "6.2.0"; MaximumVersion = "6.999" }
 
 BeforeDiscovery {
     . "$PSScriptRoot/Helpers/TestTools.ps1"
 
     $script:moduleToTest = Initialize-TestEnvironment
     $script:projectRoot = Resolve-ProjectRoot
-    $script:modulePrefix = (Test-ModuleManifest -Path $moduleToTest -ErrorAction Stop -WarningAction SilentlyContinue).DefaultCommandPrefix
+    $script:modulePrefix = (Test-ModuleManifest -Path $moduleToTest -ErrorAction Stop -WarningAction SilentlyContinue).Prefix
 }
 
 Describe "Help tests" -Tag "Documentation", "Build" {
@@ -14,13 +14,6 @@ Describe "Help tests" -Tag "Documentation", "Build" {
     }
 
     BeforeDiscovery {
-        ${/} = [regex]::Escape([System.IO.Path]::DirectorySeparatorChar)
-
-        $script:isRunningInReleaseFolder = $moduleToTest -match "${/}Release${/}"
-        if (-not $isRunningInReleaseFolder) {
-            Write-Warning "Tests are being run outside of the 'Release' folder. Some tests may be skipped."
-        }
-
         $script:publicFunctions = (Get-ChildItem "$projectRoot/ConfluencePS/Public/*.ps1").BaseName
 
         $commandToDocNameMap = @{}
@@ -75,23 +68,18 @@ Describe "Help tests" -Tag "Documentation", "Build" {
     Describe "Public Functions" {
         Context "Command <_.CommandName>" -ForEach $commands {
             BeforeDiscovery {
-                if ($isRunningInReleaseFolder) {
-                    $cmd = $_.Command
-                    $isDontShow = {
-                        param($name)
-                        $paramAttr = $cmd.Parameters[$name].Attributes | Where-Object { $_ -is [System.Management.Automation.ParameterAttribute] }
-                        return ($paramAttr.DontShow -contains $true)
-                    }
-                    $script:parameters = $cmd.Parameters.Keys | Where-Object { $_ -notin $defaultParams -and -not (& $isDontShow $_) }
+                $cmd = $_.Command
+                $isDontShow = {
+                    param($name)
+                    $paramAttr = $cmd.Parameters[$name].Attributes | Where-Object { $_ -is [System.Management.Automation.ParameterAttribute] }
+                    return ($paramAttr.DontShow -contains $true)
                 }
-                else {
-                    $script:parameters = @()
-                }
+                $script:parameters = $cmd.Parameters.Keys | Where-Object { $_ -notin $defaultParams -and -not (& $isDontShow $_) }
             }
             BeforeAll {
                 $script:command = $_.Command
                 $script:docName = $_.DocName
-                $script:help = if ($isRunningInReleaseFolder) { Get-Help $command.Name -ErrorAction Stop }
+                $script:help = Get-Help $command.Name -ErrorAction Stop
             }
 
             Context "Markdown file for <_.CommandName>" {
@@ -130,7 +118,7 @@ Describe "Help tests" -Tag "Documentation", "Build" {
                 }
             }
 
-            Context "Help for <_.CommandName>" -Skip:(-not $isRunningInReleaseFolder) {
+            Context "Help for <_.CommandName>" {
                 It "has a synopsis" {
                     $help.Synopsis | Should -Not -BeNullOrEmpty
                 }
@@ -173,8 +161,8 @@ Describe "Help tests" -Tag "Documentation", "Build" {
                 }
             }
 
-            Context "Parameter for <_.CommandName>" -Skip:(-not $isRunningInReleaseFolder) {
-                Context "Parameter: <_>" -ForEach $parameters {
+            Context "Parameter for <_.CommandName>" {
+                Context "Parameter: <_>" -ForEach $parameters -AllowNullOrEmptyForEach {
                     BeforeAll {
                         $script:parameterName = $_
                         $script:parameterCode = $command.Parameters[$parameterName]
@@ -203,7 +191,12 @@ Describe "Help tests" -Tag "Documentation", "Build" {
                                 }
                             }
                         }
-                        $helpType = if ($parameterHelp.parameterValue) { $parameterHelp.parameterValue.Trim() }
+                        $helpType = if ($parameterHelp.parameterValue) {
+                            $parameterHelp.parameterValue.Trim()
+                        }
+                        elseif ($parameterHelp.Type.Name) {
+                            $parameterHelp.Type.Name.Trim()
+                        }
                         if ($helpType -eq "PSCustomObject") { $helpType = "PSObject" }
                         if ($helpType -eq "Switch") { $helpType = "SwitchParameter" }
 
@@ -240,7 +233,7 @@ Describe "Help tests" -Tag "Documentation", "Build" {
         }
     }
 
-    Context "About topics" -Skip:(-not $isRunningInReleaseFolder) {
+    Context "About topics" {
         BeforeAll {
             $script:releaseModulePath = Split-Path $moduleToTest -Parent
         }

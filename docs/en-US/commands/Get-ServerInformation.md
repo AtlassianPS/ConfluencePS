@@ -124,4 +124,4 @@ Accept wildcard characters: False
 
 ## RELATED LINKS
 
-[Online Version](https://atlassianps.org/docs/ConfluencePS/commands/Get-ServerInformation/)
+[https://github.com/AtlassianPS/ConfluencePS](https://github.com/AtlassianPS/ConfluencePS)
