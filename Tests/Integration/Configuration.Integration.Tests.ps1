@@ -147,7 +147,13 @@ Describe "Integration Test Configuration" -Tag 'Integration', 'Smoke', 'Cloud', 
             $script:smokeWriteTitle = "ConfluencePS Smoke Write $([Guid]::NewGuid().ToString('N').Substring(0, 12))"
 
             $script:smokeWriteSpace = New-ConfluenceSpace -Key $script:smokeWriteSpaceKey -Name "ConfluencePS Smoke Write $($script:smokeWriteSpaceKey)" -Description "Disposable smoke-test space" -ErrorAction Stop
+            $null = Wait-ConfluenceIntegrationResult -FailureMessage "Smoke-write space '$($script:smokeWriteSpaceKey)' did not become readable after creation." -Operation {
+                Get-ConfluenceSpace -SpaceKey $script:smokeWriteSpaceKey -ErrorAction Stop
+            }
             $script:smokeWritePage = New-ConfluencePage -Title $script:smokeWriteTitle -SpaceKey $script:smokeWriteSpace.Key -Body "<p>ConfluencePS smoke create</p>" -ErrorAction Stop
+            $null = Wait-ConfluenceIntegrationResult -FailureMessage "Smoke-write page '$($script:smokeWritePage.ID)' did not become readable after creation." -Operation {
+                Get-ConfluencePage -PageID $script:smokeWritePage.ID -ErrorAction Stop
+            }
             $script:smokeWriteReady = $true
         }
 
@@ -210,12 +216,18 @@ Describe "Integration Test Configuration" -Tag 'Integration', 'Smoke', 'Cloud', 
             }
 
             $null = Add-ConfluenceLabel -PageID $script:smokeWritePage.ID -Label $script:smokeWriteLabel -ErrorAction Stop
-            $labelsAfterAdd = Get-ConfluenceLabel -PageID $script:smokeWritePage.ID -ErrorAction Stop
+            $labelsAfterAdd = Wait-ConfluenceIntegrationResult -FailureMessage "Label '$($script:smokeWriteLabel)' did not become readable after creation." -Operation {
+                $labels = Get-ConfluenceLabel -PageID $script:smokeWritePage.ID -ErrorAction Stop
+                if ($labels.Labels.Name -contains $script:smokeWriteLabel) { $labels }
+            }
             ($labelsAfterAdd.Labels.Name -contains $script:smokeWriteLabel) | Should -Be $true
 
             $null = Remove-ConfluenceLabel -PageID $script:smokeWritePage.ID -Label $script:smokeWriteLabel -Confirm:$false -ErrorAction Stop
-            $labelsAfterRemove = Get-ConfluenceLabel -PageID $script:smokeWritePage.ID -ErrorAction Stop
-            ($labelsAfterRemove.Labels.Name -contains $script:smokeWriteLabel) | Should -Be $false
+            $labelWasRemoved = Wait-ConfluenceIntegrationResult -FailureMessage "Label '$($script:smokeWriteLabel)' remained visible after removal." -Operation {
+                $labels = Get-ConfluenceLabel -PageID $script:smokeWritePage.ID -ErrorAction Stop
+                -not ($labels.Labels.Name -contains $script:smokeWriteLabel)
+            }
+            $labelWasRemoved | Should -Be $true
         }
 
         It "supports attachment add/remove lifecycle on the smoke-write page" {
@@ -233,12 +245,18 @@ Describe "Integration Test Configuration" -Tag 'Integration', 'Smoke', 'Cloud', 
             $addedAttachment = Add-ConfluenceAttachment -PageID $script:smokeWritePage.ID -FilePath $smokeAttachmentPath -ErrorAction Stop
             $addedAttachment | Should -Not -BeNullOrEmpty
 
-            $attachmentsAfterAdd = Get-ConfluenceAttachment -PageID $script:smokeWritePage.ID -ErrorAction Stop
+            $attachmentsAfterAdd = Wait-ConfluenceIntegrationResult -FailureMessage "Attachment '$smokeAttachmentName' did not become readable after creation." -Operation {
+                $attachments = Get-ConfluenceAttachment -PageID $script:smokeWritePage.ID -ErrorAction Stop
+                @($attachments | Where-Object { $_.Title -eq $smokeAttachmentName })
+            }
             @($attachmentsAfterAdd | Where-Object { $_.Title -eq $smokeAttachmentName }).Count | Should -BeGreaterThan 0
 
             $null = Remove-ConfluenceAttachment -Attachment $addedAttachment -Confirm:$false -ErrorAction Stop
-            $attachmentsAfterRemove = Get-ConfluenceAttachment -PageID $script:smokeWritePage.ID -ErrorAction Stop
-            @($attachmentsAfterRemove | Where-Object { $_.Title -eq $smokeAttachmentName }).Count | Should -Be 0
+            $attachmentWasRemoved = Wait-ConfluenceIntegrationResult -FailureMessage "Attachment '$smokeAttachmentName' remained visible after removal." -Operation {
+                $attachments = Get-ConfluenceAttachment -PageID $script:smokeWritePage.ID -ErrorAction Stop
+                @($attachments | Where-Object { $_.Title -eq $smokeAttachmentName }).Count -eq 0
+            }
+            $attachmentWasRemoved | Should -Be $true
         }
     }
 }
