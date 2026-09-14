@@ -81,7 +81,7 @@ try {
     }
 
     Get-Module Pester | Remove-Module -Force -ErrorAction SilentlyContinue
-    Import-Module Pester -MinimumVersion '5.9.0' -MaximumVersion '5.9.999' -Force -ErrorAction Stop
+    Import-Module Pester -MinimumVersion '6.2.0' -MaximumVersion '6.999' -Force -ErrorAction Stop
     Set-Location $projectRoot
 
     $config = New-PesterConfiguration
@@ -121,30 +121,36 @@ try {
         }
     }
 
+    $failureCount = $result.FailedCount + $result.FailedBlocksCount + $result.FailedContainersCount
+
     [PSCustomObject]@{
-        File         = $testFile.Name
-        Passed       = $result.PassedCount
-        Failed       = $result.FailedCount
-        Skipped      = $result.SkippedCount
-        Duration     = $result.Duration
-        Success      = $result.FailedCount -eq 0
-        FailedTests  = $failedTests
-        SkippedTests = $skippedTests
-        XmlPath      = if ($generateXml) { Join-Path $tempResultsDir "$($testFile.BaseName).xml" } else { $null }
+        File             = $testFile.Name
+        Passed           = $result.PassedCount
+        Failed           = $result.FailedCount
+        FailedBlocks     = $result.FailedBlocksCount
+        FailedContainers = $result.FailedContainersCount
+        Skipped          = $result.SkippedCount
+        Duration         = $result.Duration
+        Success          = $failureCount -eq 0
+        FailedTests      = $failedTests
+        SkippedTests     = $skippedTests
+        XmlPath          = if ($generateXml) { Join-Path $tempResultsDir "$($testFile.BaseName).xml" } else { $null }
     }
 }
 catch {
     [PSCustomObject]@{
-        File         = $testFile.Name
-        Passed       = 0
-        Failed       = 1
-        Skipped      = 0
-        Duration     = [TimeSpan]::Zero
-        Success      = $false
-        Error        = $_.Exception.Message
-        FailedTests  = @([PSCustomObject]@{ Name = 'Script execution'; ErrorMessage = $_.Exception.Message })
-        SkippedTests = @()
-        XmlPath      = $null
+        File             = $testFile.Name
+        Passed           = 0
+        Failed           = 1
+        FailedBlocks     = 0
+        FailedContainers = 0
+        Skipped          = 0
+        Duration         = [TimeSpan]::Zero
+        Success          = $false
+        Error            = $_.Exception.Message
+        FailedTests      = @([PSCustomObject]@{ Name = 'Script execution'; ErrorMessage = $_.Exception.Message })
+        SkippedTests     = @()
+        XmlPath          = $null
     }
 }
 '@
@@ -165,16 +171,18 @@ if ($canParallel) {
             Write-Warning "Test file [$($file.Name)] exceeded ${perFileTimeoutSeconds}s budget; stopping the runspace and recording an orchestrator timeout."
             try { Stop-Job -Job $job -ErrorAction SilentlyContinue } catch { Write-Warning "Stop-Job [$($job.Name)] threw: $_" }
             $results += [PSCustomObject]@{
-                File         = $file.Name
-                Passed       = 0
-                Failed       = 1
-                Skipped      = 0
-                Duration     = [TimeSpan]::FromSeconds($perFileTimeoutSeconds)
-                Success      = $false
-                Error        = "Per-file orchestrator timeout (${perFileTimeoutSeconds}s); runspace stopped."
-                FailedTests  = @([PSCustomObject]@{ Name = 'Orchestrator timeout'; ErrorMessage = "Test file [$($file.Name)] did not produce a Pester result object within ${perFileTimeoutSeconds}s." })
-                SkippedTests = @()
-                XmlPath      = $null
+                File             = $file.Name
+                Passed           = 0
+                Failed           = 1
+                FailedBlocks     = 0
+                FailedContainers = 0
+                Skipped          = 0
+                Duration         = [TimeSpan]::FromSeconds($perFileTimeoutSeconds)
+                Success          = $false
+                Error            = "Per-file orchestrator timeout (${perFileTimeoutSeconds}s); runspace stopped."
+                FailedTests      = @([PSCustomObject]@{ Name = 'Orchestrator timeout'; ErrorMessage = "Test file [$($file.Name)] did not produce a Pester result object within ${perFileTimeoutSeconds}s." })
+                SkippedTests     = @()
+                XmlPath          = $null
             }
         }
         else {
@@ -185,16 +193,18 @@ if ($canParallel) {
             catch {
                 Write-Warning "Receive-Job [$($job.Name)] threw: $_"
                 $results += [PSCustomObject]@{
-                    File         = $file.Name
-                    Passed       = 0
-                    Failed       = 1
-                    Skipped      = 0
-                    Duration     = [TimeSpan]::Zero
-                    Success      = $false
-                    Error        = "Receive-Job failed: $_"
-                    FailedTests  = @([PSCustomObject]@{ Name = 'Receive-Job failure'; ErrorMessage = $_.Exception.Message })
-                    SkippedTests = @()
-                    XmlPath      = $null
+                    File             = $file.Name
+                    Passed           = 0
+                    Failed           = 1
+                    FailedBlocks     = 0
+                    FailedContainers = 0
+                    Skipped          = 0
+                    Duration         = [TimeSpan]::Zero
+                    Success          = $false
+                    Error            = "Receive-Job failed: $_"
+                    FailedTests      = @([PSCustomObject]@{ Name = 'Receive-Job failure'; ErrorMessage = $_.Exception.Message })
+                    SkippedTests     = @()
+                    XmlPath          = $null
                 }
             }
         }
@@ -212,6 +222,8 @@ $endTime = Get-Date
 $totalDuration = $endTime - $startTime
 $totalPassed = 0
 $totalFailed = 0
+$totalFailedBlocks = 0
+$totalFailedContainers = 0
 $totalSkipped = 0
 $allFailedTests = @()
 $allSkippedTests = @()
@@ -219,6 +231,8 @@ $allSkippedTests = @()
 foreach ($r in $results) {
     $totalPassed += $r.Passed
     $totalFailed += $r.Failed
+    $totalFailedBlocks += $r.FailedBlocks
+    $totalFailedContainers += $r.FailedContainers
     $totalSkipped += $r.Skipped
 
     if ($r.Error) { Write-Host "[ERROR] $($r.File): $($r.Error)" -ForegroundColor Red }
@@ -252,11 +266,15 @@ if ($allSkippedTests.Count -gt 0) {
     Write-Host ''
 }
 
+$totalFailureCount = $totalFailed + $totalFailedBlocks + $totalFailedContainers
+
 Write-Host ''
 Write-Host '========== TEST SUMMARY ==========' -ForegroundColor Cyan
 Write-Host "  Total:   $($totalPassed + $totalFailed + $totalSkipped)" -ForegroundColor White
 Write-Host "  Passed:  $totalPassed" -ForegroundColor Green
 Write-Host "  Failed:  $totalFailed" -ForegroundColor $(if ($totalFailed -gt 0) { 'Red' } else { 'Green' })
+Write-Host "  Failed blocks: $totalFailedBlocks" -ForegroundColor $(if ($totalFailedBlocks -gt 0) { 'Red' } else { 'Green' })
+Write-Host "  Failed containers: $totalFailedContainers" -ForegroundColor $(if ($totalFailedContainers -gt 0) { 'Red' } else { 'Green' })
 Write-Host "  Skipped: $totalSkipped" -ForegroundColor Yellow
 Write-Host "  Duration: $($totalDuration.ToString('hh\:mm\:ss\.fff'))" -ForegroundColor White
 Write-Host '==================================' -ForegroundColor Cyan
@@ -268,7 +286,7 @@ if ($OutputPath -and (Test-Path $tempResultsDir)) {
         $root = $mergedDoc.DocumentElement
         $root.SetAttribute('name', 'ConfluencePS Integration Tests')
         $root.SetAttribute('total', ($totalPassed + $totalFailed + $totalSkipped).ToString())
-        $root.SetAttribute('errors', '0')
+        $root.SetAttribute('errors', ($totalFailedBlocks + $totalFailedContainers).ToString())
         $root.SetAttribute('failures', $totalFailed.ToString())
         $root.SetAttribute('not-run', $totalSkipped.ToString())
         $root.SetAttribute('inconclusive', '0')
@@ -291,8 +309,8 @@ if ($OutputPath -and (Test-Path $tempResultsDir)) {
         $mainSuite.SetAttribute('type', 'Assembly')
         $mainSuite.SetAttribute('name', 'ConfluencePS.Integration.Tests')
         $mainSuite.SetAttribute('executed', 'True')
-        $mainSuite.SetAttribute('result', $(if ($totalFailed -eq 0) { 'Success' } else { 'Failure' }))
-        $mainSuite.SetAttribute('success', $(if ($totalFailed -eq 0) { 'True' } else { 'False' }))
+        $mainSuite.SetAttribute('result', $(if ($totalFailureCount -eq 0) { 'Success' } else { 'Failure' }))
+        $mainSuite.SetAttribute('success', $(if ($totalFailureCount -eq 0) { 'True' } else { 'False' }))
         $mainSuite.SetAttribute('time', $totalDuration.TotalSeconds.ToString('0.000'))
         $mainSuite.SetAttribute('asserts', '0')
 
@@ -315,5 +333,5 @@ if ($OutputPath -and (Test-Path $tempResultsDir)) {
     }
 }
 
-if ($totalFailed -gt 0) { exit 1 }
+if ($totalFailureCount -gt 0) { exit 1 }
 exit 0
