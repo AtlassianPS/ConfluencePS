@@ -5,7 +5,7 @@ Describe 'AtlassianPS.Standards version consistency' -Tag Unit {
         . "$PSScriptRoot/../Helpers/TestTools.ps1"
         $script:projectRoot = Resolve-ProjectRoot
         $script:standardsActionSha = 'fa0c5f72ddb2b96712ffb8f8f0623fa7220d9dd8'
-        $script:releaseActionSha = '8053d48b6b5ee1b40196f4463fb3eaf2cfab026f'
+        $script:releaseActionSha = 'df1de3e48d5ee30401ecfcbfa7a11118c8d842ac'
 
         $requirements = Import-PowerShellDataFile -Path (Join-Path $script:projectRoot 'Tools/build.requirements.psd1')
         $standardsRequirement = $requirements |
@@ -16,6 +16,9 @@ Describe 'AtlassianPS.Standards version consistency' -Tag Unit {
 
     It 'pins build workflows to the released dependency and release to the reviewed implementation' {
         $workflowRoot = Join-Path $script:projectRoot '.github/workflows'
+        $release = Get-Content (Join-Path $workflowRoot 'continuous_release.yml') -Raw
+        $release | Should -Match 'prerelease_branch:'
+        $release | Should -Match 'prerelease-branch: \$\{\{ inputs.prerelease_branch \}\}'
         $matches = foreach ($workflow in Get-ChildItem $workflowRoot -Filter '*.yml') {
             $content = Get-Content -LiteralPath $workflow.FullName -Raw
             [regex]::Matches(

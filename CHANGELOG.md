@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
-- Adopt the shared alpha/beta release route with exact candidate validation and explicit major authorization.
+- Adopt the shared alpha/beta release route with optional source branch selection, exact candidate validation, and explicit major authorization.
 
 ### Changed
 
