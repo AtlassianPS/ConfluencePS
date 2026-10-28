@@ -5,6 +5,7 @@ Describe 'AtlassianPS.Standards version consistency' -Tag Unit {
         . "$PSScriptRoot/../Helpers/TestTools.ps1"
         $script:projectRoot = Resolve-ProjectRoot
         $script:standardsActionSha = 'fa0c5f72ddb2b96712ffb8f8f0623fa7220d9dd8'
+        $script:releaseActionSha = '1a5a3ef64525d55c4c2e01492867d832a87627a6'
 
         $requirements = Import-PowerShellDataFile -Path (Join-Path $script:projectRoot 'Tools/build.requirements.psd1')
         $standardsRequirement = $requirements |
@@ -13,7 +14,7 @@ Describe 'AtlassianPS.Standards version consistency' -Tag Unit {
         $script:standardsVersion = [string]$standardsRequirement.RequiredVersion
     }
 
-    It 'pins every Standards workflow dependency to the released build dependency' {
+    It 'pins build workflows to the released dependency and release to the reviewed implementation' {
         $workflowRoot = Join-Path $script:projectRoot '.github/workflows'
         $matches = foreach ($workflow in Get-ChildItem $workflowRoot -Filter '*.yml') {
             $content = Get-Content -LiteralPath $workflow.FullName -Raw
@@ -24,8 +25,10 @@ Describe 'AtlassianPS.Standards version consistency' -Tag Unit {
         }
 
         @($matches).Count | Should -BeGreaterThan 0
-        @($matches | ForEach-Object { $_.Groups['sha'].Value } | Select-Object -Unique) |
+        @($matches | Where-Object { -not $_.Value.Contains('workflows/module_release') } | ForEach-Object { $_.Groups['sha'].Value } | Select-Object -Unique) |
             Should -Be @($script:standardsActionSha)
+        @($matches | Where-Object { $_.Value.Contains('workflows/module_release') } | ForEach-Object { $_.Groups['sha'].Value } | Select-Object -Unique) |
+            Should -Be @($script:releaseActionSha)
         @($matches | ForEach-Object { $_.Groups['version'].Value } | Select-Object -Unique) |
             Should -Be @($script:standardsVersion)
     }
