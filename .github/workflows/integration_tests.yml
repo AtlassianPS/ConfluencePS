@@ -47,7 +47,7 @@ jobs:
           Invoke-Build -Task TestIntegration -Tag 'Cloud' -PesterVerbosity Detailed
         shell: pwsh
 
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: Cloud-Integration-Tests
           path: Test-Integration.xml
@@ -86,7 +86,7 @@ jobs:
           Invoke-Build -Task TestIntegration -Tag 'DataCenter' -PesterVerbosity Detailed
         shell: pwsh
 
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: DataCenter-Integration-Tests
           path: Test-Integration.xml
@@ -98,7 +98,7 @@ jobs:
         run: docker compose logs confluence > confluence-container.log
         shell: bash
 
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: DataCenter-Confluence-Container-Logs
           path: confluence-container.log
