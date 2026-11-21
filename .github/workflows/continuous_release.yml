@@ -39,6 +39,7 @@ permissions:
 
 jobs:
   release:
+    if: github.event_name == 'workflow_dispatch' || vars.CONFLUENCEPS_CD_ENABLED == 'true'
     uses: AtlassianPS/AtlassianPS.Standards/.github/workflows/module_release.yml@160631f20740a10152d4560d698b5e16806d0edb # v0.4.1 + #73
     with:
       module-name: ConfluencePS
