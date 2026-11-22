@@ -51,6 +51,8 @@ Describe 'GitHub Actions release contract' -Tag Unit {
         $script:continuousRelease | Should -Match 'module-name:\s+ConfluencePS'
         $script:continuousRelease | Should -Match "vars\.CONFLUENCEPS_CD_ENABLED == 'true'"
         $script:continuousRelease | Should -Match 'release-impact:\s+\$\{\{\s*inputs\.release_impact\s*\}\}'
+        $script:continuousRelease | Should -Match 'prerelease_branch:'
+        $script:continuousRelease | Should -Match 'prerelease-branch: \$\{\{ inputs.prerelease_branch \}\}'
         $script:continuousRelease | Should -Match 'secrets:\s+inherit'
         $script:continuousRelease | Should -Not -Match '(?m)^  (prepare|publish):|Publish-Module|create-github-app-token|actions/download-artifact'
     }
