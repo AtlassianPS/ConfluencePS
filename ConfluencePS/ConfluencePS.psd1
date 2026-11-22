@@ -106,6 +106,9 @@
             # ReleaseNotes of this module
             ReleaseNotes = ''
 
+            # Prerelease string of this module
+            Prerelease   = ''
+
         } # End of PSData hashtable
 
     } # End of PrivateData hashtable

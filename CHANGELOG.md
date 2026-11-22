@@ -9,7 +9,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
-- Migrated build and test tooling to AtlassianPS.Standards 0.4.0 and Pester 6.2.0. Test headers accept Pester 6.2.0 through the 6.x line (AtlassianPS/AtlassianPS#12, @lipkau).
+- Adopt the shared alpha/beta release route with optional source branch selection, exact candidate validation, and explicit major authorization.
+- Migrated build and test tooling to AtlassianPS.Standards 0.5.0 and Pester 6.2.0. Test headers accept Pester 6.2.0 through the 6.x line (AtlassianPS/AtlassianPS#12, @lipkau).
 
 ## v2.5.2 - 2026-08-24
 
